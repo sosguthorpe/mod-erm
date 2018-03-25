@@ -5,7 +5,7 @@
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
 # you're doing.
-Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
+# Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
 
 Vagrant.configure(2) do |config|
   # The most common configuration options are documented and commented below.
@@ -18,6 +18,22 @@ Vagrant.configure(2) do |config|
   config.vm.box_version = "5.0.0-20171215.10002"
     
 
+  #config.vm.provision "docker" do |d|
+    # docker run -d --restart always --hostname rabbitmq -p 15672:15672 -p 5672:5672 --name rabbitmq -e RABBITMQ_DEFAULT_USER=adm -e RABBITMQ_DEFAULT_PASS=admpass rabbitmq:management
+ #   d.run "rabbitmq",
+ #     args: "--hostname rabbitmq -p 15672:15672 -p 5672:5672 --name rabbitmq -e RABBITMQ_DEFAULT_USER=adm -e RABBITMQ_DEFAULT_PASS=admpass"
+
+    # Es 5 missing so far:: ulimits: memlock: soft: -1 hard: -1 mem_limit: 1g volumes: - esdata:/usr/share/elasticsearch/data
+    # d.run "docker.elastic.co/elasticsearch/elasticsearch:5.4.3",
+    #   args: "-name es5 -p 9200:9200 -p 9300:9300 -e cluster.name=kbplusg3 -e bootstrap.memory_lock=true -e 'ES_JAVA_OPTS=-Xms512m -Xmx512m' -e http.host=0.0.0.0 -e transport.host=0.0.0.0"
+
+    # Virtuoso
+    # docker run --name my-virtuoso -p 8890:8890 -p 1111:1111 -e DBA_PASSWORD=myDbaPassword -e SPARQL_UPDATE=true -e DEFAULT_GRAPH=http://www.example.com/my-graph -v /my/path/to/the/virtuoso/db:/data -d tenforce/virtuoso
+ #   d.run "tenforce/virtuoso",
+ #     name: "virtuoso",
+ #     args: "-p 8890:8890 -p 1111:1111 -e DBA_PASSWORD=myDbaPassword -e SPARQL_UPDATE=true -e DEFAULT_GRAPH=http://www.folio.org " # -v virtdata:/data"
+
+ # end
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
