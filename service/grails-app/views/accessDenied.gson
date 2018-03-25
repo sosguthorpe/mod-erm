@@ -1,0 +1,6 @@
+response.status 403
+
+json {
+	message "Access Denied"
+	error 403
+}
