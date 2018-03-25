@@ -117,7 +117,7 @@ task generateDescriptors(type: Copy) {
   from ('./src/okapi') {
     include '*-template.json'
   }
-  into './build'
+  into './build/resources/okapi'
   filteringCharset = 'UTF-8'
   expand(props)
   rename { String fileName ->
