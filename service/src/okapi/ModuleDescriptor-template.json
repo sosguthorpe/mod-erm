@@ -1,0 +1,26 @@
+{
+  "id": "${info.app.name}-${info.app.version}",
+  "name": "${info.app.name}",
+  "provides": [
+    {
+      "id": "${info.app.name}",
+      "version": "${info.app.minorVersion}",
+      "handlers" : [
+      ]
+    },
+    {
+      "id": "_tenant",
+      "version": "1.0",
+      "interfaceType" : "system",
+      "handlers": [
+        {
+          "methods": ["GET"],
+          "pathPattern": "/_/tenant"
+        },{
+          "methods": ["DELETE"],
+          "pathPattern": "/_/tenant"
+        }
+      ]
+    }
+  ]
+}

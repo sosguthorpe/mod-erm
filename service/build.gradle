@@ -10,7 +10,9 @@ buildscript {
   }
 }
 
-version "0.1"
+
+final String version_regex = /^(((\d+)\.\d+)\.\d+)(-([a-z]+[\w]*))?$/
+version "${appVersion}"
 group "org.olf"
 
 apply plugin:"eclipse"
@@ -85,3 +87,101 @@ tasks.withType(Test) {
   systemProperty "webdriver.chrome.driver", System.getProperty('webdriver.chrome.driver')
   systemProperty "webdriver.gecko.driver", System.getProperty('webdriver.gecko.driver')
 }
+
+sourceSets {
+  main {
+    resources {
+      srcDir 'grails-app/migrations'
+    }
+  }
+}
+
+task generateDescriptors(type: Copy) {
+  
+  dependsOn buildProperties
+  
+  File grailsBuildInfoFile = buildProperties.outputs.files.files.find { it.name == 'grails.build.info' }
+  
+  if(!grailsBuildInfoFile) return // No need to continue if the file is not there
+  Properties properties = new Properties()
+  
+  // Read properties from the file
+  grailsBuildInfoFile.withInputStream {
+    properties.load(it)
+  }
+  
+  // Need to parse multi-dimensional keys.
+  ConfigSlurper cs = new ConfigSlurper()
+  Map props = cs.parse(properties)
+  
+  from ('./src/okapi') {
+    include '*-template.json'
+  }
+  into './build'
+  filteringCharset = 'UTF-8'
+  expand(props)
+  rename { String fileName ->
+    fileName.replace('-template', '')
+  }
+}
+
+jar {
+  version "${version.replaceAll(version_regex, '$2')}"
+}
+
+springBoot {
+  // Enable the creation of a fully
+  // executable archive file.
+  executable = true
+  embeddedLaunchScriptProperties = [
+    'mode': 'service',
+    'inlinedConfScript': 'spring-boot.conf',
+    'logFolder': '${jarfolder}',
+    'pidFolder': '${jarfolder}'
+  ]
+}
+
+buildProperties.doLast {
+  
+  // Find the right file
+  File grailsBuildInfoFile = it.outputs.files.files.find { it.name == 'grails.build.info' }
+  
+  if(!grailsBuildInfoFile) return // No need to continue if the file is not there
+  Properties properties = new Properties()
+  
+  // Read properties from the file
+  grailsBuildInfoFile.withInputStream {
+    properties.load(it)
+  }
+  
+  // Load the app version
+  String version = properties.getProperty('info.app.version')
+  def versionParts
+  if (version && (versionParts = version =~ version_regex)) {
+    versionParts[0].with {
+      properties.setProperty('info.app.majorVersion', it[3])
+      properties.setProperty('info.app.minorVersion', it[2])
+      properties.setProperty('info.app.patchVersion', it[1])
+      
+      if (it[5]) {
+        properties.setProperty('info.app.testVersion', it[5])
+      }
+    }
+    version.replaceAll(/^(((\d+)\.\d+)\.\d+)(-([\w]+))?$/ , '$1')
+  }
+  
+  // Add new properties from various sources
+  properties.setProperty('build.time', new Date().format("yyyy-MM-dd HH:mm:ss"))
+  
+  // Get a System property
+  properties.setProperty('build.java.version', System.getProperty('java.version'))
+  
+  // Write the properties back to the file
+  grailsBuildInfoFile.withOutputStream {
+    properties.store(it,null)
+  }
+}
+
+build.dependsOn generateDescriptors
+assemble.dependsOn generateDescriptors
+
