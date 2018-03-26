@@ -17,7 +17,7 @@ group "org.olf"
 
 apply plugin:"eclipse"
 apply plugin:"idea"
-apply plugin:"war"
+//apply plugin:"war"
 apply plugin:"org.grails.grails-web"
 apply plugin:"org.grails.plugins.views-json"
 
@@ -102,17 +102,27 @@ task generateDescriptors(type: Copy) {
   
   File grailsBuildInfoFile = buildProperties.outputs.files.files.find { it.name == 'grails.build.info' }
   
-  if(!grailsBuildInfoFile) return // No need to continue if the file is not there
-  Properties properties = new Properties()
+  final def props = [:]
   
-  // Read properties from the file
-  grailsBuildInfoFile.withInputStream {
-    properties.load(it)
+  if(!(grailsBuildInfoFile)) return // No need to continue if the file is not there
+  
+  doFirst {
+    
+    // Place the loading within a do first as the info file from the buildProperties
+    // task will not be present until it is executed. This owuld cause a file not found
+    // during task configureation otherwise.
+    
+    Properties properties = new Properties()
+    
+    // Read properties from the file
+    grailsBuildInfoFile.withInputStream {
+      properties.load(it)
+    }
+    
+    // Need to parse multi-dimensional keys.
+    ConfigSlurper cs = new ConfigSlurper()
+    props.putAll(cs.parse(properties))
   }
-  
-  // Need to parse multi-dimensional keys.
-  ConfigSlurper cs = new ConfigSlurper()
-  Map props = cs.parse(properties)
   
   from ('./src/okapi') {
     include '*-template.json'
@@ -182,6 +192,6 @@ buildProperties.doLast {
   }
 }
 
-build.dependsOn generateDescriptors
-assemble.dependsOn generateDescriptors
+processResources.dependsOn generateDescriptors
+//assemble.dependsOn generateDescriptors
 
