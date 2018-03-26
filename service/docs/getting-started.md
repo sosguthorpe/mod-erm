@@ -1,4 +1,4 @@
-# UI - Getting started
+# Getting started
 Get up-to-speed and set up with a Grails project that can be deployed as an OKAPI backend module. To create a new backend module that you wish to develop locally please clone/fork this repository.
 
 ## Pre - reading
