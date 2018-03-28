@@ -4,18 +4,18 @@ Get up-to-speed and set up with a Grails project that can be deployed as an OKAP
 ## Pre - reading
 The UI module is designed to work within the [FOLIO](https://github.com/folio-org) project behind the [OKAPI gateway](https://github.com/folio-org/okapi).
 Our modules are built using the [Grails framework](http://docs.grails.org/latest/guide/single.html).
-Modules are compild into single jar application using [Spring boot](https://projects.spring.io/spring-boot/).
+Modules are compiled into single jar application using [Spring boot](https://projects.spring.io/spring-boot/).
 
 There are some pre-installed tools to help with [OKAPI integration](okapi-integration.md).
 
 ## Prerequisites
 This starter project uses [Postgres](https://www.postgresql.org/) to fit with the rest of the FOLIO project. You will need to install postgres and create a databse for this (and other) modules to use:
-There are 3 databses defined in the starter config,
+There are 3 databases defined in the starter config,
 * olfdev;
 * olftest;
 * and olf.
 
-Each uses the same credentials by defualt to connect:
+Each uses the same credentials by default to connect:
 * un: folio
 * pw: folio
 
@@ -54,18 +54,18 @@ From the root of your grails project (olf-erm/service) you should be able to sta
 The above command should start the application using the development profile.
 
 ## Running the other folio backend modules
-There is also a vagrant file at the root of this project that contains the FOLIO backend modules in a virtualised environment. To run that environament you will first need to install [vagrant](https://www.vagrantup.com/)
+There is also a vagrant file at the root of this project that contains the FOLIO backend modules in a virtualised environment. To run that environment you will first need to install [vagrant](https://www.vagrantup.com/)
 The default for this file is to use virtualbox as the provider, but vmware should work also. To start the folio backend stack, once vagrant is installed, just open a terminal and type
 ```
 vagrant up
 ```
 
 ## Registering our module with OKAPI in the vagrant machine
-Part of the build process of the module produces some OKAPI descriptors. The templates can be found in `service/src/okapi`. The placeholders are substitued for values that are generated as part of the build process and then the descriptors
+Part of the build process of the module produces some OKAPI descriptors. The templates can be found in `service/src/okapi`. The placeholders are substituted for values that are generated as part of the build process and then the descriptors
 written to: `build/resources/okapi` with values substituted and the template suffix removed. To compile the app without running you can type:
 ```grails compile```
 
-You can then use these json descriptors to register and deploy your moudule when it is running. See the [deployment and discovery](https://github.com/folio-org/okapi/blob/master/doc/guide.md#deployment-and-discovery) section of the OKAPI docs.
+You can then use these json descriptors to register and deploy your module when it is running. See the [deployment and discovery](https://github.com/folio-org/okapi/blob/master/doc/guide.md#deployment-and-discovery) section of the OKAPI docs.
 This allows you to run your module outside of the other core modules (for instance within your IDE) and debug in the normal way while developing.
 
 ## Domain Classes and Database Schemas
