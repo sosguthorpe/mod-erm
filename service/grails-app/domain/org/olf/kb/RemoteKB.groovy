@@ -1,6 +1,8 @@
 package org.olf.kb
 
-public class RemoteKB {
+import grails.gorm.MultiTenant
+
+public class RemoteKB implements MultiTenant<RemoteKB> {
 
   String id
   String name
