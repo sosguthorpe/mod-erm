@@ -56,6 +56,27 @@ class ErmTenantSpec extends GebSpec {
       'TestTenantC' | 'TestTenantC'
   }
 
+  void "List known external KBs"() {
+      when:"We ask the system to list known KBs"
+        def resp = restBuilder().get("$baseUrl/kbs") {
+          header 'X-Okapi-Tenant', 'TestTenantA'
+          authHeaders.rehydrate(delegate, owner, thisObject)()
+        }
+        resp.json.each { r ->
+          logger.debug("List KBs result [requets for TestTenantA]: ${r}");
+        }
+
+      then: "The system responds with the request we created above"
+        resp.status == OK.value()
+
+        // The search should only return 1 record - the one for the American Libraries article
+        // resp.json.size() == 1;
+        // resp.json[0].title=='American Libraries'
+
+  }
+
+
+  /*
   void "Delete the tenants"(tenant_id, note) {
 
     expect:"post delete request to the OKAPI controller for "+tenant_id+" results in OK and deleted tennant"
@@ -72,8 +93,8 @@ class ErmTenantSpec extends GebSpec {
       'TestTenantA' | 'note'
       'TestTenantB' | 'note'
       'TestTenantC' | 'note'
-    }
-
+  }
+  */
 
    RestBuilder restBuilder() {
         new RestBuilder()
