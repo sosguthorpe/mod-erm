@@ -7,6 +7,7 @@ buildscript {
     classpath "org.grails:grails-gradle-plugin:$grailsVersion"
     classpath "org.grails.plugins:hibernate5:${gormVersion-".RELEASE"}"
     classpath "org.grails.plugins:views-gradle:1.1.6"
+    classpath 'org.grails.plugins:database-migration:3.0.3'
   }
 }
 
@@ -70,8 +71,11 @@ dependencies {
   runtime "org.grails.plugins:events"
   
   compile "com.k_int.grails:kint-web-toolkit:3.3.1"
-  compile "com.k_int.okapi:grails-okapi:3.3.1"
+  compile "com.k_int.okapi:grails-okapi:3.3.4"
   compile "org.grails.plugins:spring-security-core:3.2.0"
+  compile 'org.grails.plugins:database-migration:3.0.3'
+  compile 'org.liquibase:liquibase-core:3.5.3'
+
 }
 
 bootRun {

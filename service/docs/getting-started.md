@@ -62,3 +62,13 @@ written to: `build/resources/okapi` with values substituted and the template suf
 
 You can then use these json descriptors to register and deploy your moudule when it is running. See the [deployment and discovery](https://github.com/folio-org/okapi/blob/master/doc/guide.md#deployment-and-discovery) section of the OKAPI docs.
 This allows you to run your module outside of the other core modules (for instance within your IDE) and debug in the normal way while developing.
+
+## Domain Classes and Database Schemas
+
+Schemas are controlled by the liquibase database migrations plugin. This means domain classes work sligthly differently to normal grails projects.
+
+After adding or editing domain classes, you will need to generate a liquibase config file. The full file can be regenerated with::
+
+    grails dbm-gorm-diff description-of-change.groovy --add
+    grails dbm-generate-gorm-changelog my-new-changelog.groovy
+
