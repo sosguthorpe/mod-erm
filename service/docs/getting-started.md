@@ -19,7 +19,20 @@ Each uses the same credentials by defualt to connect:
 * un: folio
 * pw: folio
 
-These can be set to whatever you like during the creation of the databses but be sure to reflect your changes in the the application config file at `grails-app/conf/application.yml`
+These can be set to whatever you like during the creation of the databses but be sure to reflect your changes in the the application config file at `grails-app/conf/application.yml` Example config that can be executed by postgres user:
+
+    CREATE USER folio WITH PASSWORD 'folio' SUPERUSER CREATEDB INHERIT LOGIN;
+
+    DROP DATABASE olfdev;
+    CREATE DATABASE olfdev;
+    GRANT ALL PRIVILEGES ON DATABASE olfdev to folio;
+    DROP DATABASE olftest;
+    CREATE DATABASE olftest;
+    GRANT ALL PRIVILEGES ON DATABASE olftest to folio;
+    DROP DATABASE olf;
+    CREATE DATABASE olf;
+    GRANT ALL PRIVILEGES ON DATABASE folio to olf;
+
 
 To install and manage the following pre-requisites I recommend using [SDKMAN](http://sdkman.io/).
 - [Groovy](http://groovy-lang.org/)
@@ -30,7 +43,7 @@ With sdkman installed as above it's as easy as opening a terminal and typing:
 * `sdk install grails`
 
 ## Running
-From the root of your project you should be able to start the application by typing:
+From the root of your grails project (olf-erm/service) you should be able to start the application by typing:
 `grails run-app`
 
 The above command should start the application using the development profile.
