@@ -69,7 +69,7 @@ dependencies {
   runtime "org.grails.plugins:async"
   runtime "org.grails.plugins:events"
   
-  compile "com.k_int.grails:web-toolkit:3.3.1"
+  compile "com.k_int.grails:kint-web-toolkit:3.3.1"
   compile "com.k_int.okapi:grails-okapi:3.3.1"
   compile "org.grails.plugins:spring-security-core:3.2.0"
 }
