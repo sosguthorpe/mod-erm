@@ -31,8 +31,13 @@ These can be set to whatever you like during the creation of the databses but be
     GRANT ALL PRIVILEGES ON DATABASE olftest to folio;
     DROP DATABASE olf;
     CREATE DATABASE olf;
-    GRANT ALL PRIVILEGES ON DATABASE folio to olf;
+    GRANT ALL PRIVILEGES ON DATABASE olf to folio;
 
+### Dockerized postgres local development
+
+If you're running a local dockerized postgres, here is one way to get to the command line you will need to run these commands:
+
+   docker exec -it your_pg_container_name psql -U postgres
 
 To install and manage the following pre-requisites I recommend using [SDKMAN](http://sdkman.io/).
 - [Groovy](http://groovy-lang.org/)
@@ -71,4 +76,5 @@ After adding or editing domain classes, you will need to generate a liquibase co
 
     grails dbm-gorm-diff description-of-change.groovy --add
     grails dbm-generate-gorm-changelog my-new-changelog.groovy
+
 
