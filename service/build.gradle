@@ -25,6 +25,7 @@ apply plugin:"org.grails.plugins.views-json"
 repositories {
   mavenLocal()
   maven { url 'https://repo.grails.org/grails/core' }
+  maven { url 'http://maven.k-int.com/content/repositories/releases' }
   maven { url 'http://maven.k-int.com/content/repositories/private' }
 }
 
@@ -65,7 +66,7 @@ dependencies {
   
   // Custom non profile deps. 
   
-  compile "org.postgresql:postgresql:42.2.1"
+  compile "org.postgresql:postgresql:42.2.2"
   
   runtime "org.grails.plugins:async"
   runtime "org.grails.plugins:events"
