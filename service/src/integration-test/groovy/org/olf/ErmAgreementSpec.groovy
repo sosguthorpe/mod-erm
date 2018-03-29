@@ -14,7 +14,7 @@ import spock.lang.Shared
 
 @Integration
 @Stepwise
-class ErmTenantSpec extends GebSpec {
+class ErmAgreementSpec extends GebSpec {
 
   @Shared
   private Map test_info = [:]
@@ -25,7 +25,7 @@ class ErmTenantSpec extends GebSpec {
     header OkapiHeaders.PERMISSIONS, '[ "erm.admin", "erm.user", "erm.own.read", "erm.any.read"]'
   }
 
-  final static Logger logger = LoggerFactory.getLogger(ErmTenantSpec.class);
+  final static Logger logger = LoggerFactory.getLogger(ErmAgreementSpec.class);
 
   def setup() {
   }
@@ -33,7 +33,7 @@ class ErmTenantSpec extends GebSpec {
   def cleanup() {
   }
 
-  // Set up a new tenant called RSTestTenantA
+  // Set up a new tenant called RSTestTenantD
   void "Set up test tenants "(tenantid, name) {
     when:"We post a new tenant request to the OKAPI controller"
 
@@ -49,36 +49,76 @@ class ErmTenantSpec extends GebSpec {
       // resp.headers[CONTENT_TYPE] == ['application/json;charset=UTF-8']
       // resp.json.message == 'Welcome to Grails!'
 
+    // Important NOTE:: hibernateDatastore does not currently provide mirror method to addTenantForSchema. Hence when we delete
+    // a tenant in the TenantTest we remove the schema, but are unable to remove it from the pool. Re-Adding a tenant added in a
+    // previous test will find the old tenant name in the cache, but find the actual schema gone. Until a method is provided in 
+    // hibernateDatastore, we will just use a new tenantId in each separate test.
     where:
       tenantid | name
-      'TestTenantA' | 'TestTenantA'
-      'TestTenantB' | 'TestTenantB'
-      'TestTenantC' | 'TestTenantC'
+      'TestTenantD' | 'TestTenantD'
   }
 
-  void "List known external KBs"() {
+  void "List Current Agreements"() {
 
       logger.debug("List known external KBs");
 
       when:"We ask the system to list known KBs"
-        def resp = restBuilder().get("$baseUrl/kbs") {
-          header 'X-Okapi-Tenant', 'TestTenantA'
+        def resp = restBuilder().get("$baseUrl/sas") {
+          header 'X-Okapi-Tenant', 'TestTenantD'
+          authHeaders.rehydrate(delegate, owner, thisObject)()
+        }
+
+      then: "The system responds with a list of tenants";
+        resp.status == OK.value()
+        resp.json.size() == 0
+  }
+
+  void "Set up new agreements"(tenant, agreement_name) {
+
+      expect:
+        
+        Map agreement_to_add =  [ 'name' : agreement_name ];
+
+        def resp = restBuilder().post("$baseUrl/sas") {
+          header 'X-Okapi-Tenant', tenant
+          authHeaders.rehydrate(delegate, owner, thisObject)()
+          contentType 'application/json'
+          accept 'application/json'
+          json agreement_to_add
+        }
+
+       resp.status == CREATED.value()
+
+
+      // Use a GEB Data Table to load each record
+      where:
+        tenant | agreement_name
+        'TestTenantD' | 'My first agreement'
+        'TestTenantD' | 'My second agreement'
+        'TestTenantD' | 'My third agreement'
+
+  }
+
+  void "Check Correct Current Agreements"() {
+
+      logger.debug("List known external KBs");
+
+      when:"We ask the system to list known KBs"
+        def resp = restBuilder().get("$baseUrl/sas") {
+          header 'X-Okapi-Tenant', 'TestTenantD'
           authHeaders.rehydrate(delegate, owner, thisObject)()
         }
 
         logger.debug("result ${resp.json}");
         resp.json.each { r ->
-          logger.debug("List KBs result [requets for TestTenantA]: ${r}");
+          logger.debug("List KBs result [requets for TestTenantD]: ${r}");
         }
 
       then: "The system responds with a list of tenants";
         resp.status == OK.value()
-
-        // The search should only return 1 record - the one for the American Libraries article
-        // resp.json.size() == 1;
-        // resp.json[0].title=='American Libraries'
-
+        resp.json.size() == 3
   }
+
 
 
   void "Delete the tenants"(tenant_id, note) {
@@ -94,9 +134,7 @@ class ErmTenantSpec extends GebSpec {
 
     where:
       tenant_id | note
-      'TestTenantA' | 'note'
-      'TestTenantB' | 'note'
-      'TestTenantC' | 'note'
+      'TestTenantD' | 'note'
   }
 
    RestBuilder restBuilder() {

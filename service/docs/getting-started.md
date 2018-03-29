@@ -68,6 +68,22 @@ written to: `build/resources/okapi` with values substituted and the template suf
 You can then use these json descriptors to register and deploy your moudule when it is running. See the [deployment and discovery](https://github.com/folio-org/okapi/blob/master/doc/guide.md#deployment-and-discovery) section of the OKAPI docs.
 This allows you to run your module outside of the other core modules (for instance within your IDE) and debug in the normal way while developing.
 
+# Troubleshooting
+
+## Integration Tests
+
+### DataSource not found for name [...] in configuration. Please check your multiple data sources configuration and try again.
+
+The grails multitenant handling is idiomatically a little different to folio usage, so mod grails-okapi provides several services to mediate this difference.
+However, hibernateDatastore does not provide some methods (Most notably, the ability to deregister a tenant datasource) so integration tests find it hard to re-use tenants
+in a run. Sometimes an error can case a tenant to be left in place. Dropping the test database and re-creating with
+
+    DROP DATABASE olftest;
+    CREATE DATABASE olftest;
+    GRANT ALL PRIVILEGES ON DATABASE olftest to folio;
+
+can help a lot.
+
 ## Domain Classes and Database Schemas
 
 Schemas are controlled by the liquibase database migrations plugin. This means domain classes work sligthly differently to normal grails projects.
