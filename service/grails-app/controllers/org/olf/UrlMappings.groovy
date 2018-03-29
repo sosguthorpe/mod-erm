@@ -8,5 +8,12 @@ class UrlMappings {
     "/_/tenant"(controller: 'okapi', action:'tenant')
     "500"(view: '/error')
     "404"(view: '/notFound')
+
+    // Map /kbs to RemoteKBController
+    '/kbs'(resources: 'remoteKB')
+
+    // Map /sas to SubscriptionAgreementController
+    '/sas'(resources: 'subscriptionAgreement')
+
   }
 }

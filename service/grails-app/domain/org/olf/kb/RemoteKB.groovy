@@ -1,6 +1,7 @@
 package org.olf.kb
 
-public class RemoteKB {
+import grails.gorm.MultiTenant
+public class RemoteKB implements MultiTenant<RemoteKB> {
 
   String id
   String name
@@ -11,13 +12,13 @@ public class RemoteKB {
   String fullPrefix
   String principal
   String credentials
-  Long rectype
+  Long rectype  // 1-PACKAGE
   Boolean active
 
   static mapping = {
                    id column:'rkb_id', generator: 'uuid', length:36
               version column:'rkb_version'
-           identifier column:'rkb_identifier'
+                   id column:'rkb_id'
                  name column:'rkb_name'
                cursor column:'rkb_cursor'
                   uri column:'rkb_uri'
@@ -31,8 +32,7 @@ public class RemoteKB {
   }
 
   static constraints = {
-             id(nullable:true, blank:false)
-           name(nullable:true, blank:false)
+           name(nullable:false, blank:false)
          cursor(nullable:true, blank:false)
             uri(nullable:true, blank:false)
            type(nullable:true, blank:false)
