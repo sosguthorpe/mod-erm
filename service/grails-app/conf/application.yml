@@ -111,7 +111,7 @@ dataSource:
   password: folio
   driverClassName: org.postgresql.Driver
   dialect: org.hibernate.dialect.PostgreSQLDialect
-  url: jdbc:postgresql://localhost:5432/foliodev
+  url: jdbc:postgresql://localhost:5432/olfdev
   schemaHandler: com.k_int.okapi.OkapiSchemaHandler
     
 environments:

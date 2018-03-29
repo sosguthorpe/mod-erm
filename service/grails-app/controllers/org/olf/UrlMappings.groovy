@@ -12,5 +12,8 @@ class UrlMappings {
     // Map /kbs to RemoteKBController
     '/kbs'(resources: 'remoteKB')
 
+    // Map /sas to SubscriptionAgreementController
+    '/sas'(resources: 'subscriptionAgreement')
+
   }
 }
