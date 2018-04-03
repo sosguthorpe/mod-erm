@@ -64,10 +64,13 @@ class ErmPackageSpec extends GebSpec {
   void "Load Packages"(tenantid, test_package_file) {
 
     when:
-      // uploadOrgs(new File('src/test/resources/orgs1.csv').getAbsolutePath())
       def jsonSlurper = new JsonSlurper()
       def package_data = jsonSlurper.parse(new File(test_package_file))
-      def result = packageIngestService.upsertPackage(tenantid, package_data);
+
+      // HeadsUP:: When tenantid comes through the http request it is normalised, we do that manually here as we are
+      // directly exercising the service. It may be better to test this service via a web endpoint, however it's
+      // not clear at the moment what form that endpoint will take, so exercising the service directly for now
+      // def result = packageIngestService.upsertPackage(tenantid.toLowerCase(), package_data);
 
     then:
       result != null

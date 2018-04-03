@@ -5,6 +5,7 @@ import org.olf.kb.RemoteKB
 import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.WithoutTenant
 import grails.gorm.transactions.Transactional
+import org.olf.kb.Package;
 
 /**
  * This service works at the module level, it's often called without a tenant context.
@@ -16,12 +17,30 @@ public class PackageIngestService {
    * Load the paackage data (Given in the agreed canonical json package format) into the KB
    * @return id of package upserted
    */
-  public String upsertPackage(String tenant, Map package_data) {
+  public String upsertPackage(String tenantId, Map package_data) {
+    
     def result = null;
-    log.debug("PackageIngestService::upsertPackage(${tenant},...)");
+    log.debug("PackageIngestService::upsertPackage(${tenantId},...)");
 
-    result = ''
+    Tenants.withId(tenantId) {
+      result = internalUpsertPackage(tenant,package_data);
+    }
+  }
+
+  private String internalUpsertPackage(String tenant, Map package_data) {
+
+    def result = '';
+
     log.debug("Package header: ${package_data.header}");
+
+    // header.packageSlug contains the package maintainers authoritative identifier for this package.
+    def pkg = Package.findBySourceAndReference(package_data.header.packageSource, package_data.header.packageSlug)
+
+    if ( pkg == null ) {
+      pkg = new Package(
+                           source: package_data.header.packageSource,
+                        reference: package_data.header.packageSlug).save(flush:true, failOnError:true);
+    }
 
     package_data.packageContents.each { pc ->
       // {
