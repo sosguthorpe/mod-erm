@@ -20,6 +20,8 @@ class ErmPackageSpec extends GebSpec {
   @Shared
   private Map test_info = [:]
 
+  def packageIngestService
+
   final Closure authHeaders = {
     header OkapiHeaders.TOKEN, 'dummy'
     header OkapiHeaders.USER_ID, 'dummy'
@@ -65,9 +67,10 @@ class ErmPackageSpec extends GebSpec {
       // uploadOrgs(new File('src/test/resources/orgs1.csv').getAbsolutePath())
       def jsonSlurper = new JsonSlurper()
       def package_data = jsonSlurper.parse(new File(test_package_file))
+      def result = packageIngestService.upsertPackage(tenantid, package_data);
 
     then:
-      1==1
+      result != null
 
     where:
       tenantid | test_package_file
