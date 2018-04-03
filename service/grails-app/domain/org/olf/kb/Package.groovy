@@ -6,7 +6,7 @@ import grails.gorm.MultiTenant
 /**
  * mod-erm representation of a package
  */
-public class Package extends Subscribable implements MultiTenant<Package> {
+public class Package implements MultiTenant<Package> {
 
   String id
   String name
