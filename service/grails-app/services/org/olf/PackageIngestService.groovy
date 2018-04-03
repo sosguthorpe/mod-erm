@@ -23,11 +23,11 @@ public class PackageIngestService {
     log.debug("PackageIngestService::upsertPackage(${tenantId},...)");
 
     Tenants.withId(tenantId) {
-      result = internalUpsertPackage(tenant,package_data);
+      result = internalUpsertPackage(package_data);
     }
   }
 
-  private String internalUpsertPackage(String tenant, Map package_data) {
+  private String internalUpsertPackage(Map package_data) {
 
     def result = '';
 
@@ -38,6 +38,7 @@ public class PackageIngestService {
 
     if ( pkg == null ) {
       pkg = new Package(
+                             name: package_data.header.packageName,
                            source: package_data.header.packageSource,
                         reference: package_data.header.packageSlug).save(flush:true, failOnError:true);
     }

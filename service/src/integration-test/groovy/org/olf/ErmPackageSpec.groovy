@@ -67,10 +67,11 @@ class ErmPackageSpec extends GebSpec {
       def jsonSlurper = new JsonSlurper()
       def package_data = jsonSlurper.parse(new File(test_package_file))
 
-      // HeadsUP:: When tenantid comes through the http request it is normalised, we do that manually here as we are
+      // HeadsUP:: THIS IS A HACK
+      // When tenantid comes through the http request it is normalised (lowecased, suffix added), we do that manually here as we are
       // directly exercising the service. It may be better to test this service via a web endpoint, however it's
       // not clear at the moment what form that endpoint will take, so exercising the service directly for now
-      // def result = packageIngestService.upsertPackage(tenantid.toLowerCase(), package_data);
+      def result = packageIngestService.upsertPackage(tenantid.toLowerCase()+'_olf_erm', package_data);
 
     then:
       result != null
