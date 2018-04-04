@@ -6,7 +6,7 @@ import grails.gorm.MultiTenant
 /**
  * mod-erm representation of a package
  */
-public class PackageContentItem implements MultiTenant<Package> {
+public class PackageContentItem implements MultiTenant<PackageContentItem> {
 
   String id
   Package pkg

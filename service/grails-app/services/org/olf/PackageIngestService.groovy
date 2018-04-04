@@ -14,7 +14,9 @@ import org.olf.kb.Package;
 public class PackageIngestService {
 
   /**
-   * Load the paackage data (Given in the agreed canonical json package format) into the KB
+   * Load the paackage data (Given in the agreed canonical json package format) into the KB.
+   * This function must be passed VALID package data. At this point, all package contents are
+   * assumed to be valid. Any invalid rows should be filtered out at this point.
    * @return id of package upserted
    */
   public String upsertPackage(String tenantId, Map package_data) {
@@ -27,6 +29,15 @@ public class PackageIngestService {
     }
   }
 
+  /**
+   * Load the paackage data (Given in the agreed canonical json package format) into the KB.
+   * This function must be passed VALID package data. At this point, all package contents are
+   * assumed to be valid. Any invalid rows should be filtered out at this point.
+   * This is to keep the implementation of this function clean, all error checking shoud be
+   * performed prior to this step. This function is soley concerned with absorbing a valid
+   * package into the KB.
+   * @return id of package upserted
+   */
   private String internalUpsertPackage(Map package_data) {
 
     def result = '';
