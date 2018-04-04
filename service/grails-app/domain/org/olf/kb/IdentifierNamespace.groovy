@@ -6,7 +6,7 @@ import grails.gorm.MultiTenant
 /**
  *
  */
-public class IdentifierNamespace implements MultiTenant<Identifier> {
+public class IdentifierNamespace implements MultiTenant<IdentifierNamespace> {
 
   String id
   String value
