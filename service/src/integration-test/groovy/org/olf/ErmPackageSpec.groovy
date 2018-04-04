@@ -21,6 +21,7 @@ class ErmPackageSpec extends GebSpec {
   private Map test_info = [:]
 
   def packageIngestService
+  def titleInstanceResolverService
 
   final Closure authHeaders = {
     header OkapiHeaders.TOKEN, 'dummy'
@@ -59,6 +60,35 @@ class ErmPackageSpec extends GebSpec {
     where:
       tenantid | name
       'TestTenantE' | 'TestTenantE'
+  }
+
+  void testTitleinstanceResolverService() {
+    when:
+      // N.B. This is a groovy MAP, not a JSON document.
+      def title_instance = titleInstanceResolverService.resolve([
+        'title':'Brain of the firm',
+        'instanceMedium': 'print',
+        'instanceMedia': 'BKM',
+        'instanceIdentifiers': [ 
+          [
+            'namespace': 'isbn',
+            'value': '0713902191'
+          ],
+          [
+            'namespace': 'isbn',
+            'value': '9780713902198'
+          ] 
+        ],
+        'siblingInstanceIdentifiers': [ 
+          [
+            // 2e - print
+            'namespace': 'isbn',
+            'value': '047194839X'
+          ] ]
+
+      ]);
+    then:
+      title_instance == null;
   }
 
   void "Load Packages"(tenantid, test_package_file) {

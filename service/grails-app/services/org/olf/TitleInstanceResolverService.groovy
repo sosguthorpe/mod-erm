@@ -34,21 +34,11 @@ public class TitleInstanceResolverService {
    *     {
    *       "namespace": "issn",
    *       "value": "1901-2276"
-   *     } ],
-   *   "coverage": [ {
-   *     "startVolume": "58",
-   *     "startIssue": "1",
-   *     "startDate": "2006-03-31T23:00:00Z",
-   *     "endVolume": "63",
-   *     "endIssue": "4",
-   *     "endDate": "2011-12-31T00:00:00Z"
-   *   } ],
-   *   "embargo": null,
-   *   "coverageDepth": "fulltext",
-   *   "coverageNote": null
+   *     } ]
    *   }
    */
   public TitleInstance resolve(Map citation) {
+    log.debug("TitleInstanceResolverService::resolve(${citation})");
     TitleInstance result = null;
     return result;
   }  
