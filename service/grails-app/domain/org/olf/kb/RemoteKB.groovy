@@ -18,7 +18,6 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
   static mapping = {
                    id column:'rkb_id', generator: 'uuid', length:36
               version column:'rkb_version'
-                   id column:'rkb_id'
                  name column:'rkb_name'
                cursor column:'rkb_cursor'
                   uri column:'rkb_uri'
