@@ -12,15 +12,15 @@ import org.slf4j.LoggerFactory;
 import com.k_int.okapi.OkapiHeaders
 import spock.lang.Shared
 import groovy.json.JsonSlurper
+import grails.gorm.multitenancy.Tenants
 
 @Integration
 @Stepwise
-class ErmPackageSpec extends GebSpec {
+class ErmTitleServiceSpec extends GebSpec {
 
   @Shared
   private Map test_info = [:]
 
-  def packageIngestService
   def titleInstanceResolverService
 
   final Closure authHeaders = {
@@ -59,31 +59,49 @@ class ErmPackageSpec extends GebSpec {
     // hibernateDatastore, we will just use a new tenantId in each separate test.
     where:
       tenantid | name
-      'TestTenantE' | 'TestTenantE'
+      'TestTenantF' | 'TestTenantF'
   }
 
-  void "Load Packages"(tenantid, test_package_file) {
+  void testTitleinstanceResolverService(tenantid, name) {
+    when:  
 
-    when:
-      def jsonSlurper = new JsonSlurper()
-      def package_data = jsonSlurper.parse(new File(test_package_file))
+      def title_instance = null;
 
-      // HeadsUP:: THIS IS A HACK
-      // When tenantid comes through the http request it is normalised (lowecased, suffix added), we do that manually here as we are
-      // directly exercising the service. It may be better to test this service via a web endpoint, however it's
-      // not clear at the moment what form that endpoint will take, so exercising the service directly for now
-      def result = packageIngestService.upsertPackage(tenantid.toLowerCase()+'_olf_erm', package_data);
+      // We are exercising the service directly, normally a transactional context will
+      // be supplied by the HTTPRequest, but we fake it here to talk directly to the service
+      Tenants.withId(tenantid.toLowerCase()+'_olf_erm') {
+        // N.B. This is a groovy MAP, not a JSON document.
+        title_instance = titleInstanceResolverService.resolve([
+          'title':'Brain of the firm',
+          'instanceMedium': 'print',
+          'instanceMedia': 'BKM',
+          'instanceIdentifiers': [ 
+            [
+              'namespace': 'isbn',
+              'value': '0713902191'
+            ],
+            [
+              'namespace': 'isbn',
+              'value': '9780713902198'
+            ] 
+          ],
+          'siblingInstanceIdentifiers': [ 
+            [
+              // 2e - print
+              'namespace': 'isbn',
+              'value': '047194839X'
+            ] ]
+
+        ]);
+      }
 
     then:
-      result != null
+      title_instance == null;
 
     where:
-      tenantid | test_package_file
-      'TestTenantE' | 'src/integration-test/resources/packages/apa_1062.json'
-      'TestTenantE' | 'src/integration-test/resources/packages/bentham_science_bentham_science_eduserv_complete_collection_2015_2017_1386.json'
-
+      tenantid | name
+      'TestTenantF' | 'TestTenantF'
   }
-
 
   void "Delete the tenants"(tenant_id, note) {
 
@@ -98,7 +116,7 @@ class ErmPackageSpec extends GebSpec {
 
     where:
       tenant_id | note
-      'TestTenantE' | 'note'
+      'TestTenantF' | 'note'
   }
 
    RestBuilder restBuilder() {
