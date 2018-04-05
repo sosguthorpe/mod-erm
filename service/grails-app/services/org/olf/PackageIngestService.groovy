@@ -13,6 +13,8 @@ import org.olf.kb.Package;
 @Transactional
 public class PackageIngestService {
 
+  def titleInstanceResolverService
+
   /**
    * Load the paackage data (Given in the agreed canonical json package format) into the KB.
    * This function must be passed VALID package data. At this point, all package contents are
@@ -55,6 +57,15 @@ public class PackageIngestService {
     }
 
     package_data.packageContents.each { pc ->
+      log.debug("Try to resolve ${pc}");
+      if ( pc.instanceIdentifiers?.size() > 0 ) {
+        def title = titleInstanceResolverService.resolve(pc);
+        println("Resolved title: ${pc.title} as ${title}");
+      }
+      else {
+        log.error("Skipping ${pc} - No identifiers.. This will change in an upcoming commit where we do normalised title matching");
+      }
+
       // {
       //   "title": "Nordic Psychology",
       //   "instanceMedium": "electronic",
@@ -79,7 +90,6 @@ public class PackageIngestService {
       //   "coverageDepth": "fulltext",
       //   "coverageNote": null
       //   }
-      log.debug("title: ${pc.title}");
     }
 
     return result;
