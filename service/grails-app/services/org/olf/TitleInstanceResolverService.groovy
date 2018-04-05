@@ -49,6 +49,24 @@ public class TitleInstanceResolverService {
 
     def candidate_list = classOneMatch(citation.instanceIdentifiers);
 
+    if ( candidate_list ) {
+      switch ( candidate_list.size() ) {
+        case(0):
+          log.debug("No title match -- create");
+          break;
+
+        case(1):
+          log.debug("Exact match.");
+          result = candidate_list.get(0);
+          break;
+
+        default:
+          log.error("title match returned more than 1 result.");
+          throw new RuntimeException("Title match returned too may items");
+          break;
+      }
+    }
+
     return result;
   }  
 
