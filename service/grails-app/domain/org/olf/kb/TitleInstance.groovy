@@ -22,5 +22,13 @@ public class TitleInstance implements MultiTenant<TitleInstance> {
           title(nullable:false, blank:false)
   }
 
+  static hasMany = [
+    identifiers: IdentifierOccurrence
+  ]
+
+  static mappedBy = [
+    identifiers: 'title'
+  ]
+
 
 }

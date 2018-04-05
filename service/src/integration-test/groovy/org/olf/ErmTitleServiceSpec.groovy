@@ -13,6 +13,8 @@ import com.k_int.okapi.OkapiHeaders
 import spock.lang.Shared
 import groovy.json.JsonSlurper
 import grails.gorm.multitenancy.Tenants
+import org.olf.general.RefdataValue
+import org.olf.general.RefdataCategory
 
 @Integration
 @Stepwise
@@ -62,10 +64,22 @@ class ErmTitleServiceSpec extends GebSpec {
       'TestTenantF' | 'TestTenantF'
   }
 
+  void testRefdataSetup() {
+    when:  
+      def testvalue1 = null;
+
+      Tenants.withId('testtenantf_olf_erm') {
+        testvalue1 = RefdataCategory.lookupOrCreate('testcat','testvalue');
+      }
+    then:
+      testvalue1 != null;
+  }
+
   void testTitleinstanceResolverService(tenantid, name) {
     when:  
 
       def title_instance = null;
+      def num_identifiers = 0;
 
       // We are exercising the service directly, normally a transactional context will
       // be supplied by the HTTPRequest, but we fake it here to talk directly to the service
@@ -93,10 +107,17 @@ class ErmTitleServiceSpec extends GebSpec {
             ] ]
 
         ]);
+        num_identifiers = title_instance.identifiers.size();
       }
 
     then:
-      title_instance == null;
+      title_instance.title == 'Brain of the firm'
+      title_instance.id != null
+      // It would be nice to do this. but DON'T. Our session is terminated in the withId block above, so doing
+      // this will cause the test to blow up as the session has gone away. Use the approach take, where we count
+      // inside the block and check the count below.
+      // title_instance.identifiers.size() == 2
+      num_identifiers == 2
 
     where:
       tenantid | name

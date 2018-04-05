@@ -8,6 +8,10 @@ import grails.gorm.transactions.Transactional
 import org.olf.kb.Package;
 import org.olf.kb.TitleInstance
 import org.olf.kb.Identifier
+import org.olf.kb.IdentifierNamespace
+import org.olf.kb.IdentifierOccurrence
+import org.olf.general.RefdataValue
+import org.olf.general.RefdataCategory
 
 /**
  * This service works at the module level, it's often called without a tenant context.
@@ -47,12 +51,13 @@ public class TitleInstanceResolverService {
     log.debug("TitleInstanceResolverService::resolve(${citation})");
     TitleInstance result = null;
 
-    def candidate_list = classOneMatch(citation.instanceIdentifiers);
+    List<TitleInstance> candidate_list = classOneMatch(citation.instanceIdentifiers);
 
-    if ( candidate_list ) {
+    if ( candidate_list != null ) {
       switch ( candidate_list.size() ) {
         case(0):
           log.debug("No title match -- create");
+          result = createNewTitleInstance(citation);
           break;
 
         case(1):
@@ -69,6 +74,69 @@ public class TitleInstanceResolverService {
 
     return result;
   }  
+
+  private TitleInstance createNewTitleInstance(Map citation) {
+
+    TitleInstance result = null;
+
+    // Validate
+    if ( ( citation.title?.length() > 0 ) &&
+         ( citation.instanceIdentifiers.size() > 0 ) ) {
+
+      result = new TitleInstance(
+         title: citation.title
+      )
+
+      result.save(flush:true, failOnError:true);
+
+      // Iterate over all idenifiers in the citation and add them to the title record. We manually create the identifier occurrence 
+      // records rather than using the groovy collection, but it makes little difference.
+      citation.instanceIdentifiers.each { id ->
+        def id_lookup = lookupOrCreateIdentifier(id.value, id.namespace);
+        RefdataValue approved_io_status = RefdataCategory.lookupOrCreate('IOStatus','APPROVED')
+        def io_record = new IdentifierOccurrence(
+                                                 title: result, 
+                                                 identifier: id_lookup,
+                                                 status:approved_io_status).save(flush:true, failOnError:true);
+      }
+    }
+    else { 
+      throw new RuntimeException("Insufficient detail to create title instance record");
+    }
+
+    // Refresh the newly minted title so we have access to all the related objects (eg Identifiers)
+    result.refresh();
+    result;
+  }
+
+  /**
+   * Given an identifier in a citation { value:'1234-5678', namespace:'isbn' } lookup or create an identifier in the DB to represent that info
+   */
+  private Identifier lookupOrCreateIdentifier(String value, String namespace) {
+    Identifier result = null;
+    def identifier_lookup = Identifier.executeQuery('select id from Identifier as id where id.value = :value and id.ns.value = :ns',[value:value, ns:namespace]);
+    switch(identifier_lookup.size() ) {
+      case 0:
+        IdentifierNamespace ns = lookupOrCreateIdentifierNamespace(namespace);
+        result = new Identifier(ns:ns, value:value).save(flush:true, failOnError:true);
+        break;
+      case 1:
+        result = identifier_lookup.get(0);
+        break;
+      default:
+        throw new RuntimeException("Matched multiple identifiers for ${id}");
+        break;
+    }
+    return result;
+  }
+
+  private IdentifierNamespace lookupOrCreateIdentifierNamespace(String ns) {
+    def ns_lookup = IdentifierNamespace.findByValue(ns);
+    if ( ns_lookup == null ) {
+      ns_lookup = new IdentifierNamespace(value:ns).save(flush:true, failOnError:true);
+    }
+    return ns_lookup;
+  }
 
 
   /**
