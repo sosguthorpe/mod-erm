@@ -21,6 +21,7 @@ class ErmPackageSpec extends GebSpec {
   private Map test_info = [:]
 
   def packageIngestService
+  def titleInstanceResolverService
 
   final Closure authHeaders = {
     header OkapiHeaders.TOKEN, 'dummy'

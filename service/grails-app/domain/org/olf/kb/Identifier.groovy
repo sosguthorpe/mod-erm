@@ -11,6 +11,14 @@ public class Identifier implements MultiTenant<Identifier> {
   String id
   String value
   IdentifierNamespace ns
+  
+  static hasMany = [
+    occurrences: IdentifierOccurrence
+  ]
+
+  static mappedBy = [
+    occurrences: 'identifier'
+  ]
 
   static mapping = {
                    id column:'id_id', generator: 'uuid', length:36
