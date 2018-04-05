@@ -60,6 +60,7 @@ public class PackageIngestService {
       log.debug("Try to resolve ${pc}");
       if ( pc.instanceIdentifiers?.size() > 0 ) {
         def title = titleInstanceResolverService.resolve(pc);
+
         println("Resolved title: ${pc.title} as ${title}");
       }
       else {
