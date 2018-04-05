@@ -15,6 +15,7 @@ import groovy.json.JsonSlurper
 import grails.gorm.multitenancy.Tenants
 import org.olf.general.RefdataValue
 import org.olf.general.RefdataCategory
+import org.olf.kb.TitleInstance
 
 @Integration
 @Stepwise
@@ -76,6 +77,7 @@ class ErmTitleServiceSpec extends GebSpec {
   }
 
   void testTitleinstanceResolverService(tenantid, name) {
+
     when:  
 
       def title_instance = null;
@@ -121,6 +123,58 @@ class ErmTitleServiceSpec extends GebSpec {
 
     where:
       tenantid | name
+      'TestTenantF' | 'TestTenantF'
+  }
+
+  void "Second time around don't create a new title"(tenantid, note) {
+
+    when:  
+      def title_instance = null;
+      def num_identifiers = 0;
+      def num_titles = 0;
+
+      // We are exercising the service directly, normally a transactional context will
+      // be supplied by the HTTPRequest, but we fake it here to talk directly to the service
+      Tenants.withId(tenantid.toLowerCase()+'_olf_erm') {
+        // N.B. This is a groovy MAP, not a JSON document.
+        title_instance = titleInstanceResolverService.resolve([
+          'title':'Brain of the firm',
+          'instanceMedium': 'print',
+          'instanceMedia': 'BKM',
+          'instanceIdentifiers': [ 
+            [
+              'namespace': 'isbn',
+              'value': '0713902191'
+            ],
+            [
+              'namespace': 'isbn',
+              'value': '9780713902198'
+            ] 
+          ],
+          'siblingInstanceIdentifiers': [ 
+            [
+              // 2e - print
+              'namespace': 'isbn',
+              'value': '047194839X'
+            ] ]
+
+        ]);
+        num_identifiers = title_instance.identifiers.size();
+        num_titles = TitleInstance.findAllByTitle('Brain of the firm').size();
+      }
+
+    then:
+      title_instance.title == 'Brain of the firm'
+      title_instance.id != null
+      // It would be nice to do this. but DON'T. Our session is terminated in the withId block above, so doing
+      // this will cause the test to blow up as the session has gone away. Use the approach take, where we count
+      // inside the block and check the count below.
+      // title_instance.identifiers.size() == 2
+      num_identifiers == 2
+      num_titles == 1
+
+    where:
+      tenantid | note
       'TestTenantF' | 'TestTenantF'
   }
 

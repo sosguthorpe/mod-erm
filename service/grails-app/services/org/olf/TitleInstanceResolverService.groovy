@@ -159,7 +159,12 @@ public class TitleInstanceResolverService {
           // For each occurrence where the STATUS is APPROVED
           matched_id.occurrences.each { io ->
             if ( io.status?.value == 'APPROVED' ) {
-              result << io.title
+              if ( result.contains(io.title) ) {
+                // We have already seen this title, so don't add it again
+              }
+              else {
+                result << io.title
+              }
             }
           }
         }
