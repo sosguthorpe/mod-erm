@@ -61,6 +61,18 @@ public class PackageIngestService {
       if ( pc.instanceIdentifiers?.size() > 0 ) {
         def title = titleInstanceResolverService.resolve(pc);
 
+        if ( pc.platformUrl ) {
+          log.debug("platform ${pc.platformUrl}");
+          // lets try and work out the platform for the item
+          try {
+            def parsed_platform_url = new java.net.URL(pc.platformUrl);
+            log.debug("Parsed as ${parsed_platform_url}");
+          }
+          catch ( Exception e ) {
+            log.error("problem",e);
+          }
+        }
+
         println("Resolved title: ${pc.title} as ${title}");
       }
       else {
