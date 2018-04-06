@@ -42,7 +42,7 @@ public class PackageIngestService {
    * package into the KB.
    * @return id of package upserted
    */
-  private String internalUpsertPackage(Map package_data) {
+  public String internalUpsertPackage(Map package_data) {
 
     def result = '';
 
