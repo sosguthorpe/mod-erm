@@ -15,5 +15,7 @@ class UrlMappings {
     // Map /sas to SubscriptionAgreementController
     '/sas'(resources: 'subscriptionAgreement')
 
+    "/admin/$action"(controller:'admin')
+
   }
 }
