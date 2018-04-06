@@ -6,6 +6,8 @@ import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.WithoutTenant
 import grails.gorm.transactions.Transactional
 import org.olf.kb.Package;
+import org.olf.kb.Platform;
+import org.olf.kb.TitleInstance;
 
 /**
  * This service works at the module level, it's often called without a tenant context.
@@ -59,14 +61,14 @@ public class PackageIngestService {
     package_data.packageContents.each { pc ->
       log.debug("Try to resolve ${pc}");
       if ( pc.instanceIdentifiers?.size() > 0 ) {
-        def title = titleInstanceResolverService.resolve(pc);
+        TitleInstance title = titleInstanceResolverService.resolve(pc);
 
         if ( pc.platformUrl ) {
           log.debug("platform ${pc.platformUrl}");
           // lets try and work out the platform for the item
           try {
-            def parsed_platform_url = new java.net.URL(pc.platformUrl);
-            log.debug("Parsed as ${parsed_platform_url}");
+            Platform platform = Platform.resolve(pc.platformUrl);
+            log.debug("Platform: ${platform}");
           }
           catch ( Exception e ) {
             log.error("problem",e);
