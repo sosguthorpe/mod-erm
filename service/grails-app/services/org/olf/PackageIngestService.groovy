@@ -6,12 +6,16 @@ import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.WithoutTenant
 import grails.gorm.transactions.Transactional
 import org.olf.kb.Package;
+import org.olf.kb.Platform;
+import org.olf.kb.TitleInstance;
 
 /**
  * This service works at the module level, it's often called without a tenant context.
  */
 @Transactional
 public class PackageIngestService {
+
+  def titleInstanceResolverService
 
   /**
    * Load the paackage data (Given in the agreed canonical json package format) into the KB.
@@ -38,7 +42,7 @@ public class PackageIngestService {
    * package into the KB.
    * @return id of package upserted
    */
-  private String internalUpsertPackage(Map package_data) {
+  public String internalUpsertPackage(Map package_data) {
 
     def result = '';
 
@@ -55,6 +59,28 @@ public class PackageIngestService {
     }
 
     package_data.packageContents.each { pc ->
+      log.debug("Try to resolve ${pc}");
+      if ( pc.instanceIdentifiers?.size() > 0 ) {
+        TitleInstance title = titleInstanceResolverService.resolve(pc);
+
+        if ( pc.platformUrl ) {
+          log.debug("platform ${pc.platformUrl}");
+          // lets try and work out the platform for the item
+          try {
+            Platform platform = Platform.resolve(pc.platformUrl);
+            log.debug("Platform: ${platform}");
+          }
+          catch ( Exception e ) {
+            log.error("problem",e);
+          }
+        }
+
+        println("Resolved title: ${pc.title} as ${title}");
+      }
+      else {
+        log.error("Skipping ${pc} - No identifiers.. This will change in an upcoming commit where we do normalised title matching");
+      }
+
       // {
       //   "title": "Nordic Psychology",
       //   "instanceMedium": "electronic",
@@ -79,7 +105,6 @@ public class PackageIngestService {
       //   "coverageDepth": "fulltext",
       //   "coverageNote": null
       //   }
-      log.debug("title: ${pc.title}");
     }
 
     return result;
