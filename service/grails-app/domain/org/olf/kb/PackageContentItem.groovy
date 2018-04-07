@@ -25,4 +25,6 @@ public class PackageContentItem implements MultiTenant<PackageContentItem> {
   }
 
 
+  public void extendCoverage(List statements) {
+  }
 }
