@@ -25,11 +25,11 @@ public class CoverageExtenderService {
    * @param property the reciprocal property on CoverageStatement we will be setting - one of pci pti ti depending upon what we are specifying
    */
   public void extend(title, coverage_statements, property) {
-    log.debug("Extend coverage statements on ${title} with ${coverage_statements}");
+    log.debug("Extend coverage statements on ${title}(${property}) with ${coverage_statements}");
 
     coverage_statements.each { cs ->
       // Do we already have any coverage statements for this item that overlap in any way with the coverage supplied?
-      def existing_coverage = CoverageStatement.executeQuery("select cs from CoverageStatement as cs where cs.${property} = :t",[t:title]);
+      def existing_coverage = CoverageStatement.executeQuery("select cs from CoverageStatement as cs where cs.${property} = :t".toString(),[t:title]);
 
       if ( existing_coverage.size() == 0 ) {
         // no existing coverage -- create it

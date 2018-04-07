@@ -18,24 +18,7 @@ import org.olf.kb.PackageContentItem;
 public class PackageIngestService {
 
   def titleInstanceResolverService
-
-  /**
-   * Load the paackage data (Given in the agreed canonical json package format) into the KB.
-   * This function must be passed VALID package data. At this point, all package contents are
-   * assumed to be valid. Any invalid rows should be filtered out at this point.
-   * @return id of package upserted
-   */
-  public Map upsertPackage(String tenantId, Map package_data) {
-    
-    def result = null;
-    log.debug("PackageIngestService::upsertPackage(${tenantId},...)");
-
-    Tenants.withId(tenantId) {
-      result = internalUpsertPackage(package_data);
-    }
-
-    return result;
-  }
+  def coverageExtenderService
 
   /**
    * Load the paackage data (Given in the agreed canonical json package format) into the KB.
@@ -46,7 +29,7 @@ public class PackageIngestService {
    * package into the KB.
    * @return id of package upserted
    */
-  public Map internalUpsertPackage(Map package_data) {
+  public Map upsertPackage(Map package_data) {
 
     def result = [:];
 
@@ -81,7 +64,7 @@ public class PackageIngestService {
               pti = new PlatformTitleInstance(titleInstance:title, platform:platform).save(flush:true, failOnError:true);
 
             // Lookup or create a package content item record for this title on this platform in this package
-            PackageContentItem pci = PackageContentItem.findByPtiAndPackage(pti, pkg)
+            PackageContentItem pci = PackageContentItem.findByPtiAndPkg(pti, pkg)
             if ( pci == null ) {
               pci = new PackageContentItem(pti:pti, pkg:pkg).save(flush:true, failOnError:true);
             }

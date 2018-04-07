@@ -39,6 +39,13 @@ class ErmAgreementSpec extends GebSpec {
 
       logger.debug("Post new tenant request for ${tenantid} to ${baseUrl}_/tenant");
 
+      // Lets call delete on this tenant before we call create - this will clean up any prior test runs.
+      // We don't care if this fails
+      def delete_resp = restBuilder().delete("$baseUrl/_/tenant") {
+        header 'X-Okapi-Tenant', tenantid
+        authHeaders.rehydrate(delegate, owner, thisObject)()
+      }
+
       def resp = restBuilder().post("${baseUrl}_/tenant") {
         header 'X-Okapi-Tenant', tenantid
         authHeaders.rehydrate(delegate, owner, thisObject)()

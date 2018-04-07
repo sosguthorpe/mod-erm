@@ -39,7 +39,7 @@ public class CoverageStatement implements MultiTenant<CoverageStatement> {
   }
 
   static constraints = {
-    pct(nullable:true, blank:false);
+    pci(nullable:true, blank:false);
     pti(nullable:true, blank:false);
     ti(nullable:true, blank:false);
     startDate(nullable:true, blank:false);

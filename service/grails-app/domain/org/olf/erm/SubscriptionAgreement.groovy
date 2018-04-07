@@ -1,6 +1,7 @@
 package org.olf.erm
 
 import grails.gorm.MultiTenant
+import org.olf.general.RefdataValue
 
 /**
  * Subscription agreement - object holding details about an SA connecting a resource list (Composed Of packages and platform-titles).
@@ -16,6 +17,9 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   Date renewalDate
   Date nextReviewDate
 
+  // Subscription agreement type - DRAFT, TRIAL, CURRENT
+  RefdataValue agreementType
+
   static mapping = {
                    id column:'sa_id', generator: 'uuid', length:36
               version column:'sa_version'
@@ -27,6 +31,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
               endDate column:'sa_end_date'
           renewalDate column:'sa_renewal_date'
        nextReviewDate column:'sa_next_review_date'
+        agreementType column:'sa_agreement_type'
   }
 
   static constraints = {
@@ -37,6 +42,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
             endDate(nullable:true, blank:false)
         renewalDate(nullable:true, blank:false)
      nextReviewDate(nullable:true, blank:false)
+      agreementType(nullable:true, blank:false)
   }
 
 
