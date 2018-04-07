@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.k_int.okapi.OkapiHeaders
 import spock.lang.Shared
+import grails.gorm.multitenancy.Tenants
+import org.olf.general.RefdataCategory
 
 @Integration
 @Stepwise
@@ -80,11 +82,24 @@ class ErmAgreementSpec extends GebSpec {
         resp.json.size() == 0
   }
 
-  void "Set up new agreements"(tenant, agreement_name) {
+  void "Set up new agreements"(tenant, agreement_name, type) {
 
-      expect:
+      when:
+
+        // This is a bit of a shortcut - the web interface will populate a control for this, but here we just want the value.
+        // So we access the DB with the tenant Id and get back the ID of the status we need.
+        def agreement_type_id = null;
+        Tenants.withId(tenant.toLowerCase()+'_olf_erm') {
+          agreement_type_id = RefdataCategory.lookupOrCreate('AgreementType',type).id;
+        }
+
         
-        Map agreement_to_add =  [ 'name' : agreement_name ];
+        Map agreement_to_add =  [ 
+                                  'name' : agreement_name,
+                                  'agreementType':[
+                                    'id': agreement_type_id
+                                  ]
+                                ];
 
         def resp = restBuilder().post("$baseUrl/sas") {
           header 'X-Okapi-Tenant', tenant
@@ -94,15 +109,16 @@ class ErmAgreementSpec extends GebSpec {
           json agreement_to_add
         }
 
+      then:
        resp.status == CREATED.value()
 
 
       // Use a GEB Data Table to load each record
       where:
-        tenant | agreement_name
-        'TestTenantD' | 'My first agreement'
-        'TestTenantD' | 'My second agreement'
-        'TestTenantD' | 'My third agreement'
+        tenant | agreement_name | type
+        'TestTenantD' | 'My first agreement' | 'DRAFT'
+        'TestTenantD' | 'My second agreement' | 'TRIAL'
+        'TestTenantD' | 'My third agreement' | 'CURRENT'
 
   }
 
