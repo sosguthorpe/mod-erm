@@ -16,18 +16,38 @@ public class CoverageStatement implements MultiTenant<CoverageStatement> {
   PlatformTitleInstance pti
   TitleInstance ti
 
+  // MUST Be in format yyyy-mm-dd
+  String startDate
+  String endDate
+  String startVolume
+  String startIssue
+  String endVolume
+  String endIssue
+
   static mapping = {
                    id column:'cs_id', generator: 'uuid', length:36
               version column:'cs_version'
                   pci column:'cs_pci_fk'
                   pti column:'cs_pti_fk'
                    ti column:'cs_ti_fk'
+            startDate column:'cs_start_date'
+              endDate column:'cs_end_date'
+          startVolume column:'cs_start_volume'
+           startIssue column:'cs_start_issue'
+            endVolume column:'cs_end_volume'
+             endIssue column:'cs_end_issue'
   }
 
   static constraints = {
     pct(nullable:true, blank:false);
     pti(nullable:true, blank:false);
     ti(nullable:true, blank:false);
+    startDate(nullable:true, blank:false);
+    endDate(nullable:true, blank:false);
+    startVolume(nullable:true, blank:false);
+    startIssue(nullable:true, blank:false);
+    endVolume(nullable:true, blank:false);
+    endIssue(nullable:true, blank:false);
   }
 
 

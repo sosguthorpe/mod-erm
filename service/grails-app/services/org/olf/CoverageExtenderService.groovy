@@ -5,6 +5,7 @@ import org.olf.kb.RemoteKB
 import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.WithoutTenant
 import grails.gorm.transactions.Transactional
+import org.olf.kb.CoverageStatement
 
 /**
  * This service works at the module level, it's often called without a tenant context.
@@ -25,5 +26,29 @@ public class CoverageExtenderService {
    */
   public void extend(title, coverage_statements, property) {
     log.debug("Extend coverage statements on ${title} with ${coverage_statements}");
+
+    coverage_statements.each { cs ->
+      // Do we already have any coverage statements for this item that overlap in any way with the coverage supplied?
+      def existing_coverage = CoverageStatement.executeQuery("select cs from CoverageStatement as cs where cs.${property} = :t",[t:title]);
+
+      if ( existing_coverage.size() == 0 ) {
+        // no existing coverage -- create it
+        log.debug("No existing coverage - create new record");
+        def new_cs = new CoverageStatement();
+        // This is clever groovy script to assign a property based on that prop name being in a variable,
+        // property will be one of ti, pci or pti and this will set the appropriate one.
+        new_cs."${property}" = title
+        new_cs.startDate = cs.startDate
+        new_cs.endDate = cs.endDate
+        new_cs.startVolume = cs.startVolume
+        new_cs.startIssue = cs.startIssue
+        new_cs.endVolume = cs.endVolume
+        new_cs.endIssue = cs.endIssue
+        new_cs.save(flush:true, failOnError:true);
+      }
+      else {
+        log.warn("Located existing coverage, determin extend or create additional");
+      }
+    }
   }
 }
