@@ -25,7 +25,7 @@ public class PackageIngestService {
    * assumed to be valid. Any invalid rows should be filtered out at this point.
    * @return id of package upserted
    */
-  public String upsertPackage(String tenantId, Map package_data) {
+  public Map upsertPackage(String tenantId, Map package_data) {
     
     def result = null;
     log.debug("PackageIngestService::upsertPackage(${tenantId},...)");
@@ -33,6 +33,8 @@ public class PackageIngestService {
     Tenants.withId(tenantId) {
       result = internalUpsertPackage(package_data);
     }
+
+    return result;
   }
 
   /**
@@ -44,9 +46,9 @@ public class PackageIngestService {
    * package into the KB.
    * @return id of package upserted
    */
-  public String internalUpsertPackage(Map package_data) {
+  public Map internalUpsertPackage(Map package_data) {
 
-    def result = '';
+    def result = [:];
 
     log.debug("Package header: ${package_data.header}");
 
@@ -60,6 +62,7 @@ public class PackageIngestService {
                         reference: package_data.header.packageSlug).save(flush:true, failOnError:true);
     }
 
+    int rownum = 0;
     package_data.packageContents.each { pc ->
       log.debug("Try to resolve ${pc}");
       if ( pc.instanceIdentifiers?.size() > 0 ) {
@@ -87,23 +90,28 @@ public class PackageIngestService {
             // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
             // We store this generally for the title on the platform, and specifically for this title in this package on this platform.
             if ( pc.coverage ) {
-              coverageExtenderService.extend(pti, pc.coverage, 'pti');
-              coverageExtenderService.extend(pci, pc.coverage, 'pci');
-              coverageExtenderService.extend(title, pc.coverage, 'ti');
+
+              // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
+              // to the list of mpas that coverageExtenderService.extend expects
+              List cov = pc.coverage instanceof List ? pc.coverage : [ pc.coverage ]
+
+              coverageExtenderService.extend(pti, cov, 'pti');
+              coverageExtenderService.extend(pci, cov, 'pci');
+              coverageExtenderService.extend(title, cov, 'ti');
             }
-
-
-
           }
           catch ( Exception e ) {
             log.error("problem",e);
           }
         }
+        else {
+          log.error("row ${rownum} No platform URL");
+        }
 
-        println("Resolved title: ${pc.title} as ${title}");
+        println("rownum ${rownum} Resolved title: ${pc.title} as ${title}");
       }
       else {
-        log.error("Skipping ${pc} - No identifiers.. This will change in an upcoming commit where we do normalised title matching");
+        log.error("row ${rownum} Skipping ${pc} - No identifiers.. This will change in an upcoming commit where we do normalised title matching");
       }
 
       // {
