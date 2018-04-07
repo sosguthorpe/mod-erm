@@ -13,7 +13,9 @@ class UrlMappings {
     '/kbs'(resources: 'remoteKB')
 
     // Map /sas to SubscriptionAgreementController
-    '/sas'(resources: 'subscriptionAgreement')
+    '/sas'(resources: 'subscriptionAgreement') {
+       "/addToAgreement"(action:'addToAgreement');
+    }
 
     "/admin/$action"(controller:'admin')
 

@@ -13,6 +13,7 @@ import com.k_int.okapi.OkapiHeaders
 import spock.lang.Shared
 import grails.gorm.multitenancy.Tenants
 import org.olf.general.RefdataCategory
+import org.olf.erm.SubscriptionAgreement
 import groovy.json.JsonSlurper
 
 
@@ -90,6 +91,9 @@ class AgreementLifecycleSpec extends GebSpec {
   void "Load Packages"(tenantid, test_package_file) {
 
     when:
+      // Switching context, just want to make sure that the schema had time to finish initialising.
+      Thread.sleep(1000);
+
       def jsonSlurper = new JsonSlurper()
       def package_data = jsonSlurper.parse(new File(test_package_file))
       def result = null;
@@ -114,8 +118,6 @@ class AgreementLifecycleSpec extends GebSpec {
 
   void "List Current Agreements"() {
 
-      logger.debug("List known external KBs");
-
       when:"We ask the system to list known KBs"
         def resp = restBuilder().get("$baseUrl/sas") {
           header 'X-Okapi-Tenant', TENANT
@@ -129,7 +131,7 @@ class AgreementLifecycleSpec extends GebSpec {
 
   void "Set up new agreements"(tenant, agreement_name, type) {
 
-      when:
+      when:"We add a new agreement"
 
         // This is a bit of a shortcut - the web interface will populate a control for this, but here we just want the value.
         // So we access the DB with the tenant Id and get back the ID of the status we need.
@@ -154,7 +156,7 @@ class AgreementLifecycleSpec extends GebSpec {
           json agreement_to_add
         }
 
-      then:
+      then:"The agreement is created OK"
        resp.status == CREATED.value()
 
 
@@ -163,6 +165,38 @@ class AgreementLifecycleSpec extends GebSpec {
         tenant | agreement_name | type
         TENANT | 'My first agreement' | 'DRAFT'
 
+  }
+
+  void "add a package to the agreement"(tenant,agreement_name) {
+    when:"We add a package to our new agreement"
+      // Find the ID of our new agreement.
+      def agreement_id = null;
+      Tenants.withId(tenant.toLowerCase()+'_olf_erm') {
+        agreement_id = SubscriptionAgreement.executeQuery('select sa.id from SubscriptionAgreement as sa where sa.name = :name',[name:agreement_name]).get(0)
+      }
+      logger.debug("Agreement ID is ${agreement_id}");
+      agreement_id != null;
+
+    then: "The package is Added to the agreement"
+
+      Map content_to_add = [:]
+
+      String target_url = "$baseUrl/sas/${agreement_id}/addToAgreement".toString();
+      logger.debug("The target URL will be ${target_url}");
+
+      def resp = restBuilder().post(target_url) {
+          header 'X-Okapi-Tenant', tenant
+          authHeaders.rehydrate(delegate, owner, thisObject)()
+          contentType 'application/json'
+          accept 'application/json'
+          json content_to_add
+      }
+
+      resp.status == OK.value()
+
+    where:
+      tenant | agreement_name
+      TENANT | 'My first agreement'
   }
 
   void "Delete the tenants"(tenant_id, note) {

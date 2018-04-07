@@ -3,6 +3,7 @@ package org.olf
 import grails.gorm.multitenancy.CurrentTenant
 import com.k_int.okapi.OkapiTenantAwareController
 import org.olf.erm.SubscriptionAgreement
+import grails.converters.JSON
 
 
 /**
@@ -15,6 +16,12 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
 
   SubscriptionAgreementController() {
     super(SubscriptionAgreement)
+  }
+
+  def addToAgreement() {
+    log.debug("SubscriptionAgreementController::addToAgreement(${params})");
+    def result = [:]
+    render result as JSON
   }
 }
 
