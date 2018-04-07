@@ -24,5 +24,4 @@ public class PackageContentItem implements MultiTenant<PackageContentItem> {
     pti(nullable:false, blank:false)
   }
 
-
 }

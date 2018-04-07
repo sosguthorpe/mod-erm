@@ -24,5 +24,4 @@ public class PlatformTitleInstance implements MultiTenant<PlatformTitleInstance>
                platform(nullable:false, blank:false)
   }
 
-
 }

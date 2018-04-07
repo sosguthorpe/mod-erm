@@ -24,7 +24,7 @@ class AdminController {
     if ( file ) {
       def jsonSlurper = new JsonSlurper()
       def package_data = jsonSlurper.parse(file.inputStream)
-      result = packageIngestService.internalUpsertPackage(package_data);
+      result = packageIngestService.upsertPackage(package_data);
     }
     else {
       log.warn("No file");

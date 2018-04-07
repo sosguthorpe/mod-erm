@@ -8,6 +8,8 @@ import grails.gorm.transactions.Transactional
 import org.olf.kb.Package;
 import org.olf.kb.Platform;
 import org.olf.kb.TitleInstance;
+import org.olf.kb.PlatformTitleInstance;
+import org.olf.kb.PackageContentItem;
 
 /**
  * This service works at the module level, it's often called without a tenant context.
@@ -16,22 +18,7 @@ import org.olf.kb.TitleInstance;
 public class PackageIngestService {
 
   def titleInstanceResolverService
-
-  /**
-   * Load the paackage data (Given in the agreed canonical json package format) into the KB.
-   * This function must be passed VALID package data. At this point, all package contents are
-   * assumed to be valid. Any invalid rows should be filtered out at this point.
-   * @return id of package upserted
-   */
-  public String upsertPackage(String tenantId, Map package_data) {
-    
-    def result = null;
-    log.debug("PackageIngestService::upsertPackage(${tenantId},...)");
-
-    Tenants.withId(tenantId) {
-      result = internalUpsertPackage(package_data);
-    }
-  }
+  def coverageExtenderService
 
   /**
    * Load the paackage data (Given in the agreed canonical json package format) into the KB.
@@ -42,9 +29,9 @@ public class PackageIngestService {
    * package into the KB.
    * @return id of package upserted
    */
-  public String internalUpsertPackage(Map package_data) {
+  public Map upsertPackage(Map package_data) {
 
-    def result = '';
+    def result = [:];
 
     log.debug("Package header: ${package_data.header}");
 
@@ -58,6 +45,7 @@ public class PackageIngestService {
                         reference: package_data.header.packageSlug).save(flush:true, failOnError:true);
     }
 
+    int rownum = 0;
     package_data.packageContents.each { pc ->
       log.debug("Try to resolve ${pc}");
       if ( pc.instanceIdentifiers?.size() > 0 ) {
@@ -69,16 +57,44 @@ public class PackageIngestService {
           try {
             Platform platform = Platform.resolve(pc.platformUrl);
             log.debug("Platform: ${platform}");
+
+            // See if we already have a title platform record for the presence of this title on this platform
+            PlatformTitleInstance pti = PlatformTitleInstance.findByTitleInstanceAndPlatform(title, platform)
+            if ( pti == null ) 
+              pti = new PlatformTitleInstance(titleInstance:title, platform:platform).save(flush:true, failOnError:true);
+
+            // Lookup or create a package content item record for this title on this platform in this package
+            PackageContentItem pci = PackageContentItem.findByPtiAndPkg(pti, pkg)
+            if ( pci == null ) {
+              pci = new PackageContentItem(pti:pti, pkg:pkg).save(flush:true, failOnError:true);
+            }
+
+            // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
+            // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
+            // We store this generally for the title on the platform, and specifically for this title in this package on this platform.
+            if ( pc.coverage ) {
+
+              // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
+              // to the list of mpas that coverageExtenderService.extend expects
+              List cov = pc.coverage instanceof List ? pc.coverage : [ pc.coverage ]
+
+              coverageExtenderService.extend(pti, cov, 'pti');
+              coverageExtenderService.extend(pci, cov, 'pci');
+              coverageExtenderService.extend(title, cov, 'ti');
+            }
           }
           catch ( Exception e ) {
             log.error("problem",e);
           }
         }
+        else {
+          log.error("row ${rownum} No platform URL");
+        }
 
-        println("Resolved title: ${pc.title} as ${title}");
+        println("rownum ${rownum} Resolved title: ${pc.title} as ${title}");
       }
       else {
-        log.error("Skipping ${pc} - No identifiers.. This will change in an upcoming commit where we do normalised title matching");
+        log.error("row ${rownum} Skipping ${pc} - No identifiers.. This will change in an upcoming commit where we do normalised title matching");
       }
 
       // {
