@@ -87,8 +87,9 @@ public class PackageIngestService {
             // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
             // We store this generally for the title on the platform, and specifically for this title in this package on this platform.
             if ( pc.coverage ) {
-              pt.extendCoverage(pc.coverage);
-              pci.extendCoverage(pc.coverage);
+              coverageExtenderService.extend(pti, pc.coverage, 'pti');
+              coverageExtenderService.extend(pci, pc.coverage, 'pci');
+              coverageExtenderService.extend(title, pc.coverage, 'ti');
             }
 
 
