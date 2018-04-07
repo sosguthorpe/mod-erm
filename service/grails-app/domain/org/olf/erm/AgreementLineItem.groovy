@@ -18,6 +18,10 @@ public class AgreementLineItem implements MultiTenant<AgreementLineItem> {
   PackageContentItem pci
   PlatformTitleInstance pti
 
+  static belongsTo = [
+    owner:SubscriptionAgreement
+  ]
+
   // Allow users to individually switch on or off this content item. If null, should default to the agreement
   // enabled setting
   Boolean enabled 
@@ -26,6 +30,7 @@ public class AgreementLineItem implements MultiTenant<AgreementLineItem> {
   static mapping = {
                    id column: 'ali_id', generator: 'uuid', length:36
               version column: 'ali_version'
+                owner column: 'ali_owner_fk'
                   pkg column: 'ali_pkg_fk'
                   pci column: 'ali_pci_fk'
                   pti column: 'ali_pti_fk'
@@ -34,6 +39,7 @@ public class AgreementLineItem implements MultiTenant<AgreementLineItem> {
 
 
   static constraints = {
+      owner(nullable:false, blank:false)
         pkg(nullable:true, blank:false)
         pci(nullable:true, blank:false)
         pti(nullable:true, blank:false)

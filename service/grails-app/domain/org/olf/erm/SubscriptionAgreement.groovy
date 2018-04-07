@@ -22,6 +22,14 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
 
   Boolean enabled
 
+  static hasMany = [
+    items:AgreementLineItem
+  ]
+
+  static mappedBy = [
+    items:'owner'
+  ]
+
   static mapping = {
                    id column:'sa_id', generator: 'uuid', length:36
               version column:'sa_version'
