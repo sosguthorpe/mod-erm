@@ -45,5 +45,40 @@ where exists ( select pci.id
     result.subscribedTitles = TitleInstance.executeQuery('select ti '+BASE_QUERY,[:],[max:10]);
     render result as JSON
   }
+
+
+  def codexSearch() {
+    log.debug("SubscribedContentController::codexSearch(${params})");
+    // See https://github.com/folio-org/raml/blob/7596a06a9b4ee5c2d296e7d528146d6d30c3151f/examples/codex/instanceCollection.sample
+
+    def result=[
+      instances:[]
+    ]
+
+    TitleInstance.executeQuery('select ti '+BASE_QUERY,[:],[max:10]).each { title ->
+      result.instances.add(
+        [ 
+          id: title.id,
+          title: title.title
+        ]
+      );
+    }
+
+    render result as JSON
+  }
+
+  def codexItem() {
+    log.debug("SubscribedContentController::codexItem(${params})");
+    // see https://github.com/folio-org/raml/blob/7596a06a9b4ee5c2d296e7d528146d6d30c3151f/examples/codex/instance.sample
+
+    TitleInstance ti = TitleInstance.get(params.id)
+
+    def result=[
+      id: ti.id,
+      title: ti.title
+    ]
+
+    render result as JSON
+  }
 }
 

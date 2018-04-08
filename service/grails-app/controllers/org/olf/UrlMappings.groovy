@@ -22,5 +22,7 @@ class UrlMappings {
     "/content"(controller:'subscribedContent', action:'index')
     "/content/$action"(controller:'subscribedContent')
 
+    "/codex-instances" ( controller:'subscribedContent', action:'codexSearch')
+    "/codex-instances/$id" ( controller:'subscribedContent', action:'codexItem')
   }
 }
