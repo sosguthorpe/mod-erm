@@ -265,7 +265,7 @@ and pti.platform.name = :platform
       then: "The system responds with a list of content";
         resp.status == OK.value()
         // content responds with a JSON object containing a count and a list called subscribedTitles
-        resp.json.count == 138
+        resp.json.count == 140
   }
 
   void "Delete the tenants"(tenant_id, note) {
