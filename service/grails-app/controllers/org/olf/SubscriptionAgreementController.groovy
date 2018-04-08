@@ -28,33 +28,40 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
 
     SubscriptionAgreement sa = SubscriptionAgreement.get(params.subscriptionAgreementId);
 
-    int lineno=0;
-
-    // We should be passed a json document containing a content list which consists of maps of type: and id: entries
-    request.JSON.content.each { content_item ->
-      switch ( content_item.type ) {
-        case 'package':
-          Package pkg = Package.get(content_item.id);
-          log.debug("Adding package ${pkg} to agreement ${sa}");
-          AgreementLineItem ali = new AgreementLineItem(pkg:pkg, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
-          result.status.add([message:"Line ${lineno} - added ${pkg} - line item id is ${ali.id}"])
-          break;
-        case 'packageItem':
-          PackageContentItem pci = PackageContentItem.get(content_item.id);
-          log.debug("Adding title from package ${pci} to agreement ${sa}");
-          AgreementLineItem ali = new AgreementLineItem(pci:pci, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
-          result.status.add([message:"Line ${lineno} - added ${pci} - line item id is ${ali.id}"])
-          break;
-        case 'platformTitle':
-          PlatformTitleInstance pti = PlatformTitleInstance.get(content_item.id);
-          log.debug("Adding title ${pti} to agreement ${sa}");
-          AgreementLineItem ali = new AgreementLineItem(pti:pti, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
-          result.status.add([message:"Line ${lineno} - added ${pti} - line item id is ${ali.id}"])
-          break;
-        default:
-          log.warn("unhandled content type. ${content_item}");
+    if ( sa != null ) {
+      int lineno=0;
+      // We should be passed a json document containing a content list which consists of maps of type: and id: entries
+      request.JSON.content.each { content_item ->
+        switch ( content_item.type ) {
+          case 'package':
+            Package pkg = Package.get(content_item.id);
+            if ( pkg != null ) {
+              log.debug("Adding package ${pkg} to agreement ${sa}");
+              AgreementLineItem ali = new AgreementLineItem(pkg:pkg, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
+              result.status.add([message:"Line ${lineno} - added ${pkg} - line item id is ${ali.id}"])
+            }
+            break;
+          case 'packageItem':
+            PackageContentItem pci = PackageContentItem.get(content_item.id);
+            if ( pci != null ) {
+              log.debug("Adding title from package ${pci} to agreement ${sa}");
+              AgreementLineItem ali = new AgreementLineItem(pci:pci, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
+              result.status.add([message:"Line ${lineno} - added ${pci} - line item id is ${ali.id}"])
+            }
+            break;
+          case 'platformTitle':
+            PlatformTitleInstance pti = PlatformTitleInstance.get(content_item.id);
+            if ( pti != null ) {
+              log.debug("Adding title ${pti} to agreement ${sa}");
+              AgreementLineItem ali = new AgreementLineItem(pti:pti, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
+              result.status.add([message:"Line ${lineno} - added ${pti} - line item id is ${ali.id}"])
+            }
+            break;
+          default:
+            log.warn("unhandled content type. ${content_item}");
+        }
+        lineno++
       }
-      lineno++
     }
 
     render result as JSON

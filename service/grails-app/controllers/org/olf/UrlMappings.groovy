@@ -17,6 +17,8 @@ class UrlMappings {
        "/addToAgreement"(action:'addToAgreement');
     }
 
+    '/packages'(resources: 'package')
+
     "/admin/$action"(controller:'admin')
 
     "/content"(controller:'subscribedContent', action:'index')
