@@ -8,6 +8,7 @@ import grails.gorm.MultiTenant
  */
 public class TitleInstance implements MultiTenant<TitleInstance> {
 
+
   String id
   // Title IN ORIGINAL LANGUAGE OF PUBLICATION
   String title

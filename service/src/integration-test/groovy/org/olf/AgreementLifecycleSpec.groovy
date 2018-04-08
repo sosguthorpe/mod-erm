@@ -14,6 +14,9 @@ import spock.lang.Shared
 import grails.gorm.multitenancy.Tenants
 import org.olf.general.RefdataCategory
 import org.olf.erm.SubscriptionAgreement
+import org.olf.kb.Package
+import org.olf.kb.PackageContentItem
+import org.olf.kb.PlatformTitleInstance
 import groovy.json.JsonSlurper
 
 
@@ -39,7 +42,22 @@ class AgreementLifecycleSpec extends GebSpec {
   @Shared
   private Map test_info = [:]
 
-  private static String TENANT='TestTenantH'
+  private static final String TENANT='TestTenantH'
+  private static final String PACKAGE_QUERY = 'select p.id from Package as p where p.name = :name'
+
+  // This is a bit of a shortcut - In this test we have loaded packages where titles only appear in one place. That
+  // means we can be very general when looking up items. If we add more test data, then we would need to add more
+  // where clauses to actually idetify specific packages and platforms.
+  private static final String PACKAGE_CONTENT_ITEM_QUERY = '''select pci.id
+from PackageContentItem as pci
+where pci.pti.titleInstance.title = :title
+'''
+
+  private static final String OFF_PACKAGE_TITLE_QUERY = '''select pti.id
+from PlatformTitleInstance as pti
+where pti.titleInstance.title = :title
+and pti.platform.name = :platform
+'''
 
   final Closure authHeaders = {
     header OkapiHeaders.TOKEN, 'dummy'
@@ -171,15 +189,37 @@ class AgreementLifecycleSpec extends GebSpec {
     when:"We add a package to our new agreement"
       // Find the ID of our new agreement.
       def agreement_id = null;
+      def pkg_id = null;
+      def single_package_item_id = null;
+      def off_package_title_id = null;
+
+      // This is cheating a little - normally the UI would run queries to populate controls that let the user select this info,
+      // here we're just grabbing the relevant IDs from the database.
       Tenants.withId(tenant.toLowerCase()+'_olf_erm') {
+
         agreement_id = SubscriptionAgreement.executeQuery('select sa.id from SubscriptionAgreement as sa where sa.name = :name',[name:agreement_name]).get(0)
+
+        pkg_id = Package.executeQuery(PACKAGE_QUERY,[name:'American Psychological Association:Master']).get(0)
+
+        single_package_item_id = PackageContentItem.executeQuery(PACKAGE_CONTENT_ITEM_QUERY,[title:'Anti Inflammatory & Anti allergy Agents in Medicinal Chemistry']).get(0);
+
+        off_package_title_id = PlatformTitleInstance.executeQuery(OFF_PACKAGE_TITLE_QUERY,
+                                                                       [title:'Current Medicinal Chemistry - Cardiovascular & Hematological Agents',
+                                                                        platform:'benthamscience.com']).get(0);
       }
-      logger.debug("Agreement ID is ${agreement_id}");
+
+      logger.debug("Agreement ID is ${agreement_id} package to add is ${pkg_id}");
       agreement_id != null;
 
     then: "The package is Added to the agreement"
 
-      Map content_to_add = [:]
+      Map content_to_add = [
+                            content:[
+                              [ 'type':'package', 'id': pkg_id],
+                              [ 'type':'packageItem', 'id': single_package_item_id],
+                              [ 'type':'platformTitle', 'id': off_package_title_id]
+                            ]
+                           ]
 
       String target_url = "$baseUrl/sas/${agreement_id}/addToAgreement".toString();
       logger.debug("The target URL will be ${target_url}");
