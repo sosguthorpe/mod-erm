@@ -147,6 +147,21 @@ and pti.platform.name = :platform
         resp.json.size() == 0
   }
 
+  void "Check that we don't currently have any subscribed content"() {
+
+      when:"We ask the subscribed content controller to list the titles we can access"
+        def resp = restBuilder().get("$baseUrl/content") {
+          header 'X-Okapi-Tenant', TENANT
+          authHeaders.rehydrate(delegate, owner, thisObject)()
+        }
+
+      then: "The system responds with a list of content";
+        resp.status == OK.value()
+        // content responds with a JSON object containing a count and a list called subscribedTitles
+        resp.json.count == 0
+        resp.json.subscribedTitles.size() == 0
+  }
+
   void "Set up new agreements"(tenant, agreement_name, type) {
 
       when:"We add a new agreement"
@@ -237,6 +252,20 @@ and pti.platform.name = :platform
     where:
       tenant | agreement_name
       TENANT | 'My first agreement'
+  }
+
+  void "Check that we see the new titles as subscribed content"() {
+
+      when:"We ask the subscribed content controller to list the titles we can access"
+        def resp = restBuilder().get("$baseUrl/content") {
+          header 'X-Okapi-Tenant', TENANT
+          authHeaders.rehydrate(delegate, owner, thisObject)()
+        }
+
+      then: "The system responds with a list of content";
+        resp.status == OK.value()
+        // content responds with a JSON object containing a count and a list called subscribedTitles
+        resp.json.count == 138
   }
 
   void "Delete the tenants"(tenant_id, note) {

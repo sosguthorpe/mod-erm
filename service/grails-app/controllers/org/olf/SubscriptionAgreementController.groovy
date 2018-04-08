@@ -46,8 +46,8 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           result.status.add([message:"Line ${lineno} - added ${pci} - line item id is ${ali.id}"])
           break;
         case 'platformTitle':
-          log.debug("Adding title ${pti} to agreement ${sa}");
           PlatformTitleInstance pti = PlatformTitleInstance.get(content_item.id);
+          log.debug("Adding title ${pti} to agreement ${sa}");
           AgreementLineItem ali = new AgreementLineItem(pti:pti, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
           result.status.add([message:"Line ${lineno} - added ${pti} - line item id is ${ali.id}"])
           break;

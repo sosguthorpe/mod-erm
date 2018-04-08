@@ -19,5 +19,8 @@ class UrlMappings {
 
     "/admin/$action"(controller:'admin')
 
+    "/content"(controller:'subscribedContent', action:'index')
+    "/content/$action"(controller:'subscribedContent')
+
   }
 }
