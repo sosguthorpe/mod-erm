@@ -63,21 +63,25 @@ dependencies {
   testRuntime "org.seleniumhq.selenium:selenium-chrome-driver:2.47.1"
   testRuntime "org.seleniumhq.selenium:selenium-htmlunit-driver:2.47.1"
   testRuntime "net.sourceforge.htmlunit:htmlunit:2.18"
-  
-  // Custom non profile deps. 
-  
+
+  // Custom non profile deps.
+
   compile "org.postgresql:postgresql:42.2.2"
-  
+
   runtime "org.grails.plugins:async"
   runtime "org.grails.plugins:events"
-  
-  compile "com.k_int.grails:web-toolkit:3.3.2"
-  compile "com.k_int.okapi:grails-okapi:3.3.6"
+
   compile "org.grails.plugins:spring-security-core:3.2.0"
   compile 'org.grails.plugins:database-migration:3.0.3'
   compile 'org.liquibase:liquibase-core:3.5.3'
 
 }
+
+// Changed this to enable inline development of the includes listed below.
+def includes = [
+  'web-toolkit'   : 'com.k_int.grails:web-toolkit:3.3.4',
+  'grails-okapi'  : 'com.k_int.okapi:grails-okapi:3.3.6'
+]
 
 bootRun {
   jvmArgs('-Dspring.output.ansi.enabled=always')
@@ -102,33 +106,32 @@ sourceSets {
 }
 
 task generateDescriptors(type: Copy) {
-  
+
   dependsOn buildProperties
-  
+
   File grailsBuildInfoFile = buildProperties.outputs.files.files.find { it.name == 'grails.build.info' }
-  
+
   final def props = [:]
-  
+
   if(!(grailsBuildInfoFile)) return // No need to continue if the file is not there
-  
+
   doFirst {
-    
+
     // Place the loading within a do first as the info file from the buildProperties
     // task will not be present until it is executed. This owuld cause a file not found
     // during task configureation otherwise.
-    
     Properties properties = new Properties()
-    
+
     // Read properties from the file
     grailsBuildInfoFile.withInputStream {
       properties.load(it)
     }
-    
+
     // Need to parse multi-dimensional keys.
     ConfigSlurper cs = new ConfigSlurper()
     props.putAll(cs.parse(properties))
   }
-  
+
   from ('./src/okapi') {
     include '*-template.json'
   }
@@ -157,18 +160,18 @@ springBoot {
 }
 
 buildProperties.doLast {
-  
+
   // Find the right file
   File grailsBuildInfoFile = it.outputs.files.files.find { it.name == 'grails.build.info' }
-  
+
   if(!grailsBuildInfoFile) return // No need to continue if the file is not there
-  Properties properties = new Properties()
-  
+    Properties properties = new Properties()
+
   // Read properties from the file
   grailsBuildInfoFile.withInputStream {
     properties.load(it)
   }
-  
+
   // Load the app version
   String version = properties.getProperty('info.app.version')
   def versionParts
@@ -177,20 +180,20 @@ buildProperties.doLast {
       properties.setProperty('info.app.majorVersion', it[3])
       properties.setProperty('info.app.minorVersion', it[2])
       properties.setProperty('info.app.patchVersion', it[1])
-      
+
       if (it[5]) {
         properties.setProperty('info.app.testVersion', it[5])
       }
     }
     version.replaceAll(/^(((\d+)\.\d+)\.\d+)(-([\w]+))?$/ , '$1')
   }
-  
+
   // Add new properties from various sources
   properties.setProperty('build.time', new Date().format("yyyy-MM-dd HH:mm:ss"))
-  
+
   // Get a System property
   properties.setProperty('build.java.version', System.getProperty('java.version'))
-  
+
   // Write the properties back to the file
   grailsBuildInfoFile.withOutputStream {
     properties.store(it,null)
@@ -200,3 +203,26 @@ buildProperties.doLast {
 processResources.dependsOn generateDescriptors
 //assemble.dependsOn generateDescriptors
 
+includes?.each { String projectName, String mavenString ->
+  def igp = subprojects?.find {
+    if (it.name == "${projectName}") {
+      return it
+    }
+    false
+  }
+
+  if (igp) {
+    println "Using local ${igp.name} at ${igp.projectDir}"
+    grails {
+      plugins {
+        compile igp
+      }
+    }
+  } else {
+    // Use declared maven version.
+    println "Installing ${projectName} from maven"
+    dependencies {
+      compile "${mavenString}"
+    }
+  }
+}
