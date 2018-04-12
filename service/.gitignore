@@ -2,4 +2,4 @@
 !/.gitignore
 bin
 build
-/settings.gradle
+/_settings.gradle

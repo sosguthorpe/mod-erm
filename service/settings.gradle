@@ -1,0 +1,8 @@
+rootProject.name = 'olf-erm'
+
+// Check for local file too. File should be at same level as this file and named "_settings.gradle"
+File localSettings = new File('./_settings.gradle')
+if (localSettings.exists()) {
+  println "Found local settings..."
+  apply from: '_settings.gradle'
+}
