@@ -23,7 +23,7 @@ public class AgreementLineItem implements MultiTenant<AgreementLineItem> {
   ]
 
   static hasMany = [
-    coverage: HoldingsCoveage
+    coverage: HoldingsCoverage
   ]
 
   static mappedBy = [
