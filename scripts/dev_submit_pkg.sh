@@ -1,5 +1,8 @@
 #!/bin/sh
 
+
+# jq -r '.name'
+
 # Create the tenant
 curl --header "X-Okapi-Tenant: diku" http://localhost:8080/_/tenant -X POST
 
