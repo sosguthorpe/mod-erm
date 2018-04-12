@@ -6,7 +6,7 @@ import grails.gorm.MultiTenant
 /**
  * A coverage statement - 
  */
-public class CoverageOverride implements MultiTenant<CoverageOverride> {
+public class HoldingsCoverage implements MultiTenant<HoldingsCoverage> {
 
   String id
 
