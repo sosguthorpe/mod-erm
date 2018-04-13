@@ -1,0 +1,7 @@
+import groovy.transform.*
+import org.olf.erm.SubscriptionAgreement
+
+@Field SubscriptionAgreement subscriptionAgreement
+
+System.out.println "${subscriptionAgreement}"
+json g.render(subscriptionAgreement, [expand: ['agreementType']])
