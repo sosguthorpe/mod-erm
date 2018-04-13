@@ -31,7 +31,13 @@ AGREEMENT_DRAFT_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/sas -d '
 {
   name: "A new agreement (TRIAL)",
-  type: { id: "'"$AGREEMENT_TRIAL_RDV"'" }
+  agreementType: { id: "'"$AGREEMENT_TRIAL_RDV"'" },
+  localReference: "TRIAL_AGREEMENT_LR_001",
+  vendorReference: "TRIAL_AGREEMENT_VR_001",
+  startDate: "2018-01-01",
+  endDate: "2018-12-31",
+  renewalDate: "2019-01-01",
+  nextReviewDate: "2018-10-01"
 }
 ' | jq -r ".id"`
 
@@ -39,7 +45,10 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
 DRAFT_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/sas -d '
 {
   name: "A new agreement (DRAFT)",
-  type: { id: "'"$AGREEMENT_DRAFT_RDV"'" }
+  agreementType: { id: "'"$AGREEMENT_DRAFT_RDV"'" },
+  localReference: "TRIAL_AGREEMENT_LR_001",
+  vendorReference: "TRIAL_AGREEMENT_VR_001",
+  startDate: "2018-01-01"
 }
 ' | jq -r ".id"`
 

@@ -95,6 +95,11 @@ grails:
             - 
               pattern: '/**'
               filters: 'JOINED_FILTERS,-securityContextPersistenceFilter,-rememberMeAuthenticationFilter,-basicAuthenticationFilter'
+    databinding:
+        dateFormats:
+          - 'yyyy-MM-dd HH:mm:ss.S'
+          - "yyyy-MM-dd'T'hh:mm:ss'Z'"
+          - 'yyyy-mm-dd'
 
 ---
 hibernate:
