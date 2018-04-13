@@ -1,0 +1,6 @@
+import groovy.transform.*
+import org.olf.general.RefdataValue
+
+@Field RefdataValue refdataValue
+
+json g.render(refdataValue, [expand: ['owner']])
