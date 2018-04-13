@@ -22,6 +22,14 @@ public class AgreementLineItem implements MultiTenant<AgreementLineItem> {
     owner:SubscriptionAgreement
   ]
 
+  static hasMany = [
+    coverage: HoldingsCoverage
+  ]
+
+  static mappedBy = [
+    coverage: 'ali'
+  ]
+
   // Allow users to individually switch on or off this content item. If null, should default to the agreement
   // enabled setting
   Boolean enabled 

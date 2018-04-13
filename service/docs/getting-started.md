@@ -94,3 +94,6 @@ After adding or editing domain classes, you will need to generate a liquibase co
     grails dbm-generate-gorm-changelog my-new-changelog.groovy
 
 
+## Bootstraping some data
+
+There are some scripts in ~/scripts you can use to inject agreeents and packages into the system
