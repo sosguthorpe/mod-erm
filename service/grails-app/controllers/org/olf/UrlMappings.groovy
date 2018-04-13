@@ -14,10 +14,14 @@ class UrlMappings {
 
     // Map /sas to SubscriptionAgreementController
     '/sas'(resources: 'subscriptionAgreement') {
-       "/addToAgreement"(action:'addToAgreement');
+       "/addToAgreement"(action:'addToAgreement')
     }
 
     '/packages'(resources: 'package')
+
+    '/refdataValues'(resource: 'refdata') {
+      "/lookupOrCreate"(controller:'refdata', action:'lookupOrCreate')
+    }
 
     "/admin/$action"(controller:'admin')
 
