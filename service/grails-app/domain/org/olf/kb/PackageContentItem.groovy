@@ -16,6 +16,12 @@ public class PackageContentItem implements MultiTenant<PackageContentItem> {
   Date accessStart
   Date accessEnd
 
+  // A field primarily to deposit KBART::CoverageNote type data
+  String note
+
+  // A field primarily to deposit KBART::CoverageDepth type data
+  String depth
+
   static mapping = {
                    id column:'pci_id', generator: 'uuid', length:36
               version column:'pci_version'
@@ -23,6 +29,8 @@ public class PackageContentItem implements MultiTenant<PackageContentItem> {
                   pti column:'pci_pti_fk'
           accessStart column:'pci_access_start'
             accessEnd column:'pci_access_end'
+                 note column:'pci_note'
+                depth column:'pci_depth'
   }
 
   static constraints = {
@@ -30,6 +38,8 @@ public class PackageContentItem implements MultiTenant<PackageContentItem> {
             pti(nullable:false, blank:false)
     accessStart(nullable:true, blank:false)
       accessEnd(nullable:true, blank:false)
+           note(nullable:true, blank:false)
+          depth(nullable:true, blank:false)
   }
 
 }

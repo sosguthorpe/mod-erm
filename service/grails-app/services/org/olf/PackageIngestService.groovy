@@ -68,7 +68,13 @@ public class PackageIngestService {
             // Lookup or create a package content item record for this title on this platform in this package
             PackageContentItem pci = PackageContentItem.findByPtiAndPkg(pti, pkg)
             if ( pci == null ) {
-              pci = new PackageContentItem(pti:pti, pkg:pkg).save(flush:true, failOnError:true);
+              pci = new PackageContentItem(
+                                           pti:pti, 
+                                           pkg:pkg, 
+                                           note:pc.coverageNote, 
+                                           depth:pc.coverageDepth,
+                                           accessStart:null,
+                                           accessEnd:null).save(flush:true, failOnError:true);
             }
 
             // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
