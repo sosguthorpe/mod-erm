@@ -29,6 +29,14 @@ public class AgreementLineItem implements MultiTenant<AgreementLineItem> {
     owner:SubscriptionAgreement
   ]
 
+  static hasMany = [
+    coverage: HoldingsCoverage
+  ]
+
+  static mappedBy = [
+    coverage: 'ali'
+  ]
+
   // Allow users to individually switch on or off this content item. If null, should default to the agreement
   // enabled setting. The activeFrom and activeTo dates determine if a content item is "live" or not. This flag
   // determines if we wish live content to be visible to patrons or not. Content can be "Live" but not enabled,
