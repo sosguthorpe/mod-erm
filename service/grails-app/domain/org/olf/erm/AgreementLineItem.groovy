@@ -18,12 +18,21 @@ public class AgreementLineItem implements MultiTenant<AgreementLineItem> {
   PackageContentItem pci
   PlatformTitleInstance pti
 
+  // The date ranges on which this line item is active. These date ranges allow the system to determine
+  // what content is "Live" in an agreement. Content can be "Live" without being switched on, and 
+  // vice versa. The dates indicate that we believe the agreement is in force for the items specified.
+  // For Trials, these dates will indicate the dates of the trial, for live agreements the agreement item dates
+  Date activeFrom
+  Date activeTo
+
   static belongsTo = [
     owner:SubscriptionAgreement
   ]
 
   // Allow users to individually switch on or off this content item. If null, should default to the agreement
-  // enabled setting
+  // enabled setting. The activeFrom and activeTo dates determine if a content item is "live" or not. This flag
+  // determines if we wish live content to be visible to patrons or not. Content can be "Live" but not enabled,
+  // although that would be unusual.
   Boolean enabled 
   
 
@@ -35,15 +44,19 @@ public class AgreementLineItem implements MultiTenant<AgreementLineItem> {
                   pci column: 'ali_pci_fk'
                   pti column: 'ali_pti_fk'
               enabled column: 'ali_enabled'
+           activeFrom column: 'ali_active_from'
+             activeTo column: 'ali_active_to'
   }
 
 
   static constraints = {
-      owner(nullable:false, blank:false)
-        pkg(nullable:true, blank:false)
-        pci(nullable:true, blank:false)
-        pti(nullable:true, blank:false)
-    enabled(nullable:true, blank:false)
+        owner(nullable:false, blank:false)
+          pkg(nullable:true, blank:false)
+          pci(nullable:true, blank:false)
+          pti(nullable:true, blank:false)
+      enabled(nullable:true, blank:false)
+   activeFrom(nullable:true, blank:false)
+     activeTo(nullable:true, blank:false)
   }
 
 
