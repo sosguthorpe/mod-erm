@@ -1,0 +1,4 @@
+{
+  "method": "DELETE",
+  "uri": "/_/proxy/modules/${module.id}"
+}
