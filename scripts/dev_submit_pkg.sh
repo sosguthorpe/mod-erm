@@ -46,8 +46,8 @@ DRAFT_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
 {
   name: "A new agreement (DRAFT)",
   agreementType: { id: "'"$AGREEMENT_DRAFT_RDV"'" },
-  localReference: "TRIAL_AGREEMENT_LR_001",
-  vendorReference: "TRIAL_AGREEMENT_VR_001",
+  localReference: "TRIAL_AGREEMENT_LR_002",
+  vendorReference: "TRIAL_AGREEMENT_VR_002",
   startDate: "2018-01-01"
 }
 ' | jq -r ".id"`
