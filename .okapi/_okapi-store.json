@@ -12,7 +12,8 @@
     "module": {
         "id": "${info.app.name}-${info.app.version}",
         "version": "${info.app.minorVersion}",
-        "name": "${info.app.name}"
+        "name": "${info.app.name}",
+        "exec": "/home/folio/kint/${module.jarname}"
     },
     "tenant": {
         "id": "diku"
