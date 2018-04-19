@@ -1,0 +1,11 @@
+exports = []
+
+stage('Build') {
+  dir('service') {
+    sh './gradlew -Dgrails.env=okapi --no-daemon --console plain clean assemble'
+  }
+  
+  exports = findFiles glob: 'service/build/libs/*.jar'
+}
+
+this
