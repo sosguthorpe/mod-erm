@@ -1,0 +1,11 @@
+import groovy.transform.*
+import org.olf.kb.PlatformTitleInstance
+import org.olf.erm.AgreementLineItem
+
+@Field Long resultCount
+@Field List<Map> subscribedContent
+
+json {
+  count resultCount
+  results tmpl.subscribedContent(subscribedContent)
+}
