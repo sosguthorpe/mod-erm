@@ -4,6 +4,8 @@ import grails.gorm.multitenancy.CurrentTenant
 import groovy.json.JsonSlurper
 import grails.converters.JSON
 import org.olf.kb.TitleInstance
+import org.olf.kb.PlatformTitleInstance
+import org.olf.erm.AgreementLineItem
 
 
 /**
@@ -71,6 +73,23 @@ where exists ( select pci.id
    *    is on the platform "Nature.com" and wishes to list that fact in an agreement. No packaging is necessary, we just have
    *    an explicit listing of the title on a platform.
    *    The AgreementLineItem contains a pti property which points directly to a platform title instance record.
+   * @Return an object structured as follows::
+   * {
+   *   resultCount: nnn,
+   *   subscribedContent:[
+   *     {
+   *       id:  'agreement_id',
+   *       name: 'agreement_name',
+   *       content: [
+   *         { data about agreement line item },
+   *         { data about agreement line item },
+   *       ]
+   *     },
+   *     {
+   *       data about next agreement
+   *     },
+   *   ]
+   * }
    */
   def index() {
     def result = [:]
@@ -82,11 +101,31 @@ where exists ( select pci.id
     def query_params = [:]
     def meta_params = [max:10]
 
+    result.subscribedContent = []
+    def current_agreement = null;
+
     // Run the query, and collect the results into a format more ameinable to the gson processor
-    result.subscribedContent = TitleInstance.executeQuery('select pti, ali '+PLATFORM_TITLES_QUERY+
-                                                          ' order by ali.owner.id, pti.titleInstance.title',
-                                                          query_params,meta_params).collect { it ->
-      return [ pti: it[0], ali: it[1] ]
+    TitleInstance.executeQuery('select pti, ali '+PLATFORM_TITLES_QUERY+' order by ali.owner.id, pti.titleInstance.title', query_params,meta_params).collect { it ->
+
+      PlatformTitleInstance pti = it[0]
+      AgreementLineItem ali = it[1]
+
+      if ( ( current_agreement == null ) || 
+           ( current_agreement?.id != ali.owner.id ) ) {
+        // This is the first agreement line item, OR it's a new agreement. Add the agreement and set the context to that
+        current_agreement = [ 
+          id: ali.owner.id, 
+          name: ali.owner.name,
+          agreement: ali.owner
+          content:[] 
+        ]
+        result.subscribedContent.add(current_agreement);
+      }
+
+      current_agreement.content.add([
+        pti: pti,
+        ali: ali
+      ]);
     }
 
     // log.debug("SubscribedContentController::index result ${result}");
