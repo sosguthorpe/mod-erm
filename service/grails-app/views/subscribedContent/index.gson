@@ -15,6 +15,14 @@ json {
     PlatformTitleInstance p = resultRow['pti'] as PlatformTitleInstance
     
     // Use the template helper render method to render objects.
+    'agreementId' a.owner.id
+    'agreementLineItemId' a.id
+    'packageId' a.pkg?.id
+    'packageContentItemId' a.pci?.id
+    'platfomTitleId' a.pti?.id
+    'title' p.titleInstance?.title
+    'titleId' p.titleInstance?.id
+    'explanation' a.explanation
     'ali' g.render (a)
     'pti' g.render (p)
   }

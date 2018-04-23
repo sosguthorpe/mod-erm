@@ -5,6 +5,8 @@ import org.olf.general.RefdataValue
 import org.olf.kb.Package
 import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance
+import javax.persistence.Transient
+
 
 /**
  * Subscription agreement - object holding details about an SA connecting a resource list (Composed Of packages and platform-titles).
@@ -67,5 +69,22 @@ public class AgreementLineItem implements MultiTenant<AgreementLineItem> {
      activeTo(nullable:true, blank:false)
   }
 
+  @Transient
+  public String getExplanation() {
+    String result = null;
+    if ( pkg != null ) {
+      // Access to an item because the agreement lists a package which contains
+      // that item
+      result = 'Agreement includes a package containing this item'
+    }
+    else if ( this.pci != null ) {
+      result = 'Agreement includes this item from a package specifically'
+    }
+    else if ( this.pti != null ) {
+      result = 'Agremment includes this title directly'
+    }
+
+    return result;
+  }
 
 }
