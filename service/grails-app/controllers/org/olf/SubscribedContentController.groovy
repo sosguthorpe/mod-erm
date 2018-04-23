@@ -79,8 +79,13 @@ where exists ( select pci.id
     // so just cheat and call the key in our result map something different.
     result.resultCount = TitleInstance.executeQuery('select count(*) '+PLATFORM_TITLES_QUERY).get(0);
 
+    def query_params = [:]
+    def meta_params = [max:10]
+
     // Run the query, and collect the results into a format more ameinable to the gson processor
-    result.subscribedContent = TitleInstance.executeQuery('select pti, ali '+PLATFORM_TITLES_QUERY,[:],[max:10]).collect { it ->
+    result.subscribedContent = TitleInstance.executeQuery('select pti, ali '+PLATFORM_TITLES_QUERY+
+                                                          ' order by ali.owner.id, pti.titleInstance.title',
+                                                          query_params,meta_params).collect { it ->
       return [ pti: it[0], ali: it[1] ]
     }
 
