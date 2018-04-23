@@ -2,13 +2,12 @@ import groovy.transform.*
 import org.olf.kb.PlatformTitleInstance
 import org.olf.erm.AgreementLineItem
 
-@Field AgreementLineItem ali
-@Field PlatformTitleInstance pti
+@Field Map sci
 
 
 json {
-  a ali
-  b pti
+  a sci.ali
+  b sci.pti
   // agreementId ali.owner.id
   // agreementName ali.owner.name
   // agreementLineId ali.id
