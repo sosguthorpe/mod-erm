@@ -2,4 +2,4 @@ import groovy.transform.*
 import org.olf.erm.SubscriptionAgreement
 
 @Field SubscriptionAgreement subscriptionAgreement
-json grails.render(subscriptionAgreement, [expand: ['agreementType']])
+json g.render(subscriptionAgreement, [expand: ['agreementType']])
