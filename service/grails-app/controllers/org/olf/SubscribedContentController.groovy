@@ -73,16 +73,10 @@ where exists ( select pci.id
    *    The AgreementLineItem contains a pti property which points directly to a platform title instance record.
    */
   def index() {
-    def result = [:]
-
-    // Can't for the life of me figure out how to escape a json key with the same name as an @Field in the gson view
-    // so just cheat and call the key in our result map something different.
-    result.resultCount = TitleInstance.executeQuery('select count(*) '+PLATFORM_TITLES_QUERY).get(0);
-
-    // Run the query, and collect the results into a format more ameinable to the gson processor
-    result.subscribedContent = TitleInstance.executeQuery('select pti, ali '+PLATFORM_TITLES_QUERY,[:],[max:10]).collect { it ->
-      return [ pti: it[0], ali: it[1] ]
-    }
+    def result = [
+      resultCount: TitleInstance.executeQuery('select count(*) '+PLATFORM_TITLES_QUERY).get(0),
+      subscribedContent: TitleInstance.executeQuery('select pti, ali '+PLATFORM_TITLES_QUERY,[:],[max:10])
+    ]
 
     // log.debug("SubscribedContentController::index result ${result}");
 

@@ -1,21 +1,19 @@
+import groovy.transform.Field
 import org.olf.erm.AgreementLineItem
 import org.olf.kb.PlatformTitleInstance
 
-import groovy.transform.*
 
 @Field Long resultCount
-@Field List<Map> subscribedContent
+@Field List<Object[]> subscribedContent
 
 json {
   count resultCount
   
   // Results can be passed a collection to iterate over explicitly here.
-  results (subscribedContent) { Map resultRow ->
-    AgreementLineItem a = resultRow['ali'] as AgreementLineItem
-    PlatformTitleInstance p = resultRow['pti'] as PlatformTitleInstance
+  results (subscribedContent) { Object[] resultRow ->
     
     // Use the template helper render method to render objects.
-    'ali' g.render (a)
-    'pti' g.render (p)
+    'ali' g.render (resultRow[1] as AgreementLineItem)
+    'pti' g.render (resultRow[0] as PlatformTitleInstance)
   }
 }

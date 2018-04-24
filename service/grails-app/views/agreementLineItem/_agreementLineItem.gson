@@ -1,0 +1,7 @@
+import org.olf.erm.AgreementLineItem
+
+import groovy.transform.*
+
+@Field AgreementLineItem agreementLineItem
+
+json g.render(agreementLineItem)
