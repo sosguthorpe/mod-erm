@@ -75,7 +75,7 @@ where exists ( select pci.id
   def index() {
     def result = [
       resultCount: TitleInstance.executeQuery('select count(*) '+PLATFORM_TITLES_QUERY).get(0),
-      subscribedContent: TitleInstance.executeQuery('select pti, ali '+PLATFORM_TITLES_QUERY,[:],[max:10])
+      subscribedContent: TitleInstance.executeQuery('select pti, ali '+PLATFORM_TITLES_QUERY,[:],[max:10]).collect{ ['pti': it[0], 'ali': it[1]] }
     ]
 
     // log.debug("SubscribedContentController::index result ${result}");
