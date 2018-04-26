@@ -1,0 +1,36 @@
+import org.olf.erm.AgreementLineItem
+import org.olf.kb.PlatformTitleInstance
+
+import groovy.transform.*
+
+@Field Long resultCount
+@Field List<Map> subscribedContent
+
+json {
+  count resultCount
+  
+  // Results can be passed a collection to iterate over explicitly here.
+  results (subscribedContent) { Map resultRow ->
+
+    agreementId resultRow.id
+    agreementName resultRow.name
+
+    // A result row is an agreement containing titles
+    agreementItems(resultRow.content) { Map contentRow ->
+    
+      AgreementLineItem a = contentRow['ali'] as AgreementLineItem
+      PlatformTitleInstance p = contentRow['pti'] as PlatformTitleInstance
+    
+      // Use the template helper render method to render objects.
+      'agreementLineItemId' a.id
+      'packageId' a.pkg?.id
+      'packageContentItemId' a.pci?.id
+      'platfomTitleId' a.pti?.id
+      'title' p.titleInstance?.title
+      'titleId' p.titleInstance?.id
+      'explanation' a.explanation
+      // 'ali' g.render (a)
+      // 'pti' g.render (p)
+    }
+  }
+}
