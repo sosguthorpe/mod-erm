@@ -1,7 +1,6 @@
+import groovy.transform.Field
 import org.olf.erm.AgreementLineItem
 import org.olf.kb.PlatformTitleInstance
-
-import groovy.transform.*
 
 @Field Long resultCount
 @Field List<Map> subscribedContent
