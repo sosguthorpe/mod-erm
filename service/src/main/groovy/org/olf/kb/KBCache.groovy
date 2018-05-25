@@ -12,7 +12,43 @@ package org.olf.kb;
  * This interface defines interface which a class must implement in order to collect information from a remote KB
  * and update the local KB Cache.
  *
+ * These methods are very likely candidates for participation in workflow - or rather the trigger for workflow events
+ * We're trying to pre-guess how some of that might work out here.
+ *
+ * This document: https://docs.google.com/document/d/14KIi4Guhu8r1NM7lr8NH6SI7giyAdmFjjy4Q6x-MMvQ/edit
+ * Drive -> ERM-Project Team -> WorkInProgress -> olf-erm analysis and design -> PackageDescription--JSON format
+ * sets out some thoughts on the format of JSON documents describing some of this.
+  
  */
 public interface KBCache {
 
+  /**
+   *  An adapter detected a new package, create a package in the cache (NO CONTENTS YET)
+   *  @Param authority
+   *  @Param authority_id_of_package
+   *  @Param packageHeader - A nested object (Parsed from JSON) representing data about the package.
+   *
+   *  Package header:
+   *
+   *  "Availability":{
+   *  type:"General|Consortia"
+   *  },
+   *  "Notes":[
+   *  "Just because we always end up needing them"
+   *  ],
+   *  "PackageProvider":"",
+   *  "PackageSource":"",
+   *  "PackageName":"",
+
+   */
+  public void onNewPackage(String authority, 
+                           String authority_id_of_package, 
+                           Object packageHeader)
+
+  public void onPackageChange(String authority,
+                              String authority_id_of_package,
+                              Object contents_delta);
+
+  public void onPackageRemoved(String authority,
+                               String authority_id_of_package);
 }
