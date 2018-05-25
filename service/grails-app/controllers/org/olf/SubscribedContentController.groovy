@@ -116,7 +116,7 @@ where exists ( select pci.id
         current_agreement = [ 
           id: ali.owner.id, 
           name: ali.owner.name,
-          agreement: ali.owner
+          agreement: ali.owner,
           content:[] 
         ]
         result.subscribedContent.add(current_agreement);
