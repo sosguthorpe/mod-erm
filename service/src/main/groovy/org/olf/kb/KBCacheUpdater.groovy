@@ -21,6 +21,13 @@ package org.olf.kb;
  *    * EBSCO KB
  *    * Perhaps KB+ as it's a useful test source for k-int
  *
+ * Implementors of this interface hide the complexity of source knowledgebase systems by getting all package changes
+ * since the last check, converting those packages into the canonical package format as defined at
+ * https://docs.google.com/document/d/14KIi4Guhu8r1NM7lr8NH6SI7giyAdmFjjy4Q6x-MMvQ/edit
+ * and then calling KBCache.onPackageChange or KBCache.onPackageRemoved.
+ *
+ * The only responsibility of implementors is to understand the remote system and create a stream of package data
+ * in the canonical format.
  */
 public interface KBCacheUpdater {
 
@@ -32,9 +39,10 @@ public interface KBCacheUpdater {
    * @param source_name Name of the remote source
    * @param cursor A Map containing implementation specific data that allows the updater to "Know where it is"
    * @param cache The targer for the update
+   * @Return updated Cursor object representing the state of the cursor for the next pass
    *
    */
-  public void freshen(String source_id, String source_name, Object cursor, KBCache cache);
+  public Object freshen(String source_id, String source_name, Object cursor, KBCache cache);
 
 
 }

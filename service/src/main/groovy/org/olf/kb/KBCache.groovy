@@ -23,10 +23,11 @@ package org.olf.kb;
 public interface KBCache {
 
   /**
-   *  An adapter detected a new package, create a package in the cache (NO CONTENTS YET)
+   *  An adapter detected a changed package. 
+
    *  @Param authority
    *  @Param authority_id_of_package
-   *  @Param packageHeader - A nested object (Parsed from JSON) representing data about the package.
+   *  @Param canonical_package_definition - A java object representing a parsed package in the format defined above.
    *
    *  Package header:
    *
@@ -39,16 +40,11 @@ public interface KBCache {
    *  "PackageProvider":"",
    *  "PackageSource":"",
    *  "PackageName":"",
-
    */
-  public void onNewPackage(String authority, 
-                           String authority_id_of_package, 
-                           Object packageHeader)
-
   public void onPackageChange(String authority,
                               String authority_id_of_package,
-                              Object contents_delta);
+                              Object canonical_package_definition);
 
   public void onPackageRemoved(String authority,
-                               String authority_id_of_package);
+                               String authority_id_of_package)
 }
