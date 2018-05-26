@@ -41,10 +41,8 @@ public interface KBCache {
    *  "PackageSource":"",
    *  "PackageName":"",
    */
-  public void onPackageChange(String authority,
-                              String authority_id_of_package,
-                              Object canonical_package_definition);
+  public void onPackageChange(Object canonical_package_definition);
 
   public void onPackageRemoved(String authority,
-                               String authority_id_of_package)
+                               String authority_id_of_package);
 }

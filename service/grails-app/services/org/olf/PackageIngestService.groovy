@@ -15,10 +15,19 @@ import org.olf.kb.PackageContentItem;
  * This service works at the module level, it's often called without a tenant context.
  */
 @Transactional
-public class PackageIngestService {
+public class PackageIngestService implements org.olf.kb.KBCache {
 
   def titleInstanceResolverService
   def coverageExtenderService
+
+  public void onPackageChange(Object canonical_package_definition) {
+    upsertPackage(canonical_package_definition);
+  }
+
+  public void onPackageRemoved(String authority, String authority_id_of_package) {
+    throw new RuntimeException("Not Implemented");
+  }
+
 
   /**
    * Load the paackage data (Given in the agreed canonical json package format) into the KB.
