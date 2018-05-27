@@ -12,6 +12,12 @@ public class PackageContentItem implements MultiTenant<PackageContentItem> {
   Package pkg
   PlatformTitleInstance pti
 
+  // Track this package content item - when did we first detect it (added) when did we last
+  // see it, and when did we determine it has been removed?
+  Long addedTimestamp
+  Long removedTimestamp
+  Long lastSeenTimestamp
+
   // The date range on which this content item is live within the package
   Date accessStart
   Date accessEnd
@@ -31,15 +37,21 @@ public class PackageContentItem implements MultiTenant<PackageContentItem> {
             accessEnd column:'pci_access_end'
                  note column:'pci_note'
                 depth column:'pci_depth'
+       addedTimestamp column:'pci_added_ts'
+     removedTimestamp column:'pci_removed_ts'
+    lastSeenTimestamp column:'pci_last_seen_ts'
   }
 
   static constraints = {
-            pkg(nullable:false, blank:false)
-            pti(nullable:false, blank:false)
-    accessStart(nullable:true, blank:false)
-      accessEnd(nullable:true, blank:false)
-           note(nullable:true, blank:false)
-          depth(nullable:true, blank:false)
+                  pkg(nullable:false, blank:false)
+                  pti(nullable:false, blank:false)
+          accessStart(nullable:true, blank:false)
+            accessEnd(nullable:true, blank:false)
+                 note(nullable:true, blank:false)
+                depth(nullable:true, blank:false)
+       addedTimestamp(nullable:true, blank:false)
+     removedTimestamp(nullable:true, blank:false)
+    lastSeenTimestamp(nullable:true, blank:false)
   }
 
 }
