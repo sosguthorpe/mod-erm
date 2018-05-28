@@ -1,7 +1,6 @@
 package org.olf
 
 import grails.gorm.multitenancy.Tenants
-import org.olf.kb.RemoteKB
 import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.WithoutTenant
 import grails.gorm.transactions.Transactional
@@ -15,19 +14,10 @@ import org.olf.kb.PackageContentItem;
  * This service works at the module level, it's often called without a tenant context.
  */
 @Transactional
-public class PackageIngestService implements org.olf.kb.KBCache {
+public class PackageIngestService {
 
   def titleInstanceResolverService
   def coverageExtenderService
-
-  public void onPackageChange(Object canonical_package_definition) {
-    upsertPackage(canonical_package_definition);
-  }
-
-  public void onPackageRemoved(String authority, String authority_id_of_package) {
-    throw new RuntimeException("Not Implemented");
-  }
-
 
   /**
    * Load the paackage data (Given in the agreed canonical json package format) into the KB.
@@ -98,6 +88,7 @@ public class PackageIngestService implements org.olf.kb.KBCache {
             else {
               // Note that we have seen the package content item now
               pci.lastSeenTimestamp = result.updateTime;
+              // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
             }
 
             // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
@@ -136,6 +127,8 @@ public class PackageIngestService implements org.olf.kb.KBCache {
       // this is how we detect deletions in the package file.
       PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime',[pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
         log.debug("Removal candidate: ${removal_candidate}");
+        removal_candidate.removedTimestamp = result.updateTime;
+        removal_candidate.save(flush:true, failOnError:true);
       }
 
       // {

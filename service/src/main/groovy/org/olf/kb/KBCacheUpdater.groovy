@@ -35,14 +35,16 @@ public interface KBCacheUpdater {
    * freshen the cache - Make calls to the KBCache based on DELTA information about what has changed
    * in the remote KB.
    *
-   * @param source_id ID of the remote source
-   * @param source_name Name of the remote source
+   * @param source_id the ID of a org.olf.kb.RemoteKB that is to be used for an update. Different implementations
+   *                  will serialise different kinds of cursor back to the implementation to track their own state.
    * @param cursor A Map containing implementation specific data that allows the updater to "Know where it is"
    * @param cache The targer for the update
    * @Return updated Cursor object representing the state of the cursor for the next pass
    *
    */
-  public Object freshen(String source_id, String source_name, Object cursor, KBCache cache);
+  public Object freshen(String source_id, 
+                        Object cursor, 
+                        KBCache cache);
 
 
 }

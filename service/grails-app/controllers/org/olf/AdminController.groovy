@@ -8,6 +8,7 @@ import grails.converters.JSON
 class AdminController {
 
   def packageIngestService
+  def knowledgeBaseCacheService
 
   public AdminController() {
   }
@@ -31,6 +32,14 @@ class AdminController {
     }
 
     render result as JSON
+  }
+
+  /**
+   *  Temporary helper method which provides a REST endpoint to trigger an update of the package cache from
+   *  remote KBs
+   */
+  public triggerCacheUpdate() {
+    kbCacheService.triggerCacheUpdate()
   }
 }
 
