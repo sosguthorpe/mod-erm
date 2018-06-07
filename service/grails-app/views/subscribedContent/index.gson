@@ -2,8 +2,11 @@ import groovy.transform.Field
 import org.olf.erm.AgreementLineItem
 import org.olf.kb.PlatformTitleInstance
 
-@Field Long resultCount
-@Field List<Map> subscribedContent
+@Field
+Long resultCount
+
+@Field
+List<Map> subscribedContent
 
 json {
   count resultCount

@@ -2,6 +2,7 @@ package org.olf
 
 import grails.gorm.multitenancy.CurrentTenant
 import groovy.json.JsonSlurper
+import groovy.util.logging.Slf4j
 import grails.converters.JSON
 import org.olf.kb.TitleInstance
 import org.olf.kb.PlatformTitleInstance
@@ -12,6 +13,7 @@ import org.olf.erm.AgreementLineItem
  * Provide a tenant with access to a list of their subscribed content - in essence all the titles and coverage that
  * we have access to, regardless of agreements or access path.
  */
+@Slf4j
 @CurrentTenant
 class SubscribedContentController {
 

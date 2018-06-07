@@ -2,8 +2,10 @@ package org.olf
 
 import grails.gorm.multitenancy.CurrentTenant
 import groovy.json.JsonSlurper
+import groovy.util.logging.Slf4j
 import grails.converters.JSON
 
+@Slf4j
 @CurrentTenant
 class AdminController {
 

@@ -1,9 +1,13 @@
 package org.olf
 
-import grails.gorm.multitenancy.CurrentTenant
-import com.k_int.okapi.OkapiTenantAwareController
 import org.olf.kb.Package
 
+import com.k_int.okapi.OkapiTenantAwareController
+
+import grails.gorm.multitenancy.CurrentTenant
+import groovy.util.logging.Slf4j
+
+@Slf4j
 @CurrentTenant
 class PackageController extends OkapiTenantAwareController<Package>  {
 
