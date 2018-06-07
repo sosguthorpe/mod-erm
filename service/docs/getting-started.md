@@ -75,7 +75,7 @@ This allows you to run your module outside of the other core modules (for instan
 ### DataSource not found for name [...] in configuration. Please check your multiple data sources configuration and try again.
 
 The grails multitenant handling is idiomatically a little different to folio usage, so mod grails-okapi provides several services to mediate this difference.
-However, hibernateDatastore does not provide some methods (Most notably, the ability to deregister a tenant datasource) so integration tests find it hard to re-use tenants
+However, hibernateDatastore fails to provide some methods (Most notably, the ability to deregister a tenant datasource) so integration tests find it hard to re-use tenants
 in a run. Sometimes an error can case a tenant to be left in place. Dropping the test database and re-creating with
 
     DROP DATABASE olftest;

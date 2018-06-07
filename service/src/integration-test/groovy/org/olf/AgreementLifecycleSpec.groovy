@@ -159,7 +159,7 @@ and pti.platform.name = :platform
         resp.status == OK.value()
         // content responds with a JSON object containing a count and a list called subscribedTitles
         resp.json.count == 0
-        resp.json.subscribedTitles.size() == 0
+        resp.json.results.size() == 0
   }
 
   void "Set up new agreements"(tenant, agreement_name, type) {

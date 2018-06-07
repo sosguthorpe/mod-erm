@@ -1,0 +1,50 @@
+package org.olf.kb;
+
+/**
+ * KBCacheUpdater. Adapter pattern - allowing this module to aggregate KB data from multiple external sources.
+ *
+ * The domain model of this app can be thought of as a local cache of multiple external knowledgebases (KBs)
+ * the term KB is problematic, as it can refer in turn to
+ *     The "KB" of everything thats been published, by whom and when, including title histories and other info (Publications KB?)
+ *     The "KB" of how publications are packaged and bundled for sale by content providers (Packaging KB?)
+ *     The "KB" of what I think I have bought (What titles, coverage, terms), from where and for how long (PCA)
+ *
+ * This interface defines interface which a class must implement in order to collect information from a remote KB
+ * and update the local KB Cache.
+ *
+ * The initial focus will be on the "Packaging KB" - which implies a degree of "Publications KB" functionality.
+ *
+ * It is anticipated that implementations of this adapter will exist at least for
+ *
+ *    * A Mock source for tests
+ *    * the GOKb system
+ *    * EBSCO KB
+ *    * Perhaps KB+ as it's a useful test source for k-int
+ *
+ * Implementors of this interface hide the complexity of source knowledgebase systems by getting all package changes
+ * since the last check, converting those packages into the canonical package format as defined at
+ * https://docs.google.com/document/d/14KIi4Guhu8r1NM7lr8NH6SI7giyAdmFjjy4Q6x-MMvQ/edit
+ * and then calling KBCache.onPackageChange or KBCache.onPackageRemoved.
+ *
+ * The only responsibility of implementors is to understand the remote system and create a stream of package data
+ * in the canonical format.
+ */
+public interface KBCacheUpdater {
+
+  /**
+   * freshen the cache - Make calls to the KBCache based on DELTA information about what has changed
+   * in the remote KB.
+   *
+   * @param source_id the ID of a org.olf.kb.RemoteKB that is to be used for an update. Different implementations
+   *                  will serialise different kinds of cursor back to the implementation to track their own state.
+   * @param cursor A Map containing implementation specific data that allows the updater to "Know where it is"
+   * @param cache The targer for the update
+   * @Return updated Cursor object representing the state of the cursor for the next pass
+   *
+   */
+  public Object freshen(String source_id, 
+                        Object cursor, 
+                        KBCache cache);
+
+
+}

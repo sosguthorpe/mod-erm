@@ -1,6 +1,6 @@
 databaseChangeLog = {
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-1") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-1") {
         createTable(tableName: "agreement_line_item") {
             column(name: "ali_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -12,13 +12,13 @@ databaseChangeLog = {
 
             column(name: "ali_pci_fk", type: "VARCHAR(36)")
 
-            column(name: "ali_active_to", type: "timestamp")
+            column(name: "ali_active_to", type: "TIMESTAMP WITHOUT TIME ZONE")
 
             column(name: "ali_owner_fk", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
             }
 
-            column(name: "ali_active_from", type: "timestamp")
+            column(name: "ali_active_from", type: "TIMESTAMP WITHOUT TIME ZONE")
 
             column(name: "ali_pti_fk", type: "VARCHAR(36)")
 
@@ -28,7 +28,7 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-2") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-2") {
         createTable(tableName: "coverage_statement") {
             column(name: "cs_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -58,7 +58,7 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-3") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-3") {
         createTable(tableName: "holdings_coverage") {
             column(name: "co_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -84,7 +84,7 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-4") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-4") {
         createTable(tableName: "identifier") {
             column(name: "id_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -104,7 +104,7 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-5") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-5") {
         createTable(tableName: "identifier_namespace") {
             column(name: "idns_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -120,7 +120,7 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-6") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-6") {
         createTable(tableName: "identifier_occurrence") {
             column(name: "io_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -142,7 +142,27 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-7") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-7") {
+        createTable(tableName: "org") {
+            column(name: "org_id", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "org_version", type: "BIGINT") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "org_name", type: "VARCHAR(255)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "org_source_uri", type: "VARCHAR(255)") {
+                constraints(nullable: "false")
+            }
+        }
+    }
+
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-8") {
         createTable(tableName: "package") {
             column(name: "pkg_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -166,7 +186,7 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-8") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-9") {
         createTable(tableName: "package_content_item") {
             column(name: "pci_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -176,9 +196,13 @@ databaseChangeLog = {
                 constraints(nullable: "false")
             }
 
-            column(name: "pci_access_start", type: "timestamp")
+            column(name: "pci_added_ts", type: "BIGINT")
 
-            column(name: "pci_access_end", type: "timestamp")
+            column(name: "pci_access_start", type: "TIMESTAMP WITHOUT TIME ZONE")
+
+            column(name: "pci_access_end", type: "TIMESTAMP WITHOUT TIME ZONE")
+
+            column(name: "pci_last_seen_ts", type: "BIGINT")
 
             column(name: "pci_depth", type: "VARCHAR(255)")
 
@@ -191,10 +215,12 @@ databaseChangeLog = {
             column(name: "pci_pkg_fk", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
             }
+
+            column(name: "pci_removed_ts", type: "BIGINT")
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-9") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-10") {
         createTable(tableName: "platform") {
             column(name: "pt_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -210,7 +236,7 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-10") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-11") {
         createTable(tableName: "platform_locator") {
             column(name: "pl_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -230,7 +256,7 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-11") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-12") {
         createTable(tableName: "platform_title_instance") {
             column(name: "pti_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -250,7 +276,7 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-12") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-13") {
         createTable(tableName: "refdata_category") {
             column(name: "rdc_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -266,7 +292,7 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-13") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-14") {
         createTable(tableName: "refdata_value") {
             column(name: "rdv_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -290,7 +316,7 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-14") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-15") {
         createTable(tableName: "remotekb") {
             column(name: "rkb_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -326,7 +352,7 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-15") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-16") {
         createTable(tableName: "subscription_agreement") {
             column(name: "sa_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -338,11 +364,11 @@ databaseChangeLog = {
 
             column(name: "sa_vendor_reference", type: "VARCHAR(255)")
 
-            column(name: "sa_start_date", type: "timestamp")
+            column(name: "sa_start_date", type: "TIMESTAMP WITHOUT TIME ZONE")
 
-            column(name: "sa_renewal_date", type: "timestamp")
+            column(name: "sa_renewal_date", type: "TIMESTAMP WITHOUT TIME ZONE")
 
-            column(name: "sa_next_review_date", type: "timestamp")
+            column(name: "sa_next_review_date", type: "TIMESTAMP WITHOUT TIME ZONE")
 
             column(name: "sa_name", type: "VARCHAR(255)") {
                 constraints(nullable: "false")
@@ -354,11 +380,11 @@ databaseChangeLog = {
 
             column(name: "sa_enabled", type: "BOOLEAN")
 
-            column(name: "sa_end_date", type: "timestamp")
+            column(name: "sa_end_date", type: "TIMESTAMP WITHOUT TIME ZONE")
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-16") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-17") {
         createTable(tableName: "tag") {
             column(name: "tag_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -376,7 +402,7 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-17") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-18") {
         createTable(tableName: "title_instance") {
             column(name: "ti_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -392,7 +418,7 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-18") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-19") {
         createTable(tableName: "work") {
             column(name: "w_id", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -408,79 +434,83 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-19") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-20") {
         addPrimaryKey(columnNames: "ali_id", constraintName: "agreement_line_itemPK", tableName: "agreement_line_item")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-20") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-21") {
         addPrimaryKey(columnNames: "cs_id", constraintName: "coverage_statementPK", tableName: "coverage_statement")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-21") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-22") {
         addPrimaryKey(columnNames: "co_id", constraintName: "holdings_coveragePK", tableName: "holdings_coverage")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-22") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-23") {
         addPrimaryKey(columnNames: "id_id", constraintName: "identifierPK", tableName: "identifier")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-23") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-24") {
         addPrimaryKey(columnNames: "idns_id", constraintName: "identifier_namespacePK", tableName: "identifier_namespace")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-24") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-25") {
         addPrimaryKey(columnNames: "io_id", constraintName: "identifier_occurrencePK", tableName: "identifier_occurrence")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-25") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-26") {
+        addPrimaryKey(columnNames: "org_id", constraintName: "orgPK", tableName: "org")
+    }
+
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-27") {
         addPrimaryKey(columnNames: "pkg_id", constraintName: "packagePK", tableName: "package")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-26") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-28") {
         addPrimaryKey(columnNames: "pci_id", constraintName: "package_content_itemPK", tableName: "package_content_item")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-27") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-29") {
         addPrimaryKey(columnNames: "pt_id", constraintName: "platformPK", tableName: "platform")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-28") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-30") {
         addPrimaryKey(columnNames: "pl_id", constraintName: "platform_locatorPK", tableName: "platform_locator")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-29") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-31") {
         addPrimaryKey(columnNames: "pti_id", constraintName: "platform_title_instancePK", tableName: "platform_title_instance")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-30") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-32") {
         addPrimaryKey(columnNames: "rdc_id", constraintName: "refdata_categoryPK", tableName: "refdata_category")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-31") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-33") {
         addPrimaryKey(columnNames: "rdv_id", constraintName: "refdata_valuePK", tableName: "refdata_value")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-32") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-34") {
         addPrimaryKey(columnNames: "rkb_id", constraintName: "remotekbPK", tableName: "remotekb")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-33") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-35") {
         addPrimaryKey(columnNames: "sa_id", constraintName: "subscription_agreementPK", tableName: "subscription_agreement")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-34") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-36") {
         addPrimaryKey(columnNames: "tag_id", constraintName: "tagPK", tableName: "tag")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-35") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-37") {
         addPrimaryKey(columnNames: "ti_id", constraintName: "title_instancePK", tableName: "title_instance")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-36") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-38") {
         addPrimaryKey(columnNames: "w_id", constraintName: "workPK", tableName: "work")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-37") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-39") {
         createIndex(indexName: "rdv_entry_idx", tableName: "refdata_value") {
             column(name: "rdv_value")
 
@@ -488,79 +518,79 @@ databaseChangeLog = {
         }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-38") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-40") {
         addForeignKeyConstraint(baseColumnNames: "io_identifier_fk", baseTableName: "identifier_occurrence", constraintName: "FK124sp9vc5hnix1ufo6wi2vbav", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id_id", referencedTableName: "identifier")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-39") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-41") {
         addForeignKeyConstraint(baseColumnNames: "cs_ti_fk", baseTableName: "coverage_statement", constraintName: "FK2ocimr1uh2pogta68xl9ph3n", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "ti_id", referencedTableName: "title_instance")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-40") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-42") {
         addForeignKeyConstraint(baseColumnNames: "pci_pkg_fk", baseTableName: "package_content_item", constraintName: "FK4u9t780a3pgjy1wxsdn8r131k", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "pkg_id", referencedTableName: "package")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-41") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-43") {
         addForeignKeyConstraint(baseColumnNames: "sa_agreement_type", baseTableName: "subscription_agreement", constraintName: "FK613exmd4qa6bjjdycx9kot0yp", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "rdv_id", referencedTableName: "refdata_value")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-42") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-44") {
         addForeignKeyConstraint(baseColumnNames: "io_status_fk", baseTableName: "identifier_occurrence", constraintName: "FK930t3v9wtioa9a9j5013au5ci", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "rdv_id", referencedTableName: "refdata_value")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-43") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-45") {
         addForeignKeyConstraint(baseColumnNames: "ali_owner_fk", baseTableName: "agreement_line_item", constraintName: "FKa7dr5lr4wj3ti2kso4tlc99l5", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "sa_id", referencedTableName: "subscription_agreement")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-44") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-46") {
         addForeignKeyConstraint(baseColumnNames: "io_ti_fk", baseTableName: "identifier_occurrence", constraintName: "FKat7yej3qg0w5ppb0t4akj51wl", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "ti_id", referencedTableName: "title_instance")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-45") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-47") {
         addForeignKeyConstraint(baseColumnNames: "id_ns_fk", baseTableName: "identifier", constraintName: "FKby5jjtajics8edtt193lwtnwv", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "idns_id", referencedTableName: "identifier_namespace")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-46") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-48") {
         addForeignKeyConstraint(baseColumnNames: "cs_pci_fk", baseTableName: "coverage_statement", constraintName: "FKciqq54dwgdmv0ta5ugs58sn36", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "pci_id", referencedTableName: "package_content_item")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-47") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-49") {
         addForeignKeyConstraint(baseColumnNames: "cs_pti_fk", baseTableName: "coverage_statement", constraintName: "FKdj82640bdcj4dfrbn0aqdgbfp", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "pti_id", referencedTableName: "platform_title_instance")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-48") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-50") {
         addForeignKeyConstraint(baseColumnNames: "pti_ti_fk", baseTableName: "platform_title_instance", constraintName: "FKedoadk035beg5u3vi2232pq9m", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "ti_id", referencedTableName: "title_instance")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-49") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-51") {
         addForeignKeyConstraint(baseColumnNames: "pl_owner_fk", baseTableName: "platform_locator", constraintName: "FKfn4ls5f77sc18cq9c8owlkgtp", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "pt_id", referencedTableName: "platform")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-50") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-52") {
         addForeignKeyConstraint(baseColumnNames: "co_pci_fk", baseTableName: "holdings_coverage", constraintName: "FKg7ik6sa6xovg5fw2ijwy9kjji", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "ali_id", referencedTableName: "agreement_line_item")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-51") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-53") {
         addForeignKeyConstraint(baseColumnNames: "ali_pti_fk", baseTableName: "agreement_line_item", constraintName: "FKgmfigdcxicltbus9fv6h6j9xo", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "pti_id", referencedTableName: "platform_title_instance")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-52") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-54") {
         addForeignKeyConstraint(baseColumnNames: "rdv_owner", baseTableName: "refdata_value", constraintName: "FKh4fon2a7k4y8b2sicjm0i6oy8", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "rdc_id", referencedTableName: "refdata_category")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-53") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-55") {
         addForeignKeyConstraint(baseColumnNames: "ali_pkg_fk", baseTableName: "agreement_line_item", constraintName: "FKjukl0v6gkoqx79lndcmn06r4v", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "pkg_id", referencedTableName: "package")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-54") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-56") {
         addForeignKeyConstraint(baseColumnNames: "ali_pci_fk", baseTableName: "agreement_line_item", constraintName: "FKmvuf8qwj0wxpgkedxclp3xlc5", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "pci_id", referencedTableName: "package_content_item")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-55") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-57") {
         addForeignKeyConstraint(baseColumnNames: "pci_pti_fk", baseTableName: "package_content_item", constraintName: "FKostrwqec52cid7enxbr4b2loe", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "pti_id", referencedTableName: "platform_title_instance")
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1523896364832-56") {
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-58") {
         addForeignKeyConstraint(baseColumnNames: "pti_pt_fk", baseTableName: "platform_title_instance", constraintName: "FKtlecp40x0sb3rd9w4qi16lcu0", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "pt_id", referencedTableName: "platform")
     }
 }
