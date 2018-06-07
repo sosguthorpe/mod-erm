@@ -86,11 +86,18 @@
         "visible": false
       },
       {
+        "permissionName": "module.olf/erm-stripes.enabled",
+        "displayName": "OLF ERM (alt)",
+        "description": "Base property to enable any access the OLF ERM module",
+        "visible": false
+      },
+      {
         "permissionName": "olf-erm.user",
         "displayName": "OLF ERM - User",
         "description": "A user of OLF ERM",
         "subPermissions": [
-          "module.@olf/erm-stripes.enabled"
+          "module.@olf/erm-stripes.enabled",
+          "module.olf/erm-stripes.enabled"
         ],
         "visible": true
       }
