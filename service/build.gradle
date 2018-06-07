@@ -105,6 +105,8 @@ sourceSets {
   }
 }
 
+bootRepackage.withJarTask = jar
+
 task generateDescriptors(type: Copy) {
 
   dependsOn buildProperties
