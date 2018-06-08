@@ -13,8 +13,8 @@ class Application extends GrailsAutoConfiguration {
     GrailsApp.run(Application, args)
   }
   
-  @Bean
-  UndertowEmbeddedServletContainerFactory embeddedServletContainerFactory(){
-      new UndertowEmbeddedServletContainerFactory()
-  }
+//  @Bean
+//  UndertowEmbeddedServletContainerFactory embeddedServletContainerFactory(){
+//      new UndertowEmbeddedServletContainerFactory()
+//  }
 }
