@@ -18,7 +18,7 @@ group "org.olf"
 
 apply plugin:"eclipse"
 apply plugin:"idea"
-apply plugin:"war"
+//apply plugin:"war"
 apply plugin:"org.grails.grails-web"
 apply plugin:"org.grails.plugins.views-json"
 
@@ -105,8 +105,6 @@ sourceSets {
   }
 }
 
-bootRepackage.withJarTask = jar
-
 task generateDescriptors(type: Copy) {
 
   dependsOn buildProperties
@@ -154,9 +152,7 @@ springBoot {
   // executable archive file.
   executable = true
   embeddedLaunchScriptProperties = [
-    'inlinedConfScript': 'spring-boot.conf',
-    'logFolder': '${jarfolder}',
-    'pidFolder': '${jarfolder}'
+    'inlinedConfScript': 'spring-boot.conf'
   ]
 }
 
