@@ -1,0 +1,21 @@
+#!/bin/bash -e
+
+if [ $# -eq 2 ] && [ "$1" == "--register-enable" ]; then
+
+    NAME="$2"
+    CLEAN_NAME=$( echo "$NAME" | sed 's/[^a-zA-Z0-9\-]//g' | sed 's/[\-]+/_/g' | sed 's/\(.*\)/\U\1/' )
+
+    # The name passed in should represent the service name associated with this controller.
+    ME_HOST=${"$(CLEAN_NAME)_SERVICE_HOST"}
+    ME_PORT=${"$(CLEAN_NAME)_SERVICE_PORT"}
+    
+    OKAPI="http://$OKAPI_SERVICE_HOST:$OKAPI_SERVICE_PORT"
+#     curl -XDELETE "$OKAPI/_/discovery/modules/$NAME/$ME_HOST" && \
+#     curl -XDELETE "$OKAPI/_/proxy/modules/$NAME"
+    
+    curl -XPOST "$OKAPI/_/proxy/modules -d @/home/dockeruser/app-root/okapi/ModuleDescriptor.json"
+    curl -XPOST "$OKAPI/_/discovery/modules -d '{ \"srvcId\": \"$NAME\", \"instId\": "$ME_HOST", \"url\": \"http://$ME_HOST:$ME_PORT/\" }'"
+    
+else 
+  exec run
+fi

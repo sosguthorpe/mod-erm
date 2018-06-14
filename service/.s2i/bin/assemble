@@ -1,13 +1,13 @@
 #!/bin/bash
-echo " <-- Before assembling"
-
 assemble
 rc=$?
 
 if [ $rc -eq 0 ]; then
-    echo " <-- After successful assembling"
+  echo " --> Moving okapi resources"
+  mv build/resources/okapi ~/app-root/okapi
+  
 else
-    echo " <-- After failed assembling"
+  echo " --> After failed assembling"
 fi
 
 exit $rc
