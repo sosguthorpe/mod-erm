@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/bash -e
 assemble
 rc=$?
 
 if [ $rc -eq 0 ]; then
   echo " --> Moving okapi resources"
-  mv build/resources/okapi ~/app-root/okapi
+  mv /tmp/src/build/resources/okapi ~/app-root/okapi
   
 else
   echo " --> After failed assembling"
