@@ -1,6 +1,5 @@
 /.*
 !/.gitignore
-!/.s2i
 /bin
 /build
 /_settings.gradle
