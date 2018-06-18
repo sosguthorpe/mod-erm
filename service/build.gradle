@@ -26,7 +26,6 @@ repositories {
   mavenLocal()
   maven { url 'https://repo.grails.org/grails/core' }
   maven { url 'http://maven.k-int.com/content/repositories/releases' }
-  maven { url 'http://maven.k-int.com/content/repositories/private' }
 }
 
 dependencies {
@@ -80,7 +79,7 @@ dependencies {
 // Changed this to enable inline development of the includes listed below.
 def includes = [
   'web-toolkit'   : 'com.k_int.grails:web-toolkit:3.3.4',
-  'grails-okapi'  : 'com.k_int.okapi:grails-okapi:3.3.6'
+  'grails-okapi'  : 'com.k_int.okapi:grails-okapi:3.3.7'
 ]
 
 bootRun {
@@ -132,10 +131,10 @@ task generateDescriptors(type: Copy) {
     props.putAll(cs.parse(properties))
   }
 
-  from ('./src/okapi') {
+  from ('./src/main/okapi') {
     include '*-template.json'
   }
-  into './build/resources/okapi'
+  into './build/resources/main/okapi'
   filteringCharset = 'UTF-8'
   expand(props)
   rename { String fileName ->
