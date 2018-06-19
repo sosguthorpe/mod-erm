@@ -147,12 +147,10 @@ jar {
 }
 
 springBoot {
+  
   // Enable the creation of a fully
   // executable archive file.
   executable = true
-  embeddedLaunchScriptProperties = [
-    'inlinedConfScript': 'spring-boot.conf'
-  ]
 }
 
 buildProperties.doLast {
