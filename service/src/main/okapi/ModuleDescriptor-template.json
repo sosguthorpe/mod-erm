@@ -80,12 +80,6 @@
   ],
   "permissionSets": [
     {
-      "permissionName": "module.@olf/erm-stripes.enabled",
-      "displayName": "OLF ERM",
-      "description": "Base property to enable any access the OLF ERM module",
-      "visible": false
-    },
-    {
       "permissionName": "module.erm-stripes.enabled",
       "displayName": "OLF ERM",
       "description": "Base property to enable any access the OLF ERM module",
@@ -96,7 +90,6 @@
       "displayName": "OLF ERM - User",
       "description": "A user of OLF ERM",
       "subPermissions": [
-        "module.@olf/erm-stripes.enabled",
         "module.erm-stripes.enabled"
       ],
       "visible": true
