@@ -151,7 +151,7 @@ public class PackageIngestService {
     // At the end - Any PCIs that are currently live (Don't have a removedTimestamp) but whos lastSeenTimestamp is < result.updateTime
     // were not found on this run, and have been removed. We *may* introduce some extra checks here - like 3 times or a time delay, but for now,
     // this is how we detect deletions in the package file.
-    log.debug("end of packageUpsert. Remove any content items that have disappeared since the last upload. ${pkg.packageName}/${pkg.packageSource}/${pkg.packageSlug}/${result.updateTime}");
+    log.debug("end of packageUpsert. Remove any content items that have disappeared since the last upload. ${pkg.name}/${pkg.source}/${pkg.reference}/${result.updateTime}");
     PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime',[pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
       log.debug("Removal candidate: ${removal_candidate}");
       removal_candidate.removedTimestamp = result.updateTime;
