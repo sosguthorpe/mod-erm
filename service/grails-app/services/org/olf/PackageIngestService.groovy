@@ -122,15 +122,6 @@ public class PackageIngestService {
         log.error("row ${rownum} Skipping ${pc} - No identifiers.. This will change in an upcoming commit where we do normalised title matching");
       }
 
-      // At the end - Any PCIs that are currently live (Don't have a removedTimestamp) but whos lastSeenTimestamp is < result.updateTime
-      // were not found on this run, and have been removed. We *may* introduce some extra checks here - like 3 times or a time delay, but for now,
-      // this is how we detect deletions in the package file.
-      PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime',[pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
-        log.debug("Removal candidate: ${removal_candidate}");
-        removal_candidate.removedTimestamp = result.updateTime;
-        removal_candidate.save(flush:true, failOnError:true);
-      }
-
       // {
       //   "title": "Nordic Psychology",
       //   "instanceMedium": "electronic",
@@ -156,6 +147,17 @@ public class PackageIngestService {
       //   "coverageNote": null
       //   }
     }
+
+    // At the end - Any PCIs that are currently live (Don't have a removedTimestamp) but whos lastSeenTimestamp is < result.updateTime
+    // were not found on this run, and have been removed. We *may* introduce some extra checks here - like 3 times or a time delay, but for now,
+    // this is how we detect deletions in the package file.
+    log.debug("end of packageUpsert. Remove any content items that have disappeared since the last upload. ${pkg.packageName}/${pkg.packageSource}/${pkg.packageSlug}/${result.updateTime}");
+    PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime',[pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
+      log.debug("Removal candidate: ${removal_candidate}");
+      removal_candidate.removedTimestamp = result.updateTime;
+      removal_candidate.save(flush:true, failOnError:true);
+    }
+
 
     return result;
   }
