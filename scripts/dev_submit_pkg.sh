@@ -7,6 +7,7 @@
 curl --header "X-Okapi-Tenant: diku" http://localhost:8080/_/tenant -X POST
 
 # Prepolpulate with data.
+KI_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/simple_pkg_1.json http://localhost:8080/admin/loadPackage | jq -r ".newPackageId"`
 BSEC_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/bentham_science_bentham_science_eduserv_complete_collection_2015_2017_1386.json http://localhost:8080/admin/loadPackage | jq -r ".newPackageId"`
 
 APA_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/apa_1062.json http://localhost:8080/admin/loadPackage | jq -r ".newPackageId"`
@@ -79,11 +80,13 @@ RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application
   rectype:"1",
   active:true
 }
-'
+'`
 
 
 # If all goes well, you'll get a status message back. After that, try searching your subscribed titles:
+
 curl --header "X-Okapi-Tenant: diku" http://localhost:8080/content -X GET
+
 
 # Or try the codex interface instead
 #curl --header "X-Okapi-Tenant: diku" http://localhost:8080/codex-instances -X GET
@@ -91,5 +94,3 @@ curl --header "X-Okapi-Tenant: diku" http://localhost:8080/content -X GET
 # Pull an ID from that record and ask the codex interface for some details
 #RECORD_ID="ff80818162a5e9600162a5e9ef63002f"
 #curl --header "X-Okapi-Tenant: diku" http://localhost:8080/codex-instances/$RECORD_ID -X GET
-
-

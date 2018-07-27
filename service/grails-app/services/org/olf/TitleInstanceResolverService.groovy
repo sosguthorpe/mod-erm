@@ -22,6 +22,7 @@ public class TitleInstanceResolverService {
   private static def class_one_namespaces = [
     'isbn',
     'issn',
+    'eissn',
     'doi'
   ];
 
@@ -54,20 +55,19 @@ public class TitleInstanceResolverService {
     List<TitleInstance> candidate_list = classOneMatch(citation.instanceIdentifiers);
 
     if ( candidate_list != null ) {
-      switch ( candidate_list.size() ) {
+      int num_matches = candidate_list.size()
+      switch ( num_matches ) {
         case(0):
           log.debug("No title match -- create");
           result = createNewTitleInstance(citation);
           break;
-
         case(1):
           log.debug("Exact match.");
           result = candidate_list.get(0);
           break;
-
         default:
-          log.error("title match returned more than 1 result.");
-          throw new RuntimeException("Title match returned too may items");
+          log.error("title matched {num_matches} records. Unable to continue. Matching IDs: ${candidate_list.collect { it.id }}");
+          throw new RuntimeException("Title match returned too many items (${num_matches})");
           break;
       }
     }
@@ -147,8 +147,9 @@ public class TitleInstanceResolverService {
     // If it returns more than 1 then we are in a sticky situation, and cleverness is needed.
     List<TitleInstance> result = new ArrayList<TitleInstance>()
 
+
     identifiers.each { id ->
-      if ( class_one_namespaces.contains(id.namespace) ) {
+      if ( class_one_namespaces.contains(id.namespace.toLowerCase()) ) {
         // Look up each identifier
         def id_matches = Identifier.executeQuery('select id from Identifier as id where id.value = :value and id.ns.value = :ns',[value:id.value, ns:id.namespace])
 
@@ -163,11 +164,15 @@ public class TitleInstanceResolverService {
                 // We have already seen this title, so don't add it again
               }
               else {
+                log.debug("Adding title ${io.title.id} ${io.title.title} to matches for ${matched_id}");
                 result << io.title
               }
             }
           }
         }
+      }
+      else {
+        // log.debug("Identifier ${id} not from a class one namespace");
       }
     }
 
