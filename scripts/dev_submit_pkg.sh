@@ -79,7 +79,7 @@ RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application
   rectype:"1",
   active:true
 }
-'
+'`
 
 
 # If all goes well, you'll get a status message back. After that, try searching your subscribed titles:
