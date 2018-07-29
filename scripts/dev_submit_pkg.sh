@@ -9,7 +9,13 @@ curl --header "X-Okapi-Tenant: diku" http://localhost:8080/_/tenant -X POST
 # Prepolpulate with data.
 BSEC_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/bentham_science_bentham_science_eduserv_complete_collection_2015_2017_1386.json http://localhost:8080/admin/loadPackage | jq -r ".newPackageId"`
 
+echo Loaded Bentham Science Package $BSEC_PKG_ID
+
 APA_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/apa_1062.json http://localhost:8080/admin/loadPackage | jq -r ".newPackageId"`
+
+echo Loaded APA Science Package $APA_PKG_ID
+
+echo Lookup or create some refdata
 
 AGREEMENT_TRIAL_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/refdataValues/lookupOrCreate -d '
 {
@@ -27,6 +33,8 @@ AGREEMENT_DRAFT_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 }
 ' | jq -r ".id"`
 
+echo Create trial agreements
+
 # Create an agreement
 TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/sas -d '
 {
@@ -41,6 +49,8 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
 }
 ' | jq -r ".id"`
 
+echo Created trial agreement $TRIAL_AGREEMENT_ID
+
 # Create an agreement
 DRAFT_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/sas -d '
 {
@@ -52,11 +62,16 @@ DRAFT_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
 }
 ' | jq -r ".id"`
 
+echo Created draft agreement $DRAFT_AGREEMENT_ID
+
 # List agreements
 # AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" http://localhost:8080/sas -X GET | jq ".[0].id"`
+
 # List packages
 # We now get the package back when we load the package above, this is still a cool way to work tho
 # PACKAGE_ID=`curl --header "X-Okapi-Tenant: diku" http://localhost:8080/packages -X GET | jq ".[0].id"`
+
+echo Adding package $APA_PKG_ID to agreement $TRIAL_AGREEMENT_ID
 
 curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/sas/$TRIAL_AGREEMENT_ID/addToAgreement -d ' {
   content:[
@@ -64,6 +79,7 @@ curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST
   ]
 }
 '
+
 
 # Register a remote source
 RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/kbs -d '
