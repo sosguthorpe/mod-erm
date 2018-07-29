@@ -3,6 +3,18 @@
 
 # jq -r '.name'
 
+JQTEST=`echo '{  "value":"one" }' | jq -r ".value"`
+
+if [ $JQREST="one" ]
+then
+  echo JQ installed and working
+else
+  echo Please install JQ
+  exit 1
+fi
+
+echo Running
+
 # Create the tenant
 curl --header "X-Okapi-Tenant: diku" http://localhost:8080/_/tenant -X POST
 
