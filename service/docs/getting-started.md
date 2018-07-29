@@ -42,6 +42,8 @@ If you're running a local dockerized postgres, here is one way to get to the com
 To install and manage the following pre-requisites I recommend using [SDKMAN](http://sdkman.io/).
 - [Groovy](http://groovy-lang.org/)
 - [Grails](https://grails.org/)
+- See also: https://github.com/k-int/web-toolkit
+- See also: http://git.k-int.com/knowledge-integration-ltd/grails-okapi
 
 With sdkman installed as above it's as easy as opening a terminal and typing:
 * `sdk install groovy`
