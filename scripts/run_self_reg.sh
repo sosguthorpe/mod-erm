@@ -18,7 +18,7 @@ echo Start olf-erm in self-register mode
 # grails --grails.server.host=192.168.1.242 --grails.server.port=8090 --selfRegister=on run-app
 # java --grails.server.host=192.168.1.242 --grails.server.port=8090 --selfRegister=on -jar build/libs/olf-erm-1.0.jar
 
-# THis DOES work as expected however
-java -jar build/libs/olf-erm-1.0.jar --grails.server.host=192.168.1.242 --grails.server.port=8090 --selfRegister=on -jar build/libs/olf-erm-1.0.jar
-
+# THis DOES work as expected however - 
+# Start up an instance and self register but use the postgres instance inside the vagrant image
+java -jar build/libs/olf-erm-1.0.jar --grails.server.host=192.168.1.242 --grails.server.port=8090 --selfRegister=on --dataSource.username=folio_admin --dataSource.password=folio_admin --dataSource.url=jdbc:postgresql://localhost:5432/okapi_modules -jar build/libs/olf-erm-1.0.jar
 
