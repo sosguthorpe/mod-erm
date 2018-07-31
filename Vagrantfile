@@ -20,8 +20,9 @@ Vagrant.configure(2) do |config|
   # config.vm.box_version = "5.0.0-20180730.911"
     
   config.vm.provider "virtualbox" do |v|
-    v.memory = 8192
-    v.cpus = 4
+    # v.memory = 8192
+    v.memory = 6144
+    v.cpus = 5
   end
 
   #config.vm.provision "docker" do |d|
