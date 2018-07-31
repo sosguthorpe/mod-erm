@@ -16,8 +16,13 @@ Vagrant.configure(2) do |config|
   # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "folio/testing-backend"
   # config.vm.box_version = "5.0.0-20171215.10002"
-  config.vm.box_version = "5.0.0-20180726.898"
+  # config.vm.box_version = "5.0.0-20180726.898"
+  # config.vm.box_version = "5.0.0-20180730.911"
     
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 8192
+    v.cpus = 4
+  end
 
   #config.vm.provision "docker" do |d|
     # docker run -d --restart always --hostname rabbitmq -p 15672:15672 -p 5672:5672 --name rabbitmq -e RABBITMQ_DEFAULT_USER=adm -e RABBITMQ_DEFAULT_PASS=admpass rabbitmq:management
