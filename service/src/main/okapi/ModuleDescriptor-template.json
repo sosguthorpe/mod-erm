@@ -45,6 +45,12 @@
         },{
           "methods": ["GET"],
           "pathPattern": "/kiwt/*"
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/knowledgebase"
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/knowledgebase/*"
         }
       ]
     },{

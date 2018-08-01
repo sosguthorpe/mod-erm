@@ -183,6 +183,10 @@ databaseChangeLog = {
             column(name: "pkg_reference", type: "VARCHAR(255)") {
                 constraints(nullable: "false")
             }
+
+            column(name: "pkg_remote_kb", type: "VARCHAR(36)") {
+                constraints(nullable: "true")
+            }
         }
     }
 
