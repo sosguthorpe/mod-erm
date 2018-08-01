@@ -1,0 +1,32 @@
+package org.olf
+
+import org.olf.kb.RemoteKB
+
+import grails.gorm.multitenancy.CurrentTenant
+import groovy.util.logging.Slf4j
+import org.olf.kb.PackageContentItem
+
+/**
+ * The KbController providers read-only accress to the contents of any KB
+ * harvested by the erm module.
+ */
+@Slf4j
+@CurrentTenant
+class KbController {
+
+  private static String PCI_QRY = '''
+select pci.id, pci.pkg.source, pci.pkg.name, pci.pti.titleInstance.title, pci.pti.platform.name from PackageContentItem as pci
+'''
+
+  public KbController() {
+  }
+
+  /**
+   * Search and return  sourceKb, package, title, platform, itemtype, coverage summary
+   */
+  def index() {
+    def result = PackageContentItem.executeQuery(PCI_QRY, params);
+  }
+
+}
+
