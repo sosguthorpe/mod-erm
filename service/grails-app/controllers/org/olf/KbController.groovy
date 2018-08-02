@@ -5,6 +5,7 @@ import org.olf.kb.RemoteKB
 import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
 import org.olf.kb.PackageContentItem
+import grails.converters.JSON
 
 /**
  * The KbController providers read-only accress to the contents of any KB
@@ -15,7 +16,12 @@ import org.olf.kb.PackageContentItem
 class KbController {
 
   private static String PCI_QRY = '''
-select pci.id, pci.pkg.source, pci.pkg.name, pci.pti.titleInstance.title, pci.pti.platform.name from PackageContentItem as pci
+select pci.id, 
+       pci.pkg.source, 
+       pci.pkg.name, 
+       pci.pti.titleInstance.title, 
+       pci.pti.platform.name 
+from PackageContentItem as pci
 '''
 
   public KbController() {
@@ -25,7 +31,11 @@ select pci.id, pci.pkg.source, pci.pkg.name, pci.pti.titleInstance.title, pci.pt
    * Search and return  sourceKb, package, title, platform, itemtype, coverage summary
    */
   def index() {
-    def result = PackageContentItem.executeQuery(PCI_QRY, params);
+    log.debug("KbController::index");
+
+    def result = [:]
+    def package_items = PackageContentItem.executeQuery(PCI_QRY);
+    render result as JSON
   }
 
 }
