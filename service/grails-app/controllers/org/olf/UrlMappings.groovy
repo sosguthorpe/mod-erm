@@ -17,7 +17,7 @@ class UrlMappings {
        "/addToAgreement"(action:'addToAgreement')
     }
     '/packages'(resources: 'package')
-    "/pci"(resources:'packageContentItem')
+    "/ermpci"(resources:'packageContentItem')
 
     '/refdataValues'(resource: 'refdata') {
       "/lookupOrCreate"(controller:'refdata', action:'lookupOrCreate')

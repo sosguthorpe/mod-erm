@@ -51,6 +51,15 @@
         },{
           "methods": ["GET"],
           "pathPattern": "/knowledgebase/*"
+        }, {
+          "methods": ["GET", "POST"],
+          "pathPattern": "/ermpci"
+        },{
+          "methods": ["GET", "PUT", "DELETE"],
+          "pathPattern": "/ermpci/{id}"
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/ermpci/{id}/*"
         }
       ]
     },{
