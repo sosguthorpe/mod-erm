@@ -2,4 +2,19 @@ import groovy.transform.*
 import org.olf.kb.PackageContentItem
 
 @Field PackageContentItem packageContentItem
-json g.render(packageContentItem, [expand: ['pti','pkg']])
+json {
+  pci_id packageContentItem.id
+  title packageContentItem.pti.titleInstance.title
+  title_id packageContentItem.pti.titleInstance.id
+  platform packageContentItem.pti.platform.name
+  platform_id packageContentItem.pti.platform.id
+  package_id packageContentItem.pkg.id
+  package_source packageContentItem.pkg.source
+  package_kb packageContentItem.pkg.remoteKb?.name
+  package_name packageContentItem.pkg.name
+  coverageNote packageContentItem.note
+  coverageDepth packageContentItem.depth
+  dateAdded packageContentItem.accessStart
+  dateRemoved packageContentItem.accessEnd
+  coverage packageContentItem.generateCoverageSummary()
+}
