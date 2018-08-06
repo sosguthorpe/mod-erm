@@ -7,8 +7,10 @@
 
 echo Call olf-erm through okapi
 
-curl --header "X-Okapi-Tenant: diku" http://localhost:9130/content -X GET
+curl --header "X-Okapi-Tenant: diku" http://localhost:9130/erm/content -X GET
 
-curl --header "X-Okapi-Tenant: diku" http://localhost:9130/ermpci?page=1&perPage=10&stats=true -X GET
-curl --header "X-Okapi-Tenant: diku" http://localhost:8080/ermpci?page=1&perPage=10&stats=true -X GET
+curl --header "X-Okapi-Tenant: diku" http://localhost:9130/erm/pci?page=1&perPage=10&stats=true -X GET
+curl --header "X-Okapi-Tenant: diku" http://localhost:8080/erm/pci?page=1&perPage=10&stats=true -X GET
+
+curl --header "X-Okapi-Tenant: diku" http://localhost:8080/erm/packages?page=1&perPage=10&stats=true -X GET
 
