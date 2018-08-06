@@ -7,12 +7,12 @@
 curl --header "X-Okapi-Tenant: diku" http://localhost:8080/_/tenant -X POST
 
 # Prepolpulate with data.
-KI_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/simple_pkg_1.json http://localhost:8080/admin/loadPackage | jq -r ".newPackageId"`
+KI_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/simple_pkg_1.json http://localhost:8080/erm/admin/loadPackage | jq -r ".newPackageId"`
 BSEC_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/bentham_science_bentham_science_eduserv_complete_collection_2015_2017_1386.json http://localhost:8080/admin/loadPackage | jq -r ".newPackageId"`
 
-APA_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/apa_1062.json http://localhost:8080/admin/loadPackage | jq -r ".newPackageId"`
+APA_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/apa_1062.json http://localhost:8080/erm/admin/loadPackage | jq -r ".newPackageId"`
 
-AGREEMENT_TRIAL_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/refdataValues/lookupOrCreate -d '
+AGREEMENT_TRIAL_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
 {
   category: "AgreementType",
   value: "TRIAL",
@@ -20,7 +20,7 @@ AGREEMENT_TRIAL_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 }
 ' | jq -r ".id"`
 
-AGREEMENT_DRAFT_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/refdataValues/lookupOrCreate -d '
+AGREEMENT_DRAFT_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
 {
   category: "AgreementType",
   value: "DRAFT",
@@ -29,7 +29,7 @@ AGREEMENT_DRAFT_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 ' | jq -r ".id"`
 
 # Create an agreement
-TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/sas -d '
+TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas -d '
 {
   name: "Trial Agreement LR 001",
   agreementType: { id: "'"$AGREEMENT_TRIAL_RDV"'" },
@@ -43,7 +43,7 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
 ' | jq -r ".id"`
 
 # Create an agreement
-DRAFT_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/sas -d '
+DRAFT_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas -d '
 {
   name: "Draft Agreement LR 002",
   agreementType: { id: "'"$AGREEMENT_DRAFT_RDV"'" },
@@ -59,7 +59,7 @@ DRAFT_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
 # We now get the package back when we load the package above, this is still a cool way to work tho
 # PACKAGE_ID=`curl --header "X-Okapi-Tenant: diku" http://localhost:8080/packages -X GET | jq ".[0].id"`
 
-curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/sas/$TRIAL_AGREEMENT_ID/addToAgreement -d ' {
+curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas/$TRIAL_AGREEMENT_ID/addToAgreement -d ' {
   content:[
     { "type":"package", "id": "'"$APA_PKG_ID"'" }
   ]
@@ -67,7 +67,7 @@ curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST
 '
 
 # Register a remote source
-RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/kbs -d '
+RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/kbs -d '
 {
   name:"KB+",
   type:"KB-OAI-V1",
@@ -85,7 +85,7 @@ RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application
 
 # If all goes well, you'll get a status message back. After that, try searching your subscribed titles:
 
-curl --header "X-Okapi-Tenant: diku" http://localhost:8080/content -X GET
+curl --header "X-Okapi-Tenant: diku" http://localhost:8080/erm/content -X GET
 
 
 # Or try the codex interface instead
