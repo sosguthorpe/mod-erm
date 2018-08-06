@@ -6,7 +6,7 @@ import grails.gorm.MultiTenant
 /**
  * mod-erm representation of a package
  */
-public class Package implements MultiTenant<Package> {
+public class Pkg implements MultiTenant<Pkg> {
 
   String id
   String name
@@ -15,6 +15,7 @@ public class Package implements MultiTenant<Package> {
   RemoteKB remoteKb
 
   static mapping = {
+                table 'package'
                    id column:'pkg_id', generator: 'uuid', length:36
               version column:'pkg_version'
                  name column:'pkg_name'

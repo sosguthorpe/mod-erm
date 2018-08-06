@@ -5,7 +5,6 @@ import org.olf.kb.RemoteKB
 import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.WithoutTenant
 import grails.gorm.transactions.Transactional
-import org.olf.kb.Package;
 import org.olf.kb.TitleInstance
 import org.olf.kb.Identifier
 import org.olf.kb.IdentifierNamespace

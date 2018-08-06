@@ -4,7 +4,7 @@ import grails.gorm.multitenancy.Tenants
 import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.WithoutTenant
 import grails.gorm.transactions.Transactional
-import org.olf.kb.Package;
+import org.olf.kb.Pkg;
 import org.olf.kb.Platform;
 import org.olf.kb.TitleInstance;
 import org.olf.kb.PlatformTitleInstance;
@@ -36,10 +36,10 @@ public class PackageIngestService {
     result.updateTime = System.currentTimeMillis();
 
     // header.packageSlug contains the package maintainers authoritative identifier for this package.
-    def pkg = Package.findBySourceAndReference(package_data.header.packageSource, package_data.header.packageSlug)
+    def pkg = Pkg.findBySourceAndReference(package_data.header.packageSource, package_data.header.packageSlug)
 
     if ( pkg == null ) {
-      pkg = new Package(
+      pkg = new Pkg(
                              name: package_data.header.packageName,
                            source: package_data.header.packageSource,
                         reference: package_data.header.packageSlug).save(flush:true, failOnError:true);

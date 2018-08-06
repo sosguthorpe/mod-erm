@@ -9,7 +9,7 @@ import grails.gorm.MultiTenant
 public class PackageContentItem implements MultiTenant<PackageContentItem> {
 
   String id
-  Package pkg
+  Pkg pkg
   PlatformTitleInstance pti
 
   // Track this package content item - when did we first detect it (added) when did we last

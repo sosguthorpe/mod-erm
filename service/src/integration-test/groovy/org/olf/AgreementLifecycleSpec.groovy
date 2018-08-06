@@ -14,7 +14,7 @@ import spock.lang.Shared
 import grails.gorm.multitenancy.Tenants
 import org.olf.general.RefdataCategory
 import org.olf.erm.SubscriptionAgreement
-import org.olf.kb.Package
+import org.olf.kb.Pkg
 import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance
 import groovy.json.JsonSlurper
@@ -43,7 +43,7 @@ class AgreementLifecycleSpec extends GebSpec {
   private Map test_info = [:]
 
   private static final String TENANT='TestTenantH'
-  private static final String PACKAGE_QUERY = 'select p.id from Package as p where p.name = :name'
+  private static final String PACKAGE_QUERY = 'select p.id from Pkg as p where p.name = :name'
 
   // This is a bit of a shortcut - In this test we have loaded packages where titles only appear in one place. That
   // means we can be very general when looking up items. If we add more test data, then we would need to add more
@@ -214,7 +214,7 @@ and pti.platform.name = :platform
 
         agreement_id = SubscriptionAgreement.executeQuery('select sa.id from SubscriptionAgreement as sa where sa.name = :name',[name:agreement_name]).get(0)
 
-        pkg_id = Package.executeQuery(PACKAGE_QUERY,[name:'American Psychological Association:Master']).get(0)
+        pkg_id = Pkg.executeQuery(PACKAGE_QUERY,[name:'American Psychological Association:Master']).get(0)
 
         single_package_item_id = PackageContentItem.executeQuery(PACKAGE_CONTENT_ITEM_QUERY,[title:'Anti Inflammatory & Anti allergy Agents in Medicinal Chemistry']).get(0);
 

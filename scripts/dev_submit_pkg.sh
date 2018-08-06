@@ -3,9 +3,6 @@
 
 # jq -r '.name'
 
-# Create the tenant
-curl --header "X-Okapi-Tenant: diku" http://localhost:8080/_/tenant -X POST
-
 # Prepolpulate with data.
 KI_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/simple_pkg_1.json http://localhost:8080/erm/admin/loadPackage | jq -r ".newPackageId"`
 BSEC_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/bentham_science_bentham_science_eduserv_complete_collection_2015_2017_1386.json http://localhost:8080/admin/loadPackage | jq -r ".newPackageId"`
