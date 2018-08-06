@@ -16,8 +16,8 @@ class UrlMappings {
     '/sas'(resources: 'subscriptionAgreement') {
        "/addToAgreement"(action:'addToAgreement')
     }
-    '/packages'(resources: 'package')
-    "/ermpci"(resources:'packageContentItem')
+    '/erm/packages'(resources: 'package')
+    "/erm/pci"(resources:'packageContentItem')
 
     '/refdataValues'(resource: 'refdata') {
       "/lookupOrCreate"(controller:'refdata', action:'lookupOrCreate')

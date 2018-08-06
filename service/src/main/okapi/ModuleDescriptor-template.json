@@ -53,13 +53,13 @@
           "pathPattern": "/knowledgebase/*"
         }, {
           "methods": ["GET", "POST"],
-          "pathPattern": "/ermpci"
+          "pathPattern": "/erm/pci"
         },{
           "methods": ["GET", "PUT", "DELETE"],
-          "pathPattern": "/ermpci/{id}"
+          "pathPattern": "/erm/pci/{id}"
         },{
           "methods": ["GET"],
-          "pathPattern": "/ermpci/{id}/*"
+          "pathPattern": "/erm/pci/{id}/*"
         }
       ]
     },{
