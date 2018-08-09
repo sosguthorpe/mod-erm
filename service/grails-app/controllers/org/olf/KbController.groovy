@@ -47,12 +47,9 @@ from PackageContentItem as pci
    *  remote KBs
    */
   public triggerCacheUpdate() {
-    String tenant_id = request.getHeader(TENANT)?.toLowerCase()
-
-    log.debug("KbController::triggerCacheUpdate() - ${tenant_id}");
 
     if ( tenant_id && tenant_id.length() > 0 ) {
-      kbHarvestService.triggerCacheUpdate(tenant_id)
+      kbHarvestService.triggerCacheUpdate()
     }
 
     Map result = [

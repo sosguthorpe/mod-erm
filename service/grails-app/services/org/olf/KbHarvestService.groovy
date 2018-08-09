@@ -22,9 +22,15 @@ class KbHarvestService {
     log.info "Simple Job every 45 seconds :{}", new SimpleDateFormat("dd/M/yyyy hh:mm:ss").format(new Date())
   }
 
-  public void triggerCacheUpdate(String tenant) {
-    log.debug("KBHarvestService::triggerCacheUpdate(${tenant})");
+  public void triggerCacheUpdate() {
+    log.debug("KBHarvestService::triggerCacheUpdate()");
+    // org.olf.kb.adapters.KBPlusAdapter kbpa = new org.olf.kb.adapters.KBPlusAdapter()
+    RemoteKB.list() { remotekb ->
+    
+    }
   }
+
+
 
   // @CompileDynamic
   // Date startAtDate() { 

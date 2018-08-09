@@ -71,7 +71,7 @@ curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST
 RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/kbs -d '
 {
   name:"KB+",
-  type:"KB-OAI-V1",
+  type:"KBPlusREST",
   cursor:null,
   uri:"",
   listPrefix:"https://www.kbplus.ac.uk/kbplus7/api/oai",
