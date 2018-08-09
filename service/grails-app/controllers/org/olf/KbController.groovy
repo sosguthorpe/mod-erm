@@ -15,6 +15,8 @@ import grails.converters.JSON
 @CurrentTenant
 class KbController {
 
+  public static final String TENANT = "X-Okapi-Tenant";
+
   private static String PCI_QRY = '''
 select pci.id, 
        pci.pkg.source, 
@@ -23,6 +25,8 @@ select pci.id,
        pci.pti.platform.name 
 from PackageContentItem as pci
 '''
+
+  def kbHarvestService
 
   public KbController() {
   }
@@ -35,6 +39,26 @@ from PackageContentItem as pci
 
     def result = [:]
     def package_items = PackageContentItem.executeQuery(PCI_QRY);
+    render result as JSON
+  }
+
+  /**
+   *  Temporary helper method which provides a REST endpoint to trigger an update of the package cache from
+   *  remote KBs
+   */
+  public triggerCacheUpdate() {
+    String tenant_id = request.getHeader(TENANT)?.toLowerCase()
+
+    log.debug("KbController::triggerCacheUpdate() - ${tenant_id}");
+
+    if ( tenant_id && tenant_id.length() > 0 ) {
+      kbHarvestService.triggerCacheUpdate(tenant_id)
+    }
+
+    Map result = [
+      'status':'KB Sync requested'
+    ]
+
     render result as JSON
   }
 

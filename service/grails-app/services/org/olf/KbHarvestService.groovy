@@ -15,11 +15,15 @@ import groovy.util.logging.Slf4j
 @Slf4j 
 @CompileStatic 
 @Transactional
-class KBHarvestService {
+class KbHarvestService {
 
   @Scheduled(fixedDelay = 45000L, initialDelay = 5000L) 
   void triggerSync() {
     log.info "Simple Job every 45 seconds :{}", new SimpleDateFormat("dd/M/yyyy hh:mm:ss").format(new Date())
+  }
+
+  public void triggerCacheUpdate(String tenant) {
+    log.debug("KBHarvestService::triggerCacheUpdate(${tenant})");
   }
 
   // @CompileDynamic

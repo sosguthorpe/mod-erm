@@ -32,6 +32,7 @@ class UrlMappings {
     "/erm/codex-instances/$id" ( controller:'subscribedContent', action:'codexItem')
 
     "/erm/knowledgebase" ( controller:'kb', action:'index')
+    "/erm/knowledgebase/$action" ( controller:'kb' )
 
   }
 }
