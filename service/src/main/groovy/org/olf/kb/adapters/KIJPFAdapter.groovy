@@ -58,8 +58,9 @@ public class KIJPFAdapter implements KBCacheUpdater {
       uri.query=query_params
       response.success = { resp, json ->
         // println "Success! ${resp.status} ${json}"
-        cursor = processPage(cursor, json)
-        cache.updateCursor(source_id,cursor);
+        Map page_result = processPage(cursor, json, source_id, cache)
+        println("processPage returned, processed ${page_result.count} packages");
+        cache.updateCursor(source_id,page_result.new_cursor);
       }
 
       response.failure = { resp ->
@@ -70,19 +71,38 @@ public class KIJPFAdapter implements KBCacheUpdater {
   }
 
 
-  private String processPage(cursor, package_list) {
-    def new_cursor = cursor;
+  private Map processPage(String cursor, Object package_list, String source_id, KBCache cache) {
+    def result = [:]
+    result.new_cursor = cursor;
+    result.count = 0;
     package_list.packages.each { pkg ->
+      result.count++;
+      System.out.println(result.count)
       System.out.println(pkg.name);
-      System.out.println(pkg.identifier);
-      System.out.println(pkg.lastUpdated);
       System.out.println(pkg.packageContentAsJson);
-      if ( pkg.lastUpdated > new_cursor ) {
-        System.out.println("New cursor value");
-        new_cursor = pkg.lastUpdated;
+
+      processPackage(pkg.packageContentAsJson, source_id, cache);
+
+      if ( pkg.lastUpdated > result.new_cursor ) {
+        System.out.println("New cursor value - ${pkg.lastUpdated} > ${result.new_cursor} ");
+        result.new_cursor = pkg.lastUpdated;
       }
     }
-    return new_cursor;
+    return result;
+  }
+
+  private void processPackage(String url, String source_id, KBCache cache) {
+    println("processPackage(${url},${source_id}) -- fetching");
+    def jpf_api = new HTTPBuilder(url)
+    jpf_api.request(Method.GET) { req ->
+      headers.Accept = 'application/json'
+      response.success = { resp, json ->
+        cache.onPackageChange(source_id, json);
+      }
+      response.failure = { resp ->
+        println "Request failed with status ${resp.status}"
+      }
+    }
   }
 
 }

@@ -30,6 +30,7 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
 
   public void updateCursor(String rkb_id, String cursor) {
     log.debug("KnowledgeBaseCacheService::updateCursor(${rkb_id},${cursor})");
+    RemoteKB.executeUpdate('update RemoteKB rkb set rkb.cursor = :n where rkb.id = :id',[n:cursor, id:rkb_id]);
   }
 
 
@@ -43,13 +44,16 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
    *  Examples can be found in src/intergation-test/resources/packages. The function should be called with the
    *  result of parsing that JSON into a map, eg via JsonSlurper
    */
-  public void onPackageChange(Object canonical_package_definition) {
+  public void onPackageChange(String rkb_id, 
+                              Object canonical_package_definition) {
+    log.debug("onPackageChange(${rkb_id},...)");
   }
 
   /**
    *  Called when a remote KB package removal is detected
    */
-  public void onPackageRemoved(String authority,
+  public void onPackageRemoved(String rkb_id,
+                               String authority,
                                String authority_id_of_package) {
   }
 
