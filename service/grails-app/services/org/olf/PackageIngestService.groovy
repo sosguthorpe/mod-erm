@@ -51,74 +51,81 @@ public class PackageIngestService {
 
     package_data.packageContents.each { pc ->
       log.debug("Try to resolve ${pc}");
+
+      // We should really narrow this down to the list of class one identifiers.
       if ( pc.instanceIdentifiers?.size() > 0 ) {
-        TitleInstance title = titleInstanceResolverService.resolve(pc);
-
-        if ( pc.platformUrl ) {
-          log.debug("platform ${pc.platformUrl}");
-          // lets try and work out the platform for the item
-          try {
-            Platform platform = Platform.resolve(pc.platformUrl);
-            log.debug("Platform: ${platform}");
-
-            // See if we already have a title platform record for the presence of this title on this platform
-            PlatformTitleInstance pti = PlatformTitleInstance.findByTitleInstanceAndPlatform(title, platform)
-
-            if ( pti == null ) 
-              pti = new PlatformTitleInstance(titleInstance:title, platform:platform).save(flush:true, failOnError:true);
-
-
-            // Lookup or create a package content item record for this title on this platform in this package
-            // We only check for currently live pci records, as titles can come and go from the package.
-            // N.B. addedTimestamp removedTimestamp lastSeenTimestamp
-            def pci_qr = PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pti = :pti and pci.pkg = :pkg and pci.removedTimestamp is null',[pti:pti, pkg:pkg]);
-            PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null; 
-
-            if ( pci == null ) {
-              log.debug("Create new package content item for title ${pti}");
-              pci = new PackageContentItem(
-                                           pti:pti, 
-                                           pkg:pkg, 
-                                           note:pc.coverageNote, 
-                                           depth:pc.coverageDepth,
-                                           accessStart:null,
-                                           accessEnd:null, 
-                                           addedTimestamp:result.updateTime,
-                                           lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true);
+        try {
+          TitleInstance title = titleInstanceResolverService.resolve(pc);
+  
+          if ( pc.platformUrl ) {
+            log.debug("platform ${pc.platformUrl}");
+            // lets try and work out the platform for the item
+            try {
+              Platform platform = Platform.resolve(pc.platformUrl);
+              log.debug("Platform: ${platform}");
+  
+              // See if we already have a title platform record for the presence of this title on this platform
+              PlatformTitleInstance pti = PlatformTitleInstance.findByTitleInstanceAndPlatform(title, platform)
+  
+              if ( pti == null ) 
+                pti = new PlatformTitleInstance(titleInstance:title, platform:platform).save(flush:true, failOnError:true);
+  
+  
+              // Lookup or create a package content item record for this title on this platform in this package
+              // We only check for currently live pci records, as titles can come and go from the package.
+              // N.B. addedTimestamp removedTimestamp lastSeenTimestamp
+              def pci_qr = PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pti = :pti and pci.pkg = :pkg and pci.removedTimestamp is null',[pti:pti, pkg:pkg]);
+              PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null; 
+  
+              if ( pci == null ) {
+                log.debug("Create new package content item for title ${pti}");
+                pci = new PackageContentItem(
+                                             pti:pti, 
+                                             pkg:pkg, 
+                                             note:pc.coverageNote, 
+                                             depth:pc.coverageDepth,
+                                             accessStart:null,
+                                             accessEnd:null, 
+                                             addedTimestamp:result.updateTime,
+                                             lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true);
+              }
+              else {
+                // Note that we have seen the package content item now
+                log.debug("update package content item last seen timestamp (Last time this platform title instance was seen in this package");
+                pci.lastSeenTimestamp = result.updateTime;
+                // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
+              }
+  
+              // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
+              // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
+              // We store this generally for the title on the platform, and specifically for this title in this package on this platform.
+              if ( pc.coverage ) {
+  
+                // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
+                // to the list of mpas that coverageExtenderService.extend expects
+                List cov = pc.coverage instanceof List ? pc.coverage : [ pc.coverage ]
+  
+                coverageExtenderService.extend(pti, cov, 'pti');
+                coverageExtenderService.extend(pci, cov, 'pci');
+                coverageExtenderService.extend(title, cov, 'ti');
+              }
+  
+              // Save needed either way
+              pci.save(flush:true, failOnError:true);
             }
-            else {
-              // Note that we have seen the package content item now
-              log.debug("update package content item last seen timestamp (Last time this platform title instance was seen in this package");
-              pci.lastSeenTimestamp = result.updateTime;
-              // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
+            catch ( Exception e ) {
+              log.error("problem",e);
             }
-
-            // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
-            // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
-            // We store this generally for the title on the platform, and specifically for this title in this package on this platform.
-            if ( pc.coverage ) {
-
-              // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
-              // to the list of mpas that coverageExtenderService.extend expects
-              List cov = pc.coverage instanceof List ? pc.coverage : [ pc.coverage ]
-
-              coverageExtenderService.extend(pti, cov, 'pti');
-              coverageExtenderService.extend(pci, cov, 'pci');
-              coverageExtenderService.extend(title, cov, 'ti');
-            }
-
-            // Save needed either way
-            pci.save(flush:true, failOnError:true);
           }
-          catch ( Exception e ) {
-            log.error("problem",e);
+          else {
+            log.error("row ${rownum} No platform URL");
           }
+  
+          println("rownum ${rownum} Resolved title: ${pc.title} as ${title}");
         }
-        else {
-          log.error("row ${rownum} No platform URL");
+        catch ( Exception e ) {
+          log.warn("Problem with line ${pc} in package load. Ignoring this row");
         }
-
-        println("rownum ${rownum} Resolved title: ${pc.title} as ${title}");
       }
       else {
         log.error("row ${rownum} Skipping ${pc} - No identifiers.. This will change in an upcoming commit where we do normalised title matching");
