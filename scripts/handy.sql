@@ -36,3 +36,5 @@ where pci_pkg_fk = pkg_id
 select 'List all remote KB sources'
 
 select * from diku_olf_erm.remotekb;
+
+select * from diku_olf_erm.package;
