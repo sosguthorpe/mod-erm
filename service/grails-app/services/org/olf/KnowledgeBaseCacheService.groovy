@@ -12,6 +12,8 @@ import org.olf.kb.KBCacheUpdater;
 @Transactional
 public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
 
+  def packageIngestService
+
   public void triggerCacheUpdate() {
     log.debug("KnowledgeBaseCacheService::triggerCacheUpdate()");
 
@@ -45,8 +47,9 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
    *  result of parsing that JSON into a map, eg via JsonSlurper
    */
   public void onPackageChange(String rkb_id, 
-                              Object canonical_package_definition) {
+                              Object package_data) {
     log.debug("onPackageChange(${rkb_id},...)");
+    packageIngestService.upsertPackage(package_data);
   }
 
   /**

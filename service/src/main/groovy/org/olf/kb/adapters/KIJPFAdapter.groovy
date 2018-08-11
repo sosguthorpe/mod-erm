@@ -37,6 +37,7 @@ public class KIJPFAdapter implements KBCacheUpdater {
     def jpf_api = new HTTPBuilder(base_url)
 
     def query_params = [
+        'max': '20',
         'format': 'json',
         'order':'lastUpdated'
     ]
