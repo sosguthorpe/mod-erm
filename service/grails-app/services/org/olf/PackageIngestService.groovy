@@ -19,6 +19,10 @@ public class PackageIngestService {
   def titleInstanceResolverService
   def coverageExtenderService
 
+  public Map upsertPackage(Map package_data) {
+    return upsertPackage(package_data,'LOCAL');
+  }
+
   /**
    * Load the paackage data (Given in the agreed canonical json package format) into the KB.
    * This function must be passed VALID package data. At this point, all package contents are
@@ -28,12 +32,20 @@ public class PackageIngestService {
    * package into the KB.
    * @return id of package upserted
    */
-  public Map upsertPackage(Map package_data) {
+  public Map upsertPackage(Map package_data, String remotekbname) {
 
     def result = [:];
 
-    log.debug("Package header: ${package_data.header}");
+    // ERM caches many remote KB sources in it's local package inventory
+    // Look up which remote kb via the name
+    RemoteKB kb = RemoteKB.findByName(remotekbname) ?: new RemoteKB( name:remotekbname,
+                                                                     rectype: new Long(1),
+                                                                     active:Boolean.TRUE).save(flush:true, failOnError:true);
+
+
     result.updateTime = System.currentTimeMillis();
+
+    log.debug("Package header: ${package_data.header} - update start time is ${result.updateTime}");
 
     // header.packageSlug contains the package maintainers authoritative identifier for this package.
     def pkg = Pkg.findBySourceAndReference(package_data.header.packageSource, package_data.header.packageSlug)
@@ -42,7 +54,8 @@ public class PackageIngestService {
       pkg = new Pkg(
                              name: package_data.header.packageName,
                            source: package_data.header.packageSource,
-                        reference: package_data.header.packageSlug).save(flush:true, failOnError:true);
+                        reference: package_data.header.packageSlug,
+                         remoteKb: kb).save(flush:true, failOnError:true);
 
       result.newPackageId = pkg.id
     }
