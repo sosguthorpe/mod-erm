@@ -94,6 +94,7 @@ public class KIJPFAdapter implements KBCacheUpdater {
 
   private void processPackage(String url, String source_id, KBCache cache) {
     println("processPackage(${url},${source_id}) -- fetching");
+    try {
     def jpf_api = new HTTPBuilder(url)
     jpf_api.request(Method.GET) { req ->
       headers.Accept = 'application/json'
@@ -103,6 +104,12 @@ public class KIJPFAdapter implements KBCacheUpdater {
       response.failure = { resp ->
         println "Request failed with status ${resp.status}"
       }
+    }
+    }
+    catch ( Exception e ) {
+      println("Unexpected error processing package ${url}");
+      e.printStackTrace();
+      throw e;
     }
   }
 
