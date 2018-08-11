@@ -4,7 +4,7 @@ import grails.gorm.multitenancy.Tenants;
 import grails.gorm.transactions.Transactional
 import org.olf.kb.RemoteKB;
 import org.olf.kb.KBCacheUpdater;
-
+import org.springframework.transaction.TransactionDefinition
 
 /**
  * This service works at the module level, it's often called without a tenant context.
@@ -32,7 +32,9 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
 
   public void updateCursor(String rkb_id, String cursor) {
     log.debug("KnowledgeBaseCacheService::updateCursor(${rkb_id},${cursor})");
-    RemoteKB.executeUpdate('update RemoteKB rkb set rkb.cursor = :n where rkb.id = :id',[n:cursor, id:rkb_id]);
+    RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
+      RemoteKB.executeUpdate('update RemoteKB rkb set rkb.cursor = :n where rkb.id = :id',[n:cursor, id:rkb_id]);
+    }
   }
 
 
@@ -48,8 +50,10 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
    */
   public void onPackageChange(String rkb_id, 
                               Object package_data) {
-    log.debug("onPackageChange(${rkb_id},...)");
-    packageIngestService.upsertPackage(package_data);
+    RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
+      log.debug("onPackageChange(${rkb_id},...)");
+      packageIngestService.upsertPackage(package_data);
+    }
   }
 
   /**
