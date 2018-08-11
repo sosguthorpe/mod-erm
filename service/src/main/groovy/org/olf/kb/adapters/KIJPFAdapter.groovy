@@ -28,7 +28,7 @@ import java.text.*
 public class KIJPFAdapter implements KBCacheUpdater {
 
 
-  public Object freshen(String source_id,
+  public Object freshen(String source_name,
                         String base_url,
                         String current_cursor,
                         KBCache cache) {
@@ -59,9 +59,9 @@ public class KIJPFAdapter implements KBCacheUpdater {
       uri.query=query_params
       response.success = { resp, json ->
         // println "Success! ${resp.status} ${json}"
-        Map page_result = processPage(cursor, json, source_id, cache)
+        Map page_result = processPage(cursor, json, source_name, cache)
         println("processPage returned, processed ${page_result.count} packages");
-        cache.updateCursor(source_id,page_result.new_cursor);
+        cache.updateCursor(source_name,page_result.new_cursor);
       }
 
       response.failure = { resp ->
@@ -72,7 +72,7 @@ public class KIJPFAdapter implements KBCacheUpdater {
   }
 
 
-  private Map processPage(String cursor, Object package_list, String source_id, KBCache cache) {
+  private Map processPage(String cursor, Object package_list, String source_name, KBCache cache) {
     def result = [:]
     result.new_cursor = cursor;
     result.count = 0;
@@ -82,7 +82,7 @@ public class KIJPFAdapter implements KBCacheUpdater {
       System.out.println(pkg.name);
       System.out.println(pkg.packageContentAsJson);
 
-      processPackage(pkg.packageContentAsJson, source_id, cache);
+      processPackage(pkg.packageContentAsJson, source_name, cache);
 
       if ( pkg.lastUpdated > result.new_cursor ) {
         System.out.println("New cursor value - ${pkg.lastUpdated} > ${result.new_cursor} ");
@@ -92,14 +92,14 @@ public class KIJPFAdapter implements KBCacheUpdater {
     return result;
   }
 
-  private void processPackage(String url, String source_id, KBCache cache) {
-    println("processPackage(${url},${source_id}) -- fetching");
+  private void processPackage(String url, String source_name, KBCache cache) {
+    println("processPackage(${url},${source_name}) -- fetching");
     try {
     def jpf_api = new HTTPBuilder(url)
     jpf_api.request(Method.GET) { req ->
       headers.Accept = 'application/json'
       response.success = { resp, json ->
-        cache.onPackageChange(source_id, json);
+        cache.onPackageChange(source_name, json);
       }
       response.failure = { resp ->
         println "Request failed with status ${resp.status}"

@@ -26,7 +26,7 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
       log.debug("Run remote kb synv:: ${rkb}");
       Class cls = Class.forName(rkb.type)
       KBCacheUpdater cache_updater = cls.newInstance();
-      cache_updater.freshen(rkb.id, rkb.uri, rkb.cursor, this)
+      cache_updater.freshen(rkb.name, rkb.uri, rkb.cursor, this)
     }
   }
 
@@ -48,11 +48,11 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
    *  Examples can be found in src/intergation-test/resources/packages. The function should be called with the
    *  result of parsing that JSON into a map, eg via JsonSlurper
    */
-  public void onPackageChange(String rkb_id, 
+  public void onPackageChange(String rkb_name, 
                               Object package_data) {
     RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
       log.debug("onPackageChange(${rkb_id},...)");
-      packageIngestService.upsertPackage(package_data);
+      packageIngestService.upsertPackage(package_data, rkb_name);
     }
   }
 

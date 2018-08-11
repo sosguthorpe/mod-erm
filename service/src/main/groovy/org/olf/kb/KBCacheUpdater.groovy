@@ -42,7 +42,7 @@ public interface KBCacheUpdater {
    * @Return updated Cursor object representing the state of the cursor for the next pass
    *
    */
-  public Object freshen(String source_id, 
+  public Object freshen(String source_name, 
                         String base_uri, 
                         String cursor, 
                         KBCache cache);

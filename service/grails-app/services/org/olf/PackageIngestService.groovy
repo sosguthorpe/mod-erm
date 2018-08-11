@@ -9,6 +9,7 @@ import org.olf.kb.Platform;
 import org.olf.kb.TitleInstance;
 import org.olf.kb.PlatformTitleInstance;
 import org.olf.kb.PackageContentItem;
+import org.olf.kb.RemoteKB;
 
 /**
  * This service works at the module level, it's often called without a tenant context.

@@ -41,12 +41,12 @@ public interface KBCache {
    *  "PackageSource":"",
    *  "PackageName":"",
    */
-  public void onPackageChange(String rkb_id, 
+  public void onPackageChange(String rkb_name, 
                               Object canonical_package_definition);
 
-  public void updateCursor(String rkb_id, String cursor);
+  public void updateCursor(String rkb_name, String cursor);
 
-  public void onPackageRemoved(String rkb_id,
+  public void onPackageRemoved(String rkb_name,
                                String authority,
                                String authority_id_of_package);
 }
