@@ -32,3 +32,7 @@ where pci_pkg_fk = pkg_id
   and pti_ti_fk = ti_id
   and pti_pt_fk = pt_id;
 
+
+select 'List all remote KB sources'
+
+select * from diku_olf_erm.remotekb;

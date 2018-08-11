@@ -9,7 +9,8 @@ public class KBPlusAdapter implements KBCacheUpdater {
 
 
   public Object freshen(String source_id,
-                        Object cursor,
+                        String uri,
+                        String cursor,
                         KBCache cache) {
 
     // We want this update to happen independently of any other transaction, on it's own, and in the background.

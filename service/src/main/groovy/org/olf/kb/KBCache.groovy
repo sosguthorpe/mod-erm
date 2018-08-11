@@ -43,6 +43,8 @@ public interface KBCache {
    */
   public void onPackageChange(Object canonical_package_definition);
 
+  public void updateCursor(String rkb_id, String cursor);
+
   public void onPackageRemoved(String authority,
                                String authority_id_of_package);
 }

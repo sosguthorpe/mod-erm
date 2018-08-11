@@ -6,7 +6,9 @@ import java.text.SimpleDateFormat
 import groovy.transform.CompileStatic
 import groovy.transform.CompileDynamic
 import groovy.util.logging.Slf4j
+import static grails.async.Promises.*
 
+import org.olf.kb.RemoteKB
 
 /**
  * See http://guides.grails.org/grails-scheduled/guide/index.html for info on this way of
@@ -17,6 +19,8 @@ import groovy.util.logging.Slf4j
 @Transactional
 class KbHarvestService {
 
+  KnowledgeBaseCacheService knowledgeBaseCacheService
+
   @Scheduled(fixedDelay = 45000L, initialDelay = 5000L) 
   void triggerSync() {
     log.info "Simple Job every 45 seconds :{}", new SimpleDateFormat("dd/M/yyyy hh:mm:ss").format(new Date())
@@ -25,9 +29,12 @@ class KbHarvestService {
   public void triggerCacheUpdate() {
     log.debug("KBHarvestService::triggerCacheUpdate()");
     // org.olf.kb.adapters.KBPlusAdapter kbpa = new org.olf.kb.adapters.KBPlusAdapter()
-    RemoteKB.list() { remotekb ->
-    
-    }
+    // def p1 = task {
+      RemoteKB.executeQuery('select rkb.id from RemoteKB as rkb where rkb.type is not null').each { remotekb_id ->
+        knowledgeBaseCacheService.runSync((String)remotekb_id);
+      }
+    // }
+    log.debug("KbHarvestService::triggerCacheUpdate() completed");
   }
 
 

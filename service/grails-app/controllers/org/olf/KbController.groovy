@@ -48,9 +48,7 @@ from PackageContentItem as pci
    */
   public triggerCacheUpdate() {
 
-    if ( tenant_id && tenant_id.length() > 0 ) {
-      kbHarvestService.triggerCacheUpdate()
-    }
+    kbHarvestService.triggerCacheUpdate()
 
     Map result = [
       'status':'KB Sync requested'

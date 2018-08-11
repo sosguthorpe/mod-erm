@@ -43,7 +43,8 @@ public interface KBCacheUpdater {
    *
    */
   public Object freshen(String source_id, 
-                        Object cursor, 
+                        String base_uri, 
+                        String cursor, 
                         KBCache cache);
 
 

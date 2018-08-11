@@ -2,6 +2,8 @@ package org.olf;
 
 import grails.gorm.multitenancy.Tenants;
 import grails.gorm.transactions.Transactional
+import org.olf.kb.RemoteKB;
+import org.olf.kb.KBCacheUpdater;
 
 
 /**
@@ -14,6 +16,22 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
     log.debug("KnowledgeBaseCacheService::triggerCacheUpdate()");
 
   }
+
+  public void runSync(String remotekb_id) {
+    log.debug("KnowledgeBaseCacheService::runSync(${remotekb_id})");
+    RemoteKB rkb = RemoteKB.read(remotekb_id) 
+    if ( rkb ) {
+      log.debug("Run remote kb synv:: ${rkb}");
+      Class cls = Class.forName(rkb.type)
+      KBCacheUpdater cache_updater = cls.newInstance();
+      cache_updater.freshen(rkb.id, rkb.uri, rkb.cursor, this)
+    }
+  }
+
+  public void updateCursor(String rkb_id, String cursor) {
+    log.debug("KnowledgeBaseCacheService::updateCursor(${rkb_id},${cursor})");
+  }
+
 
 
   /**
