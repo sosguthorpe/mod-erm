@@ -30,21 +30,36 @@ public class KIJPFAdapter implements KBCacheUpdater {
 
   public Object freshen(String source_id,
                         String base_url,
-                        String cursor,
+                        String current_cursor,
                         KBCache cache) {
+
     println("KIJPFAdapter::freshen - fetching from URI: ${base_url}");
     def jpf_api = new HTTPBuilder(base_url)
 
+    def query_params = [
+        'format': 'json',
+        'order':'lastUpdated'
+    ]
+
+    def cursor = null;
+
+    if ( current_cursor  != null ) {
+      cursor = current_cursor
+      query_params.startDate=cursor;
+    }
+    else {
+      cursor = '';
+    }
+ 
     jpf_api.request(Method.GET) { req ->
       // uri.path=''
       // requestContentType = ContentType.JSON
       headers.Accept = 'application/json'
-      uri.query=[
-        'format': 'json',
-        'order':'lastUpdated'
-      ]
+      uri.query=query_params
       response.success = { resp, json ->
-        println "Success! ${resp.status} ${json}"
+        // println "Success! ${resp.status} ${json}"
+        cursor = processPage(cursor, json)
+        cache.updateCursor(source_id,cursor);
       }
 
       response.failure = { resp ->
@@ -52,6 +67,22 @@ public class KIJPFAdapter implements KBCacheUpdater {
       }
     }
 
+  }
+
+
+  private String processPage(cursor, package_list) {
+    def new_cursor = cursor;
+    package_list.packages.each { pkg ->
+      System.out.println(pkg.name);
+      System.out.println(pkg.identifier);
+      System.out.println(pkg.lastUpdated);
+      System.out.println(pkg.packageContentAsJson);
+      if ( pkg.lastUpdated > new_cursor ) {
+        System.out.println("New cursor value");
+        new_cursor = pkg.lastUpdated;
+      }
+    }
+    return new_cursor;
   }
 
 }
