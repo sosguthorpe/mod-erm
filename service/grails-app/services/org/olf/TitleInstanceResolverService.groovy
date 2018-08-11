@@ -146,10 +146,15 @@ public class TitleInstanceResolverService {
     // If it returns more than 1 then we are in a sticky situation, and cleverness is needed.
     List<TitleInstance> result = new ArrayList<TitleInstance>()
 
+    def num_class_one_identifiers = 0;
 
     identifiers.each { id ->
       if ( class_one_namespaces.contains(id.namespace.toLowerCase()) ) {
+
+        num_class_one_identifiers++;
+
         // Look up each identifier
+        log.debug("${id} - try class one match");
         def id_matches = Identifier.executeQuery('select id from Identifier as id where id.value = :value and id.ns.value = :ns',[value:id.value, ns:id.namespace])
 
         assert ( id_matches.size() <= 1 )
@@ -167,12 +172,19 @@ public class TitleInstanceResolverService {
                 result << io.title
               }
             }
+            else {
+              throw new RuntimeException("Match on non-approved");
+            }
           }
         }
       }
       else {
-        // log.debug("Identifier ${id} not from a class one namespace");
+        log.debug("Identifier ${id} not from a class one namespace");
       }
+    }
+
+    if ( num_class_one_identifiers == 0 ) {
+      throw new RuntimeException("Title contains no class one identifiers");
     }
 
     log.debug("At end of classOneMatch, resut contains ${result.size()} titles");
