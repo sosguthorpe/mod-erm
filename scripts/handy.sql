@@ -1,6 +1,8 @@
 
 psql -U folio_admin -h localhost okapi_modules
 
+set search_path to diku_olf_erm, public;
+
 select * from diku_olf_erm.title_instance where ti_title like 'cancer%';
 
 
@@ -64,5 +66,10 @@ select 'Full text goodness (Score 0.45)'
 SELECT ti_title, similarity(ti_title, 'The Journal of Clonical Cancer Drugs') As sim_score
 FROM diku_olf_erm.title_instance
 WHERE ti_title % 'The Journal of Clonical Cancer Drugs' AND similarity(ti_title, 'The Journal of Clonical Cancer Drugs') > 0.35
+ORDER BY ti_title;
+
+SELECT ti_title, similarity(ti_title, 'Current Medicinal Chemistry -Anti-Infective Agents') As sim_score
+FROM diku_olf_erm.title_instance
+WHERE ti_title % 'Current Medicinal Chemistry -Anti-Infective Agents' AND similarity(ti_title, 'Current Medicinal Chemistry -Anti-Infective Agents') > 0.35
 ORDER BY ti_title;
 

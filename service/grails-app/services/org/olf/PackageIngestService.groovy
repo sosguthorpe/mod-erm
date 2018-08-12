@@ -69,9 +69,13 @@ public class PackageIngestService {
       // We should really narrow this down to the list of class one identifiers.
       if ( pc.instanceIdentifiers?.size() > 0 ) {
         try {
+          // resolve may return null, used to throw exception which causes the whole package to be rejected. Needs
+          // discussion to work out best way to handle.
           TitleInstance title = titleInstanceResolverService.resolve(pc);
   
-          if ( pc.platformUrl ) {
+          if ( title != null &&
+               pc.platformUrl != null ) {
+
             log.debug("platform ${pc.platformUrl}");
             // lets try and work out the platform for the item
             try {

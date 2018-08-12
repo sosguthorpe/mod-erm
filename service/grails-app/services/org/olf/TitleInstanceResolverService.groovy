@@ -20,10 +20,6 @@ public class TitleInstanceResolverService {
 
   def sessionFactory
 
-  private static final String TEXT_MATCH_TITLE_QRY_0 = ''' select * from diku_olf_erm.title_instance WHERE ti_title % text('cancer') AND similarity(ti_title, text('cancer')) > 0.35 ORDER BY  similarity(ti_title, text('cancer')) desc LIMIT 20 ''';
-
-  private static final String TEXT_MATCH_TITLE_QRY_2 = 'select * from title_instance where ti_title like :qrytitle and 0 < :threshold'
-
   private static final String TEXT_MATCH_TITLE_QRY = 'select * from title_instance WHERE ti_title % :qrytitle AND similarity(ti_title, :qrytitle) > :threshold ORDER BY  similarity(ti_title, :qrytitle) desc LIMIT 20'
 
   private static def class_one_namespaces = [
@@ -83,7 +79,7 @@ public class TitleInstanceResolverService {
           break;
         default:
           log.error("title matched {num_matches} records. Unable to continue. Matching IDs: ${candidate_list.collect { it.id }}");
-          throw new RuntimeException("Title match returned too many items (${num_matches})");
+          // throw new RuntimeException("Title match returned too many items (${num_matches})");
           break;
       }
     }
@@ -125,7 +121,9 @@ public class TitleInstanceResolverService {
       }
     }
     else { 
-      throw new RuntimeException("Insufficient detail to create title instance record");
+      log.error("Create title failed validation checks - insufficient data to create a title record");
+      // We will return null, which means no title
+      // throw new RuntimeException("Insufficient detail to create title instance record");
     }
 
     // Refresh the newly minted title so we have access to all the related objects (eg Identifiers)
