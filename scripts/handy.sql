@@ -38,3 +38,10 @@ select 'List all remote KB sources'
 select * from diku_olf_erm.remotekb;
 
 select * from diku_olf_erm.package;
+
+
+select 'List schemas'
+\dn
+
+select 'describe title_instance'
+\dt diku_olf_erm.title_instance

@@ -27,6 +27,7 @@ public class ErmHousekeepingService {
 
     // leaving this here as an example - it works, but we don't actually want to do this in practice!
     Tenants.withId(tenantId) {
+
       // A special record for packages which are really defined locally - this is an exceptional situation
       RemoteKB local_kb = RemoteKB.findByName('LOCAL') ?: new RemoteKB( name:'LOCAL',
                                                                         rectype: new Long(1),
