@@ -18,6 +18,14 @@ import org.olf.general.RefdataCategory
 @Transactional
 public class TitleInstanceResolverService {
 
+  def sessionFactory
+
+  private static final String TEXT_MATCH_TITLE_QRY_0 = ''' select * from diku_olf_erm.title_instance WHERE ti_title % text('cancer') AND similarity(ti_title, text('cancer')) > 0.35 ORDER BY  similarity(ti_title, text('cancer')) desc LIMIT 20 ''';
+
+  private static final String TEXT_MATCH_TITLE_QRY_2 = 'select * from title_instance where ti_title like :qrytitle and 0 < :threshold'
+
+  private static final String TEXT_MATCH_TITLE_QRY = 'select * from title_instance WHERE ti_title % :qrytitle AND similarity(ti_title, :qrytitle) > :threshold ORDER BY  similarity(ti_title, :qrytitle) desc LIMIT 20'
+
   private static def class_one_namespaces = [
     'isbn',
     'issn',
@@ -53,16 +61,25 @@ public class TitleInstanceResolverService {
 
     List<TitleInstance> candidate_list = classOneMatch(citation.instanceIdentifiers);
 
+    int num_matches = candidate_list.size()
+
+    if ( num_matches == 0 ) {
+      log.debug("No matches on identifier - try a fuzzy text match on title(${citation.title})");
+      // No matches - try a simple title match
+      candidate_list = titleMatch(citation.title);
+      num_matches = candidate_list.size()
+    }
+
     if ( candidate_list != null ) {
-      int num_matches = candidate_list.size()
       switch ( num_matches ) {
         case(0):
-          log.debug("No title match -- create");
+          log.debug("No title match");
           result = createNewTitleInstance(citation);
           break;
         case(1):
           log.debug("Exact match.");
           result = candidate_list.get(0);
+          checkForEnrichment(result, citation);
           break;
         default:
           log.error("title matched {num_matches} records. Unable to continue. Matching IDs: ${candidate_list.collect { it.id }}");
@@ -78,9 +95,17 @@ public class TitleInstanceResolverService {
 
     TitleInstance result = null;
 
+    // With the introduction of fuzzy title matching, we are relaxing this constraint and
+    // will expect to enrich titles without identifiers when we next see a record. BUT
+    // this needs elaboration and experimentation.
+    //
+    // boolean title_is_valid =  ( ( citation.title?.length() > 0 ) && ( citation.instanceIdentifiers.size() > 0 ) )
+    // 
+    boolean title_is_valid = ( ( citation.title != null ) &&
+                               ( citation.title.length() > 0 ) );
+
     // Validate
-    if ( ( citation.title?.length() > 0 ) &&
-         ( citation.instanceIdentifiers.size() > 0 ) ) {
+    if ( title_is_valid == true ) {
 
       result = new TitleInstance(
          title: citation.title
@@ -106,6 +131,16 @@ public class TitleInstanceResolverService {
     // Refresh the newly minted title so we have access to all the related objects (eg Identifiers)
     result.refresh();
     result;
+  }
+
+  /**
+   * Check to see if the citation has properties that we really want to pull through to
+   * the DB. In particular, for the case where we have created a stub title record without
+   * an identifier, we will need to add identifiers to that record when we see a record that
+   * suggests identifiers for that title match.
+   */ 
+  private void checkForEnrichment(TitleInstance title, Map citation) {
+    return;
   }
 
   /**
@@ -137,6 +172,27 @@ public class TitleInstanceResolverService {
     return ns_lookup;
   }
 
+  /**
+   * Attempt a fuzzy match on the title
+   */
+  private List<TitleInstance> titleMatch(String title) {
+    List<TitleInstance> result = new ArrayList<TitleInstance>()
+    final session = sessionFactory.currentSession
+    final sqlQuery = session.createSQLQuery(TEXT_MATCH_TITLE_QRY)
+
+    result = sqlQuery.with {
+      addEntity(TitleInstance)
+      // Set query title - I know this looks a little odd, we have to manually quote this and handle any
+      // relevant escaping... So this code will probably not be good enough long term.
+      setString('qrytitle',title);
+      setFloat('threshold',0.45f)
+ 
+      // Get all results.
+      list()
+    }
+ 
+    return result
+  }
 
   /**
    * Being passed a map of namespace, value pair maps, attempt to locate any title instances with class 1 identifiers (ISSN, ISBN, DOI)
@@ -181,10 +237,6 @@ public class TitleInstanceResolverService {
       else {
         log.debug("Identifier ${id} not from a class one namespace");
       }
-    }
-
-    if ( num_class_one_identifiers == 0 ) {
-      throw new RuntimeException("Title contains no class one identifiers");
     }
 
     log.debug("At end of classOneMatch, resut contains ${result.size()} titles");

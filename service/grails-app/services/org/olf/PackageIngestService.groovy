@@ -138,7 +138,7 @@ public class PackageIngestService {
           println("rownum ${rownum} Resolved title: ${pc.title} as ${title}");
         }
         catch ( Exception e ) {
-          log.warn("Problem with line ${pc} in package load. Ignoring this row");
+          log.error("Problem with line ${pc} in package load. Ignoring this row",e);
         }
       }
       else {

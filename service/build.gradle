@@ -66,7 +66,7 @@ dependencies {
 
   // Custom non profile deps.
 
-  compile "org.postgresql:postgresql:42.2.2"
+  compile "org.postgresql:postgresql:42.2.4"
 
   runtime "org.grails.plugins:async"
   runtime "org.grails.plugins:events"
@@ -80,7 +80,7 @@ dependencies {
 // Changed this to enable inline development of the includes listed below.
 def includes = [
   'web-toolkit'   : 'com.k_int.grails:web-toolkit:3.3.5',
-  'grails-okapi'  : 'com.k_int.okapi:grails-okapi:3.3.9'
+  'grails-okapi'  : 'com.k_int.okapi:grails-okapi:3.3.10'
 ]
 
 bootRun {

@@ -3,8 +3,14 @@ databaseChangeLog = {
     // Currently, the default folio environment has this for us, but this is left
     // here as a signpost for users who might be running in a different context
     //
+    // https://stackoverflow.com/questions/30368724/enable-postgresql-extensions-in-jdbc
+    //
     // changeSet(author: "ianibbo (generated)", id: "1527414162857-0a") {
-    //   sql("create extension 'pg_trgm'")
+    //   grailsChange {
+    //     change {
+    //       sql.execute("create extension pg_trgm WITH SCHEMA ${database.defaultSchemaName}".toString())
+    //     }
+    //   }
     // }
 
     changeSet(author: "ianibbo (generated)", id: "1527414162857-1") {
@@ -423,7 +429,7 @@ databaseChangeLog = {
                 constraints(nullable: "false")
             }
 
-            column(name: "ti_title", type: "VARCHAR(2048)") {
+            column(name: "ti_title", type: "text") {
                 constraints(nullable: "false")
             }
         }
