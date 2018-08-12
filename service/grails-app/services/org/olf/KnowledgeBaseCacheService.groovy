@@ -30,10 +30,10 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
     }
   }
 
-  public void updateCursor(String rkb_id, String cursor) {
-    log.debug("KnowledgeBaseCacheService::updateCursor(${rkb_id},${cursor})");
+  public void updateCursor(String rkb_name, String cursor) {
+    log.debug("KnowledgeBaseCacheService::updateCursor(${rkb_name},${cursor})");
     RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
-      RemoteKB.executeUpdate('update RemoteKB rkb set rkb.cursor = :n where rkb.id = :id',[n:cursor, id:rkb_id]);
+      RemoteKB.executeUpdate('update RemoteKB rkb set rkb.cursor = :n where rkb.name = :name',[n:cursor, name:rkb_name]);
     }
   }
 
@@ -51,7 +51,7 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
   public void onPackageChange(String rkb_name, 
                               Object package_data) {
     RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
-      log.debug("onPackageChange(${rkb_id},...)");
+      log.debug("onPackageChange(${rkb_name},...)");
       packageIngestService.upsertPackage(package_data, rkb_name);
     }
   }
@@ -59,7 +59,7 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
   /**
    *  Called when a remote KB package removal is detected
    */
-  public void onPackageRemoved(String rkb_id,
+  public void onPackageRemoved(String rkb_name,
                                String authority,
                                String authority_id_of_package) {
   }
