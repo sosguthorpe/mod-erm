@@ -438,7 +438,7 @@ databaseChangeLog = {
           // grailsChange gives us an sql variable which inherits the current connection, and hence should
           // get the schema
           // sql.execute seems to get a bit confused when passed a GString. Work it out before
-          def cmd = "CREATE INDEX ti_title_trigram_idx ON ${database.defaultSchemaName}.title_instance USING GIST (ti_title gist_trgm_ops)".toString()
+          def cmd = "CREATE INDEX ti_title_trigram_idx ON ${database.defaultSchemaName}.title_instance USING GIN (ti_title gin_trgm_ops)".toString()
           // println "\n**\nrun: ${cmd}\n**"
           sql.execute(cmd);
         }
