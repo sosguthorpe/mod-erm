@@ -183,7 +183,7 @@ public class TitleInstanceResolverService {
       // Set query title - I know this looks a little odd, we have to manually quote this and handle any
       // relevant escaping... So this code will probably not be good enough long term.
       setString('qrytitle',title);
-      setFloat('threshold',0.45f)
+      setFloat('threshold',0.6f)
  
       // Get all results.
       list()
