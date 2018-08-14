@@ -3,6 +3,18 @@
 
 # jq -r '.name'
 
+JQTEST=`echo '{  "value":"one" }' | jq -r ".value"`
+
+if [ $JQREST="one" ]
+then
+  echo JQ installed and working
+else
+  echo Please install JQ
+  exit 1
+fi
+
+echo Running
+
 # Prepolpulate with data.
 echo Loading k-int test package
 KI_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/simple_pkg_1.json http://localhost:8080/erm/admin/loadPackage | jq -r ".newPackageId"`
