@@ -10,25 +10,29 @@ class UrlMappings {
     "404"(view: '/notFound')
 
     // Map /kbs to RemoteKBController
-    '/kbs'(resources: 'remoteKB')
+    '/erm/kbs'(resources: 'remoteKB')
 
     // Map /sas to SubscriptionAgreementController
-    '/sas'(resources: 'subscriptionAgreement') {
+    '/erm/sas'(resources: 'subscriptionAgreement') {
        "/addToAgreement"(action:'addToAgreement')
     }
+    '/erm/packages'(resources: 'package')
+    "/erm/pci"(resources:'packageContentItem')
 
-    '/packages'(resources: 'package')
-
-    '/refdataValues'(resource: 'refdata') {
+    '/erm/refdataValues'(resource: 'refdata') {
       "/lookupOrCreate"(controller:'refdata', action:'lookupOrCreate')
     }
 
-    "/admin/$action"(controller:'admin')
+    "/erm/admin/$action"(controller:'admin')
 
-    "/content"(controller:'subscribedContent', action:'index')
-    "/content/$action"(controller:'subscribedContent')
+    "/erm/content"(controller:'subscribedContent', action:'index')
+    "/erm/content/$action"(controller:'subscribedContent')
 
-    "/codex-instances" ( controller:'subscribedContent', action:'codexSearch')
-    "/codex-instances/$id" ( controller:'subscribedContent', action:'codexItem')
+    "/erm/codex-instances" ( controller:'subscribedContent', action:'codexSearch')
+    "/erm/codex-instances/$id" ( controller:'subscribedContent', action:'codexItem')
+
+    "/erm/knowledgebase" ( controller:'kb', action:'index')
+    "/erm/knowledgebase/$action" ( controller:'kb' )
+
   }
 }

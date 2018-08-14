@@ -15,8 +15,15 @@ Vagrant.configure(2) do |config|
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "folio/testing-backend"
-  config.vm.box_version = "5.0.0-20171215.10002"
+  # config.vm.box_version = "5.0.0-20171215.10002"
+  # config.vm.box_version = "5.0.0-20180726.898"
+  # config.vm.box_version = "5.0.0-20180730.911"
     
+  config.vm.provider "virtualbox" do |v|
+    # v.memory = 8192
+    v.memory = 6144
+    v.cpus = 5
+  end
 
   #config.vm.provision "docker" do |d|
     # docker run -d --restart always --hostname rabbitmq -p 15672:15672 -p 5672:5672 --name rabbitmq -e RABBITMQ_DEFAULT_USER=adm -e RABBITMQ_DEFAULT_PASS=admpass rabbitmq:management
@@ -38,6 +45,11 @@ Vagrant.configure(2) do |config|
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
   # config.vm.box_check_update = false
+
+  # Expose the postgres instance that is installed so that apps running outside the 
+  # vbox instance can use it.
+  config.vm.network "forwarded_port", guest: 5432, host: 5432
+
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,

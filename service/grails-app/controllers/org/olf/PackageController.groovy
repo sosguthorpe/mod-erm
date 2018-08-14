@@ -1,6 +1,6 @@
 package org.olf
 
-import org.olf.kb.Package
+import org.olf.kb.Pkg
 
 import com.k_int.okapi.OkapiTenantAwareController
 
@@ -9,10 +9,10 @@ import groovy.util.logging.Slf4j
 
 @Slf4j
 @CurrentTenant
-class PackageController extends OkapiTenantAwareController<Package>  {
+class PackageController extends OkapiTenantAwareController<Pkg>  {
 
   PackageController() {
-    super(Package)
+    super(Pkg)
   }
 }
 

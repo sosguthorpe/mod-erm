@@ -2,7 +2,9 @@ package org.olf;
 
 import grails.gorm.multitenancy.Tenants;
 import grails.gorm.transactions.Transactional
-
+import org.olf.kb.RemoteKB;
+import org.olf.kb.KBCacheUpdater;
+import org.springframework.transaction.TransactionDefinition
 
 /**
  * This service works at the module level, it's often called without a tenant context.
@@ -10,10 +12,31 @@ import grails.gorm.transactions.Transactional
 @Transactional
 public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
 
+  def packageIngestService
+
   public void triggerCacheUpdate() {
     log.debug("KnowledgeBaseCacheService::triggerCacheUpdate()");
 
   }
+
+  public void runSync(String remotekb_id) {
+    log.debug("KnowledgeBaseCacheService::runSync(${remotekb_id})");
+    RemoteKB rkb = RemoteKB.read(remotekb_id) 
+    if ( rkb ) {
+      log.debug("Run remote kb synv:: ${rkb}");
+      Class cls = Class.forName(rkb.type)
+      KBCacheUpdater cache_updater = cls.newInstance();
+      cache_updater.freshen(rkb.name, rkb.uri, rkb.cursor, this)
+    }
+  }
+
+  public void updateCursor(String rkb_name, String cursor) {
+    log.debug("KnowledgeBaseCacheService::updateCursor(${rkb_name},${cursor})");
+    RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
+      RemoteKB.executeUpdate('update RemoteKB rkb set rkb.cursor = :n where rkb.name = :name',[n:cursor, name:rkb_name]);
+    }
+  }
+
 
 
   /**
@@ -25,13 +48,19 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
    *  Examples can be found in src/intergation-test/resources/packages. The function should be called with the
    *  result of parsing that JSON into a map, eg via JsonSlurper
    */
-  public void onPackageChange(Object canonical_package_definition) {
+  public void onPackageChange(String rkb_name, 
+                              Object package_data) {
+    RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
+      log.debug("onPackageChange(${rkb_name},...)");
+      packageIngestService.upsertPackage(package_data, rkb_name);
+    }
   }
 
   /**
    *  Called when a remote KB package removal is detected
    */
-  public void onPackageRemoved(String authority,
+  public void onPackageRemoved(String rkb_name,
+                               String authority,
                                String authority_id_of_package) {
   }
 

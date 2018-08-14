@@ -1,0 +1,6 @@
+import groovy.transform.*
+import org.olf.kb.Pkg
+
+@Field Pkg pkg
+json g.render(pkg, [expand: []])
+

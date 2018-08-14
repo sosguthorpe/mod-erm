@@ -5,7 +5,7 @@ import groovy.util.logging.Slf4j
 import com.k_int.okapi.OkapiTenantAwareController
 import org.olf.erm.SubscriptionAgreement
 import org.olf.erm.AgreementLineItem
-import org.olf.kb.Package
+import org.olf.kb.Pkg
 import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance
 import grails.converters.JSON
@@ -36,7 +36,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       request.JSON.content.each { content_item ->
         switch ( content_item.type ) {
           case 'package':
-            Package pkg = Package.get(content_item.id);
+            Pkg pkg = Pkg.get(content_item.id);
             if ( pkg != null ) {
               log.debug("Adding package ${pkg} to agreement ${sa}");
               AgreementLineItem ali = new AgreementLineItem(pkg:pkg, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);

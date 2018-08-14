@@ -9,7 +9,7 @@ import grails.gorm.MultiTenant
 public class PackageContentItem implements MultiTenant<PackageContentItem> {
 
   String id
-  Package pkg
+  Pkg pkg
   PlatformTitleInstance pti
 
   // Track this package content item - when did we first detect it (added) when did we last
@@ -54,4 +54,11 @@ public class PackageContentItem implements MultiTenant<PackageContentItem> {
     lastSeenTimestamp(nullable:true, blank:false)
   }
 
+  /**
+   * Gather together all coverage information into a single summary statement that can be used in search results.
+   * see: https://www.editeur.org/files/ONIX%20for%20Serials%20-%20Coverage/20120326_ONIX_Coverage_overview_v1_0.pdf
+   */
+  public String generateCoverageSummary() {
+    'vol 10 thru present'
+  }
 }

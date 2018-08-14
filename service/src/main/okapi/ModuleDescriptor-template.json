@@ -8,43 +8,58 @@
       "handlers" : [
         {
           "methods": ["GET", "POST"],
-          "pathPattern": "/sas"
+          "pathPattern": "/erm/sas"
         },{
           "methods": ["GET", "PUT", "DELETE"],
-          "pathPattern": "/sas/{id}"
+          "pathPattern": "/erm/sas/{id}"
         },{
           "methods": ["GET"],
-          "pathPattern": "/sas/{id}/*"
+          "pathPattern": "/erm/sas/{id}/*"
         },{
           "methods": ["GET", "POST"],
-          "pathPattern": "/kbs"
+          "pathPattern": "/erm/kbs"
         },{
           "methods": ["GET", "PUT", "DELETE"],
-          "pathPattern": "/kbs/{id}"
+          "pathPattern": "/erm/kbs/{id}"
         },{
           "methods": ["GET"],
-          "pathPattern": "/kbs/{id}/*"
+          "pathPattern": "/erm/kbs/{id}/*"
         },{
           "methods": ["GET", "POST"],
-          "pathPattern": "/packages"
+          "pathPattern": "/erm/packages"
         },{
           "methods": ["GET", "PUT", "DELETE"],
-          "pathPattern": "/packages/{id}"
+          "pathPattern": "/erm/packages/{id}"
         },{
           "methods": ["GET"],
-          "pathPattern": "/packages/{id}/*"
+          "pathPattern": "/erm/packages/{id}/*"
         },{
           "methods": ["GET", "POST"],
-          "pathPattern": "/content"
+          "pathPattern": "/erm/content"
         },{
           "methods": ["GET", "PUT", "DELETE"],
-          "pathPattern": "/content/{id}"
+          "pathPattern": "/erm/content/{id}"
         },{
           "methods": ["GET"],
-          "pathPattern": "/content/{id}/*"
+          "pathPattern": "/erm/content/{id}/*"
         },{
           "methods": ["GET"],
           "pathPattern": "/kiwt/*"
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/knowledgebase"
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/knowledgebase/*"
+        }, {
+          "methods": ["GET", "POST"],
+          "pathPattern": "/erm/pci"
+        },{
+          "methods": ["GET", "PUT", "DELETE"],
+          "pathPattern": "/erm/pci/{id}"
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/pci/{id}/*"
         }
       ]
     },{

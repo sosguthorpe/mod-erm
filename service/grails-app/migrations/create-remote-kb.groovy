@@ -1,5 +1,18 @@
 databaseChangeLog = {
 
+    // Currently, the default folio environment has this for us, but this is left
+    // here as a signpost for users who might be running in a different context
+    //
+    // https://stackoverflow.com/questions/30368724/enable-postgresql-extensions-in-jdbc
+    //
+    // changeSet(author: "ianibbo (generated)", id: "1527414162857-0a") {
+    //   grailsChange {
+    //     change {
+    //       sql.execute("create extension pg_trgm WITH SCHEMA ${database.defaultSchemaName}".toString())
+    //     }
+    //   }
+    // }
+
     changeSet(author: "ianibbo (generated)", id: "1527414162857-1") {
         createTable(tableName: "agreement_line_item") {
             column(name: "ali_id", type: "VARCHAR(36)") {
@@ -182,6 +195,10 @@ databaseChangeLog = {
 
             column(name: "pkg_reference", type: "VARCHAR(255)") {
                 constraints(nullable: "false")
+            }
+
+            column(name: "pkg_remote_kb", type: "VARCHAR(36)") {
+                constraints(nullable: "true")
             }
         }
     }
@@ -412,10 +429,26 @@ databaseChangeLog = {
                 constraints(nullable: "false")
             }
 
-            column(name: "ti_title", type: "VARCHAR(255)") {
+            column(name: "ti_title", type: "text") {
                 constraints(nullable: "false")
             }
         }
+    }
+
+    // II: Would really like to do this, but it seems that somehow the sql command doesn't get the current
+    // schema so the create index command can't see the title
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-18a") {
+      // sql("CREATE INDEX ti_title_trigram_idx ON  ${database.defaultSchemaPrefix}.title_instance USING GIST (ti_title gist_trgm_ops)")
+      grailsChange {
+        change {
+          // grailsChange gives us an sql variable which inherits the current connection, and hence should
+          // get the schema
+          // sql.execute seems to get a bit confused when passed a GString. Work it out before
+          def cmd = "CREATE INDEX ti_title_trigram_idx ON ${database.defaultSchemaName}.title_instance USING GIN (ti_title gin_trgm_ops)".toString()
+          // println "\n**\nrun: ${cmd}\n**"
+          sql.execute(cmd);
+        }
+      }
     }
 
     changeSet(author: "ianibbo (generated)", id: "1527414162857-19") {

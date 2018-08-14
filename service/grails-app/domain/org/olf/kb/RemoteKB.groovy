@@ -5,7 +5,7 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
 
   String id
   String name
-  String type
+  String type // this is the name of a spring bean which will act 
   String cursor // This may be a datetimestring, transaction or other service specific means of determining where we are up to
   String uri
   String listPrefix
@@ -42,5 +42,9 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
          active(nullable:true, blank:false)
   }
 
+
+  public String toString() {
+    return "RemoteKB ${name} - ${type}/${uri}/${cursor}".toString()
+  }
 
 }

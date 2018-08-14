@@ -2,7 +2,7 @@ package org.olf.erm
 
 import grails.gorm.MultiTenant
 import org.olf.general.RefdataValue
-import org.olf.kb.Package
+import org.olf.kb.Pkg
 import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance
 import javax.persistence.Transient
@@ -16,7 +16,7 @@ public class AgreementLineItem implements MultiTenant<AgreementLineItem> {
   String id
 
   // This line item is for ONE of:
-  Package pkg
+  Pkg pkg
   PackageContentItem pci
   PlatformTitleInstance pti
 
