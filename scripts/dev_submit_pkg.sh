@@ -95,6 +95,21 @@ RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application
 }
 '`
 
+# Register a remote source
+RS_GOKB_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/kbs -d '
+{
+  name:"GOKb",
+  type:"org.olf.kb.adapters.GOKbOAIAdapter", // K-Int Json Package Format Adapter
+  cursor:null,
+  uri:"https://gokbt.gbv.de/gokb/oai/index/packages",
+  listPrefix:null,
+  fullPrefix:"gokb",
+  principal:null,
+  credentials:null,
+  rectype:"1",
+  active:true
+}
+'`
 
 # If all goes well, you'll get a status message back. After that, try searching your subscribed titles:
 

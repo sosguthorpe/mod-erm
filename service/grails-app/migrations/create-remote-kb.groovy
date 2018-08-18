@@ -366,6 +366,8 @@ databaseChangeLog = {
             column(name: "rkb_rectype", type: "BIGINT") {
                 constraints(nullable: "false")
             }
+
+            column(name: "rkb_supports_harvesting", type: "BOOLEAN")
         }
     }
 
