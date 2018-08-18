@@ -30,7 +30,8 @@ class KbHarvestService {
     log.debug("KBHarvestService::triggerCacheUpdate()");
     // org.olf.kb.adapters.KBPlusAdapter kbpa = new org.olf.kb.adapters.KBPlusAdapter()
     // def p1 = task {
-      RemoteKB.executeQuery('select rkb.id from RemoteKB as rkb where rkb.type is not null').each { remotekb_id ->
+      RemoteKB.executeQuery('select rkb.id from RemoteKB as rkb where rkb.type is not null and rkb.active = :true',['true':true]).each { remotekb_id ->
+        log.debug("Run sync on ${remotekb_id}");
         knowledgeBaseCacheService.runSync((String)remotekb_id);
       }
     // }

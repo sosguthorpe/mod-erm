@@ -91,7 +91,8 @@ RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application
   principal:null,
   credentials:null,
   rectype:"1",
-  active:true
+  active:true,
+  supportsHarvesting:true
 }
 '`
 
@@ -107,7 +108,8 @@ RS_GOKB_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/j
   principal:null,
   credentials:null,
   rectype:"1",
-  active:true
+  active:true,
+  supportsHarvesting:true
 }
 '`
 

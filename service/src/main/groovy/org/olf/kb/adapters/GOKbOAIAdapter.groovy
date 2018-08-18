@@ -70,7 +70,6 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
             // If we processed records, and we have a resumption token, carry on.
             if ( page_result.resumptionToken ) {
               query_params.resumptionToken = page_result.resumptionToken
-              query_params.remove('cursor');
             }
             else {
               // Reached the end of the data
@@ -99,17 +98,23 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
 
     oai_page.ListRecords.record.each { record ->
       result.count++;
+      def record_identifier = record?.header?.identifier?.text();
+      def package_name = record?.metadata?.gokb?.package?.name?.text()
+      def datestamp = record?.header?.datestamp?.text()
+
       System.out.println(result.count)
-      System.out.println(record.header.identifier);
-      System.out.println(record.metadata.gokb.package.name);
+      System.out.println(record_identifier)
+      System.out.println(package_name);
 
       // processPackage(pkg.packageContentAsJson, source_name, cache);
 
-      if ( record.header.datestamp > result.new_cursor ) {
-        System.out.println("New cursor value - ${record.header.datestamp} > ${result.new_cursor} ");
-        result.new_cursor = record.header.datestamp
+      if ( datestamp > result.new_cursor ) {
+        System.out.println("New cursor value - ${datestamp} > ${result.new_cursor} ");
+        result.new_cursor = datestamp;
       }
     }
+
+    result.resumptionToken = ListRecords?.resumptionToken?.text()
     return result;
   }
 
