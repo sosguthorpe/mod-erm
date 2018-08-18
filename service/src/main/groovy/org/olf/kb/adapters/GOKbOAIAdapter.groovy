@@ -139,4 +139,66 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
     }
   }
 
+  /**
+   * convert the gokb package metadataPrefix into our canonical ERM json structure as seen at
+   * https://github.com/folio-org/mod-erm/blob/master/service/src/integration-test/resources/packages/apa_1062.json
+   */
+  private Map gokbToERM(Object xml_gokb_record) {
+
+    def package_name = xml_gokb_record?.metadata?.gokb?.package?.name?.text()
+    def package_shortcode = xml_gokb_record?.metadata?.gokb?.package?.shortcode?.text()
+    def nominal_provider = xml_gokb_record?.metadata?.gokb?.package?.nominalProvider?.name?.text()
+
+
+    def result = [
+      header:[
+        availability:[
+          type: 'general'
+        ],
+        packageProvider:[
+          name:nominal_provider
+        ],
+        packageSource:'',
+        packageName: package_name,
+        packageSlug: package_shortcode
+      ],
+      packageContents: []
+    ]
+
+    xml_gokb_record?.metadata?.gokb?.TIPPs?.TIPP.each { tipp_entry ->
+      packageContents.add([
+        "title": "Journal of Experimental Psychology: Learning, Memory, and Cognition",
+        "instanceMedium": "electronic",
+        "instanceMedia": "journal",
+        "instanceIdentifiers": [
+          [
+          "namespace": "eissn",
+          "value": "1939-1285"
+          ]
+        ],
+        "siblingInstanceIdentifiers": [
+          [
+            "namespace": "issn", "value": "0278-7393"
+          ]
+        ],
+        "coverage": [
+          "startVolume": "8",
+          "startIssue": "1",
+          "startDate": "1982-01-01",
+          "endVolume": null,
+          "endIssue": null,
+          "endDate": null
+        ],
+        "embargo": null,
+        "coverageDepth": "fulltext",
+        "coverageNote": "previously: Journal of Experimental Psychology: Human Learning and Memory (0096-1515) 1975-1981; Journal of Experimental Psychology (0022-1015) 1916-1974",
+        "platformUrl": "http://content.apa.org/journals/xlm",
+        "platformName": "APA PsycNet",
+        "_platformId": 565
+      ])
+    }
+    
+    return result;
+  }
+
 }
