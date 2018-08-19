@@ -73,13 +73,21 @@ public class PackageIngestService {
           // discussion to work out best way to handle.
           TitleInstance title = titleInstanceResolverService.resolve(pc);
   
-          if ( title != null &&
-               pc.platformUrl != null ) {
+          if ( title != null ) {
 
-            log.debug("platform ${pc.platformUrl}");
+            log.debug("platform ${pc.platformUrl} ${pc.platformName} (item URL is ${pc.url})");
+
             // lets try and work out the platform for the item
             try {
-              Platform platform = Platform.resolve(pc.platformUrl);
+              def platform_url_to_use = pc.platformUrl;
+
+              if ( ( pc.platformUrl == null ) && ( pc.url != null ) ) {
+                // No platform URL, but a URL for the title. Parse the URL and generate a platform URL
+                def parsed_url = new java.net.URL(url);
+                platform_url_to_use = "${parsed_url.getProtocol()}://${parsed_url.getHost()}"
+              }
+
+              Platform platform = Platform.resolve(platform_url_to_use, pc.platformName);
               log.debug("Platform: ${platform}");
   
               // See if we already have a title platform record for the presence of this title on this platform
@@ -87,7 +95,8 @@ public class PackageIngestService {
   
               if ( pti == null ) 
                 pti = new PlatformTitleInstance(titleInstance:title, 
-                                                platform:platform).save(flush:true, failOnError:true);
+                                                platform:platform,
+                                                url:pc.url).save(flush:true, failOnError:true);
   
   
               // Lookup or create a package content item record for this title on this platform in this package

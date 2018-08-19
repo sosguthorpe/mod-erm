@@ -92,9 +92,12 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
 
 
   private Map processPage(String cursor, Object oai_page, String source_name, KBCache cache) {
+
     def result = [:]
     result.new_cursor = cursor;
     result.count = 0;
+
+    // log.debug("GOKbOAIAdapter::processPage(${cursor},...");
 
     oai_page.ListRecords.record.each { record ->
       result.count++;
@@ -106,7 +109,8 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
       System.out.println(record_identifier)
       System.out.println(package_name);
 
-      // processPackage(pkg.packageContentAsJson, source_name, cache);
+      def json_package_description = gokbToERM(record);
+      cache.onPackageChange(source_name, json_package_description);
 
       if ( datestamp > result.new_cursor ) {
         System.out.println("New cursor value - ${datestamp} > ${result.new_cursor} ");
@@ -114,29 +118,8 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
       }
     }
 
-    result.resumptionToken = ListRecords?.resumptionToken?.text()
+    result.resumptionToken = oai_page.ListRecords?.resumptionToken?.text()
     return result;
-  }
-
-  private void processPackage(String url, String source_name, KBCache cache) {
-    println("processPackage(${url},${source_name}) -- fetching");
-    try {
-    def jpf_api = new HTTPBuilder(url)
-    jpf_api.request(Method.GET) { req ->
-      headers.Accept = 'application/json'
-      response.success = { resp, json ->
-        cache.onPackageChange(source_name, json);
-      }
-      response.failure = { resp ->
-        println "Request failed with status ${resp.status}"
-      }
-    }
-    }
-    catch ( Exception e ) {
-      println("Unexpected error processing package ${url}");
-      e.printStackTrace();
-      throw e;
-    }
   }
 
   /**
@@ -149,6 +132,8 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
 
     def package_record = xml_gokb_record?.metadata?.gokb?.package
 
+    def result = null;
+
     if ( package_record != null ) {
 
       def package_name = package_record.name?.text()
@@ -156,7 +141,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
       def nominal_provider = package_record.nominalProvider?.name?.text()
   
   
-      def result = [
+      result = [
         header:[
           availability:[
             type: 'general'
@@ -164,7 +149,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
           packageProvider:[
             name:nominal_provider
           ],
-          packageSource:'',
+          packageSource:'GOKb',
           packageName: package_name,
           packageSlug: package_shortcode
         ],
@@ -178,18 +163,29 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
         def tipp_media = 'journal'
         def tipp_instance_identifiers = [] // [ "namespace": "issn", "value": "0278-7393" ]
         def tipp_sibling_identifiers = []
+
+        // If we're processing an electronic record then issn is a sibling identifier
+        tipp_entry.title.identifiers.identifier.each { ti_id ->
+          if ( ti_id.@namespace == 'issn' ) {
+            tipp_sibling_identifiers.add(["namespace": "issn", "value": ti_id.@value?.toString() ]);
+          }
+          else {
+            tipp_instance_identifiers.add(["namespace": ti_id.@namespace?.toString(), "value": ti_id.@value?.toString() ]);
+          }
+        }
+
         def tipp_coverage = [] // [ "startVolume": "8", "startIssue": "1", "startDate": "1982-01-01", "endVolume": null, "endIssue": null, "endDate": null ],
 
-        def tipp_coverage_depth = tipp_entry.coverage.@coverageDepth
-        def tipp_coverage_note = tipp_entry.coverage.@coverageNote
+        def tipp_coverage_depth = tipp_entry.coverage.@coverageDepth?.toString()
+        def tipp_coverage_note = tipp_entry.coverage.@coverageNote?.toString()
 
         def tipp_url = tipp_entry.url?.text()
         def tipp_platform_url = tipp_entry.platform?.primaryUrl?.text()
         def tipp_platform_name = tipp_entry.platform?.name?.text()
 
-        log.debug("consider tipp ${tipp_title}");
+        // log.debug("consider tipp ${tipp_title}");
 
-        packageContents.add([
+        result.packageContents.add([
           "title": tipp_title,
           "instanceMedium": tipp_medium,
           "instanceMedia": tipp_media,
@@ -205,6 +201,9 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
         ])
       }
     }
+
+    println(result)
+
     return result;
   }
 

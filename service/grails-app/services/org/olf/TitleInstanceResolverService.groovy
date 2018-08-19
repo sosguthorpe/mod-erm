@@ -203,7 +203,7 @@ public class TitleInstanceResolverService {
     def num_class_one_identifiers = 0;
 
     identifiers.each { id ->
-      if ( class_one_namespaces.contains(id.namespace.toLowerCase()) ) {
+      if ( class_one_namespaces?.contains(id.namespace.toLowerCase()) ) {
 
         num_class_one_identifiers++;
 
