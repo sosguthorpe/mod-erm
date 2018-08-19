@@ -141,63 +141,70 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
 
   /**
    * convert the gokb package metadataPrefix into our canonical ERM json structure as seen at
-   * https://github.com/folio-org/mod-erm/blob/master/service/src/integration-test/resources/packages/apa_1062.json
+   *   https://github.com/folio-org/mod-erm/blob/master/service/src/integration-test/resources/packages/apa_1062.json
+   * the GOKb records look like this
+   *   https://gokbt.gbv.de/gokb/oai/index/packages?verb=ListRecords&metadataPrefix=gokb
    */
   private Map gokbToERM(Object xml_gokb_record) {
 
-    def package_name = xml_gokb_record?.metadata?.gokb?.package?.name?.text()
-    def package_shortcode = xml_gokb_record?.metadata?.gokb?.package?.shortcode?.text()
-    def nominal_provider = xml_gokb_record?.metadata?.gokb?.package?.nominalProvider?.name?.text()
+    def package_record = xml_gokb_record?.metadata?.gokb?.package
 
+    if ( package_record != null ) {
 
-    def result = [
-      header:[
-        availability:[
-          type: 'general'
+      def package_name = package_record.name?.text()
+      def package_shortcode = package_record.shortcode?.text()
+      def nominal_provider = package_record.nominalProvider?.name?.text()
+  
+  
+      def result = [
+        header:[
+          availability:[
+            type: 'general'
+          ],
+          packageProvider:[
+            name:nominal_provider
+          ],
+          packageSource:'',
+          packageName: package_name,
+          packageSlug: package_shortcode
         ],
-        packageProvider:[
-          name:nominal_provider
-        ],
-        packageSource:'',
-        packageName: package_name,
-        packageSlug: package_shortcode
-      ],
-      packageContents: []
-    ]
+        packageContents: []
+      ]
+  
+      package_record.TIPPs?.TIPP.each { tipp_entry ->
 
-    xml_gokb_record?.metadata?.gokb?.TIPPs?.TIPP.each { tipp_entry ->
-      packageContents.add([
-        "title": "Journal of Experimental Psychology: Learning, Memory, and Cognition",
-        "instanceMedium": "electronic",
-        "instanceMedia": "journal",
-        "instanceIdentifiers": [
-          [
-          "namespace": "eissn",
-          "value": "1939-1285"
-          ]
-        ],
-        "siblingInstanceIdentifiers": [
-          [
-            "namespace": "issn", "value": "0278-7393"
-          ]
-        ],
-        "coverage": [
-          "startVolume": "8",
-          "startIssue": "1",
-          "startDate": "1982-01-01",
-          "endVolume": null,
-          "endIssue": null,
-          "endDate": null
-        ],
-        "embargo": null,
-        "coverageDepth": "fulltext",
-        "coverageNote": "previously: Journal of Experimental Psychology: Human Learning and Memory (0096-1515) 1975-1981; Journal of Experimental Psychology (0022-1015) 1916-1974",
-        "platformUrl": "http://content.apa.org/journals/xlm",
-        "platformName": "APA PsycNet",
-        "_platformId": 565
-      ])
+        def tipp_title = tipp_entry?.title?.name?.text()
+        def tipp_medium = tipp_entry?.title?.medium?.text()
+        def tipp_media = 'journal'
+        def tipp_instance_identifiers = [] // [ "namespace": "issn", "value": "0278-7393" ]
+        def tipp_sibling_identifiers = []
+        def tipp_coverage = [] // [ "startVolume": "8", "startIssue": "1", "startDate": "1982-01-01", "endVolume": null, "endIssue": null, "endDate": null ],
+
+        def tipp_coverage_depth = tipp_entry.coverage.@coverageDepth
+        def tipp_coverage_note = tipp_entry.coverage.@coverageNote
+
+        def tipp_url = tipp_entry.url?.text()
+        def tipp_platform_url = tipp_entry.platform?.primaryUrl?.text()
+        def tipp_platform_name = tipp_entry.platform?.name?.text()
+
+        log.debug("consider tipp ${tipp_title}");
+
+        packageContents.add([
+          "title": tipp_title,
+          "instanceMedium": tipp_medium,
+          "instanceMedia": tipp_media,
+          "instanceIdentifiers": tipp_instance_identifiers,
+          "siblingInstanceIdentifiers": tipp_sibling_identifiers,
+          "coverage": tipp_coverage,
+          "embargo": null,
+          "coverageDepth": tipp_coverage_depth,
+          "coverageNote": tipp_coverage_note,
+          "platformUrl": tipp_platform_url,
+          "platformName": tipp_platform_name,
+          "url": tipp_url
+        ])
+      }
     }
-    
     return result;
   }
 

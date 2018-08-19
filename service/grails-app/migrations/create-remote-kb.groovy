@@ -290,6 +290,10 @@ databaseChangeLog = {
             column(name: "pti_pt_fk", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
             }
+
+            column(name: "pti_url", type: "VARCHAR(1024)") {
+                constraints(nullable: "true")
+            }
         }
     }
 

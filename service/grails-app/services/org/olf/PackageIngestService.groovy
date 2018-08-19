@@ -86,7 +86,8 @@ public class PackageIngestService {
               PlatformTitleInstance pti = PlatformTitleInstance.findByTitleInstanceAndPlatform(title, platform)
   
               if ( pti == null ) 
-                pti = new PlatformTitleInstance(titleInstance:title, platform:platform).save(flush:true, failOnError:true);
+                pti = new PlatformTitleInstance(titleInstance:title, 
+                                                platform:platform).save(flush:true, failOnError:true);
   
   
               // Lookup or create a package content item record for this title on this platform in this package

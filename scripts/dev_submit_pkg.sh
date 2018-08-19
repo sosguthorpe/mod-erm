@@ -91,7 +91,7 @@ RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application
   principal:null,
   credentials:null,
   rectype:"1",
-  active:true,
+  active:false,
   supportsHarvesting:true
 }
 '`
