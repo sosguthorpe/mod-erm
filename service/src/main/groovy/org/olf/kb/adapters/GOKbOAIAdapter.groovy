@@ -25,6 +25,11 @@ import static groovy.json.JsonOutput.*
 import java.text.*
 
 
+/**
+ * An adapter to go betweent the GOKb OAI service, for example the one at 
+ *   https://gokbt.gbv.de/gokb/oai/index/packages?verb=ListRecords&metadataPrefix=gokb
+ * and our internal KBCache implementation.
+ */
 public class GOKbOAIAdapter implements KBCacheUpdater {
 
 
@@ -175,6 +180,13 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
         }
 
         def tipp_coverage = [] // [ "startVolume": "8", "startIssue": "1", "startDate": "1982-01-01", "endVolume": null, "endIssue": null, "endDate": null ],
+ 
+        tipp_coverage.add(["startVolume": tipp_entry.coverage?.@startVolume?.toString(),
+                             "startIssue": tipp_entry.coverage?.@startIssue?.toString(),
+                             "startDate": tipp_entry.coverage?.@startDate?.toString(),
+                             "endVolume":tipp_entry.coverage?.@endVolume?.toString(),
+                             "endIssue": tipp_entry.coverage?.@endIssue?.toString(),
+                             "endDate": tipp_entry.coverage?.@endDate?.toString()])
 
         def tipp_coverage_depth = tipp_entry.coverage.@coverageDepth?.toString()
         def tipp_coverage_note = tipp_entry.coverage.@coverageNote?.toString()
