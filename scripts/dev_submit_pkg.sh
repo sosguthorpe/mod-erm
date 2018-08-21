@@ -2,30 +2,55 @@
 
 
 # jq -r '.name'
+USAGE="Usage: `basename $0` [-h] [-t tenant] server"
+TENANT="diku"
+
+# Parse command line options.
+while getopts ht: OPT; do
+  case "$OPT" in
+    h)
+        echo $USAGE
+        exit 0
+        ;;
+    t)
+        TENANT="${OPTARG}"
+        ;;
+    \?)
+        # getopts issues an error message
+        echo $USAGE >&2
+        exit 1
+        ;;
+  esac
+done
+
+# Remove the options we parsed above.
+shift `expr $OPTIND - 1`
+
+SERVER=${1:-"http://localhost:8080"}
 
 JQTEST=`echo '{  "value":"one" }' | jq -r ".value"`
 
 if [ $JQREST="one" ]
 then
-  echo JQ installed and working
+  echo "JQ installed and working"
 else
-  echo Please install JQ
+  echo "Please install JQ"
   exit 1
 fi
 
-echo Running
+echo "Running with tenant ${TENANT} against ${SERVER}"
 
 # Prepolpulate with data.
-echo Loading k-int test package
-KI_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/simple_pkg_1.json http://localhost:8080/erm/admin/loadPackage | jq -r ".newPackageId"`
+echo "Loading k-int test package"
+KI_PKG_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" -X POST -F package_file=@../service/src/integration-test/resources/packages/simple_pkg_1.json "$SERVER/erm/admin/loadPackage" | jq -r ".newPackageId"`
 
 echo loading betham science
-BSEC_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/bentham_science_bentham_science_eduserv_complete_collection_2015_2017_1386.json http://localhost:8080/erm/admin/loadPackage | jq -r ".newPackageId"`
+BSEC_PKG_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" -X POST -F package_file=@../service/src/integration-test/resources/packages/bentham_science_bentham_science_eduserv_complete_collection_2015_2017_1386.json "$SERVER/erm/admin/loadPackage" | jq -r ".newPackageId"`
 
 echo Loading APA
-APA_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/apa_1062.json http://localhost:8080/erm/admin/loadPackage | jq -r ".newPackageId"`
+APA_PKG_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" -X POST -F package_file=@../service/src/integration-test/resources/packages/apa_1062.json "$SERVER/erm/admin/loadPackage" | jq -r ".newPackageId"`
 
-AGREEMENT_TRIAL_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
+AGREEMENT_TRIAL_RDV=`curl --header "X-Okapi-Tenant: ${TENANT}" -H "Content-Type: application/json" -X POST "$SERVER/erm/refdataValues/lookupOrCreate" -d '
 {
   category: "AgreementType",
   value: "TRIAL",
@@ -33,7 +58,7 @@ AGREEMENT_TRIAL_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 }
 ' | jq -r ".id"`
 
-AGREEMENT_DRAFT_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
+AGREEMENT_DRAFT_RDV=`curl --header "X-Okapi-Tenant: ${TENANT}" -H "Content-Type: application/json" -X POST "$SERVER/erm/refdataValues/lookupOrCreate" -d '
 {
   category: "AgreementType",
   value: "DRAFT",
@@ -42,7 +67,7 @@ AGREEMENT_DRAFT_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 ' | jq -r ".id"`
 
 # Create an agreement
-TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas -d '
+TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" -H "Content-Type: application/json" -X POST "$SERVER/erm/sas" -d '
 {
   name: "Trial Agreement LR 001",
   agreementType: { id: "'"$AGREEMENT_TRIAL_RDV"'" },
@@ -56,7 +81,7 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
 ' | jq -r ".id"`
 
 # Create an agreement
-DRAFT_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas -d '
+DRAFT_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" -H "Content-Type: application/json" -X POST "$SERVER/erm/sas" -d '
 {
   name: "Draft Agreement LR 002",
   agreementType: { id: "'"$AGREEMENT_DRAFT_RDV"'" },
@@ -67,12 +92,12 @@ DRAFT_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
 ' | jq -r ".id"`
 
 # List agreements
-# AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" http://localhost:8080/sas -X GET | jq ".[0].id"`
+# AGREEMENT_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" http://localhost:8080/sas -X GET | jq ".[0].id"`
 # List packages
 # We now get the package back when we load the package above, this is still a cool way to work tho
-# PACKAGE_ID=`curl --header "X-Okapi-Tenant: diku" http://localhost:8080/packages -X GET | jq ".[0].id"`
+# PACKAGE_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" http://localhost:8080/packages -X GET | jq ".[0].id"`
 
-curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas/$TRIAL_AGREEMENT_ID/addToAgreement -d ' {
+curl --header "X-Okapi-Tenant: ${TENANT}" -H "Content-Type: application/json" -X POST "$SERVER/erm/sas/$TRIAL_AGREEMENT_ID/addToAgreement" -d ' {
   content:[
     { "type":"package", "id": "'"$APA_PKG_ID"'" }
   ]
@@ -80,7 +105,7 @@ curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST
 '
 
 # Register a remote source
-RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/kbs -d '
+RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" -H "Content-Type: application/json" -X POST "$SERVER/erm/kbs" -d '
 {
   name:"KB+",
   type:"org.olf.kb.adapters.KIJPFAdapter", // K-Int Json Package Format Adapter
@@ -97,7 +122,7 @@ RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application
 '`
 
 # Register a remote source
-RS_GOKB_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/kbs -d '
+RS_GOKB_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" -H "Content-Type: application/json" -X POST "$SERVER/erm/kbs" -d '
 {
   name:"GOKb",
   type:"org.olf.kb.adapters.GOKbOAIAdapter", // K-Int Json Package Format Adapter
@@ -115,12 +140,12 @@ RS_GOKB_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/j
 
 # If all goes well, you'll get a status message back. After that, try searching your subscribed titles:
 
-curl --header "X-Okapi-Tenant: diku" http://localhost:8080/erm/content -X GET
+curl --header "X-Okapi-Tenant: ${TENANT}" "$SERVER/erm/content" -X GET
 
 
 # Or try the codex interface instead
-#curl --header "X-Okapi-Tenant: diku" http://localhost:8080/codex-instances -X GET
+#curl --header "X-Okapi-Tenant: ${TENANT}" http://localhost:8080/codex-instances -X GET
 
 # Pull an ID from that record and ask the codex interface for some details
 #RECORD_ID="ff80818162a5e9600162a5e9ef63002f"
-#curl --header "X-Okapi-Tenant: diku" http://localhost:8080/codex-instances/$RECORD_ID -X GET
+#curl --header "X-Okapi-Tenant: ${TENANT}" http://localhost:8080/codex-instances/$RECORD_ID -X GET
