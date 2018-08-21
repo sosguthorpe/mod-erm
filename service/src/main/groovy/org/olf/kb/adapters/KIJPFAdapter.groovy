@@ -52,10 +52,10 @@ public class KIJPFAdapter implements KBCacheUpdater {
       cursor = '';
     }
 
-    boolean continue = true;
+    boolean cont = true;
     int spin_protection = 0;
 
-    while ( continue ) {
+    while ( cont ) {
 
       spin_protection++;
  
@@ -71,7 +71,7 @@ public class KIJPFAdapter implements KBCacheUpdater {
           cache.updateCursor(source_name,page_result.new_cursor);
 
           if ( ( page_result.count == 0 ) || ( spin_protection > 50 ) ) {
-            continue = false;
+            cont = false;
           }
           else {
             log.debug("Fetch next page of data - ${page_result.new_cursor}");
