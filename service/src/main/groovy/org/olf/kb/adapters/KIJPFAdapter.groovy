@@ -37,7 +37,7 @@ public class KIJPFAdapter implements KBCacheUpdater {
     def jpf_api = new HTTPBuilder(base_url)
 
     def query_params = [
-        'max': '20',
+        'max': '25',
         'format': 'json',
         'order':'lastUpdated'
     ]
@@ -51,21 +51,38 @@ public class KIJPFAdapter implements KBCacheUpdater {
     else {
       cursor = '';
     }
- 
-    jpf_api.request(Method.GET) { req ->
-      // uri.path=''
-      // requestContentType = ContentType.JSON
-      headers.Accept = 'application/json'
-      uri.query=query_params
-      response.success = { resp, json ->
-        // println "Success! ${resp.status} ${json}"
-        Map page_result = processPage(cursor, json, source_name, cache)
-        println("processPage returned, processed ${page_result.count} packages");
-        cache.updateCursor(source_name,page_result.new_cursor);
-      }
 
-      response.failure = { resp ->
-        println "Request failed with status ${resp.status}"
+    boolean continue = true;
+    int spin_protection = 0;
+
+    while ( continue ) {
+
+      spin_protection++;
+ 
+      jpf_api.request(Method.GET) { req ->
+        // uri.path=''
+        // requestContentType = ContentType.JSON
+        headers.Accept = 'application/json'
+        uri.query=query_params
+        response.success = { resp, json ->
+          // println "Success! ${resp.status} ${json}"
+          Map page_result = processPage(cursor, json, source_name, cache)
+          println("processPage returned, processed ${page_result.count} packages");
+          cache.updateCursor(source_name,page_result.new_cursor);
+
+          if ( ( page_result.count == 0 ) || ( spin_protection > 50 ) ) {
+            continue = false;
+          }
+          else {
+            log.debug("Fetch next page of data - ${page_result.new_cursor}");
+            query_params.startDate=page_result.new_cursor;
+          }
+
+        }
+
+        response.failure = { resp ->
+          println "Request failed with status ${resp.status}"
+        }
       }
     }
 
