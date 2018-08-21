@@ -37,7 +37,7 @@ public class KIJPFAdapter implements KBCacheUpdater {
     def jpf_api = new HTTPBuilder(base_url)
 
     def query_params = [
-        'max': '25',
+        'max': '50',
         'format': 'json',
         'order':'lastUpdated'
     ]
@@ -46,7 +46,7 @@ public class KIJPFAdapter implements KBCacheUpdater {
 
     if ( current_cursor  != null ) {
       cursor = current_cursor
-      query_params.startDate=cursor;
+      query_params.lastUpdatedAfter=cursor;
     }
     else {
       cursor = '';
@@ -56,6 +56,7 @@ public class KIJPFAdapter implements KBCacheUpdater {
     int spin_protection = 0;
 
     while ( cont ) {
+      println("Process page of data start date = ${query_params.startDate}, spin_protection=${spin_protection} - params ${query_params}");
 
       spin_protection++;
  
@@ -70,12 +71,12 @@ public class KIJPFAdapter implements KBCacheUpdater {
           println("processPage returned, processed ${page_result.count} packages");
           cache.updateCursor(source_name,page_result.new_cursor);
 
-          if ( ( page_result.count == 0 ) || ( spin_protection > 50 ) ) {
+          if ( ( page_result.count == 0 ) || ( spin_protection > 25 ) ) {
             cont = false;
           }
           else {
-            log.debug("Fetch next page of data - ${page_result.new_cursor}");
-            query_params.startDate=page_result.new_cursor;
+            println("Fetch next page of data - ${page_result.new_cursor}");
+            query_params.lastUpdatedAfter=page_result.new_cursor;
           }
 
         }

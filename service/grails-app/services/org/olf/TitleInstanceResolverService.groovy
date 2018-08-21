@@ -176,19 +176,25 @@ public class TitleInstanceResolverService {
    * Attempt a fuzzy match on the title
    */
   private List<TitleInstance> titleMatch(String title) {
+
     List<TitleInstance> result = new ArrayList<TitleInstance>()
     final session = sessionFactory.currentSession
     final sqlQuery = session.createSQLQuery(TEXT_MATCH_TITLE_QRY)
 
-    result = sqlQuery.with {
-      addEntity(TitleInstance)
-      // Set query title - I know this looks a little odd, we have to manually quote this and handle any
-      // relevant escaping... So this code will probably not be good enough long term.
-      setString('qrytitle',title);
-      setFloat('threshold',0.6f)
+    try {
+      result = sqlQuery.with {
+        addEntity(TitleInstance)
+        // Set query title - I know this looks a little odd, we have to manually quote this and handle any
+        // relevant escaping... So this code will probably not be good enough long term.
+        setString('qrytitle',title);
+        setFloat('threshold',0.6f)
  
-      // Get all results.
-      list()
+        // Get all results.
+        list()
+      }
+    }
+    catch ( Exception e ) {
+      log.error("Problem attempting to run SQL Query ${TEXT_MATCH_TITLE_QRY} on string ${title} with threshold 0.6f",e);
     }
  
     return result

@@ -42,12 +42,12 @@ public class CoverageStatement implements MultiTenant<CoverageStatement> {
     pci(nullable:true, blank:false);
     pti(nullable:true, blank:false);
     ti(nullable:true, blank:false);
-    startDate(nullable:true, blank:false);
-    endDate(nullable:true, blank:false);
-    startVolume(nullable:true, blank:false);
-    startIssue(nullable:true, blank:false);
-    endVolume(nullable:true, blank:false);
-    endIssue(nullable:true, blank:false);
+    startDate(nullable:true, blank:true);
+    endDate(nullable:true, blank:true);
+    startVolume(nullable:true, blank:true);
+    startIssue(nullable:true, blank:true);
+    endVolume(nullable:true, blank:true);
+    endIssue(nullable:true, blank:true);
   }
 
 

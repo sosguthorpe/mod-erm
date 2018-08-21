@@ -64,7 +64,7 @@ public class PackageIngestService {
     int rownum = 0;
 
     package_data.packageContents.each { pc ->
-      log.debug("Try to resolve ${pc}");
+      // log.debug("Try to resolve ${pc}");
 
       // We should really narrow this down to the list of class one identifiers.
       if ( pc.instanceIdentifiers?.size() > 0 ) {
@@ -75,7 +75,7 @@ public class PackageIngestService {
   
           if ( title != null ) {
 
-            log.debug("platform ${pc.platformUrl} ${pc.platformName} (item URL is ${pc.url})");
+            // log.debug("platform ${pc.platformUrl} ${pc.platformName} (item URL is ${pc.url})");
 
             // lets try and work out the platform for the item
             try {
@@ -88,7 +88,7 @@ public class PackageIngestService {
               }
 
               Platform platform = Platform.resolve(platform_url_to_use, pc.platformName);
-              log.debug("Platform: ${platform}");
+              // log.debug("Platform: ${platform}");
   
               // See if we already have a title platform record for the presence of this title on this platform
               PlatformTitleInstance pti = PlatformTitleInstance.findByTitleInstanceAndPlatform(title, platform)
@@ -106,7 +106,7 @@ public class PackageIngestService {
               PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null; 
   
               if ( pci == null ) {
-                log.debug("Create new package content item for title ${pti}");
+                log.debug("Create new package content item");
                 pci = new PackageContentItem(
                                              pti:pti, 
                                              pkg:pkg, 
@@ -118,8 +118,8 @@ public class PackageIngestService {
                                              lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true);
               }
               else {
-                // Note that we have seen the package content item now
-                log.debug("update package content item last seen timestamp (Last time this platform title instance was seen in this package");
+                // Note that we have seen the package content item now - so we don't delete it at the end.
+                log.debug("update package content item (${pci.id}) set last seen to ${result.updateTime}");
                 pci.lastSeenTimestamp = result.updateTime;
                 // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
               }
@@ -190,7 +190,7 @@ public class PackageIngestService {
     // this is how we detect deletions in the package file.
     log.debug("end of packageUpsert. Remove any content items that have disappeared since the last upload. ${pkg.name}/${pkg.source}/${pkg.reference}/${result.updateTime}");
     PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime',[pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
-      log.debug("Removal candidate: PIC #${removal_candidate.id} (Last seen ${removal_candidate.lastSeenTimestamp}, thisUpdate ${result.updateTime}) -- Set removed");
+      log.debug("Removal candidate: pci.id #${removal_candidate.id} (Last seen ${removal_candidate.lastSeenTimestamp}, thisUpdate ${result.updateTime}) -- Set removed");
       removal_candidate.removedTimestamp = result.updateTime;
       removal_candidate.save(flush:true, failOnError:true);
     }

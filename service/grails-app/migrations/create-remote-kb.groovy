@@ -223,7 +223,7 @@ databaseChangeLog = {
 
             column(name: "pci_depth", type: "VARCHAR(255)")
 
-            column(name: "pci_note", type: "VARCHAR(255)")
+            column(name: "pci_note", type: "text")
 
             column(name: "pci_pti_fk", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
