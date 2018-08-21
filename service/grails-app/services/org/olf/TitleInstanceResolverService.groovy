@@ -23,6 +23,8 @@ public class TitleInstanceResolverService {
   private static final String TEXT_MATCH_TITLE_QRY = 'select * from title_instance WHERE ti_title % :qrytitle AND similarity(ti_title, :qrytitle) > :threshold ORDER BY  similarity(ti_title, :qrytitle) desc LIMIT 20'
 
   private static def class_one_namespaces = [
+    'zdb',
+    'zdb_ppn',
     'isbn',
     'issn',
     'eissn',
