@@ -17,7 +17,7 @@ Vagrant.configure(2) do |config|
   config.vm.box = "folio/testing-backend"
   # config.vm.box_version = "5.0.0-20171215.10002"
   # config.vm.box_version = "5.0.0-20180726.898"
-  # config.vm.box_version = "5.0.0-20180730.911"
+  config.vm.box_version = "5.0.0-20180813.956"
     
   config.vm.provider "virtualbox" do |v|
     # v.memory = 8192
@@ -48,7 +48,8 @@ Vagrant.configure(2) do |config|
 
   # Expose the postgres instance that is installed so that apps running outside the 
   # vbox instance can use it.
-  config.vm.network "forwarded_port", guest: 5432, host: 5432
+  config.vm.network "forwarded_port", guest: 5432, host: 54321
+  config.vm.network "forwarded_port", guest: 9130, host: 9130
 
 
   # Create a forwarded port mapping which allows access to a specific port
