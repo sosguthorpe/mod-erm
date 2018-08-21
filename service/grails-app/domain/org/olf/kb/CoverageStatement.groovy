@@ -51,4 +51,7 @@ public class CoverageStatement implements MultiTenant<CoverageStatement> {
   }
 
 
+  public String toString() {
+    "v${startVolume?:'*'}/i${startIssue?:'*'}/${startDate} - v${endVolume?:'*'}/i${endIssue?:'*'}/${endDate?:'*'}".toString()
+  }
 }

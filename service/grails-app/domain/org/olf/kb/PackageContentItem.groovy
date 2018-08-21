@@ -28,6 +28,14 @@ public class PackageContentItem implements MultiTenant<PackageContentItem> {
   // A field primarily to deposit KBART::CoverageDepth type data
   String depth
 
+  static hasMany = [
+    coverageStatements: CoverageStatement
+  ]
+
+  static mappedBy = [ 
+    coverageStatements: 'pci'
+  ]
+
   static mapping = {
                    id column:'pci_id', generator: 'uuid', length:36
               version column:'pci_version'
@@ -59,6 +67,6 @@ public class PackageContentItem implements MultiTenant<PackageContentItem> {
    * see: https://www.editeur.org/files/ONIX%20for%20Serials%20-%20Coverage/20120326_ONIX_Coverage_overview_v1_0.pdf
    */
   public String generateCoverageSummary() {
-    'vol 10 thru present'
+    return coverageStatements.join('; ');
   }
 }
