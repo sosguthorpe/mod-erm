@@ -73,3 +73,28 @@ FROM diku_olf_erm.title_instance
 WHERE ti_title % 'Current Medicinal Chemistry -Anti-Infective Agents' AND similarity(ti_title, 'Current Medicinal Chemistry -Anti-Infective Agents') > 0.35
 ORDER BY ti_title;
 
+
+select 'List all packages where title contining the title term aquatic appear';
+
+select pkg_name, ti_title, similarity(ti_title, 'aquatic')
+from diku_olf_erm.package_content_item,
+     diku_olf_erm.package,
+     diku_olf_erm.platform_title_instance,
+     diku_olf_erm.title_instance
+where pci_pkg_fk = pkg_id
+  and pci_pti_fk = pti_id
+  and pti_ti_fk = ti_id
+  and ti_title % 'aquatic'
+
+
+select pkg_name, ti_title, similarity(ti_title, 'aquatic insects')
+from diku_olf_erm.package_content_item,
+     diku_olf_erm.package,
+     diku_olf_erm.platform_title_instance,
+     diku_olf_erm.title_instance
+where pci_pkg_fk = pkg_id
+  and pci_pti_fk = pti_id
+  and pti_ti_fk = ti_id
+  and ti_title % 'aquatic insects'
+  and similarity(ti_title, 'aquatic insects') > 0.6;
+
