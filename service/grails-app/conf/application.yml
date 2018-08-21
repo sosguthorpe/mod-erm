@@ -28,6 +28,9 @@ endpoints:
 
 ---
 grails:
+    server:
+        host: 10.0.2.2
+        port: 8080
     mime:
         disable:
             accept:
@@ -149,5 +152,3 @@ environments:
 okapi:
   schema:
     appName: 'olf_erm'
-
-                
