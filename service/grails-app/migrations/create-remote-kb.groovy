@@ -223,7 +223,7 @@ databaseChangeLog = {
 
             column(name: "pci_depth", type: "VARCHAR(255)")
 
-            column(name: "pci_note", type: "VARCHAR(255)")
+            column(name: "pci_note", type: "text")
 
             column(name: "pci_pti_fk", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
@@ -289,6 +289,10 @@ databaseChangeLog = {
 
             column(name: "pti_pt_fk", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
+            }
+
+            column(name: "pti_url", type: "VARCHAR(1024)") {
+                constraints(nullable: "true")
             }
         }
     }

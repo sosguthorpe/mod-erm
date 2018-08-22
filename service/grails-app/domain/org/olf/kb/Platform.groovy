@@ -21,10 +21,30 @@ public class Platform implements MultiTenant<Platform> {
           name(nullable:false, blank:false)
   }
 
-  public static Platform resolve(String url) {
+  public static Platform resolve(String url, String name) {
 
-    Platform result  = null;
+    Platform result = null;
 
+    if ( ( url != null ) && ( url.length() > 0 ) ) {
+      result = resoveViaURL(url,name)
+    }
+    else if ( ( name != null ) && ( name.length() > 0 ) ) {
+      result = Platform.findByName(name)
+    }
+    else {
+      throw new RuntimeException("Unable to locate platform record unless a name OR url is supplied");
+    }
+
+    return result
+
+    
+
+  }
+
+  private static Platform resoveViaURL(String url, String plat_name) {
+
+    Platform result = null;
+    
     def parsed_url = new java.net.URL(url);
     def platform_host = parsed_url.getHost()
 
@@ -49,7 +69,7 @@ public class Platform implements MultiTenant<Platform> {
       result = platform;
     }
     else {
-      result = new Platform(name: platform_host).save(flush:true, failOnError:true);
+      result = new Platform(name: ( plat_name ?: platform_host ) ).save(flush:true, failOnError:true);
       PlatformLocator pl = new PlatformLocator(owner:result, domainName:platform_host).save(flush:true, failOnError:true);
     }
 

@@ -116,7 +116,8 @@ RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" -H "Content-Type: applic
   principal:null,
   credentials:null,
   rectype:"1",
-  active:true
+  active:true,
+  supportsHarvesting:true
 }
 '`
 
@@ -132,7 +133,8 @@ RS_GOKB_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" -H "Content-Type: applicat
   principal:null,
   credentials:null,
   rectype:"1",
-  active:true
+  active:true,
+  supportsHarvesting:true
 }
 '`
 

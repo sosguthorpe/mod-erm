@@ -23,6 +23,8 @@ public class TitleInstanceResolverService {
   private static final String TEXT_MATCH_TITLE_QRY = 'select * from title_instance WHERE ti_title % :qrytitle AND similarity(ti_title, :qrytitle) > :threshold ORDER BY  similarity(ti_title, :qrytitle) desc LIMIT 20'
 
   private static def class_one_namespaces = [
+    'zdb',
+    'zdb_ppn',
     'isbn',
     'issn',
     'eissn',
@@ -174,19 +176,25 @@ public class TitleInstanceResolverService {
    * Attempt a fuzzy match on the title
    */
   private List<TitleInstance> titleMatch(String title) {
+
     List<TitleInstance> result = new ArrayList<TitleInstance>()
     final session = sessionFactory.currentSession
     final sqlQuery = session.createSQLQuery(TEXT_MATCH_TITLE_QRY)
 
-    result = sqlQuery.with {
-      addEntity(TitleInstance)
-      // Set query title - I know this looks a little odd, we have to manually quote this and handle any
-      // relevant escaping... So this code will probably not be good enough long term.
-      setString('qrytitle',title);
-      setFloat('threshold',0.6f)
+    try {
+      result = sqlQuery.with {
+        addEntity(TitleInstance)
+        // Set query title - I know this looks a little odd, we have to manually quote this and handle any
+        // relevant escaping... So this code will probably not be good enough long term.
+        setString('qrytitle',title);
+        setFloat('threshold',0.6f)
  
-      // Get all results.
-      list()
+        // Get all results.
+        list()
+      }
+    }
+    catch ( Exception e ) {
+      log.error("Problem attempting to run SQL Query ${TEXT_MATCH_TITLE_QRY} on string ${title} with threshold 0.6f",e);
     }
  
     return result
@@ -203,7 +211,7 @@ public class TitleInstanceResolverService {
     def num_class_one_identifiers = 0;
 
     identifiers.each { id ->
-      if ( class_one_namespaces.contains(id.namespace.toLowerCase()) ) {
+      if ( class_one_namespaces?.contains(id.namespace.toLowerCase()) ) {
 
         num_class_one_identifiers++;
 
