@@ -1,6 +1,6 @@
 import groovy.transform.*
 import org.olf.kb.PlatformTitleInstance
 
-@Field PlatformTitleInstance pti
-json g.render(pti, [expand: ['titleInstance', 'platform']])
+@Field PlatformTitleInstance platformTitleInstance
+json g.render(platformTitleInstance, [expand: ['titleInstance', 'platform']])
 

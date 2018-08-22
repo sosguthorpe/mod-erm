@@ -4,5 +4,8 @@ import org.olf.kb.PackageContentItem
 model {
   PackageContentItem packageContentItem
 }
-System.out.println("Running")
-json g.render(packageContentItem, [expand: ['pkg', 'pti']])
+json g.render(packageContentItem, [expand: ['pkg', 'pti']]) {
+  
+  // Add the custom summary option 
+  coverage packageContentItem.generateCoverageSummary()
+}
