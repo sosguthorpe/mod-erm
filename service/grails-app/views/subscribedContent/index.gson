@@ -1,0 +1,14 @@
+import groovy.transform.*
+import java.util.Map
+
+@Field
+Long total
+
+@Field
+List<Map> results
+
+json {
+  t total
+  r results
+}
+

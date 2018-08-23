@@ -66,11 +66,18 @@ where exists ( select pci.id
    */
   def index() {
     def result = [:]
-
     def query_params = [:]
     def meta_params = [max:10]
-    result.results = TitleInstance.executeQuery('select ti '+TITLES_QUERY, query_params,meta_params)
-    result.total = TitleInstance.executeQuery('select count(ti.id) '+TITLES_QUERY, query_params,meta_params)
+
+    def additional_criteria = null;
+
+    if ( params.q ) {
+      additional_criteria = ' and ti.title like :title'
+      query_params['title'] = params.q
+    }
+
+    result.results = TitleInstance.executeQuery('select ti '+TITLES_QUERY+(additional_criteria?:''), query_params,meta_params)
+    result.total = TitleInstance.executeQuery('select count(ti.id) '+TITLES_QUERY+(additional_criteria?:''), query_params,meta_params).get(0)
 
     // ,"pageSize":100,"page":1,"totalPages":1,"meta":{},"total":3}`
     respond result
