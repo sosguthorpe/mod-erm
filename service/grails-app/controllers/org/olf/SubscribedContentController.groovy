@@ -18,6 +18,8 @@ import org.olf.erm.AgreementLineItem
 class SubscribedContentController {
 
   /*
+   * Return titles for content we have access to.
+   *
    * The first exists block selects all titles where we have an agreement line for a package which contains that title.
    * The second exists lists all titles where there is an explicit agreement line for a title from a package
    * The third exists block lists all titles where there is an explicit agreement line for a title on a platform (But not via a package)
@@ -40,6 +42,7 @@ where exists ( select pci.id
                and ali.pti = pti )
 '''
 
+  // Return platform title instance records and agreement line items for content we have access to
   private static final String PLATFORM_TITLES_QUERY = '''from PlatformTitleInstance as pti, AgreementLineItem as ali 
 where exists ( select pci.id 
                from PackageContentItem as pci
@@ -54,8 +57,24 @@ where exists ( select pci.id
 
 
   public SubscribedContentController() {
+    
   }
 
+
+  /**
+   * Return titles where we have currently live access through some route....
+   */
+  def index() {
+    def result = [:]
+
+    def query_params = [:]
+    def meta_params = [max:10]
+    result.results = TitleInstance.executeQuery('select ti '+TITLES_QUERY, query_params,meta_params)
+    result.total = TitleInstance.executeQuery('select count(ti.id) '+TITLES_QUERY, query_params,meta_params)
+
+    // ,"pageSize":100,"page":1,"totalPages":1,"meta":{},"total":3}`
+    respond result
+  }
 
   /**
    * Discover currently subscribed content, and report the agreement which we believe gives rise to the access.
@@ -93,7 +112,7 @@ where exists ( select pci.id
    *   ]
    * }
    */
-  def index() {
+  def oldIndex() {
     def result = [:]
 
     // Can't for the life of me figure out how to escape a json key with the same name as an @Field in the gson view
