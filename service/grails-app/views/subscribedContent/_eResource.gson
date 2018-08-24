@@ -1,0 +1,16 @@
+import groovy.transform.*
+import java.util.Map
+import groovy.transform.Field
+import org.olf.kb.TitleInstance
+
+@Field
+TitleInstance title
+
+json g.render(title, [expand: ['identifiers']]) {
+
+  // Add the custom summary option
+  "entitlements" g.render(template:"entitlement", collection: title.getEntitlements(), var:'ali')
+
+  // entitlementsTwo title.getEntitlements()
+}
+

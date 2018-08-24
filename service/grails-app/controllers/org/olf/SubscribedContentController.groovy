@@ -76,11 +76,14 @@ where exists ( select pci.id
       query_params['title'] = params.q
     }
 
-    result.results = TitleInstance.executeQuery('select ti '+TITLES_QUERY+(additional_criteria?:''), query_params,meta_params)
+    result.results = (List<TitleInstance>) TitleInstance.executeQuery('select ti '+TITLES_QUERY+(additional_criteria?:''), query_params,meta_params)
     result.total = TitleInstance.executeQuery('select count(ti.id) '+TITLES_QUERY+(additional_criteria?:''), query_params,meta_params).get(0)
+    result.pageSize=100
+    result.totalPages=1
+    result.meta=[:]
+    result.page=1
 
-    // ,"pageSize":100,"page":1,"totalPages":1,"meta":{},"total":3}`
-    respond result
+    respond (["data" : result])
   }
 
   /**
