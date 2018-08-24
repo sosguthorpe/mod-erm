@@ -1,17 +1,18 @@
 import groovy.transform.*
 import java.util.Map
-import groovy.transform.Field
 import org.olf.kb.TitleInstance
 
 @Field
-Long total
-
-@Field
-List<TitleInstance> results
+Map data
 
 json {
-  ptotal(total)
-  presults tmpl.eResource("title",results)
-
+  "total" (data.total)
+  
+  // Special case when you want to use a template for each collection entry.
+  "results" g.render(template:"eResource", collection: data.results, var:'title')
+  
+//  "results" (data.results) { TitleInstance resultRow ->
+//    g.render(template: "eResource", model:[title:resultRow])
+//  }
 }
 
