@@ -1,14 +1,18 @@
 import groovy.transform.*
 import java.util.Map
+import groovy.transform.Field
+import org.olf.kb.TitleInstance
 
 @Field
 Long total
 
 @Field
-List<Map> results
+List<TitleInstance> results
 
 json {
-  t total
-  r results
+  ptotal total
+  presults (results) { TitleInstance resultRow ->
+    g.render(template:"eResource", model:[title:resultRow])
+  }
 }
 
