@@ -92,10 +92,10 @@ DRAFT_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" -H "Content-Type: 
 ' | jq -r ".id"`
 
 # List agreements
-# AGREEMENT_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" http://localhost:8080/sas -X GET | jq ".[0].id"`
+# AGREEMENT_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" http://localhost:8080/erm/sas -X GET | jq ".[0].id"`
 # List packages
 # We now get the package back when we load the package above, this is still a cool way to work tho
-# PACKAGE_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" http://localhost:8080/packages -X GET | jq ".[0].id"`
+# PACKAGE_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" http://localhost:8080/erm/packages?stats=true -X GET | jq ".[0].id"`
 
 curl --header "X-Okapi-Tenant: ${TENANT}" -H "Content-Type: application/json" -X POST "$SERVER/erm/sas/$TRIAL_AGREEMENT_ID/addToAgreement" -d ' {
   content:[
