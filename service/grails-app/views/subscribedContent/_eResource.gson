@@ -6,7 +6,8 @@ import org.olf.kb.TitleInstance
 @Field
 TitleInstance title
 
-json {
-  donkeyBalls "wibble"
-}
+json g.render(title, [expand: []]) {
 
+  // Add the custom summary option
+  // coverage packageContentItem.generateCoverageSummary()
+}
