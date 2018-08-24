@@ -49,7 +49,7 @@ where exists ( select pci.id
    */
   @Transient
   List<AgreementLineItem> getEntitlements() {
-    List<AgreementLineItem> result = AgreementLineItem.executeQuery('select ali.id '+ENTITLEMENTS_QUERY,[title:this],[max:20, offset:0]);
+    List<AgreementLineItem> result = AgreementLineItem.executeQuery('select ali '+ENTITLEMENTS_QUERY,[title:this],[max:20, offset:0]);
     return result;
   }
 }

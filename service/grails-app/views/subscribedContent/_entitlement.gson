@@ -1,0 +1,12 @@
+import groovy.transform.*
+import java.util.Map
+import groovy.transform.Field
+import org.olf.erm.AgreementLineItem
+
+@Field
+AgreementLineItem ali
+
+json g.render(ali, [expand: []]) {
+  test '123'
+}
+

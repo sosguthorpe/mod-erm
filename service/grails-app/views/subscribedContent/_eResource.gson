@@ -9,5 +9,8 @@ TitleInstance title
 json g.render(title, [expand: ['identifiers']]) {
 
   // Add the custom summary option
-  entitlements title.getEntitlements()
+  "entitlements" g.render(template:"entitlement", collection: title.getEntitlements(), var:'ali')
+
+  // entitlementsTwo title.getEntitlements()
 }
+
