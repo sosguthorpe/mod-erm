@@ -9,7 +9,7 @@ import javax.persistence.Transient
 
 
 /**
- * Subscription agreement - object holding details about an SA connecting a resource list (Composed Of packages and platform-titles).
+ * Agreement line Item.
  */
 public class AgreementLineItem implements MultiTenant<AgreementLineItem> {
 
