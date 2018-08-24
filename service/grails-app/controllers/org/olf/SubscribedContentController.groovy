@@ -83,7 +83,7 @@ where exists ( select pci.id
     result.meta=[:]
     result.page=1
 
-    respond result
+    respond (["data" : result])
   }
 
   /**
