@@ -6,8 +6,8 @@ import org.olf.kb.TitleInstance
 @Field
 TitleInstance title
 
-json g.render(title, [expand: []]) {
+json g.render(title, [expand: ['identifiers']]) {
 
   // Add the custom summary option
-  // coverage packageContentItem.generateCoverageSummary()
+  entitlements title.getEntitlements()
 }
