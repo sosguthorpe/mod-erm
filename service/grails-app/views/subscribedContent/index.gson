@@ -10,9 +10,8 @@ Long total
 List<TitleInstance> results
 
 json {
-  ptotal total
-  presults (results) { TitleInstance resultRow ->
-    g.render(template:"eResource", model:[title:resultRow])
-  }
+  ptotal(total)
+  presults tmpl.eResource("title",results)
+
 }
 

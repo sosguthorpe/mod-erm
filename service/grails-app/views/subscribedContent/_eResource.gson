@@ -7,6 +7,6 @@ import org.olf.kb.TitleInstance
 TitleInstance title
 
 json {
-  donkeyBalls "wibble"
+  ti title.title
 }
 
