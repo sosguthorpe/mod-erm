@@ -28,6 +28,12 @@
           "methods": ["GET", "POST"],
           "pathPattern": "/erm/packages"
         },{
+          "methods": ["GET", "POST"],
+          "pathPattern": "/erm/titles"
+        },{
+          "methods": ["GET", "POST"],
+          "pathPattern": "/erm/titles/*"
+        },{
           "methods": ["GET", "PUT", "DELETE"],
           "pathPattern": "/erm/packages/{id}"
         },{

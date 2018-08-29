@@ -16,6 +16,7 @@ class UrlMappings {
     '/erm/sas'(resources: 'subscriptionAgreement') {
        "/addToAgreement"(action:'addToAgreement')
     }
+    '/erm/titles'(resources: 'title')
     '/erm/packages'(resources: 'package')
     "/erm/pci"(resources:'packageContentItem')
 
