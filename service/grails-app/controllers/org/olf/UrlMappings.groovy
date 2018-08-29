@@ -16,11 +16,14 @@ class UrlMappings {
     '/erm/sas'(resources: 'subscriptionAgreement') {
        "/addToAgreement"(action:'addToAgreement')
     }
+
     '/erm/titles'(resources: 'title')
+
     '/erm/packages'(resources: 'package')
+
     "/erm/pci"(resources:'packageContentItem')
 
-    '/erm/refdataValues'(resource: 'refdata') {
+    '/erm/refdataValues'(resources: 'refdata') {
       "/lookupOrCreate"(controller:'refdata', action:'lookupOrCreate')
     }
 

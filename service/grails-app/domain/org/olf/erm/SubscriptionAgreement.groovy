@@ -22,6 +22,8 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
 
   Boolean enabled
 
+  Org vendor
+
   static hasMany = [
     items:AgreementLineItem
   ]
@@ -42,6 +44,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
        nextReviewDate column:'sa_next_review_date'
         agreementType column:'sa_agreement_type'
               enabled column:'sa_enabled'
+               vendor column:'sa_vendor_fk'
   }
 
   static constraints = {
@@ -54,6 +57,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
      nextReviewDate(nullable:true, blank:false)
       agreementType(nullable:true, blank:false)
             enabled(nullable:true, blank:false)
+             vendor(nullable:true, blank:false)
   }
 
 
