@@ -1,9 +1,0 @@
-import groovy.transform.*
-import org.olf.kb.ElectronicResource
-
-model {
-  ElectronicResource eresource
-}
-json g.render(eresource, [expand: []])
-
-
