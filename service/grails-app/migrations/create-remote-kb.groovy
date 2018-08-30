@@ -207,6 +207,19 @@ databaseChangeLog = {
         }
     }
 
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-8a") {
+      grailsChange {
+        change {
+          // grailsChange gives us an sql variable which inherits the current connection, and hence should
+          // get the schema
+          // sql.execute seems to get a bit confused when passed a GString. Work it out before
+          def cmd = "CREATE INDEX pkg_name_trigram_idx ON ${database.defaultSchemaName}.package USING GIN (pkg_name gin_trgm_ops)".toString()
+          sql.execute(cmd);
+        }
+      }
+    }
+
+
     changeSet(author: "ianibbo (generated)", id: "1527414162857-9") {
         createTable(tableName: "package_content_item") {
             column(name: "pci_id", type: "VARCHAR(36)") {
@@ -444,20 +457,17 @@ databaseChangeLog = {
             column(name: "ti_title", type: "text") {
                 constraints(nullable: "false")
             }
+
+            column(name: "ti_resource_type_fk", type: "VARCHAR(36)")
         }
     }
 
-    // II: Would really like to do this, but it seems that somehow the sql command doesn't get the current
-    // schema so the create index command can't see the title
     changeSet(author: "ianibbo (generated)", id: "1527414162857-18a") {
-      // sql("CREATE INDEX ti_title_trigram_idx ON  ${database.defaultSchemaPrefix}.title_instance USING GIST (ti_title gist_trgm_ops)")
       grailsChange {
         change {
           // grailsChange gives us an sql variable which inherits the current connection, and hence should
-          // get the schema
-          // sql.execute seems to get a bit confused when passed a GString. Work it out before
+          // get the schema. sql.execute seems to get a bit confused when passed a GString. Work it out before by calling toString
           def cmd = "CREATE INDEX ti_title_trigram_idx ON ${database.defaultSchemaName}.title_instance USING GIN (ti_title gin_trgm_ops)".toString()
-          // println "\n**\nrun: ${cmd}\n**"
           sql.execute(cmd);
         }
       }

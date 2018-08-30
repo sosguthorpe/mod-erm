@@ -1,6 +1,7 @@
 package org.olf.kb
 
 import grails.gorm.MultiTenant
+import javax.persistence.Transient
 
 
 /**
@@ -34,5 +35,10 @@ public class Pkg implements MultiTenant<Pkg> {
     nominalPlatform(nullable:true, blank:false)
   }
 
+
+  @Transient
+  public long getResourceCount() {
+    return 0;
+  }
 
 }

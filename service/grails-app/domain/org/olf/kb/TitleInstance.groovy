@@ -3,6 +3,7 @@ package org.olf.kb
 import grails.gorm.MultiTenant
 import javax.persistence.Transient
 import org.olf.erm.AgreementLineItem
+import org.olf.general.RefdataValue
 
 /**
  * mod-erm representation of a BIBFRAME instance
@@ -25,14 +26,18 @@ where exists ( select pci.id
   // Title IN ORIGINAL LANGUAGE OF PUBLICATION
   String title
 
+  RefdataValue resourceType
+
   static mapping = {
                    id column:'ti_id', generator: 'uuid', length:36
               version column:'ti_version'
                 title column:'ti_title'
+         resourceType column:'ti_resource_type_fk'
   }
 
   static constraints = {
-          title(nullable:false, blank:false)
+           title(nullable:false, blank:false)
+    resourceType(nullable:true, blank:false)
   }
 
   static hasMany = [

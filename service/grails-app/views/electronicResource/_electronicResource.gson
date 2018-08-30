@@ -9,9 +9,11 @@ json g.render(electronicResource, [expand: ['plat']]) {
   // Add the custom summary option
   if ( electronicResource.type == 'title' ) {
     resourceCount 1
+    resourceType 'Title'
   }
   else {
-    resourceCount 'a number'
+    resourceCount electronicResource.pkg?.getResourceCount()
+    resourceType 'Package'
   }
 }
 
