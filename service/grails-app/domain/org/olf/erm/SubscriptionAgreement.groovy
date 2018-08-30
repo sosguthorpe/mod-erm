@@ -2,6 +2,7 @@ package org.olf.erm
 
 import grails.gorm.MultiTenant
 import org.olf.general.RefdataValue
+import org.olf.general
 
 /**
  * Subscription agreement - object holding details about an SA connecting a resource list (Composed Of packages and platform-titles).
