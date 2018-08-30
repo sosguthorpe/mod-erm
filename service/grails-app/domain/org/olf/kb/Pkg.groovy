@@ -13,6 +13,7 @@ public class Pkg implements MultiTenant<Pkg> {
   String source
   String reference
   RemoteKB remoteKb
+  Platform nominalPlatform
 
   static mapping = {
                 table 'package'
@@ -22,13 +23,15 @@ public class Pkg implements MultiTenant<Pkg> {
                source column:'pkg_source'
             reference column:'pkg_reference'
              remoteKb column:'pkg_remote_kb'
+      nominalPlatform column:'pkg_nominal_platform_fk'
   }
 
   static constraints = {
-          name(nullable:false, blank:false)
-        source(nullable:false, blank:false)
-     reference(nullable:false, blank:false)
-      remoteKb(nullable:true, blank:false)
+               name(nullable:false, blank:false)
+             source(nullable:false, blank:false)
+          reference(nullable:false, blank:false)
+           remoteKb(nullable:true, blank:false)
+    nominalPlatform(nullable:true, blank:false)
   }
 
 

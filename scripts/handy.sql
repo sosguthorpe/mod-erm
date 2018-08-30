@@ -110,3 +110,6 @@ where pci_pkg_fk = pkg_id
   and ti_title % 'Yearbook for traditional music'
   and similarity(ti_title, 'Yearbook for traditional music') > 0.6;
 
+
+CREATE VIEW diku_olf_erm.all_electronic_resources (type, pkg_id, pti_id, name, plat_fk) as ( select 'pkg', pkg_id, null, pkg_name from diku_olf_erm.package, null ) UNION ( select 'title', null, pti_id, ti_title, pti_pt_fk from diku_olf_erm.platform_title_instance, diku_olf_erm.title_instance where pti_ti_fk = ti_id )
+
