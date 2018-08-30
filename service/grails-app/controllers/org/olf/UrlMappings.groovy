@@ -38,5 +38,6 @@ class UrlMappings {
     "/erm/knowledgebase" ( controller:'kb', action:'index')
     "/erm/knowledgebase/$action" ( controller:'kb' )
 
+    "/erm/eresources" ( controller:'eresource', action:'index')
   }
 }

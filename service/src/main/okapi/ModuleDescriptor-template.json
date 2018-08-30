@@ -57,6 +57,12 @@
         },{
           "methods": ["GET"],
           "pathPattern": "/erm/knowledgebase/*"
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/eresources"
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/eresources/*"
         }, {
           "methods": ["GET", "POST"],
           "pathPattern": "/erm/pci"
