@@ -634,4 +634,13 @@ databaseChangeLog = {
     changeSet(author: "ianibbo (generated)", id: "1527414162857-58") {
         addForeignKeyConstraint(baseColumnNames: "pti_pt_fk", baseTableName: "platform_title_instance", constraintName: "FKtlecp40x0sb3rd9w4qi16lcu0", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "pt_id", referencedTableName: "platform")
     }
+
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-59") {
+      grailsChange {
+        change {
+          def cmd = "CREATE VIEW ${database.defaultSchemaName}.all_electronic_resources (id, name) as select pkg_id, pkg_name from ${database.defaultSchemaName}.package".toString()
+          sql.execute(cmd);
+        }
+      }
+    }
 }
