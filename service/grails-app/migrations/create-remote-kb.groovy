@@ -169,8 +169,12 @@ databaseChangeLog = {
                 constraints(nullable: "false")
             }
 
+            column(name: "org_vendors_uuid", type: "VARCHAR(36)") {
+                constraints(nullable: "true")
+            }
+
             column(name: "org_source_uri", type: "VARCHAR(255)") {
-                constraints(nullable: "false")
+                constraints(nullable: "true")
             }
         }
     }
