@@ -2,7 +2,6 @@ package org.olf.kb
 
 import grails.gorm.MultiTenant
 import javax.persistence.Transient
-import org.olf.erm.AgreementLineItem
 
 /**
  * an ElectronicResource - Superclass of PlatformTitleInstance and Package

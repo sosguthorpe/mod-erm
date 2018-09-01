@@ -2,7 +2,7 @@ package org.olf.kb
 
 import grails.gorm.MultiTenant
 import javax.persistence.Transient
-import org.olf.erm.AgreementLineItem
+import org.olf.erm.Entitlement
 import org.olf.general.RefdataValue
 
 /**
@@ -10,16 +10,16 @@ import org.olf.general.RefdataValue
  */
 public class TitleInstance implements MultiTenant<TitleInstance> {
 
-  private static final String ENTITLEMENTS_QUERY = '''from AgreementLineItem as ali 
+  private static final String ENTITLEMENTS_QUERY = '''from Entitlement as ent 
 where exists ( select pci.id 
                from PackageContentItem as pci
                where pci.pti.titleInstance = :title 
-               and ali.pkg = pci.pkg )
+               and ent.pkg = pci.pkg )
    or exists ( select pci.id 
                from PackageContentItem as pci
                where pci.pti.titleInstance = :title
-               and ali.pci = pci )
-   or exists ( select single_title from AgreementLineItem as single_title where single_title=ali and single_title.pti.titleInstance = :title )
+               and ent.pci = pci )
+   or exists ( select single_title from Entitlement as single_title where single_title=ent and single_title.pti.titleInstance = :title )
 '''
 
   String id
@@ -53,8 +53,8 @@ where exists ( select pci.id
    * Return the list of entitlements that grant us access to this title.
    */
   @Transient
-  List<AgreementLineItem> getEntitlements() {
-    List<AgreementLineItem> result = AgreementLineItem.executeQuery('select ali '+ENTITLEMENTS_QUERY,[title:this],[max:20, offset:0]);
+  List<Entitlement> getEntitlements() {
+    List<Entitlement> result = Entitlement.executeQuery('select ent '+ENTITLEMENTS_QUERY,[title:this],[max:20, offset:0]);
     return result;
   }
 }

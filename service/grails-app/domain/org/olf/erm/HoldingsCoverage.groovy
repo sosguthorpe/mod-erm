@@ -11,7 +11,7 @@ public class HoldingsCoverage implements MultiTenant<HoldingsCoverage> {
   String id
 
   // Mutually exclusive --- ONE of pci, pti or ti
-  AgreementLineItem ali
+  Entitlement entitlement
 
   // MUST Be in format yyyy-mm-dd
   String startDate
@@ -24,7 +24,7 @@ public class HoldingsCoverage implements MultiTenant<HoldingsCoverage> {
   static mapping = {
                    id column:'co_id', generator: 'uuid', length:36
               version column:'co_version'
-                  ali column:'co_pci_fk'
+          entitlement column:'co_ent_fk'
             startDate column:'co_start_date'
               endDate column:'co_end_date'
           startVolume column:'co_start_volume'
@@ -34,7 +34,7 @@ public class HoldingsCoverage implements MultiTenant<HoldingsCoverage> {
   }
 
   static constraints = {
-    ali(nullable:true, blank:false);
+    entitlement(nullable:true, blank:false);
     startDate(nullable:true, blank:false);
     endDate(nullable:true, blank:false);
     startVolume(nullable:true, blank:false);

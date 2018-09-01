@@ -9,9 +9,14 @@ import javax.persistence.Transient
 
 
 /**
- * Agreement line Item.
+ * Entitlement (A description of a right to access a specific digital resource, which can be an 
+ * title on a platform (But not listed in a package), a title named in a package, a full package of resources
+ *
+ * OFTEN attached to an agreement, but it's possible we know we have the right to access a resource
+ * without perhaps knowning which agreement controls that right.
+ *
  */
-public class AgreementLineItem implements MultiTenant<AgreementLineItem> {
+public class Entitlement implements MultiTenant<Entitlement> {
 
   String id
 
@@ -36,7 +41,7 @@ public class AgreementLineItem implements MultiTenant<AgreementLineItem> {
   ]
 
   static mappedBy = [
-    coverage: 'ali'
+    coverage: 'entitlement'
   ]
 
   // Allow users to individually switch on or off this content item. If null, should default to the agreement
@@ -47,20 +52,20 @@ public class AgreementLineItem implements MultiTenant<AgreementLineItem> {
   
 
   static mapping = {
-                   id column: 'ali_id', generator: 'uuid', length:36
-              version column: 'ali_version'
-                owner column: 'ali_owner_fk'
-                  pkg column: 'ali_pkg_fk'
-                  pci column: 'ali_pci_fk'
-                  pti column: 'ali_pti_fk'
-              enabled column: 'ali_enabled'
-           activeFrom column: 'ali_active_from'
-             activeTo column: 'ali_active_to'
+                   id column: 'ent_id', generator: 'uuid', length:36
+              version column: 'ent_version'
+                owner column: 'ent_owner_fk'
+                  pkg column: 'ent_pkg_fk'
+                  pci column: 'ent_pci_fk'
+                  pti column: 'ent_pti_fk'
+              enabled column: 'ent_enabled'
+           activeFrom column: 'ent_active_from'
+             activeTo column: 'ent_active_to'
   }
 
 
   static constraints = {
-        owner(nullable:false, blank:false)
+        owner(nullable:true, blank:false)
           pkg(nullable:true, blank:false)
           pci(nullable:true, blank:false)
           pti(nullable:true, blank:false)

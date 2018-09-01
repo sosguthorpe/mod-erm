@@ -26,7 +26,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   Org vendor
 
   static hasMany = [
-    items:AgreementLineItem
+    items:Entitlement
   ]
 
   static mappedBy = [

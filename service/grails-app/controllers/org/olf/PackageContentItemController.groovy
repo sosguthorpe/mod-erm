@@ -4,7 +4,6 @@ import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
 import com.k_int.okapi.OkapiTenantAwareController
 import org.olf.erm.SubscriptionAgreement
-import org.olf.erm.AgreementLineItem
 import org.olf.kb.Pkg
 import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance

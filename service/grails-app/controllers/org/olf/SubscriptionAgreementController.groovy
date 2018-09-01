@@ -4,7 +4,7 @@ import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
 import com.k_int.okapi.OkapiTenantAwareController
 import org.olf.erm.SubscriptionAgreement
-import org.olf.erm.AgreementLineItem
+import org.olf.erm.Entitlement
 import org.olf.kb.Pkg
 import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance
@@ -39,24 +39,24 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
             Pkg pkg = Pkg.get(content_item.id);
             if ( pkg != null ) {
               log.debug("Adding package ${pkg} to agreement ${sa}");
-              AgreementLineItem ali = new AgreementLineItem(pkg:pkg, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
-              result.status.add([message:"Line ${lineno} - added ${pkg} - line item id is ${ali.id}"])
+              Entitlement ent = new Entitlement(pkg:pkg, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
+              result.status.add([message:"Line ${lineno} - added ${pkg} - line item id is ${ent.id}"])
             }
             break;
           case 'packageItem':
             PackageContentItem pci = PackageContentItem.get(content_item.id);
             if ( pci != null ) {
               log.debug("Adding title from package ${pci} to agreement ${sa}");
-              AgreementLineItem ali = new AgreementLineItem(pci:pci, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
-              result.status.add([message:"Line ${lineno} - added ${pci} - line item id is ${ali.id}"])
+              Entitlement ent = new Entitlement(pci:pci, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
+              result.status.add([message:"Line ${lineno} - added ${pci} - line item id is ${ent.id}"])
             }
             break;
           case 'platformTitle':
             PlatformTitleInstance pti = PlatformTitleInstance.get(content_item.id);
             if ( pti != null ) {
               log.debug("Adding title ${pti} to agreement ${sa}");
-              AgreementLineItem ali = new AgreementLineItem(pti:pti, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
-              result.status.add([message:"Line ${lineno} - added ${pti} - line item id is ${ali.id}"])
+              Entitlement ent = new Entitlement(pti:pti, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
+              result.status.add([message:"Line ${lineno} - added ${pti} - line item id is ${ent.id}"])
             }
             break;
           default:
