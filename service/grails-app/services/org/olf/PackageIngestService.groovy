@@ -10,6 +10,7 @@ import org.olf.kb.TitleInstance;
 import org.olf.kb.PlatformTitleInstance;
 import org.olf.kb.PackageContentItem;
 import org.olf.kb.RemoteKB;
+import org.olf.general.Org
 
 /**
  * This service works at the module level, it's often called without a tenant context.
@@ -51,12 +52,18 @@ public class PackageIngestService {
     // header.packageSlug contains the package maintainers authoritative identifier for this package.
     def pkg = Pkg.findBySourceAndReference(package_data.header.packageSource, package_data.header.packageSlug)
 
+    def vendor = null;
+    if ( package_data.header?.packageProvider?.name ) {
+      vendor = Org.findByName(package_data.header?.packageProvider?.name)  ?: new Org(name:package_data.header?.packageProvider?.name).save(flush:true, failOnError:true);
+    }
+
     if ( pkg == null ) {
       pkg = new Pkg(
                              name: package_data.header.packageName,
                            source: package_data.header.packageSource,
                         reference: package_data.header.packageSlug,
-                         remoteKb: kb).save(flush:true, failOnError:true);
+                         remoteKb: kb,
+                           vendor: vendor).save(flush:true, failOnError:true);
 
       result.newPackageId = pkg.id
     }

@@ -24,7 +24,6 @@ public class TitleInstanceResolverService {
 
   private static def class_one_namespaces = [
     'zdb',
-    'zdb_ppn',
     'isbn',
     'issn',
     'eissn',

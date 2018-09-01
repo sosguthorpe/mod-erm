@@ -208,6 +208,10 @@ databaseChangeLog = {
             column(name: "pkg_nominal_platform_fk", type: "VARCHAR(36)") {
                 constraints(nullable: "true")
             }
+
+            column(name: "pkg_vendor_fk", type: "VARCHAR(36)") {
+                constraints(nullable: "true")
+            }
         }
     }
 

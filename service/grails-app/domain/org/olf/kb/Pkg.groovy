@@ -2,6 +2,7 @@ package org.olf.kb
 
 import grails.gorm.MultiTenant
 import javax.persistence.Transient
+import org.olf.general.Org
 
 
 /**
@@ -15,6 +16,7 @@ public class Pkg implements MultiTenant<Pkg> {
   String reference
   RemoteKB remoteKb
   Platform nominalPlatform
+  Org vendor
 
   static mapping = {
                 table 'package'
@@ -25,6 +27,7 @@ public class Pkg implements MultiTenant<Pkg> {
             reference column:'pkg_reference'
              remoteKb column:'pkg_remote_kb'
       nominalPlatform column:'pkg_nominal_platform_fk'
+               vendor column:'pkg_vendor_fk'
   }
 
   static constraints = {
@@ -33,6 +36,7 @@ public class Pkg implements MultiTenant<Pkg> {
           reference(nullable:false, blank:false)
            remoteKb(nullable:true, blank:false)
     nominalPlatform(nullable:true, blank:false)
+             vendor(nullable:true, blank:false)
   }
 
 
