@@ -64,6 +64,12 @@
           "methods": ["GET"],
           "pathPattern": "/erm/eresources/*"
         }, {
+          "methods": ["GET"],
+          "pathPattern": "/erm/entitlements"
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/entitlements/*"
+        }, {
           "methods": ["GET", "POST"],
           "pathPattern": "/erm/pci"
         },{

@@ -22,6 +22,7 @@ class UrlMappings {
     '/erm/packages'(resources: 'package')
 
     "/erm/pci"(resources:'packageContentItem')
+    "/erm/entitlements"(resources:'entitlement')
 
     '/erm/refdataValues'(resources: 'refdata') {
       "/lookupOrCreate"(controller:'refdata', action:'lookupOrCreate')
