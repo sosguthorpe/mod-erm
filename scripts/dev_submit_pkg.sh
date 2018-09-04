@@ -71,6 +71,9 @@ DRAFT_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
 }
 ' | jq -r ".id"`
 
+# Find the package content item entitle for Clinical Cancer Drugs in K-Int Test Package 001
+CCD_IN_KI_TEST_PKG=`curl --header "X-Okapi-Tenant: diku" "http://localhost:8080/erm/pci?filters=pti.titleInstance.title%3D%3DClinical+Cancer+Drugs&filters=pkg.name%3D%3DK-Int+Test+Package+001" -X GET | jq -r ".[0].id"`
+
 # List agreements
 # AGREEMENT_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" http://localhost:8080/erm/sas -X GET | jq ".[0].id"`
 # List packages
