@@ -21,6 +21,12 @@ public class PackageIngestService {
   def titleInstanceResolverService
   def coverageExtenderService
 
+  // dependentServiceProxyService is a service which hides the fact that we might be dependent upon other
+  // services for our reference data. In this class - vendors are erm Org entries, but in folio these are
+  // managed by the vendors app. If we are running in folio mode, this service hides the detail of
+  // looking up an Org in vendors and stashing the vendor info in the local cache table.
+  def dependentServiceProxyService
+
   public Map upsertPackage(Map package_data) {
     return upsertPackage(package_data,'LOCAL');
   }
@@ -54,7 +60,7 @@ public class PackageIngestService {
 
     def vendor = null;
     if ( package_data.header?.packageProvider?.name ) {
-      vendor = Org.findByName(package_data.header?.packageProvider?.name)  ?: new Org(name:package_data.header?.packageProvider?.name).save(flush:true, failOnError:true);
+      vendor = dependentServiceProxyService.coordinateOrg(package_data.header?.packageProvider?.name)
     }
 
     if ( pkg == null ) {
