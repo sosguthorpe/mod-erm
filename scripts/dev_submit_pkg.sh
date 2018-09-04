@@ -87,6 +87,15 @@ curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST
 }
 '
 
+# Add the title clinical cancer drugs from the package K-Int Test Package 001 to this agreement as a title
+curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas/$TRIAL_AGREEMENT_ID/addToAgreement -d ' {
+  content:[
+    { "type":"packageItem", "id": "'"$CCD_IN_KI_TEST_PKG"'" }
+  ]
+}
+'
+
+
 # Register a remote source
 RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/kbs -d '
 {
