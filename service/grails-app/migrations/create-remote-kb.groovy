@@ -429,6 +429,8 @@ databaseChangeLog = {
             column(name: "sa_enabled", type: "BOOLEAN")
 
             column(name: "sa_end_date", type: "TIMESTAMP WITHOUT TIME ZONE")
+            
+            column(name: "sa_description", type: "TEXT")
 
             column(name: "sa_vendor_fk", type: "VARCHAR(36)")
         }

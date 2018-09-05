@@ -8,7 +8,7 @@ import org.olf.general.Org
  * Subscription agreement - object holding details about an SA connecting a resource list (Composed Of packages and platform-titles).
  */
 public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement> {
-
+  String description
   String id
   String name
   String localReference
@@ -34,6 +34,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   ]
 
   static mapping = {
+          description column:'sa_description'
                    id column:'sa_id', generator: 'uuid', length:36
               version column:'sa_version'
                  name column:'sa_name'
@@ -58,6 +59,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
      nextReviewDate(nullable:true, blank:false)
       agreementType(nullable:true, blank:false)
             enabled(nullable:true, blank:false)
+        description(nullable:true, blank:false)
              vendor(nullable:true, blank:false)
   }
 

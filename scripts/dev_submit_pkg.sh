@@ -45,6 +45,7 @@ AGREEMENT_DRAFT_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas -d '
 {
   name: "Trial Agreement LR 001",
+  description: "This is a trial agreement",
   agreementType: { id: "'"$AGREEMENT_TRIAL_RDV"'" },
   localReference: "TRIAL_ALR_001",
   vendorReference: "TRIAL_AVR_001",
@@ -63,7 +64,8 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
 # Create an agreement
 DRAFT_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas -d '
 {
-  name: "Draft Agreement LR 002",
+  name: "Draft Agreement LR 002", 
+  description: "This is a draft agreement",
   agreementType: { id: "'"$AGREEMENT_DRAFT_RDV"'" },
   localReference: "AGG_LR_002",
   vendorReference: "AGG_VR_002",
