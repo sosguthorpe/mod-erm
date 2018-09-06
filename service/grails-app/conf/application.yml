@@ -152,3 +152,8 @@ environments:
 okapi:
   schema:
     appName: 'olf_erm'
+    
+  # This is only used for self registration. Uncomment for this to work. 
+  #service:
+   # host: localhost
+   # port: 9130
