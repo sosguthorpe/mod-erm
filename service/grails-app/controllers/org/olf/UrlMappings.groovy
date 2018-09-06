@@ -27,6 +27,12 @@ class UrlMappings {
     '/erm/refdataValues'(resources: 'refdata') {
       "/lookupOrCreate"(controller:'refdata', action:'lookupOrCreate')
     }
+    
+    '/erm/org'(resources: 'org') {
+      collection {
+        "/find/$id"(controller:'org', action:'find')
+      }
+    }
 
     "/erm/admin/$action"(controller:'admin')
 
