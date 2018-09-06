@@ -1,11 +1,11 @@
 ##
-# This config file is only applicable when building for the FOLIO OKAPI gateway.
-# Use the flag '-Denv=okapi'
+# This config file connects to the postgres install mapped by the vagrant file in the project root.
+# Use the flag '-Dgrails.env=vagrant-db' when running
 ##
 
 dataSource:
   dbCreate: none
-  url: jdbc:postgresql://10.0.2.15:5432/okapi_modules
+  url: jdbc:postgresql://localhost:54321/okapi_modules # Port 54321 forwarded so as not to clash.
   username: folio_admin
   password: folio_admin
   driverClassName: org.postgresql.Driver
