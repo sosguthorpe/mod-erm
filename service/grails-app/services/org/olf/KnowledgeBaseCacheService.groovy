@@ -26,7 +26,7 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
       log.debug("Run remote kb synv:: ${rkb}");
       Class cls = Class.forName(rkb.type)
       KBCacheUpdater cache_updater = cls.newInstance();
-      cache_updater.freshen(rkb.name, rkb.uri, rkb.cursor, this)
+      cache_updater.freshenPackageData(rkb.name, rkb.uri, rkb.cursor, this)
     }
   }
 

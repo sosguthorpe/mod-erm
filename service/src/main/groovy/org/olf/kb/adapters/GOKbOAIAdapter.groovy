@@ -33,10 +33,10 @@ import java.text.*
 public class GOKbOAIAdapter implements KBCacheUpdater {
 
 
-  public Object freshen(String source_name,
-                        String base_url,
-                        String current_cursor,
-                        KBCache cache) {
+  public void freshenPackageData(String source_name,
+                                 String base_url,
+                                 String current_cursor,
+                                 KBCache cache) {
 
     println("GOKbOAIAdapter::freshen - fetching from URI: ${base_url}");
     def jpf_api = new HTTPBuilder(base_url)
@@ -93,6 +93,12 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
       }
     }
 
+  }
+
+  public void freshenHoldingsData(String cursor,
+                                  String source_name,
+                                  KBCache cache) {
+    throw new RuntimeException("Holdings data not suported by GOKb");
   }
 
 

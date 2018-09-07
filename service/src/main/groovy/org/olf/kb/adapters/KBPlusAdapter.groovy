@@ -8,10 +8,10 @@ import groovy.json.JsonSlurper;
 public class KBPlusAdapter implements KBCacheUpdater {
 
 
-  public Object freshen(String source_id,
-                        String uri,
-                        String cursor,
-                        KBCache cache) {
+  public Object freshenPackageData(String source_id,
+                                   String uri,
+                                   String cursor,
+                                   KBCache cache) {
 
     // We want this update to happen independently of any other transaction, on it's own, and in the background.
     RemoteKB.withNewTransaction {
@@ -29,6 +29,12 @@ public class KBPlusAdapter implements KBCacheUpdater {
 
       remote_kb_info.save(flush:true, failOnError:true);
     }
+  }
+
+  public void freshenHoldingsData(String cursor,
+                                  String source_name,
+                                  KBCache cache) {
+    throw new RuntimeException("Not yet implemented");
   }
 
 }
