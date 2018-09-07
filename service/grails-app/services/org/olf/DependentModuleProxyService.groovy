@@ -31,10 +31,13 @@ public class DependentServiceProxyService {
       log.debug "No local org for ${orgName}. Check vendors."
       
       // This fetches a max of 2 (we should decide how to handle multiple matches) vendors with an exact name match.
-      def resp = okapiClient.get("/vendor", [
-        limit: 2,
-        query: ('(name=="' + orgName + '")') // CQL
-      ])
+      // def resp = okapiClient.get("/vendor", [
+      //   limit: 2,
+      //   query: ('(name=="' + orgName + '")') // CQL
+      // ])
+
+      // Disable mod_vendor lookup
+      def resp = [ total_records: 0 ]
       
       // Resp is a lazy map representation of the JSON returned by the module.
       /*
