@@ -5,6 +5,15 @@ import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpException
 import org.olf.general.Org
 
+
+/**
+ * This class acts as a facade for any optional modules that this module would depend on. The initial use case
+ * is for mod-vendors. An install might not have mod-vendors installed, in which case this module will only use
+ * it's own orgs store. If mod-vendors is installed however, it will be consulted prior to creating a new vendor
+ * record. If a record is found, a local proxy will be created which holds a reference to the upstream vendor record.
+ * This pattern allows us to integrate with optional third party modules where they are present, but continue
+ * if they are not. It also gives us a hook onto which we can cache information for performance reasons.
+ */
 @Slf4j
 public class DependentServiceProxyService {
 
@@ -12,11 +21,6 @@ public class DependentServiceProxyService {
   OkapiClient okapiClient
 
   public Org coordinateOrg(String orgName) {
-//    if ( grailsApplication.config.mode=='folio' ) {
-//      // throw new RuntimeException("Vendors lookup not yet implemented")
-//      
-//      log.info "Not implemented yet"
-//      return null
     
     // Simply call the verb method on the client (get, post, put, delete). The client itself should take care of everything else.
     // Get and Delete take the uri with optional params map for the query string.
@@ -27,10 +31,13 @@ public class DependentServiceProxyService {
       log.debug "No local org for ${orgName}. Check vendors."
       
       // This fetches a max of 2 (we should decide how to handle multiple matches) vendors with an exact name match.
-      def resp = okapiClient.get("/vendor", [
-        limit: 2,
-        query: ('(name=="' + orgName + '")') // CQL
-      ])
+      // def resp = okapiClient.get("/vendor", [
+      //   limit: 2,
+      //   query: ('(name=="' + orgName + '")') // CQL
+      // ])
+
+      // Disable mod_vendor lookup
+      def resp = [ total_records: 0 ]
       
       // Resp is a lazy map representation of the JSON returned by the module.
       /*

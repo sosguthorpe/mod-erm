@@ -28,10 +28,10 @@ import java.text.*
 public class KIJPFAdapter implements KBCacheUpdater {
 
 
-  public Object freshen(String source_name,
-                        String base_url,
-                        String current_cursor,
-                        KBCache cache) {
+  public void freshenPackageData(String source_name,
+                                                   String base_url,
+                                                   String current_cursor,
+                                                   KBCache cache) {
 
     println("KIJPFAdapter::freshen - fetching from URI: ${base_url}");
     def jpf_api = new HTTPBuilder(base_url)
@@ -129,6 +129,12 @@ public class KIJPFAdapter implements KBCacheUpdater {
       e.printStackTrace();
       throw e;
     }
+  }
+
+  public void freshenHoldingsData(String cursor,
+                                  String source_name,
+                                  KBCache cache) {
+    throw new RuntimeException("Not yet implemented");
   }
 
 }
