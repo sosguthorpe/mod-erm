@@ -28,7 +28,7 @@ import java.text.*
 public class KIJPFAdapter implements KBCacheUpdater {
 
 
-  public void freshenPackageDatafreshenPackageData(String source_name,
+  public void freshenPackageData(String source_name,
                                                    String base_url,
                                                    String current_cursor,
                                                    KBCache cache) {

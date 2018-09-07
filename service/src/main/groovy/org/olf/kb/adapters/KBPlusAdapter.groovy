@@ -8,7 +8,7 @@ import groovy.json.JsonSlurper;
 public class KBPlusAdapter implements KBCacheUpdater {
 
 
-  public Object freshenPackageData(String source_id,
+  public void freshenPackageData(String source_id,
                                    String uri,
                                    String cursor,
                                    KBCache cache) {
