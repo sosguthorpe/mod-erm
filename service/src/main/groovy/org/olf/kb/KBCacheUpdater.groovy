@@ -1,5 +1,7 @@
 package org.olf.kb;
 
+import java.util.Map;
+
 /**
  * KBCacheUpdater. Adapter pattern - allowing this module to aggregate KB data from multiple external sources.
  *
@@ -50,6 +52,13 @@ public interface KBCacheUpdater {
   public void freshenHoldingsData(String cursor,
                                   String source_name,
                                   KBCache cache);
+
+  /**
+   * using a native package identifier, request a specific package from the remote source and add it to the KB Cache.
+   * If the package already exists, implementors MAY update the existing package with the new information.
+   */
+  public void importPackage(Map params,
+                            KBCache cache);
                                 
  
 
