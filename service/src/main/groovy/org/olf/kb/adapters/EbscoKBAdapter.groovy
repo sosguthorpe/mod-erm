@@ -48,39 +48,134 @@ public class EbscoKBAdapter implements KBCacheUpdater {
    */
   public void importPackage(Map params,
                             KBCache cache) {
-    throw new RuntimeException("Not yet implemented");
+    def erm_package = buildErmPackage(params)
+    println(erm_package);
   }
 
-  private void internalImportPackage(Map params,
-                                     KBCache cache) {
-    // curl -X GET --header "Accept: application/json" --header "x-api-key: xxx" "https://sandbox.ebsco.io/rm/rmaccounts/--principal--/vendors/18/packages/2481/titles?search=&count=10&offset=1&searchField=titlename&orderBy=titlename"
-    // "Accept: application/json" --header "x-api-key: TVajS16nTi4NYRDM0o3686oMjtP4agtv71jaQ5zt" "https://sandbox.ebsco.io/rm/rmaccounts/apidvacdmc/vendors/18/packages/2481/titles?search=&count=10&offset=1&searchField=titlename&orderBy=titlename"
+  /**
+   * Use the EBSCO api and paginate the list of titles into our internal canonical package format, 
+   * @param params - A map containing vendorid and packageid
+   * @return the canonicalpackage definition.
+   */
+  private Map buildErmPackage(Map params) {
+
+    def result = null;
+
+    if ( ( params.vendorid == null  ) ||
+         ( params.packageid == null ) ) 
+      throw new RuntimeException("buildErmPackage requires vendorid and packageid parameters");
+
+    result = [
+      header:[
+        availability:[
+          type: 'general'
+        ],
+        packageProvider:[
+          name:'the provider'
+        ],
+        packageSource:'EBSCO',
+        packageName: 'the_package_name',
+        packageSlug: 'the_package_shortcode'
+      ],
+      packageContents: []
+    ]
 
     // See https://developer.ebsco.com/docs#/
-    def ebsco_api = new HTTPBuilder("https://sandbox.ebsco.io")
+    def ebsco_api = new HTTPBuilder('https://sandbox.ebsco.io');
+
+    int pageno = 1;
 
     def query_params = [
         'search': '',
         'count': '100',
-        'offset': '1',
-        'searchField': '',
-        'orderBy': 'titlename',
+        'searchField': 'titlename',
+        'orderBy': 'titlename'
     ]
 
     def found_records = true;
 
+    // Ebsco API uses pagination in blocks of count, offset by page. offset is PAGE offset, not record number, so count 100, offset 3 = records from 301-400
+    // Last page will return 0
     while ( found_records ) {
 
-      ebsco_api.request(Method.GET) { req ->
-        headers.Accept = 'application/json'
-        uri.query=query_params
-        uri.path="/rm/rmaccounts/${params.custid}/vendors/${params.vendorid}/packages/${params.packageid}/titles"
+      println("Fetch page ${pageno} - records ${((pageno-1)*100)+1} to ${pageno*100} -- ${query_params}");
+      query_params.offset = pageno;
 
-        response.success = { resp, xml ->
+      ebsco_api.request(Method.GET) { req ->
+        // headers.Accept = 'application/json'
+        headers.'x-api-key' = params.apikey
+        uri.path="/rm/rmaccounts/${params.custid}/vendors/${params.vendorid}/packages/${params.packageid}/titles"
+        uri.query=query_params
+
+        response.success = { resp, json ->
+          println("OK");
+          if ( json.titles.size() == 0 ) {
+            found_records = false;
+          }
+          else {
+            println("Process ${json.titles.size()} titles (total=${json.totalResults})");
+            println("First title: ${json.titles[0].titleId} ${json.titles[0].titleName}");
+            json.titles[0].identifiersList.each { id ->
+              println("  -> id ${id.id} (${id.source} ${id.type} ${id.subtype})");
+            }
+
+            json.titles.each { title ->
+
+              def instance_identifiers = [];
+              title.identifiersList.each { id ->
+                switch ( id.type ) {
+                  case 0: //ISSN
+                    switch( id.subtype ) {
+                      case 0:
+                        break;
+                      case 1: // PRINT
+                        instance_identifiers.add([namespace:'ISSN',value:id.id])
+                        break;
+                      case 2: // ONLINE
+                        instance_identifiers.add([namespace:'eISSN',value:id.id])
+                        break;
+                      case 7: // INVALID
+                        break;
+                    }
+                    break;
+                  case 1: //ISBN
+                    break;
+                  case 6: //ZDBID
+                    break;
+                  default:
+                    break;
+                }
+              }
+
+              result.packageContents.add([
+                "title": title.titleName,
+                // "instanceMedium": tipp_medium,
+                // "instanceMedia": tipp_media,
+                "instanceIdentifiers": tipp_instance_identifiers,
+                // "siblingInstanceIdentifiers": tipp_sibling_identifiers,
+                // "coverage": tipp_coverage,
+                // "embargo": null,
+                // "coverageDepth": tipp_coverage_depth,
+                // "coverageNote": tipp_coverage_note,
+                // "platformUrl": tipp_platform_url,
+                // "platformName": tipp_platform_name,
+                // "url": tipp_url
+              ])
+            }
+
+            pageno++;
+          }
+        }
+
+        response.failure = { resp ->
+          println "Unexpected error: ${resp.status} : ${resp.statusLine.reasonPhrase}"
+          println "Unexpected error 2: ${resp.statusLine}"
+          found_records = false;
         }
       }
     }
 
+    return result;
   }
 
 }

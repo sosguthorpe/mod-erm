@@ -190,11 +190,11 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
         def tipp_coverage = [] // [ "startVolume": "8", "startIssue": "1", "startDate": "1982-01-01", "endVolume": null, "endIssue": null, "endDate": null ],
  
         tipp_coverage.add(["startVolume": tipp_entry.coverage?.@startVolume?.toString(),
-                             "startIssue": tipp_entry.coverage?.@startIssue?.toString(),
-                             "startDate": tipp_entry.coverage?.@startDate?.toString(),
-                             "endVolume":tipp_entry.coverage?.@endVolume?.toString(),
-                             "endIssue": tipp_entry.coverage?.@endIssue?.toString(),
-                             "endDate": tipp_entry.coverage?.@endDate?.toString()])
+                           "startIssue": tipp_entry.coverage?.@startIssue?.toString(),
+                           "startDate": tipp_entry.coverage?.@startDate?.toString(),
+                           "endVolume":tipp_entry.coverage?.@endVolume?.toString(),
+                           "endIssue": tipp_entry.coverage?.@endIssue?.toString(),
+                           "endDate": tipp_entry.coverage?.@endDate?.toString()])
 
         def tipp_coverage_depth = tipp_entry.coverage.@coverageDepth?.toString()
         def tipp_coverage_note = tipp_entry.coverage.@coverageNote?.toString()
