@@ -52,16 +52,17 @@ class AdminController {
     if ( rkb ) {
       log.debug("Located KB record -- ${rkb}");
       try {
-        Map import_parans = [:]
+        def import_params = [:]
         import_params << params
         import_params.principal = rkb.principal
         import_params.credentials = rkb.credentials
         Class cls = Class.forName(rkb.type)
         KBCacheUpdater cache_updater = cls.newInstance();
-        cache_updater.importPackage(params, knowledgeBaseCacheService);
+        log.debug("Import package: ${import_params}");
+        cache_updater.importPackage(import_params, knowledgeBaseCacheService);
       }
       catch ( Exception e ) {
-        log.error("Problem pulling package from ${params.kb}");
+        log.error("Problem pulling package from ${params.kb}",e);
       }
     }
 

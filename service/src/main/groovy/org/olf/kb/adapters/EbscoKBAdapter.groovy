@@ -59,6 +59,8 @@ public class EbscoKBAdapter implements KBCacheUpdater {
    */
   private Map buildErmPackage(Map params) {
 
+    println("buildErmPackage(${params})");
+
     def result = null;
 
     if ( ( params.vendorid == null  ) ||
@@ -103,7 +105,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
 
       ebsco_api.request(Method.GET) { req ->
         // headers.Accept = 'application/json'
-        headers.'x-api-key' = params.credentals
+        headers.'x-api-key' = params.credentials
         uri.path="/rm/rmaccounts/${params.principal}/vendors/${params.vendorid}/packages/${params.packageid}/titles"
         uri.query=query_params
 
@@ -151,7 +153,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
                 "title": title.titleName,
                 // "instanceMedium": tipp_medium,
                 // "instanceMedia": tipp_media,
-                "instanceIdentifiers": tipp_instance_identifiers,
+                "instanceIdentifiers": instance_identifiers,
                 // "siblingInstanceIdentifiers": tipp_sibling_identifiers,
                 // "coverage": tipp_coverage,
                 // "embargo": null,
