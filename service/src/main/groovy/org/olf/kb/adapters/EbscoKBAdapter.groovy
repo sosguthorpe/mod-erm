@@ -73,17 +73,36 @@ public class EbscoKBAdapter implements KBCacheUpdater {
           type: 'general'
         ],
         packageProvider:[
-          name:'the provider'
+          name:''
         ],
         packageSource:'EBSCO',
-        packageName: 'the_package_name',
-        packageSlug: 'the_package_shortcode'
+        packageName: '',
+        packageSlug: ''
       ],
       packageContents: []
     ]
 
     // See https://developer.ebsco.com/docs#/
     def ebsco_api = new HTTPBuilder('https://sandbox.ebsco.io');
+
+
+    // Get package header
+    ebsco_api.request(Method.GET) { req ->
+      headers.'x-api-key' = params.credentials
+      uri.path="/rm/rmaccounts/${params.principal}/vendors/${params.vendorid}/packages/${params.packageid}"
+      response.success = { resp, json ->
+        println("Package header: ${json}");
+        result.header.reference = json.packageId;
+        result.header.packageSlug = json.packageId;
+        result.header.packageName = json.packageName
+        result.header.packageProvider.name = json.vendorName
+        result.header.packageProvider.reference = json.vendorId
+        // {"isCustom":false,"titleCount":1262,"isSelected":false,"visibilityData":{"isHidden":false,"reason":""},"selectedCount":0,"isTokenNeeded":true,
+        // "contentType":"AggregatedFullText","customCoverage":{"beginCoverage":"","endCoverage":""},"proxy":{"id":"<n>","inherited":true},
+        // "allowEbscoToAddTitles":false,"packageToken":null,"packageType":"Complete"}
+      }
+    }
+
 
     int pageno = 1;
 
