@@ -103,8 +103,8 @@ public class EbscoKBAdapter implements KBCacheUpdater {
 
       ebsco_api.request(Method.GET) { req ->
         // headers.Accept = 'application/json'
-        headers.'x-api-key' = params.apikey
-        uri.path="/rm/rmaccounts/${params.custid}/vendors/${params.vendorid}/packages/${params.packageid}/titles"
+        headers.'x-api-key' = params.credentals
+        uri.path="/rm/rmaccounts/${params.principal}/vendors/${params.vendorid}/packages/${params.packageid}/titles"
         uri.query=query_params
 
         response.success = { resp, json ->

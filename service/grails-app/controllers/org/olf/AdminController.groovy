@@ -52,6 +52,10 @@ class AdminController {
     if ( rkb ) {
       log.debug("Located KB record -- ${rkb}");
       try {
+        Map import_parans = [:]
+        import_params << params
+        import_params.principal = rkb.principal
+        import_params.credentials = rkb.credentials
         Class cls = Class.forName(rkb.type)
         KBCacheUpdater cache_updater = cls.newInstance();
         cache_updater.importPackage(params, knowledgeBaseCacheService);
