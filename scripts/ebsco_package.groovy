@@ -47,8 +47,6 @@ import java.text.*
 
 void internalImportPackage(Map params) {
 
-  // curl -X GET --header "Accept: application/json" --header "x-api-key: TVajS16nTi4NYRDM0o3686oMjtP4agtv71jaQ5zt" "https://sandbox.ebsco.io/rm/rmaccounts/apidvacdmc/vendors/18/packages/2481/titles?search=&count=10&offset=1&searchField=titlename&orderBy=titlename"
-
     String base_url = "https://sandbox.ebsco.io/rm/rmaccounts/${params.custid}/vendors/${params.vendorid}/packages/${params.packageid}/titles".toString()
 
     println("\n\nRequest from ${base_url}");
@@ -56,17 +54,23 @@ void internalImportPackage(Map params) {
     // See https://developer.ebsco.com/docs#/
     def ebsco_api = new HTTPBuilder('https://sandbox.ebsco.io');
 
+    int pageno = 1;
+
     def query_params = [
         'search': '',
-        'count': '10',
-        'offset': '1',
+        'count': '100',
         'searchField': 'titlename',
         'orderBy': 'titlename'
     ]
 
     def found_records = true;
 
-    // while ( found_records ) {
+    // Ebsco API uses pagination in blocks of count, offset by page. offset is PAGE offset, not record number, so count 100, offset 3 = records from 301-400
+    // Last page will return 0
+    while ( found_records ) {
+
+      println("Fetch page ${pageno} - records ${((pageno-1)*100)+1} to ${pageno*100} -- ${query_params}");
+      query_params.offset = pageno;
 
       ebsco_api.request(Method.GET) { req ->
         // headers.Accept = 'application/json'
@@ -74,16 +78,25 @@ void internalImportPackage(Map params) {
         uri.path="/rm/rmaccounts/${params.custid}/vendors/${params.vendorid}/packages/${params.packageid}/titles"
         uri.query=query_params
 
-        response.success = { resp, xml ->
+        response.success = { resp, json ->
           println("OK");
+          if ( json.titles.size() == 0 ) {
+            found_records = false;
+          }
+          else {
+            println("Process ${json.titles.size()} titles (total=${json.totalResults})");
+            println("First title: ${json.titles[0].titleId} ${json.titles[0].titleName}");
+            pageno++;
+          }
         }
 
         response.failure = { resp ->
           println "Unexpected error: ${resp.status} : ${resp.statusLine.reasonPhrase}"
           println "Unexpected error 2: ${resp.statusLine}"
+          found_records = false;
         }
       }
-    // }
+    }
 }
 
 // logger = LoggerFactory.getLogger("ebsco_package") // or whatever
