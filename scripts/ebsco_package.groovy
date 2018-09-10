@@ -86,6 +86,9 @@ void internalImportPackage(Map params) {
           else {
             println("Process ${json.titles.size()} titles (total=${json.totalResults})");
             println("First title: ${json.titles[0].titleId} ${json.titles[0].titleName}");
+            json.titles[0].identifiersList.each { id ->
+              println("  -> id ${id.id} (${id.source} ${id.type} ${id.subtype})");
+            }
             pageno++;
           }
         }
