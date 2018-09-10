@@ -4,6 +4,8 @@ import grails.gorm.multitenancy.CurrentTenant
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import grails.converters.JSON
+import org.olf.kb.RemoteKB
+import org.olf.kb.KBCacheUpdater
 
 @Slf4j
 @CurrentTenant
@@ -42,6 +44,29 @@ class AdminController {
    */
   public triggerCacheUpdate() {
     kbCacheService.triggerCacheUpdate()
+  }
+
+  public pullPackage() {
+    def result = [:]
+    RemoteKB rkb = RemoteKB.findByName(params.kb)
+    if ( rkb ) {
+      log.debug("Located KB record -- ${rkb}");
+      try {
+        def import_params = [:]
+        import_params << params
+        import_params.principal = rkb.principal
+        import_params.credentials = rkb.credentials
+        Class cls = Class.forName(rkb.type)
+        KBCacheUpdater cache_updater = cls.newInstance();
+        log.debug("Import package: ${import_params}");
+        cache_updater.importPackage(import_params, knowledgeBaseCacheService);
+      }
+      catch ( Exception e ) {
+        log.error("Problem pulling package from ${params.kb}",e);
+      }
+    }
+
+    render result as JSON
   }
 }
 

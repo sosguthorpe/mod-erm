@@ -10,10 +10,10 @@ import org.olf.general.Org
  */
 public class Pkg implements MultiTenant<Pkg> {
 
-  String id
+  String id // Our local ID - must be unique over all KBs
   String name
   String source
-  String reference
+  String reference  // Reference contains the KBs authoritiative ID for this package - Reference should be unique within KB
   RemoteKB remoteKb
   Platform nominalPlatform
   Org vendor

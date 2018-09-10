@@ -72,7 +72,7 @@ class ErmAgreementSpec extends GebSpec {
       logger.debug("List known external KBs");
 
       when:"We ask the system to list known KBs"
-        def resp = restBuilder().get("$baseUrl/sas") {
+        def resp = restBuilder().get("$baseUrl/erm/sas") {
           header 'X-Okapi-Tenant', 'TestTenantD'
           authHeaders.rehydrate(delegate, owner, thisObject)()
         }
@@ -101,7 +101,7 @@ class ErmAgreementSpec extends GebSpec {
                                   ]
                                 ];
 
-        def resp = restBuilder().post("$baseUrl/sas") {
+        def resp = restBuilder().post("$baseUrl/erm/sas") {
           header 'X-Okapi-Tenant', tenant
           authHeaders.rehydrate(delegate, owner, thisObject)()
           contentType 'application/json'
@@ -127,7 +127,7 @@ class ErmAgreementSpec extends GebSpec {
       logger.debug("List known external KBs");
 
       when:"We ask the system to list known KBs"
-        def resp = restBuilder().get("$baseUrl/sas") {
+        def resp = restBuilder().get("$baseUrl/erm/sas") {
           header 'X-Okapi-Tenant', 'TestTenantD'
           authHeaders.rehydrate(delegate, owner, thisObject)()
         }

@@ -137,7 +137,7 @@ and pti.platform.name = :platform
   void "List Current Agreements"() {
 
       when:"We ask the system to list known KBs"
-        def resp = restBuilder().get("$baseUrl/sas") {
+        def resp = restBuilder().get("$baseUrl/erm/sas") {
           header 'X-Okapi-Tenant', TENANT
           authHeaders.rehydrate(delegate, owner, thisObject)()
         }
@@ -150,7 +150,7 @@ and pti.platform.name = :platform
   void "Check that we don't currently have any subscribed content"() {
 
       when:"We ask the subscribed content controller to list the titles we can access"
-        def resp = restBuilder().get("$baseUrl/content") {
+        def resp = restBuilder().get("$baseUrl/erm/content") {
           header 'X-Okapi-Tenant', TENANT
           authHeaders.rehydrate(delegate, owner, thisObject)()
         }
@@ -158,7 +158,7 @@ and pti.platform.name = :platform
       then: "The system responds with a list of content";
         resp.status == OK.value()
         // content responds with a JSON object containing a count and a list called subscribedTitles
-        resp.json.count == 0
+        resp.json.total == 0
         resp.json.results.size() == 0
   }
 
@@ -181,7 +181,7 @@ and pti.platform.name = :platform
                                   ]
                                 ];
 
-        def resp = restBuilder().post("$baseUrl/sas") {
+        def resp = restBuilder().post("$baseUrl/erm/sas") {
           header 'X-Okapi-Tenant', tenant
           authHeaders.rehydrate(delegate, owner, thisObject)()
           contentType 'application/json'
@@ -218,9 +218,11 @@ and pti.platform.name = :platform
 
         single_package_item_id = PackageContentItem.executeQuery(PACKAGE_CONTENT_ITEM_QUERY,[title:'Anti Inflammatory & Anti allergy Agents in Medicinal Chemistry']).get(0);
 
+        logger.debug("Find platform title instance records for current medicinal chemistry on platform bentham science");
+
         off_package_title_id = PlatformTitleInstance.executeQuery(OFF_PACKAGE_TITLE_QUERY,
                                                                        [title:'Current Medicinal Chemistry - Cardiovascular & Hematological Agents',
-                                                                        platform:'benthamscience.com']).get(0);
+                                                                        platform:'Bentham Science']).get(0);
       }
 
       logger.debug("Agreement ID is ${agreement_id} package to add is ${pkg_id}");
@@ -236,7 +238,7 @@ and pti.platform.name = :platform
                             ]
                            ]
 
-      String target_url = "$baseUrl/sas/${agreement_id}/addToAgreement".toString();
+      String target_url = "$baseUrl/erm/sas/${agreement_id}/addToAgreement".toString();
       logger.debug("The target URL will be ${target_url}");
 
       def resp = restBuilder().post(target_url) {
@@ -257,7 +259,7 @@ and pti.platform.name = :platform
   void "Check that we see the new titles as subscribed content"() {
 
       when:"We ask the subscribed content controller to list the titles we can access"
-        def resp = restBuilder().get("$baseUrl/content") {
+        def resp = restBuilder().get("$baseUrl/erm/content") {
           header 'X-Okapi-Tenant', TENANT
           authHeaders.rehydrate(delegate, owner, thisObject)()
         }
@@ -265,7 +267,7 @@ and pti.platform.name = :platform
       then: "The system responds with a list of content";
         resp.status == OK.value()
         // content responds with a JSON object containing a count and a list called subscribedTitles
-        resp.json.count == 140
+        resp.json.total == 123
   }
 
   void "Delete the tenants"(tenant_id, note) {

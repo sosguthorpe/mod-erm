@@ -33,6 +33,12 @@ These can be set to whatever you like during the creation of the databses but be
     CREATE DATABASE olf;
     GRANT ALL PRIVILEGES ON DATABASE olf to folio;
 
+As of Sept '18 you will need to connect to each user and use :
+
+    create extension pg_trgm;
+
+To set up the pg full text index system.
+
 ### Dockerized postgres local development
 
 If you're running a local dockerized postgres, here is one way to get to the command line you will need to run these commands:

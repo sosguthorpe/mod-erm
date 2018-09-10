@@ -4,6 +4,8 @@ import org.olf.kb.KBCacheUpdater;
 import org.olf.kb.RemoteKB;
 import org.olf.kb.KBCache;
 import groovy.json.JsonSlurper;
+import java.util.Map;
+
 
 import static groovyx.net.http.ContentType.URLENC
 import static groovyx.net.http.ContentType.XML
@@ -134,6 +136,11 @@ public class KIJPFAdapter implements KBCacheUpdater {
   public void freshenHoldingsData(String cursor,
                                   String source_name,
                                   KBCache cache) {
+    throw new RuntimeException("Not yet implemented");
+  }
+
+  public void importPackage(Map params,
+                            KBCache cache) {
     throw new RuntimeException("Not yet implemented");
   }
 

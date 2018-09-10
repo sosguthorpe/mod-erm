@@ -61,7 +61,7 @@ class ErmTenantSpec extends GebSpec {
       logger.debug("List known external KBs");
 
       when:"We ask the system to list known KBs"
-        def resp = restBuilder().get("$baseUrl/kbs") {
+        def resp = restBuilder().get("$baseUrl/erm/kbs") {
           header 'X-Okapi-Tenant', 'TestTenantA'
           authHeaders.rehydrate(delegate, owner, thisObject)()
         }

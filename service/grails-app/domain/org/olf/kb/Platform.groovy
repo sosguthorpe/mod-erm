@@ -21,6 +21,10 @@ public class Platform implements MultiTenant<Platform> {
           name(nullable:false, blank:false)
   }
 
+  public static Platform resolve(String url) {
+    return resolve(url, null);
+  }
+
   public static Platform resolve(String url, String name) {
 
     Platform result = null;
