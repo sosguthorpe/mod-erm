@@ -120,5 +120,9 @@ else {
   println(options.apikey)
 }
 
-internalImportPackage([custid:options.custid,vendorid:'18',packageid:'2481',apikey:options.apikey]);
+// Search for some packages::
+// curl -X GET --header "Accept: application/json" --header "x-api-key: xxx" "https://sandbox.ebsco.io/rm/rmaccounts/xxx/packages?search=bentham&count=100&offset=1&orderby=PackageName"
+// internalImportPackage([custid:options.custid,vendorid:'18',packageid:'2481',apikey:options.apikey]);
+// Bentham Science Complete
+internalImportPackage([custid:options.custid,vendorid:'301',packageid:'3707',apikey:options.apikey]);
 
