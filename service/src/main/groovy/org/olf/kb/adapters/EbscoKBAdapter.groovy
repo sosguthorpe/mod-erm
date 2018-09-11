@@ -48,8 +48,12 @@ public class EbscoKBAdapter implements KBCacheUpdater {
    */
   public void importPackage(Map params,
                             KBCache cache) {
-    def erm_package = buildErmPackage(params)
-    println(erm_package);
+
+    def erm_package = buildErmPackage(params.vendorid,
+                                      params.packageid,
+                                      params.principal,
+                                      params.credentials)
+    cache.onPackageChange(params.kb, erm_package);
   }
 
   /**
@@ -57,14 +61,14 @@ public class EbscoKBAdapter implements KBCacheUpdater {
    * @param params - A map containing vendorid and packageid
    * @return the canonicalpackage definition.
    */
-  private Map buildErmPackage(Map params) {
+  private Map buildErmPackage(String vendorid, String packageid, String principal, String credentials) {
 
-    println("buildErmPackage(${params})");
+    println("buildErmPackage(${vendorid},${packageid},${principal},${credentials})");
 
     def result = null;
 
-    if ( ( params.vendorid == null  ) ||
-         ( params.packageid == null ) ) 
+    if ( ( vendorid == null  ) ||
+         ( packageid == null ) ) 
       throw new RuntimeException("buildErmPackage requires vendorid and packageid parameters");
 
     result = [
@@ -88,8 +92,8 @@ public class EbscoKBAdapter implements KBCacheUpdater {
 
     // Get package header
     ebsco_api.request(Method.GET) { req ->
-      headers.'x-api-key' = params.credentials
-      uri.path="/rm/rmaccounts/${params.principal}/vendors/${params.vendorid}/packages/${params.packageid}"
+      headers.'x-api-key' = credentials
+      uri.path="/rm/rmaccounts/${principal}/vendors/${vendorid}/packages/${packageid}"
       response.success = { resp, json ->
         println("Package header: ${json}");
         result.header.reference = json.packageId;
@@ -124,8 +128,8 @@ public class EbscoKBAdapter implements KBCacheUpdater {
 
       ebsco_api.request(Method.GET) { req ->
         // headers.Accept = 'application/json'
-        headers.'x-api-key' = params.credentials
-        uri.path="/rm/rmaccounts/${params.principal}/vendors/${params.vendorid}/packages/${params.packageid}/titles"
+        headers.'x-api-key' = credentials
+        uri.path="/rm/rmaccounts/${principal}/vendors/${vendorid}/packages/${packageid}/titles"
         uri.query=query_params
 
         response.success = { resp, json ->
@@ -142,6 +146,10 @@ public class EbscoKBAdapter implements KBCacheUpdater {
 
             json.titles.each { title ->
 
+              String tipp_medium = title.pubType?.toLowerCase()
+              String tipp_media = 'electronic';
+              String tipp_platform_url = title.url;
+
               def instance_identifiers = [];
               title.identifiersList.each { id ->
                 switch ( id.type ) {
@@ -150,38 +158,45 @@ public class EbscoKBAdapter implements KBCacheUpdater {
                       case 0:
                         break;
                       case 1: // PRINT
-                        instance_identifiers.add([namespace:'ISSN',value:id.id])
+                        instance_identifiers.add([namespace:'issn',value:id.id])
                         break;
                       case 2: // ONLINE
-                        instance_identifiers.add([namespace:'eISSN',value:id.id])
+                        instance_identifiers.add([namespace:'eissn',value:id.id])
                         break;
                       case 7: // INVALID
                         break;
                     }
                     break;
                   case 1: //ISBN
+                    instance_identifiers.add([namespace:'isbn',value:id.id])
                     break;
                   case 6: //ZDBID
+                    instance_identifiers.add([namespace:'zdb',value:id.id])
                     break;
                   default:
                     break;
                 }
               }
 
-              result.packageContents.add([
-                "title": title.titleName,
-                // "instanceMedium": tipp_medium,
-                // "instanceMedia": tipp_media,
-                "instanceIdentifiers": instance_identifiers,
-                // "siblingInstanceIdentifiers": tipp_sibling_identifiers,
-                // "coverage": tipp_coverage,
-                // "embargo": null,
-                // "coverageDepth": tipp_coverage_depth,
-                // "coverageNote": tipp_coverage_note,
-                // "platformUrl": tipp_platform_url,
-                // "platformName": tipp_platform_name,
-                // "url": tipp_url
-              ])
+              if ( tipp_platform_url != null ) {
+                result.packageContents.add([
+                  "title": title.titleName,
+                  "instanceMedium": tipp_medium,
+                  "instanceMedia": tipp_media,
+                  "instanceIdentifiers": instance_identifiers,
+                  // "siblingInstanceIdentifiers": tipp_sibling_identifiers,
+                  // "coverage": tipp_coverage,
+                  // "embargo": null,
+                  // "coverageDepth": tipp_coverage_depth,
+                  // "coverageNote": tipp_coverage_note,
+                  "platformUrl": tipp_platform_url,
+                  // "platformName": tipp_platform_name,
+                  // "url": tipp_url
+                ])
+              }
+              else {
+                // entry failed basic QA check - don't add to the package
+              }
             }
 
             pageno++;

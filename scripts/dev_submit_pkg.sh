@@ -173,9 +173,14 @@ RS_EBSCO_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/
 }
 '`
 
-echo Import EBSCO Bentham Science Package
 
-EBSCO_BENTHAM_SCI_ID=`curl --header "X-Okapi-Tenant: diku" -X POST "http://localhost:8080/erm/admin/pullPackage?kb=EBSCO&vendorid=301&packageid=3707" | jq -r ".packageId"  | tr -d '\r'`
+if [ -z "$EBSCO_SANDBOX_CLIENT_ID" ]
+then
+  echo "No Ebsco API credentials set, skipping pull package"
+else
+  echo Import EBSCO Bentham Science Package
+  EBSCO_BENTHAM_SCI_ID=`curl --header "X-Okapi-Tenant: diku" -X POST "http://localhost:8080/erm/admin/pullPackage?kb=EBSCO&vendorid=301&packageid=3707" | jq -r ".packageId"  | tr -d '\r'`
+fi
 
 
 # If all goes well, you'll get a status message back. After that, try searching your subscribed titles:

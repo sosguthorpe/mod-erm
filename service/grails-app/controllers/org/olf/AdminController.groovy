@@ -49,6 +49,7 @@ class AdminController {
   public pullPackage() {
     def result = [:]
     RemoteKB rkb = RemoteKB.findByName(params.kb)
+
     if ( rkb ) {
       log.debug("Located KB record -- ${rkb}");
       try {
