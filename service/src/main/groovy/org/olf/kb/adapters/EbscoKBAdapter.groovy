@@ -21,11 +21,10 @@ import org.apache.http.protocol.*
 import java.text.SimpleDateFormat
 import java.nio.charset.Charset
 import static groovy.json.JsonOutput.*
-
-
 import java.text.*
+import groovy.util.logging.Slf4j
 
-
+@Slf4j
 public class EbscoKBAdapter implements KBCacheUpdater {
 
 
@@ -63,7 +62,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
    */
   private Map buildErmPackage(String vendorid, String packageid, String principal, String credentials) {
 
-    println("buildErmPackage(${vendorid},${packageid},${principal},${credentials})");
+    log.debug("buildErmPackage(${vendorid},${packageid},${principal},${credentials})");
 
     def result = null;
 
@@ -95,7 +94,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
       headers.'x-api-key' = credentials
       uri.path="/rm/rmaccounts/${principal}/vendors/${vendorid}/packages/${packageid}"
       response.success = { resp, json ->
-        println("Package header: ${json}");
+        log.debug("Package header: ${json}");
         result.header.reference = json.packageId;
         result.header.packageSlug = json.packageId;
         result.header.packageName = json.packageName
@@ -123,7 +122,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
     // Last page will return 0
     while ( found_records ) {
 
-      println("Fetch page ${pageno} - records ${((pageno-1)*100)+1} to ${pageno*100} -- ${query_params}");
+      log.debug("Fetch page ${pageno} - records ${((pageno-1)*100)+1} to ${pageno*100} -- ${query_params}");
       query_params.offset = pageno;
 
       ebsco_api.request(Method.GET) { req ->
@@ -133,22 +132,20 @@ public class EbscoKBAdapter implements KBCacheUpdater {
         uri.query=query_params
 
         response.success = { resp, json ->
-          println("OK");
           if ( json.titles.size() == 0 ) {
             found_records = false;
           }
           else {
             println("Process ${json.titles.size()} titles (total=${json.totalResults})");
-            println("First title: ${json.titles[0].titleId} ${json.titles[0].titleName}");
-            json.titles[0].identifiersList.each { id ->
-              println("  -> id ${id.id} (${id.source} ${id.type} ${id.subtype})");
-            }
+            // println("First title: ${json.titles[0].titleId} ${json.titles[0].titleName}");
+            // json.titles[0].identifiersList.each { id ->
+            //   println("  -> id ${id.id} (${id.source} ${id.type} ${id.subtype})");
+            // }
 
             json.titles.each { title ->
 
               String tipp_medium = title.pubType?.toLowerCase()
               String tipp_media = 'electronic';
-              String tipp_platform_url = title.url;
 
               def instance_identifiers = [];
               title.identifiersList.each { id ->
@@ -178,24 +175,49 @@ public class EbscoKBAdapter implements KBCacheUpdater {
                 }
               }
 
-              if ( tipp_platform_url != null ) {
+              def titleRecord = title.customerResourcesList.find { it.packageId.toString().equals(packageid.trim()) }
+
+              if ( titleRecord ) {
+                // log.debug("titleRecord located in customerResourceList -- ${titleRecord} ${titleRecord.url}");
+              }
+              else {
+                log.debug("Unable to find ${packageid} amongst ${title.customerResourcesList.collect{ it.packageId}}");
+              }
+
+              String tipp_url = titleRecord?.url;
+              String tipp_platform_url = null; // Platform URL is the URL of the platform provider - not the title. Will be derived from tipp url if not set
+              def tipp_coverage = []
+
+              titleRecord?.managedCoverageList?.each { ci ->
+                tipp_coverage.add(
+                  "startVolume": null,
+                  "startIssue": null,
+                  "startDate": ci.beginCoverage,
+                  "endVolume": null,
+                  "endIssue": null,
+                  "endDate": ci.endCoverage
+                )
+              }
+
+              if ( ( tipp_url != null ) && ( tipp_url.trim().length() > 0 ) ) {
                 result.packageContents.add([
                   "title": title.titleName,
                   "instanceMedium": tipp_medium,
                   "instanceMedia": tipp_media,
                   "instanceIdentifiers": instance_identifiers,
                   // "siblingInstanceIdentifiers": tipp_sibling_identifiers,
-                  // "coverage": tipp_coverage,
+                  "coverage": tipp_coverage,
                   // "embargo": null,
                   // "coverageDepth": tipp_coverage_depth,
                   // "coverageNote": tipp_coverage_note,
                   "platformUrl": tipp_platform_url,
                   // "platformName": tipp_platform_name,
-                  // "url": tipp_url
+                  "url": tipp_url
                 ])
               }
               else {
                 // entry failed basic QA check - don't add to the package
+                log.warn("unable to locate URL for title ${title.titleName} - skipping");
               }
             }
 
@@ -204,8 +226,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
         }
 
         response.failure = { resp ->
-          println "Unexpected error: ${resp.status} : ${resp.statusLine.reasonPhrase}"
-          println "Unexpected error 2: ${resp.statusLine}"
+          log.error("Unexpected error: ${resp.status} : ${resp.statusLine.reasonPhrase}")
           found_records = false;
         }
       }
