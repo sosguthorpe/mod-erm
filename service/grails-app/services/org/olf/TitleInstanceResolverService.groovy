@@ -18,8 +18,6 @@ import org.olf.general.RefdataCategory
 @Transactional
 public class TitleInstanceResolverService {
 
-  def sessionFactory
-
   private static final String TEXT_MATCH_TITLE_QRY = 'select * from title_instance WHERE ti_title % :qrytitle AND similarity(ti_title, :qrytitle) > :threshold ORDER BY  similarity(ti_title, :qrytitle) desc LIMIT 20'
 
   private static def class_one_namespaces = [
@@ -177,23 +175,25 @@ public class TitleInstanceResolverService {
   private List<TitleInstance> titleMatch(String title) {
 
     List<TitleInstance> result = new ArrayList<TitleInstance>()
-    final session = sessionFactory.currentSession
-    final sqlQuery = session.createSQLQuery(TEXT_MATCH_TITLE_QRY)
+    TitleInstance.withSession { session ->
 
-    try {
-      result = sqlQuery.with {
-        addEntity(TitleInstance)
-        // Set query title - I know this looks a little odd, we have to manually quote this and handle any
-        // relevant escaping... So this code will probably not be good enough long term.
-        setString('qrytitle',title);
-        setFloat('threshold',0.6f)
- 
-        // Get all results.
-        list()
+      final sqlQuery = session.createSQLQuery(TEXT_MATCH_TITLE_QRY)
+
+      try {
+        result = sqlQuery.with {
+          addEntity(TitleInstance)
+          // Set query title - I know this looks a little odd, we have to manually quote this and handle any
+          // relevant escaping... So this code will probably not be good enough long term.
+          setString('qrytitle',title);
+          setFloat('threshold',0.6f)
+   
+          // Get all results.
+          list()
+        }
       }
-    }
-    catch ( Exception e ) {
-      log.error("Problem attempting to run SQL Query ${TEXT_MATCH_TITLE_QRY} on string ${title} with threshold 0.6f",e);
+      catch ( Exception e ) {
+        log.error("Problem attempting to run SQL Query ${TEXT_MATCH_TITLE_QRY} on string ${title} with threshold 0.6f",e);
+      }
     }
  
     return result

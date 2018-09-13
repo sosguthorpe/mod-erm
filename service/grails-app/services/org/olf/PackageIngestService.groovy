@@ -96,7 +96,7 @@ public class PackageIngestService {
 
               if ( ( pc.platformUrl == null ) && ( pc.url != null ) ) {
                 // No platform URL, but a URL for the title. Parse the URL and generate a platform URL
-                def parsed_url = new java.net.URL(url);
+                def parsed_url = new java.net.URL(pc.url);
                 platform_url_to_use = "${parsed_url.getProtocol()}://${parsed_url.getHost()}"
               }
 
