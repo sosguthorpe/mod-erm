@@ -55,18 +55,31 @@ With sdkman installed as above it's as easy as opening a terminal and typing:
 * `sdk install groovy`
 * `sdk install grails`
 
-## Running
-From the root of your grails project (olf-erm/service) you should be able to start the application by typing:
-`grails run-app`
-
-The above command should start the application using the development profile.
-
-## Running the other folio backend modules
+## Running OKAPI and the other folio backend modules
 There is also a vagrant file at the root of this project that contains the FOLIO backend modules in a virtualised environment. To run that environment you will first need to install [vagrant](https://www.vagrantup.com/)
 The default for this file is to use virtualbox as the provider, but vmware should work also. To start the folio backend stack, once vagrant is installed, just open a terminal and type
 ```
 vagrant up
 ```
+
+## Running
+From the root of your grails project (olf-erm/service) you should be able to start the application by typing:
+```grails run-app```
+
+The above command should start the application using the development profile. If you are using either the folio vagrant backend from this repo, or a more recent one,
+the app should try and automatically register itself as an okapi module and also register the deployment with the service. You should see console output like the following:
+```
+INFO --- [           main] com.k_int.okapi.OkapiClient              : Success: Got response [id:olf-erm-1.0.0, name:olf-erm, ...
+
+...
+
+INFO --- [           main] com.k_int.okapi.OkapiClient              : Success: Got response [instId:10.0.2.2, srvcId:olf-erm-1.0.0, url:http://10.0.2.2:8080/]
+```
+
+For the above to work the app needs to know where to find OKAPI. These are both defined in the development profile section of the application settings file located at
+`service/grails-app/conf/application.yml`
+
+If you do see the above then you can safely skip the following section on registering with OKAPI.
 
 ## Registering our module with OKAPI in the vagrant machine
 Part of the build process of the module produces some OKAPI descriptors. The templates can be found in `service/src/okapi`. The placeholders are substituted for values that are generated as part of the build process and then the descriptors
@@ -75,6 +88,33 @@ written to: `build/resources/okapi` with values substituted and the template suf
 
 You can then use these json descriptors to register and deploy your module when it is running. See the [deployment and discovery](https://github.com/folio-org/okapi/blob/master/doc/guide.md#deployment-and-discovery) section of the OKAPI docs.
 This allows you to run your module outside of the other core modules (for instance within your IDE) and debug in the normal way while developing.
+
+## Alternate grails profile
+If you use the vagrant file from this repo, you will see that it forwards a local port of 54321 to the version of postgres running inside the vagrant machine. This is not
+the default postgres port so as to avoid clashes with people who run postgres locally too. If you don't have postgres running locally, or wish to cause the app to connect to the
+version inside the vagrant machine you can start the application using the alternate 'vagrant-db' profile:
+```grails -Dgrails.env=vagrant-db run-app```
+
+This profile also attempts to self register the app.
+
+## Self registration
+In order for self registration to work, the app needs to know where OKAPI lives. This is detailed in the application.yml settings file:
+```
+okapi: 
+  service:
+    host: localhost
+    port: 9130
+```
+These are currently only set for the 'development' and 'vagrant-db' profiles. SO if the app is started in production mode, the module will not attempt to register itself.
+
+_Also_: It is possible to run the application directly as a spring boot app in an IDE. Doing so however, will bypass gradle and therfore the necessary descriptors will not
+be present. This will cause automatic registration to skip also and you will see log output like:
+```
+INFO --- [           main] com.k_int.okapi.OkapiClient              : Skipping registration as no module descriptor could be found on the path.
+INFO --- [           main] com.k_int.okapi.OkapiClient              : Skipping deployment registration with discovery as no deployment descriptor could be found on the path.
+```
+
+If you do encounter these messages you can manually register by running the script `scripts/register_and_enable.sh`
 
 # Troubleshooting
 
@@ -104,4 +144,4 @@ After adding or editing domain classes, you will need to generate a liquibase co
 
 ## Bootstraping some data
 
-There are some scripts in ~/scripts you can use to inject agreeents and packages into the system
+There are some scripts in ~/scripts you can use to inject agreeents and packages into the system.

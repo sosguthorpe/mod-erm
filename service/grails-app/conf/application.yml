@@ -122,6 +122,11 @@ dataSource:
   url: jdbc:postgresql://localhost:5432/olfdev
   schemaHandler: com.k_int.okapi.OkapiSchemaHandler
     
+okapi:
+  schema:
+    appName: 'olf_erm'
+  
+  
 environments:
   test:
     dataSource:
@@ -148,12 +153,13 @@ environments:
         abandonWhenPercentageFull: 50
         jdbcInterceptors: ConnectionState
         defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED
+        
+  development:
+    # This is only used when the there is no request from okapi coming to the module or a none-okapi request.
+    # OKAPI supplies information about how to reach it to the modules. These options are used for self reg and other calls
+    # when the request did not come through OKAPI.
+    okapi: 
+      service:
+        host: localhost
+        port: 9130
 ---
-okapi:
-  schema:
-    appName: 'olf_erm'
-    
-  # This is only used for self registration. Uncomment for this to work. 
-  # service:
-  #   host: localhost
-  #   port: 9130

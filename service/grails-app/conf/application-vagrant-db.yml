@@ -31,5 +31,10 @@ dataSource:
       abandonWhenPercentageFull: 50
       jdbcInterceptors: ConnectionState
       defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED
-      
+
+okapi: 
+  service:
+    host: localhost
+    port: 9130
+        
       
