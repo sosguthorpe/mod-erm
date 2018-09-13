@@ -47,7 +47,20 @@ public class CoverageExtenderService {
           }
         }
 
-        if ( new_coverage_is_already_subsumed ) {
+        if ( !new_coverage_is_already_subsumed ) {
+          // We need to create a new CS. For now, create as from the source - later on we will need to do something smarter
+          // where we coalesce all the statements.
+          def new_cs = new CoverageStatement();
+          // This is clever groovy script to assign a property based on that prop name being in a variable,
+          // property will be one of ti, pci or pti and this will set the appropriate one.
+          new_cs."${property}" = title
+          new_cs.startDate = cs.startDate
+          new_cs.endDate = cs.endDate
+          new_cs.startVolume = cs.startVolume
+          new_cs.startIssue = cs.startIssue
+          new_cs.endVolume = cs.endVolume
+          new_cs.endIssue = cs.endIssue
+          new_cs.save(flush:true, failOnError:true);
         }
       }
       else {
