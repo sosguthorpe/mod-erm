@@ -30,10 +30,25 @@ public class CoverageExtenderService {
     coverage_statements.each { cs ->
       // Do we already have any coverage statements for this item that overlap in any way with the coverage supplied?
       // If the start date or end date lies within any existing statement,
-      def existing_coverage = CoverageStatement.executeQuery("select cs from CoverageStatement as cs where cs.${property} = :t and ( ( :start between cs.startDate and cs.endDate ) OR ( :end between cs.startDate and cs.endDate ) ) ".toString(),[t:title, start:cs.startDate, end: cs.endDate]);
+      def existing_coverage = CoverageStatement.executeQuery("select cs from CoverageStatement as cs where cs.${property} = :t and ( ( :start between cs.startDate and cs.endDate ) OR ( :end between cs.startDate and cs.endDate ) OR ( :start <= cs.startDate AND cs.endDate is null ) ) ".toString(),[t:title, start:cs.startDate, end: cs.endDate]);
 
       if ( existing_coverage.size() > 0 ) {
         log.warn("Located existing coverage, determin extend or create additional");
+
+        boolean new_coverage_is_already_subsumed = false;
+        existing_coverage.each { existing_cs ->
+
+          // If the new coverage statement starts AFTER the one we are currently considering AND the statement we are currently
+          // considering has an open end OR a date < the new statement, then the new coverage statement lies within the range of the first statement.
+          if ( ( existing_cs.startDate <= cs.startDate ) && 
+               ( ( existing_cs.endDate == null ) || ( existing_cs.endDate <= cs.endDate ) ) ) {
+            new_coverage_is_already_subsumed = true;
+            // We need to consider if we should set the END DATE in this scenario however!
+          }
+        }
+
+        if ( new_coverage_is_already_subsumed ) {
+        }
       }
       else {
         // no existing coverage -- create it
