@@ -57,9 +57,12 @@ public class TitleInstanceResolverService {
 
     List<TitleInstance> candidate_list = classOneMatch(citation.instanceIdentifiers);
 
+    int num_class_one_identifiers = countClassOneIDs(citation.instanceIdentifiers);
+
     int num_matches = candidate_list.size()
 
-    if ( num_matches == 0 ) {
+    // If we didn't have a class one identifier AND we weren't able to match anything try to do a fuzzy match as a last resort
+    if ( ( num_matches == 0 ) && ( num_class_one_identifiers == 0 ) ) {
       // log.debug("No matches on identifier - try a fuzzy text match on title(${citation.title})");
       // No matches - try a simple title match
       candidate_list = titleMatch(citation.title,MATCH_THRESHOLD);
@@ -198,6 +201,16 @@ public class TitleInstanceResolverService {
     }
  
     return result
+  }
+
+  private int countClassOneIDs(List identifiers) {
+    int result = 0;
+    identifiers.each { id ->
+      if ( class_one_namespaces?.contains(id.namespace.toLowerCase()) ) {
+        result++;
+      }
+    }
+    return result;
   }
 
   /**
