@@ -56,10 +56,22 @@ public class TitleInstanceResolverService {
     TitleInstance result = null;
 
     List<TitleInstance> candidate_list = classOneMatch(citation.instanceIdentifiers);
-
     int num_class_one_identifiers = countClassOneIDs(citation.instanceIdentifiers);
-
     int num_matches = candidate_list.size()
+    List<TitleInstance> siblings = []
+
+    // We weren't able to match directly on an identifier for this instance - see if we have an identifier
+    // for a sibling instance we can use to narrow down the list.
+    if ( num_matches == 0 ) {
+      siblings.addAll(siblingMatch(citation))
+      //num_matches = candidate_list.size()
+      // Look through siblings looking for one with instanceMedium==electronic
+      // candidate_list = siblings.findAll { it.instanceMedium == 'electronic' }
+      // num_matches = candidate_list.size()
+      // if ( num_matches > 0 ) {
+      //   log.debug("Matched ${num_matches} titles via sibling identifier");
+      // }
+    }
 
     // If we didn't have a class one identifier AND we weren't able to match anything try to do a fuzzy match as a last resort
     if ( ( num_matches == 0 ) && ( num_class_one_identifiers == 0 ) ) {
@@ -89,6 +101,40 @@ public class TitleInstanceResolverService {
 
     return result;
   }  
+
+  private TitleInstance siblingMatch(Map citation) {
+
+    List<TitleInstance> candidate_list = []
+
+    // Lets try and match based on sibling identifiers. 
+    // Our first "alternate" matching strategy. Often, KBART files contain the ISSN of the print edition of an electronic work.
+    // The line is not suggesting that buying an electronic package includes copies of the physical item, its more a way of saying
+    // "The electronic item described by this line relates to the print item identified by X".
+    // In the bibframe nomenclature, the print and electronic items are two separate instances. Therefore, creating an electronic
+    // identifier with the ID of the print item does not seem sensible. HOWEVER, we would still like to be able to be able to match
+    // a title if we know that it is a sibling of a print identifier.
+    int num_class_one_identifiers_for_sibling = countClassOneIDs(citation.siblingInstanceIdentifiers)
+
+    Map issn_id = citation.siblingInstanceIdentifiers.find { it.namespace == 'issn' } ;
+    String issn = issn_id?.value;
+
+    if ( issn ) {
+      Map sibling_citation = [
+        "title": citation.title,
+        "instanceMedium": "print",
+        "instanceMedia": "journal",
+        "instanceIdentifiers": [ 
+          [
+            "namespace": "issn",
+            "value": issn
+          ] ]
+        ]
+
+      candidate_list = this.resolve(sibling_citation);
+    }
+
+    return candidate_list;
+  }
 
   private TitleInstance createNewTitleInstance(Map citation) {
 
