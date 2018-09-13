@@ -18,6 +18,7 @@ import org.olf.general.RefdataCategory
 @Transactional
 public class TitleInstanceResolverService {
 
+  private static final float MATCH_THRESHOLD = 0.75f;
   private static final String TEXT_MATCH_TITLE_QRY = 'select * from title_instance WHERE ti_title % :qrytitle AND similarity(ti_title, :qrytitle) > :threshold ORDER BY  similarity(ti_title, :qrytitle) desc LIMIT 20'
 
   private static def class_one_namespaces = [
@@ -51,33 +52,36 @@ public class TitleInstanceResolverService {
    *   }
    */
   public TitleInstance resolve(Map citation) {
-    log.debug("TitleInstanceResolverService::resolve(${citation})");
+    // log.debug("TitleInstanceResolverService::resolve(${citation})");
     TitleInstance result = null;
 
     List<TitleInstance> candidate_list = classOneMatch(citation.instanceIdentifiers);
 
+    int num_class_one_identifiers = countClassOneIDs(citation.instanceIdentifiers);
+
     int num_matches = candidate_list.size()
 
-    if ( num_matches == 0 ) {
-      log.debug("No matches on identifier - try a fuzzy text match on title(${citation.title})");
+    // If we didn't have a class one identifier AND we weren't able to match anything try to do a fuzzy match as a last resort
+    if ( ( num_matches == 0 ) && ( num_class_one_identifiers == 0 ) ) {
+      // log.debug("No matches on identifier - try a fuzzy text match on title(${citation.title})");
       // No matches - try a simple title match
-      candidate_list = titleMatch(citation.title);
+      candidate_list = titleMatch(citation.title,MATCH_THRESHOLD);
       num_matches = candidate_list.size()
     }
 
     if ( candidate_list != null ) {
       switch ( num_matches ) {
         case(0):
-          log.debug("No title match");
+          // log.debug("No title match");
           result = createNewTitleInstance(citation);
           break;
         case(1):
-          log.debug("Exact match.");
+          // log.debug("Exact match.");
           result = candidate_list.get(0);
           checkForEnrichment(result, citation);
           break;
         default:
-          log.error("title matched {num_matches} records. Unable to continue. Matching IDs: ${candidate_list.collect { it.id }}");
+          log.warn("title matched ${num_matches} records with a threshold >= ${MATCH_THRESHOLD} . Unable to continue. Matching IDs: ${candidate_list.collect { it.id }}");
           // throw new RuntimeException("Title match returned too many items (${num_matches})");
           break;
       }
@@ -172,7 +176,7 @@ public class TitleInstanceResolverService {
   /**
    * Attempt a fuzzy match on the title
    */
-  private List<TitleInstance> titleMatch(String title) {
+  private List<TitleInstance> titleMatch(String title, float threshold) {
 
     List<TitleInstance> result = new ArrayList<TitleInstance>()
     TitleInstance.withSession { session ->
@@ -185,7 +189,7 @@ public class TitleInstanceResolverService {
           // Set query title - I know this looks a little odd, we have to manually quote this and handle any
           // relevant escaping... So this code will probably not be good enough long term.
           setString('qrytitle',title);
-          setFloat('threshold',0.6f)
+          setFloat('threshold',threshold)
    
           // Get all results.
           list()
@@ -197,6 +201,16 @@ public class TitleInstanceResolverService {
     }
  
     return result
+  }
+
+  private int countClassOneIDs(List identifiers) {
+    int result = 0;
+    identifiers.each { id ->
+      if ( class_one_namespaces?.contains(id.namespace.toLowerCase()) ) {
+        result++;
+      }
+    }
+    return result;
   }
 
   /**
@@ -215,7 +229,7 @@ public class TitleInstanceResolverService {
         num_class_one_identifiers++;
 
         // Look up each identifier
-        log.debug("${id} - try class one match");
+        // log.debug("${id} - try class one match");
         def id_matches = Identifier.executeQuery('select id from Identifier as id where id.value = :value and id.ns.value = :ns',[value:id.value, ns:id.namespace])
 
         assert ( id_matches.size() <= 1 )
@@ -229,7 +243,7 @@ public class TitleInstanceResolverService {
                 // We have already seen this title, so don't add it again
               }
               else {
-                log.debug("Adding title ${io.title.id} ${io.title.title} to matches for ${matched_id}");
+                // log.debug("Adding title ${io.title.id} ${io.title.title} to matches for ${matched_id}");
                 result << io.title
               }
             }
@@ -240,11 +254,11 @@ public class TitleInstanceResolverService {
         }
       }
       else {
-        log.debug("Identifier ${id} not from a class one namespace");
+        // log.debug("Identifier ${id} not from a class one namespace");
       }
     }
 
-    log.debug("At end of classOneMatch, resut contains ${result.size()} titles");
+    // log.debug("At end of classOneMatch, resut contains ${result.size()} titles");
     return result;
   }
 }
