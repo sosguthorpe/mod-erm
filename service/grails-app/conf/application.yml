@@ -115,11 +115,11 @@ dataSource:
   pooled: true
   jmxExport: false
   dbCreate: none
-  username: folio
-  password: folio
+  username: "${db.username:folio}"
+  password: "${db.password:folio}"
   driverClassName: org.postgresql.Driver
   dialect: org.olf.general.KIPostgres94Dialect
-  url: jdbc:postgresql://localhost:5432/olfdev
+  url: "jdbc:postgresql://${db.host:localhost}:${db.port:5432}/${db.database:olfdev}"
   schemaHandler: com.k_int.okapi.OkapiSchemaHandler
     
 okapi:
@@ -130,10 +130,10 @@ okapi:
 environments:
   test:
     dataSource:
-      url: jdbc:postgresql://localhost:5432/olftest
+      url: "jdbc:postgresql://${db.host:localhost}:${db.port:5432}/${db.database:olftest}"
   production:
     dataSource:
-      url: jdbc:postgresql://localhost:5432/olf
+      url: "jdbc:postgresql://${db.host:localhost}:${db.port:5432}/${db.database:olf}"
       properties:
         initialSize: 5
         maxActive: 50

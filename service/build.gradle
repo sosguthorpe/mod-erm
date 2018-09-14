@@ -8,6 +8,8 @@ buildscript {
     classpath "org.grails.plugins:hibernate5:${gormVersion-".RELEASE"}"
     classpath "org.grails.plugins:views-gradle:1.2.7"
     classpath 'org.grails.plugins:database-migration:3.0.3'
+    classpath "com.bmuschko:gradle-docker-plugin:3.2.1"
+    
   }
 }
 
@@ -21,6 +23,7 @@ apply plugin:"idea"
 //apply plugin:"war"
 apply plugin:"org.grails.grails-web"
 apply plugin:"org.grails.plugins.views-json"
+apply plugin:"com.bmuschko.docker-remote-api"
 
 repositories {
   mavenLocal()
@@ -221,3 +224,51 @@ includes?.each { String projectName, String mavenString ->
     }
   }
 }
+
+
+/**
+ * Docker build config.
+ */
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+ext {
+  dockerTag = "${project.dockerRepo}/${project.name}:${project.version}${dockerTagSuffix}".toLowerCase()
+  dockerBuildDir = mkdir("${buildDir}/docker")
+}
+
+task prepareDocker(type: Copy, dependsOn: assemble) {
+  description = 'Copy files to build directory'
+  group = 'Docker'
+
+  from project.jar
+  
+  // from otherfileLoc
+
+  into dockerBuildDir
+}
+task createDockerfile(type: Dockerfile, dependsOn: prepareDocker) {
+  description = 'Create a Dockerfile file'
+  group = 'Docker'
+
+  destFile = project.file("${dockerBuildDir}/Dockerfile")
+
+  from 'folioci/openjdk8-jre-alpine:latest'
+  maintainer 'Knowledge Integration'
+
+  exposePort 8080
+
+  // Copying straight into the default directory should be enough
+  copyFile jar.archiveName, '/usr/verticles/application.jar'
+}
+
+task buildImage(type: DockerBuildImage, dependsOn: createDockerfile) {
+  description = 'Create Docker image to run the Grails application'
+  group = 'Docker'
+
+  inputDir = file(dockerBuildDir)
+  tag = dockerTag
+}
+
+
+

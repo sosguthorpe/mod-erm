@@ -5,7 +5,7 @@
 
 dataSource:
   dbCreate: none
-  url: jdbc:postgresql://localhost:54321/okapi_modules # Port 54321 forwarded so as not to clash.
+  url: "jdbc:postgresql://${db.host:localhost}:${db.port:54321}/${db.database:okapi_modules}" # Port 54321 forwarded so as not to clash.
   username: folio_admin
   password: folio_admin
   driverClassName: org.postgresql.Driver
