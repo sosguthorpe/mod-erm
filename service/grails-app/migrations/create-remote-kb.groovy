@@ -469,6 +469,8 @@ databaseChangeLog = {
             }
 
             column(name: "ti_resource_type_fk", type: "VARCHAR(36)")
+
+            column(name: "ti_work_fk", type: "VARCHAR(36)")
         }
     }
 
@@ -497,6 +499,17 @@ databaseChangeLog = {
                 constraints(nullable: "false")
             }
         }
+    }
+
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-19a") {
+      grailsChange {
+        change {
+          // grailsChange gives us an sql variable which inherits the current connection, and hence should
+          // get the schema. sql.execute seems to get a bit confused when passed a GString. Work it out before by calling toString
+          def cmd = "CREATE INDEX work_title_trigram_idx ON ${database.defaultSchemaName}.work USING GIN (w_title gin_trgm_ops)".toString()
+          sql.execute(cmd);
+        }
+      }
     }
 
     changeSet(author: "ianibbo (generated)", id: "1527414162857-20") {

@@ -28,16 +28,20 @@ where exists ( select pci.id
 
   RefdataValue resourceType
 
+  Work work
+
   static mapping = {
                    id column:'ti_id', generator: 'uuid', length:36
               version column:'ti_version'
                 title column:'ti_title'
+                 work column:'ti_work_fk'
          resourceType column:'ti_resource_type_fk'
   }
 
   static constraints = {
            title(nullable:false, blank:false)
     resourceType(nullable:true, blank:false)
+            work(nullable:true, blank:false)
   }
 
   static hasMany = [

@@ -102,7 +102,12 @@ public class TitleInstanceResolverService {
     return result;
   }  
 
-  private TitleInstance siblingMatch(Map citation) {
+  /**
+   * Return a list of the siblings for this instance. Sometimes vendors identify a title by citing the issn of the print edition.
+   * we model these as 2 different title instances, linked by a common work. This method looks up/creates any sibling instances.
+   * In reality, it currently only creates print instances when an ISSN is present.
+   */
+  private List<TitleInstance> siblingMatch(Map citation) {
 
     List<TitleInstance> candidate_list = []
 
@@ -136,7 +141,7 @@ public class TitleInstanceResolverService {
     return candidate_list;
   }
 
-  private TitleInstance createNewTitleInstance(Map citation) {
+  private TitleInstance createNewTitleInstance(Map citation, Work work = null) {
 
     TitleInstance result = null;
 
