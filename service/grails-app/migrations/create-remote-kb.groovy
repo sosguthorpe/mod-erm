@@ -471,6 +471,8 @@ databaseChangeLog = {
             column(name: "ti_resource_type_fk", type: "VARCHAR(36)")
 
             column(name: "ti_work_fk", type: "VARCHAR(36)")
+
+            column(name: "ti_medium_fk", type: "VARCHAR(36)")
         }
     }
 

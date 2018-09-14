@@ -25,9 +25,10 @@ where exists ( select pci.id
   String id
   // Title IN ORIGINAL LANGUAGE OF PUBLICATION
   String title
-
   RefdataValue resourceType
+  RefdataValue medium
 
+  // For grouping sibling title instances together - EG Print and Electronic editions of the same thing
   Work work
 
   static mapping = {
@@ -35,12 +36,14 @@ where exists ( select pci.id
               version column:'ti_version'
                 title column:'ti_title'
                  work column:'ti_work_fk'
+               medium column:'ti_medium_fk'  // Normally print or electronic
          resourceType column:'ti_resource_type_fk'
   }
 
   static constraints = {
            title(nullable:false, blank:false)
     resourceType(nullable:true, blank:false)
+          medium(nullable:true, blank:false)
             work(nullable:true, blank:false)
   }
 

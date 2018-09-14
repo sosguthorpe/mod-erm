@@ -9,6 +9,7 @@ import org.olf.kb.TitleInstance
 import org.olf.kb.Identifier
 import org.olf.kb.IdentifierNamespace
 import org.olf.kb.IdentifierOccurrence
+import org.olf.kb.Work
 import org.olf.general.RefdataValue
 import org.olf.general.RefdataCategory
 
@@ -135,7 +136,7 @@ public class TitleInstanceResolverService {
           ] ]
         ]
 
-      candidate_list = this.resolve(sibling_citation);
+      candidate_list = [ this.resolve(sibling_citation) ];
     }
 
     return candidate_list;
@@ -157,8 +158,25 @@ public class TitleInstanceResolverService {
     // Validate
     if ( title_is_valid == true ) {
 
+      if ( work == null ) {
+        work = new Work(title:citation.title).save(flush:true, failOnError:true);
+      }
+
+      def medium = null;
+      if ( ( citation.instanceMedium ) && ( citation.instanceMedium.trim().length() > 0 ) ) {
+        medium = RefdataCategory.lookupOrCreate('InstanceMedium', citation.instanceMedium, citation.instanceMedium);
+      }
+
+      def media = null;
+      if ( ( citation.instanceMedia ) && ( citation.instanceMedia.trim().length() > 0 ) )  {
+        media = RefdataCategory.lookupOrCreate('InstanceMedia', citation.instanceMedia, citation.instanceMedia);
+      }
+
       result = new TitleInstance(
-         title: citation.title
+         title: citation.title,
+         medium: medium,
+         instanceMedia: media,
+         work: work
       )
 
       result.save(flush:true, failOnError:true);
