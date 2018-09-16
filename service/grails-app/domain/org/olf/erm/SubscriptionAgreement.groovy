@@ -58,17 +58,21 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   }
 
   static constraints = {
-               name(nullable:false, blank:false)
-     localReference(nullable:true, blank:false)
-    vendorReference(nullable:true, blank:false)
-          startDate(nullable:true, blank:false)
-            endDate(nullable:true, blank:false)
-        renewalDate(nullable:true, blank:false)
-     nextReviewDate(nullable:true, blank:false)
-      agreementType(nullable:true, blank:false)
-            enabled(nullable:true, blank:false)
-        description(nullable:true, blank:false)
-             vendor(nullable:true, blank:false)
+                    name(nullable:false, blank:false)
+          localReference(nullable:true, blank:false)
+         vendorReference(nullable:true, blank:false)
+    cancellationDeadline(nullable:true, blank:false)
+               startDate(nullable:true, blank:false)
+                 endDate(nullable:true, blank:false)
+             renewalDate(nullable:true, blank:false)
+          nextReviewDate(nullable:true, blank:false)
+           agreementType(nullable:true, blank:false)
+         renewalPriority(nullable:true, blank:false)
+         agreementStatus(nullable:true, blank:false)
+             isPerpetual(nullable:true, blank:false)
+                 enabled(nullable:true, blank:false)
+             description(nullable:true, blank:false)
+                  vendor(nullable:true, blank:false)
   }
 
 
