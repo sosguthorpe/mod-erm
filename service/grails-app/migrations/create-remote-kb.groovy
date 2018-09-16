@@ -420,6 +420,8 @@ databaseChangeLog = {
 
             column(name: "sa_vendor_reference", type: "VARCHAR(255)")
 
+            column(name: "sa_cancellation_deadline", type: "TIMESTAMP WITHOUT TIME ZONE")
+
             column(name: "sa_start_date", type: "TIMESTAMP WITHOUT TIME ZONE")
 
             column(name: "sa_renewal_date", type: "TIMESTAMP WITHOUT TIME ZONE")
