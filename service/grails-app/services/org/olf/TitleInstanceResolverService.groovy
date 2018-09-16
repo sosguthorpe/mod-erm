@@ -22,6 +22,8 @@ public class TitleInstanceResolverService {
   private static final float MATCH_THRESHOLD = 0.75f;
   private static final String TEXT_MATCH_TITLE_QRY = 'select * from title_instance WHERE ti_title % :qrytitle AND similarity(ti_title, :qrytitle) > :threshold ORDER BY  similarity(ti_title, :qrytitle) desc LIMIT 20'
 
+  private static final String SIBLING_MATCH_HQL = 'select ti from TitleInstance as ti where exists ( Select sibling from TitleInstance as sibling join sibling.identifiers as io where sibling.work = ti.work and io.identifier.ns.value = :ns and io.identifier.value = :value ) and ti.medium.value = :electronic';
+
   private static def class_one_namespaces = [
     'zdb',
     'isbn',
@@ -105,11 +107,18 @@ public class TitleInstanceResolverService {
 
   /**
    * Return a list of the siblings for this instance. Sometimes vendors identify a title by citing the issn of the print edition.
-   * we model these as 2 different title instances, linked by a common work. This method looks up/creates any sibling instances.
-   * In reality, it currently only creates print instances when an ISSN is present.
+   * we model the print and electronic as 2 different title instances, linked by a common work. This method looks up/creates any sibling instances
+   * by matching the print instance, then looking for a sibling with type "electronic"
    */
   private List<TitleInstance> siblingMatch(Map citation) {
 
+    Map issn_id = citation.siblingInstanceIdentifiers.find { it.namespace == 'issn' } ;
+    String issn = issn_id?.value;
+
+    return TitleInstance.executeQuery(SIBLING_MATCH_HQL,[ns:'issn',value:issn,electronic:'electronic']);
+  }
+
+  private List<TitleInstance> addMissingSiblings(Map citation) {
     List<TitleInstance> candidate_list = []
 
     // Lets try and match based on sibling identifiers. 
@@ -162,20 +171,22 @@ public class TitleInstanceResolverService {
         work = new Work(title:citation.title).save(flush:true, failOnError:true);
       }
 
+      // Print or Electronic
       def medium = null;
       if ( ( citation.instanceMedium ) && ( citation.instanceMedium.trim().length() > 0 ) ) {
         medium = RefdataCategory.lookupOrCreate('InstanceMedium', citation.instanceMedium, citation.instanceMedium);
       }
 
-      def media = null;
+      // Journal or Book etc
+      def resource_type = null;
       if ( ( citation.instanceMedia ) && ( citation.instanceMedia.trim().length() > 0 ) )  {
-        media = RefdataCategory.lookupOrCreate('InstanceMedia', citation.instanceMedia, citation.instanceMedia);
+        resource_type = RefdataCategory.lookupOrCreate('ResourceType', citation.instanceMedia, citation.instanceMedia);
       }
 
       result = new TitleInstance(
          title: citation.title,
          medium: medium,
-         instanceMedia: media,
+         resourceType: resource_type,
          work: work
       )
 

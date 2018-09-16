@@ -25,7 +25,11 @@ where exists ( select pci.id
   String id
   // Title IN ORIGINAL LANGUAGE OF PUBLICATION
   String title
+
+  // Journal/Book/...
   RefdataValue resourceType
+
+  // Print/Electronic
   RefdataValue medium
 
   // For grouping sibling title instances together - EG Print and Electronic editions of the same thing
@@ -36,7 +40,7 @@ where exists ( select pci.id
               version column:'ti_version'
                 title column:'ti_title'
                  work column:'ti_work_fk'
-               medium column:'ti_medium_fk'  // Normally print or electronic
+               medium column:'ti_medium_fk'
          resourceType column:'ti_resource_type_fk'
   }
 

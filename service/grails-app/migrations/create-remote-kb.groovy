@@ -111,11 +111,19 @@ databaseChangeLog = {
                 constraints(nullable: "false")
             }
 
-            column(name: "value", type: "VARCHAR(255)") {
+            column(name: "id_value", type: "VARCHAR(255)") {
                 constraints(nullable: "false")
             }
         }
     }
+
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-4a") {
+        createIndex(indexName: "id_idx", tableName: "identifier") {
+            column(name: "id_value")
+            column(name: "id_ns_fk")
+        }
+    }
+
 
     changeSet(author: "ianibbo (generated)", id: "1527414162857-5") {
         createTable(tableName: "identifier_namespace") {
@@ -127,7 +135,7 @@ databaseChangeLog = {
                 constraints(nullable: "false")
             }
 
-            column(name: "value", type: "VARCHAR(255)") {
+            column(name: "idns_value", type: "VARCHAR(255)") {
                 constraints(nullable: "false")
             }
         }

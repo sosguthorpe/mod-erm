@@ -23,7 +23,7 @@ public class Identifier implements MultiTenant<Identifier> {
   static mapping = {
                    id column:'id_id', generator: 'uuid', length:36
               version column:'id_version'
-                 name column:'id_value'
+                value column:'id_value'
                    ns column:'id_ns_fk'
   }
 
