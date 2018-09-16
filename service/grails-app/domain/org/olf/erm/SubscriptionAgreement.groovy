@@ -21,6 +21,9 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
 
   // Subscription agreement type - DRAFT, TRIAL, CURRENT
   RefdataValue agreementType
+  RefdataValue renewalPriority
+  RefdataValue agreementStatus
+  RefdataValue isPerpetual
 
   Boolean enabled
 
@@ -47,6 +50,9 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
              renewalDate column:'sa_renewal_date'
           nextReviewDate column:'sa_next_review_date'
            agreementType column:'sa_agreement_type'
+         renewalPriority column:'sa_renewal_priority'
+         agreementStatus column:'sa_agreement_status'
+             isPerpetual column:'sa_is_perpetual'
                  enabled column:'sa_enabled'
                   vendor column:'sa_vendor_fk'
   }

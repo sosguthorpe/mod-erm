@@ -436,6 +436,12 @@ databaseChangeLog = {
 
             column(name: "sa_agreement_type", type: "VARCHAR(36)")
 
+            column(name: "sa_renewal_priority", type "VARCHAR(36)")
+
+            column(name: "sa_agreement_status", type "VARCHAR(36)")
+
+            column(name: "sa_is_perpetual", type "VARCHAR(36)")
+
             column(name: "sa_enabled", type: "BOOLEAN")
 
             column(name: "sa_end_date", type: "TIMESTAMP WITHOUT TIME ZONE")
