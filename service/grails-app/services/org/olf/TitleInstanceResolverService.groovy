@@ -19,7 +19,7 @@ import org.olf.general.RefdataCategory
 @Transactional
 public class TitleInstanceResolverService {
 
-  private static final float MATCH_THRESHOLD = 0.75f;
+  private static final float MATCH_THRESHOLD = 0.775f;
   private static final String TEXT_MATCH_TITLE_QRY = 'select * from title_instance WHERE ti_title % :qrytitle AND similarity(ti_title, :qrytitle) > :threshold ORDER BY  similarity(ti_title, :qrytitle) desc LIMIT 20'
 
   private static final String SIBLING_MATCH_HQL = 'select ti from TitleInstance as ti where exists ( Select sibling from TitleInstance as sibling join sibling.identifiers as io where sibling.work = ti.work and io.identifier.ns.value = :ns and io.identifier.value = :value ) and ti.medium.value = :electronic';
@@ -66,17 +66,12 @@ public class TitleInstanceResolverService {
     // We weren't able to match directly on an identifier for this instance - see if we have an identifier
     // for a sibling instance we can use to narrow down the list.
     if ( num_matches == 0 ) {
-      siblings.addAll(siblingMatch(citation))
-      //num_matches = candidate_list.size()
-      // Look through siblings looking for one with instanceMedium==electronic
-      // candidate_list = siblings.findAll { it.instanceMedium == 'electronic' }
-      // num_matches = candidate_list.size()
-      // if ( num_matches > 0 ) {
-      //   log.debug("Matched ${num_matches} titles via sibling identifier");
-      // }
+      candidate_list = siblingMatch(citation)
+      num_matches = candidate_list.size()
     }
 
-    // If we didn't have a class one identifier AND we weren't able to match anything try to do a fuzzy match as a last resort
+    // If we didn't have a class one identifier AND we weren't able to match anything via
+    // a sibling match, try to do a fuzzy match as a last resort
     if ( ( num_matches == 0 ) && ( num_class_one_identifiers == 0 ) ) {
       // log.debug("No matches on identifier - try a fuzzy text match on title(${citation.title})");
       // No matches - try a simple title match
@@ -89,6 +84,7 @@ public class TitleInstanceResolverService {
         case(0):
           // log.debug("No title match");
           result = createNewTitleInstance(citation);
+          createOrLinkSiblings(citation, result.work);
           break;
         case(1):
           // log.debug("Exact match.");
@@ -111,14 +107,12 @@ public class TitleInstanceResolverService {
    * by matching the print instance, then looking for a sibling with type "electronic"
    */
   private List<TitleInstance> siblingMatch(Map citation) {
-
     Map issn_id = citation.siblingInstanceIdentifiers.find { it.namespace == 'issn' } ;
     String issn = issn_id?.value;
-
     return TitleInstance.executeQuery(SIBLING_MATCH_HQL,[ns:'issn',value:issn,electronic:'electronic']);
   }
 
-  private List<TitleInstance> addMissingSiblings(Map citation) {
+  private createOrLinkSiblings(Map citation, work) {
     List<TitleInstance> candidate_list = []
 
     // Lets try and match based on sibling identifiers. 
@@ -145,10 +139,29 @@ public class TitleInstanceResolverService {
           ] ]
         ]
 
-      candidate_list = [ this.resolve(sibling_citation) ];
+      candidate_list = classOneMatch(sibling_citation.instanceIdentifiers);
+      switch ( candidate_list.size() ) {
+        case 0:
+          createNewTitleInstance(sibling_citation, work);
+          break;
+        case 1:
+          TitleInstance ti = candidate_list.get(0)
+          if ( ti.work == null ) {
+            // Link the located title instance to the work
+            ti.work = work;
+            ti.save(flush:true, failOnError:true)
+          }
+          else {
+            // Validate that the work we detected is the same as the one we have - otherwise there is bad
+            // data flying around.
+          }
+          break;
+        default:
+          // Problem
+          log.warn("Detected multiple records for sibling instance match");
+          break;
+      }
     }
-
-    return candidate_list;
   }
 
   private TitleInstance createNewTitleInstance(Map citation, Work work = null) {
