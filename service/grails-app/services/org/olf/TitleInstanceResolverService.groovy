@@ -9,6 +9,7 @@ import org.olf.kb.TitleInstance
 import org.olf.kb.Identifier
 import org.olf.kb.IdentifierNamespace
 import org.olf.kb.IdentifierOccurrence
+import org.olf.kb.Work
 import org.olf.general.RefdataValue
 import org.olf.general.RefdataCategory
 
@@ -18,8 +19,10 @@ import org.olf.general.RefdataCategory
 @Transactional
 public class TitleInstanceResolverService {
 
-  private static final float MATCH_THRESHOLD = 0.75f;
+  private static final float MATCH_THRESHOLD = 0.775f;
   private static final String TEXT_MATCH_TITLE_QRY = 'select * from title_instance WHERE ti_title % :qrytitle AND similarity(ti_title, :qrytitle) > :threshold ORDER BY  similarity(ti_title, :qrytitle) desc LIMIT 20'
+
+  private static final String SIBLING_MATCH_HQL = 'select ti from TitleInstance as ti where exists ( Select sibling from TitleInstance as sibling join sibling.identifiers as io where sibling.work = ti.work and io.identifier.ns.value = :ns and io.identifier.value = :value ) and ti.medium.value = :electronic';
 
   private static def class_one_namespaces = [
     'zdb',
@@ -56,12 +59,19 @@ public class TitleInstanceResolverService {
     TitleInstance result = null;
 
     List<TitleInstance> candidate_list = classOneMatch(citation.instanceIdentifiers);
-
     int num_class_one_identifiers = countClassOneIDs(citation.instanceIdentifiers);
-
     int num_matches = candidate_list.size()
+    List<TitleInstance> siblings = []
 
-    // If we didn't have a class one identifier AND we weren't able to match anything try to do a fuzzy match as a last resort
+    // We weren't able to match directly on an identifier for this instance - see if we have an identifier
+    // for a sibling instance we can use to narrow down the list.
+    if ( num_matches == 0 ) {
+      candidate_list = siblingMatch(citation)
+      num_matches = candidate_list.size()
+    }
+
+    // If we didn't have a class one identifier AND we weren't able to match anything via
+    // a sibling match, try to do a fuzzy match as a last resort
     if ( ( num_matches == 0 ) && ( num_class_one_identifiers == 0 ) ) {
       // log.debug("No matches on identifier - try a fuzzy text match on title(${citation.title})");
       // No matches - try a simple title match
@@ -74,6 +84,7 @@ public class TitleInstanceResolverService {
         case(0):
           // log.debug("No title match");
           result = createNewTitleInstance(citation);
+          createOrLinkSiblings(citation, result.work);
           break;
         case(1):
           // log.debug("Exact match.");
@@ -90,7 +101,70 @@ public class TitleInstanceResolverService {
     return result;
   }  
 
-  private TitleInstance createNewTitleInstance(Map citation) {
+  /**
+   * Return a list of the siblings for this instance. Sometimes vendors identify a title by citing the issn of the print edition.
+   * we model the print and electronic as 2 different title instances, linked by a common work. This method looks up/creates any sibling instances
+   * by matching the print instance, then looking for a sibling with type "electronic"
+   */
+  private List<TitleInstance> siblingMatch(Map citation) {
+    Map issn_id = citation.siblingInstanceIdentifiers.find { it.namespace == 'issn' } ;
+    String issn = issn_id?.value;
+    return TitleInstance.executeQuery(SIBLING_MATCH_HQL,[ns:'issn',value:issn,electronic:'electronic']);
+  }
+
+  private createOrLinkSiblings(Map citation, work) {
+    List<TitleInstance> candidate_list = []
+
+    // Lets try and match based on sibling identifiers. 
+    // Our first "alternate" matching strategy. Often, KBART files contain the ISSN of the print edition of an electronic work.
+    // The line is not suggesting that buying an electronic package includes copies of the physical item, its more a way of saying
+    // "The electronic item described by this line relates to the print item identified by X".
+    // In the bibframe nomenclature, the print and electronic items are two separate instances. Therefore, creating an electronic
+    // identifier with the ID of the print item does not seem sensible. HOWEVER, we would still like to be able to be able to match
+    // a title if we know that it is a sibling of a print identifier.
+    int num_class_one_identifiers_for_sibling = countClassOneIDs(citation.siblingInstanceIdentifiers)
+
+    Map issn_id = citation.siblingInstanceIdentifiers.find { it.namespace == 'issn' } ;
+    String issn = issn_id?.value;
+
+    if ( issn ) {
+      Map sibling_citation = [
+        "title": citation.title,
+        "instanceMedium": "print",
+        "instanceMedia": "journal",
+        "instanceIdentifiers": [ 
+          [
+            "namespace": "issn",
+            "value": issn
+          ] ]
+        ]
+
+      candidate_list = classOneMatch(sibling_citation.instanceIdentifiers);
+      switch ( candidate_list.size() ) {
+        case 0:
+          createNewTitleInstance(sibling_citation, work);
+          break;
+        case 1:
+          TitleInstance ti = candidate_list.get(0)
+          if ( ti.work == null ) {
+            // Link the located title instance to the work
+            ti.work = work;
+            ti.save(flush:true, failOnError:true)
+          }
+          else {
+            // Validate that the work we detected is the same as the one we have - otherwise there is bad
+            // data flying around.
+          }
+          break;
+        default:
+          // Problem
+          log.warn("Detected multiple records for sibling instance match");
+          break;
+      }
+    }
+  }
+
+  private TitleInstance createNewTitleInstance(Map citation, Work work = null) {
 
     TitleInstance result = null;
 
@@ -106,8 +180,27 @@ public class TitleInstanceResolverService {
     // Validate
     if ( title_is_valid == true ) {
 
+      if ( work == null ) {
+        work = new Work(title:citation.title).save(flush:true, failOnError:true);
+      }
+
+      // Print or Electronic
+      def medium = null;
+      if ( ( citation.instanceMedium ) && ( citation.instanceMedium.trim().length() > 0 ) ) {
+        medium = RefdataCategory.lookupOrCreate('InstanceMedium', citation.instanceMedium, citation.instanceMedium);
+      }
+
+      // Journal or Book etc
+      def resource_type = null;
+      if ( ( citation.instanceMedia ) && ( citation.instanceMedia.trim().length() > 0 ) )  {
+        resource_type = RefdataCategory.lookupOrCreate('ResourceType', citation.instanceMedia, citation.instanceMedia);
+      }
+
       result = new TitleInstance(
-         title: citation.title
+         title: citation.title,
+         medium: medium,
+         resourceType: resource_type,
+         work: work
       )
 
       result.save(flush:true, failOnError:true);

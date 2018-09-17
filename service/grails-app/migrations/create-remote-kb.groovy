@@ -111,11 +111,19 @@ databaseChangeLog = {
                 constraints(nullable: "false")
             }
 
-            column(name: "value", type: "VARCHAR(255)") {
+            column(name: "id_value", type: "VARCHAR(255)") {
                 constraints(nullable: "false")
             }
         }
     }
+
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-4a") {
+        createIndex(indexName: "id_idx", tableName: "identifier") {
+            column(name: "id_value")
+            column(name: "id_ns_fk")
+        }
+    }
+
 
     changeSet(author: "ianibbo (generated)", id: "1527414162857-5") {
         createTable(tableName: "identifier_namespace") {
@@ -127,7 +135,7 @@ databaseChangeLog = {
                 constraints(nullable: "false")
             }
 
-            column(name: "value", type: "VARCHAR(255)") {
+            column(name: "idns_value", type: "VARCHAR(255)") {
                 constraints(nullable: "false")
             }
         }
@@ -412,6 +420,8 @@ databaseChangeLog = {
 
             column(name: "sa_vendor_reference", type: "VARCHAR(255)")
 
+            column(name: "sa_cancellation_deadline", type: "TIMESTAMP WITHOUT TIME ZONE")
+
             column(name: "sa_start_date", type: "TIMESTAMP WITHOUT TIME ZONE")
 
             column(name: "sa_renewal_date", type: "TIMESTAMP WITHOUT TIME ZONE")
@@ -425,6 +435,12 @@ databaseChangeLog = {
             column(name: "sa_local_reference", type: "VARCHAR(255)")
 
             column(name: "sa_agreement_type", type: "VARCHAR(36)")
+
+            column(name: "sa_renewal_priority", type: "VARCHAR(36)")
+
+            column(name: "sa_agreement_status", type: "VARCHAR(36)")
+
+            column(name: "sa_is_perpetual", type: "VARCHAR(36)")
 
             column(name: "sa_enabled", type: "BOOLEAN")
 
@@ -469,6 +485,10 @@ databaseChangeLog = {
             }
 
             column(name: "ti_resource_type_fk", type: "VARCHAR(36)")
+
+            column(name: "ti_work_fk", type: "VARCHAR(36)")
+
+            column(name: "ti_medium_fk", type: "VARCHAR(36)")
         }
     }
 
@@ -497,6 +517,17 @@ databaseChangeLog = {
                 constraints(nullable: "false")
             }
         }
+    }
+
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-19a") {
+      grailsChange {
+        change {
+          // grailsChange gives us an sql variable which inherits the current connection, and hence should
+          // get the schema. sql.execute seems to get a bit confused when passed a GString. Work it out before by calling toString
+          def cmd = "CREATE INDEX work_title_trigram_idx ON ${database.defaultSchemaName}.work USING GIN (w_title gin_trgm_ops)".toString()
+          sql.execute(cmd);
+        }
+      }
     }
 
     changeSet(author: "ianibbo (generated)", id: "1527414162857-20") {

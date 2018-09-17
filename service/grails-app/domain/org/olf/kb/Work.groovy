@@ -9,7 +9,6 @@ import grails.gorm.MultiTenant
 public class Work implements MultiTenant<Work> {
 
   String id
-  
   String title
 
   static mapping = {

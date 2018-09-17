@@ -13,6 +13,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   String name
   String localReference
   String vendorReference
+  Date cancellationDeadline
   Date startDate
   Date endDate
   Date renewalDate
@@ -20,6 +21,9 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
 
   // Subscription agreement type - DRAFT, TRIAL, CURRENT
   RefdataValue agreementType
+  RefdataValue renewalPriority
+  RefdataValue agreementStatus
+  RefdataValue isPerpetual
 
   Boolean enabled
 
@@ -34,33 +38,41 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   ]
 
   static mapping = {
-          description column:'sa_description'
-                   id column:'sa_id', generator: 'uuid', length:36
-              version column:'sa_version'
-                 name column:'sa_name'
-       localReference column:'sa_local_reference'
-      vendorReference column:'sa_vendor_reference'
-            startDate column:'sa_start_date'
-              endDate column:'sa_end_date'
-          renewalDate column:'sa_renewal_date'
-       nextReviewDate column:'sa_next_review_date'
-        agreementType column:'sa_agreement_type'
-              enabled column:'sa_enabled'
-               vendor column:'sa_vendor_fk'
+             description column:'sa_description'
+                      id column:'sa_id', generator: 'uuid', length:36
+                 version column:'sa_version'
+                    name column:'sa_name'
+          localReference column:'sa_local_reference'
+         vendorReference column:'sa_vendor_reference'
+    cancellationDeadline column:'sa_cancellation_deadline'
+               startDate column:'sa_start_date'
+                 endDate column:'sa_end_date'
+             renewalDate column:'sa_renewal_date'
+          nextReviewDate column:'sa_next_review_date'
+           agreementType column:'sa_agreement_type'
+         renewalPriority column:'sa_renewal_priority'
+         agreementStatus column:'sa_agreement_status'
+             isPerpetual column:'sa_is_perpetual'
+                 enabled column:'sa_enabled'
+                  vendor column:'sa_vendor_fk'
   }
 
   static constraints = {
-               name(nullable:false, blank:false)
-     localReference(nullable:true, blank:false)
-    vendorReference(nullable:true, blank:false)
-          startDate(nullable:true, blank:false)
-            endDate(nullable:true, blank:false)
-        renewalDate(nullable:true, blank:false)
-     nextReviewDate(nullable:true, blank:false)
-      agreementType(nullable:true, blank:false)
-            enabled(nullable:true, blank:false)
-        description(nullable:true, blank:false)
-             vendor(nullable:true, blank:false)
+                    name(nullable:false, blank:false)
+          localReference(nullable:true, blank:false)
+         vendorReference(nullable:true, blank:false)
+    cancellationDeadline(nullable:true, blank:false)
+               startDate(nullable:true, blank:false)
+                 endDate(nullable:true, blank:false)
+             renewalDate(nullable:true, blank:false)
+          nextReviewDate(nullable:true, blank:false)
+           agreementType(nullable:true, blank:false)
+         renewalPriority(nullable:true, blank:false)
+         agreementStatus(nullable:true, blank:false)
+             isPerpetual(nullable:true, blank:false)
+                 enabled(nullable:true, blank:false)
+             description(nullable:true, blank:false)
+                  vendor(nullable:true, blank:false)
   }
 
 

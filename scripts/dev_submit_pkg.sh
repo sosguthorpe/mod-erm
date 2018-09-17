@@ -44,6 +44,62 @@ AGREEMENT_TRIAL_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 }
 ' | jq -r ".id" | tr -d '\r'`
 
+YNO_YES_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
+{
+  category: "YesNoOther",
+  value: "Yes",
+  label: "Yes"
+}
+' | jq -r ".id" | tr -d '\r'`
+
+YNO_NO_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
+{
+  category: "YesNoOther",
+  value: "No",
+  label: "No"
+}
+' | jq -r ".id" | tr -d '\r'`
+
+YNO_OTHER_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
+{
+  category: "YesNoOther",
+  value: "Other",
+  label: "Other"
+}
+' | jq -r ".id" | tr -d '\r'`
+
+STATUS_CURRENT_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
+{
+  category: "Status",
+  value: "Current",
+  label: "Current"
+}
+' | jq -r ".id" | tr -d '\r'`
+
+STATUS_HISTORIC_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
+{
+  category: "Status",
+  value: "Historic",
+  label: "Historic"
+}
+' | jq -r ".id" | tr -d '\r'`
+
+MUST_RENEW_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
+{
+  category: "RenewalPriority",
+  value: "Must",
+  label: "Must"
+}
+' | jq -r ".id" | tr -d '\r'`
+
+NICE_TO_HAVE_RENEW_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
+{
+  category: "RenewalPriority",
+  value: "NiceToHave",
+  label: "Nice to Have"
+}
+' | jq -r ".id" | tr -d '\r'`
+
 AGREEMENT_DRAFT_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
 {
   category: "AgreementType",
@@ -60,6 +116,9 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
   name: "Trial Agreement LR 001",
   description: "This is a trial agreement",
   agreementType: { id: "'"$AGREEMENT_TRIAL_RDV"'" },
+  agreementStatus: { id: "'"$STATUS_CURRENT_RDV"'" },
+  isPerpetual: { id: "'"$YNO_YES_RDV"'" },
+  renewalPriority: { id: "'"$MUST_RENEW_RDV"'" },
   localReference: "TRIAL_ALR_001",
   vendorReference: "TRIAL_AVR_001",
   startDate: "2018-01-01",
@@ -82,6 +141,9 @@ DRAFT_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
   name: "Draft Agreement LR 002", 
   description: "This is a draft agreement",
   agreementType: { id: "'"$AGREEMENT_DRAFT_RDV"'" },
+  agreementStatus: { id: "'"$STATUS_CURRENT_RDV"'" },
+  isPerpetual: { id: "'"$YNO_NO_RDV"'" },
+  renewalPriority: { id: "'"$NICE_TO_HAVE_RENEW_RDV"'" },
   localReference: "AGG_LR_002",
   vendorReference: "AGG_VR_002",
   startDate: "2018-01-01"

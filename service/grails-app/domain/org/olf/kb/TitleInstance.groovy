@@ -26,18 +26,29 @@ where exists ( select pci.id
   // Title IN ORIGINAL LANGUAGE OF PUBLICATION
   String title
 
+  // Journal/Book/...
   RefdataValue resourceType
+
+  // Print/Electronic
+  RefdataValue medium
+
+  // For grouping sibling title instances together - EG Print and Electronic editions of the same thing
+  Work work
 
   static mapping = {
                    id column:'ti_id', generator: 'uuid', length:36
               version column:'ti_version'
                 title column:'ti_title'
+                 work column:'ti_work_fk'
+               medium column:'ti_medium_fk'
          resourceType column:'ti_resource_type_fk'
   }
 
   static constraints = {
            title(nullable:false, blank:false)
     resourceType(nullable:true, blank:false)
+          medium(nullable:true, blank:false)
+            work(nullable:true, blank:false)
   }
 
   static hasMany = [
