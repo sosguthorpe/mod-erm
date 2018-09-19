@@ -11,6 +11,7 @@ public class SAEventHistory implements MultiTenant<SAEventHistory> {
 
   String id
   RefdataValue eventType
+  Date eventDate
   String summary
   String eventData
 
@@ -32,6 +33,7 @@ public class SAEventHistory implements MultiTenant<SAEventHistory> {
                eventType column:'eh_event_type'
                  summary column:'eh_summary'
                eventData column:'eh_event_data'
+               eventDate column:'eh_event_date'
   }
 
   static constraints = {
@@ -40,6 +42,7 @@ public class SAEventHistory implements MultiTenant<SAEventHistory> {
       summary(nullable:false, blank:false)
     eventType(nullable:false, blank:false)
     eventData(nullable:true, blank:false)
+    eventDate(nullable:false, blank:false)
   }
 
 

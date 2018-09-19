@@ -564,13 +564,23 @@ databaseChangeLog = {
                 constraints(nullable: "false")
             }
 
-            column(name: "eh_owner", type: "VARCHAR(36)")
+            column(name: "eh_owner", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
 
-            column(name: "eh_event_type", type: "VARCHAR(36)")
+            column(name: "eh_event_type", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
 
-            column(name: "eh_summary", type: "VARCHAR(255)")
+            column(name: "eh_summary", type: "VARCHAR(255)") {
+                constraints(nullable: "false")
+            }
 
             column(name: "eh_event_data", type: "TEXT")
+
+            column(name: "eh_event_date", type: "TIMESTAMP WITHOUT TIME ZONE") {
+                constraints(nullable: "false")
+            }
         }
     }
 
