@@ -15,7 +15,7 @@ Vagrant.configure(2) do |config|
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "folio/testing-backend"
-  config.vm.box_version = "5.0.0-20180813.956"
+  config.vm.box_version = "5.0.0-20180919.1080"
   # config.vm.box_version = "5.0.0-20180813.956"
   # config.vm.box_version = "5.0.0-20171215.10002"
   # config.vm.box_version = "5.0.0-20180726.898"
