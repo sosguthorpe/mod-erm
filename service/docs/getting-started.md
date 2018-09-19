@@ -19,7 +19,7 @@ Each uses the same credentials by default to connect:
 * un: folio
 * pw: folio
 
-These can be set to whatever you like during the creation of the databses but be sure to reflect your changes in the the application config file at `grails-app/conf/application.yml` Example config that can be executed by postgres user:
+These can be set to whatever you like during the creation of the databases but be sure to reflect your changes in the the application config file at `grails-app/conf/application.yml` Example config that can be executed by postgres user:
 
     CREATE USER folio WITH PASSWORD 'folio' SUPERUSER CREATEDB INHERIT LOGIN;
 
@@ -62,7 +62,7 @@ The default for this file is to use virtualbox as the provider, but vmware shoul
 vagrant up
 ```
 
-## Running
+# Running the Application
 From the root of your grails project (olf-erm/service) you should be able to start the application by typing:
 ```grails run-app```
 
@@ -105,7 +105,7 @@ okapi:
     host: localhost
     port: 9130
 ```
-These are currently only set for the 'development' and 'vagrant-db' profiles. SO if the app is started in production mode, the module will not attempt to register itself.
+These are currently only set for the 'development' and 'vagrant-db' profiles. So if the app is started in production mode, the module will not attempt to register itself.
 
 _Also_: It is possible to run the application directly as a spring boot app in an IDE. Doing so however, will bypass gradle and therfore the necessary descriptors will not
 be present. This will cause automatic registration to skip also and you will see log output like:
@@ -115,6 +115,38 @@ INFO --- [           main] com.k_int.okapi.OkapiClient              : Skipping d
 ```
 
 If you do encounter these messages you can manually register by running the script `scripts/register_and_enable.sh`
+
+## Running as as a jar
+It is possible to build the module and run it as a stand alone jar.
+
+Running the command `grails war` will create a runnable jar file. However, by default this will use the production profile which does not have self registration enabled.
+You can run the jar using the script `scripts/run_self_reg.sh`.
+
+Alternatively, you can run the production jar with the following command:
+
+```java -jar build/libs/olf-erm-1.0.jar \
+--grails.server.host=10.0.2.2 \
+--okapi.service.host=localhost \
+--okapi.service.port=9130 \
+--db.username=folio_admin \
+--db.password=folio_admin \
+--db.database=okapi_modules \
+--db.port=54321```
+
+The properties that start with "db." align with the folio conventions of allowing for the environment variable "DB_USERNAME", "BD_PASSWORD" etc.
+Setting these environment variables should also work.
+
+The above assumes you want to connect to the postgres instance running in the vagrant image in this repo.
+
+### Building the jar with a different profile ###
+You can build the jar using a different profile, like the one detailed above that automatically contains the database
+settings for the supplied vagrant instance of postgres, you can do the following:
+```grails -Dgrails.env=vagrant-db war```
+
+This will default to the settings for the "vagrant-db" profile and thus make the run command:
+```java -jar build/libs/olf-erm-1.0.jar```
+
+Notice the lack of variables needed. This is because they are automatically set in the file `service/grails-app/conf/application-vagrant-db.yml
 
 # Troubleshooting
 
