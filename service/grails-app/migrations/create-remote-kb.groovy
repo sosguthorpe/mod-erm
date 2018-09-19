@@ -442,6 +442,8 @@ databaseChangeLog = {
 
             column(name: "sa_is_perpetual", type: "VARCHAR(36)")
 
+            column(name: "sa_content_review_needed", type: "VARCHAR(36)")
+
             column(name: "sa_enabled", type: "BOOLEAN")
 
             column(name: "sa_end_date", type: "TIMESTAMP WITHOUT TIME ZONE")
@@ -529,6 +531,63 @@ databaseChangeLog = {
         }
       }
     }
+
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-19b") {
+        createTable(tableName: "node") {
+            column(name: "nd_id", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "nd_version", type: "BIGINT") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "nd_label", type: "VARCHAR(255)")
+
+            column(name: "nd_node_type", type: "VARCHAR(255)")
+
+            column(name: "nd_parent", type: "VARCHAR(36)")
+
+            column(name: "nd_reference_class", type: "VARCHAR(255)")
+
+            column(name: "nd_reference_id", type: "VARCHAR(36)")
+        }
+    }
+
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-19c") {
+        createTable(tableName: "sa_event_history") {
+            column(name: "eh_id", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "eh_version", type: "BIGINT") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "eh_owner", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "eh_event_type", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "eh_summary", type: "VARCHAR(255)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "eh_event_data", type: "TEXT")
+
+            column(name: "eh_event_outcome", type: "VARCHAR(36)")
+
+            column(name: "eh_notes", type: "TEXT")
+
+            column(name: "eh_event_date", type: "TIMESTAMP WITHOUT TIME ZONE") {
+                constraints(nullable: "false")
+            }
+        }
+    }
+
 
     changeSet(author: "ianibbo (generated)", id: "1527414162857-20") {
         addPrimaryKey(columnNames: "ent_id", constraintName: "entitlementPK", tableName: "entitlement")
