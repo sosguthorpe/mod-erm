@@ -24,6 +24,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   RefdataValue renewalPriority
   RefdataValue agreementStatus
   RefdataValue isPerpetual
+  RefdataValue contentReviewNeeded
 
   Boolean enabled
 
@@ -53,6 +54,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
          renewalPriority column:'sa_renewal_priority'
          agreementStatus column:'sa_agreement_status'
              isPerpetual column:'sa_is_perpetual'
+     contentReviewNeeded column:'sa_content_review_needed'
                  enabled column:'sa_enabled'
                   vendor column:'sa_vendor_fk'
   }
@@ -70,6 +72,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
          renewalPriority(nullable:true, blank:false)
          agreementStatus(nullable:true, blank:false)
              isPerpetual(nullable:true, blank:false)
+     contentReviewNeeded(nullable:true, blank:false)
                  enabled(nullable:true, blank:false)
              description(nullable:true, blank:false)
                   vendor(nullable:true, blank:false)
