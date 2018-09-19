@@ -19,7 +19,7 @@ public class Node implements MultiTenant<Node> {
                    id column:'nd_id', generator: 'uuid', length:36
               version column:'nd_version'
                 label column:'nd_label'
-             nodeType column:'nd_parent'
+             nodeType column:'nd_node_type'
                parent column:'nd_parent'
        referenceClass column:'nd_reference_class'
           referenceId column:'nd_reference_id'

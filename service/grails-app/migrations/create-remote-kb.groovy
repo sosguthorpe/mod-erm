@@ -442,6 +442,8 @@ databaseChangeLog = {
 
             column(name: "sa_is_perpetual", type: "VARCHAR(36)")
 
+            column(name: "sa_content_review_needed", type: "VARCHAR(36)")
+
             column(name: "sa_enabled", type: "BOOLEAN")
 
             column(name: "sa_end_date", type: "TIMESTAMP WITHOUT TIME ZONE")
@@ -529,6 +531,29 @@ databaseChangeLog = {
         }
       }
     }
+
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-19b") {
+        createTable(tableName: "node") {
+            column(name: "nd_id", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "nd_version", type: "BIGINT") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "nd_label", type: "VARCHAR(255)")
+
+            column(name: "nd_node_type", type: "VARCHAR(255)")
+
+            column(name: "nd_parent", type: "VARCHAR(36)")
+
+            column(name: "nd_reference_class", type: "VARCHAR(255)")
+
+            column(name: "nd_reference_id", type: "VARCHAR(36)")
+        }
+    }
+
 
     changeSet(author: "ianibbo (generated)", id: "1527414162857-20") {
         addPrimaryKey(columnNames: "ent_id", constraintName: "entitlementPK", tableName: "entitlement")
