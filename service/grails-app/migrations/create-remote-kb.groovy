@@ -578,6 +578,10 @@ databaseChangeLog = {
 
             column(name: "eh_event_data", type: "TEXT")
 
+            column(name: "eh_event_outcome", type: "VARCHAR(36)")
+
+            column(name: "eh_notes", type: "TEXT")
+
             column(name: "eh_event_date", type: "TIMESTAMP WITHOUT TIME ZONE") {
                 constraints(nullable: "false")
             }
