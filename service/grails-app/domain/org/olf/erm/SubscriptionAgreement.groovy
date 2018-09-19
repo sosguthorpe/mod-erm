@@ -31,11 +31,13 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   Org vendor
 
   static hasMany = [
-    items:Entitlement
+    items:Entitlement,
+    historyLines: SAEventHistory
   ]
 
   static mappedBy = [
-    items:'owner'
+    items:'owner',
+    historyLines:'owner'
   ]
 
   static mapping = {

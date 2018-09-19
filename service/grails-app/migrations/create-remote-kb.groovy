@@ -554,6 +554,26 @@ databaseChangeLog = {
         }
     }
 
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-19c") {
+        createTable(tableName: "sa_event_history") {
+            column(name: "eh_id", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "eh_version", type: "BIGINT") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "eh_owner", type: "VARCHAR(36)")
+
+            column(name: "eh_event_type", type: "VARCHAR(36)")
+
+            column(name: "eh_summary", type: "VARCHAR(255)")
+
+            column(name: "eh_event_data", type: "TEXT")
+        }
+    }
+
 
     changeSet(author: "ianibbo (generated)", id: "1527414162857-20") {
         addPrimaryKey(columnNames: "ent_id", constraintName: "entitlementPK", tableName: "entitlement")
