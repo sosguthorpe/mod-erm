@@ -84,7 +84,9 @@ If you do see the above then you can safely skip the following section on regist
 ## Registering our module with OKAPI in the vagrant machine
 Part of the build process of the module produces some OKAPI descriptors. The templates can be found in `service/src/okapi`. The placeholders are substituted for values that are generated as part of the build process and then the descriptors
 written to: `build/resources/okapi` with values substituted and the template suffix removed. To compile the app without running you can type:
-```grails compile```
+```
+grails compile
+```
 
 You can then use these json descriptors to register and deploy your module when it is running. See the [deployment and discovery](https://github.com/folio-org/okapi/blob/master/doc/guide.md#deployment-and-discovery) section of the OKAPI docs.
 This allows you to run your module outside of the other core modules (for instance within your IDE) and debug in the normal way while developing.
@@ -93,7 +95,9 @@ This allows you to run your module outside of the other core modules (for instan
 If you use the vagrant file from this repo, you will see that it forwards a local port of 54321 to the version of postgres running inside the vagrant machine. This is not
 the default postgres port so as to avoid clashes with people who run postgres locally too. If you don't have postgres running locally, or wish to cause the app to connect to the
 version inside the vagrant machine you can start the application using the alternate 'vagrant-db' profile:
-```grails -Dgrails.env=vagrant-db run-app```
+```
+grails -Dgrails.env=vagrant-db run-app
+```
 
 This profile also attempts to self register the app.
 
@@ -124,16 +128,16 @@ You can run the jar using the script `scripts/run_self_reg.sh`.
 
 Alternatively, you can run the production jar with the following command:
 
-```java -jar build/libs/olf-erm-1.0.jar \
---grails.server.host=10.0.2.2 \
---okapi.service.host=localhost \
---okapi.service.port=9130 \
---db.username=folio_admin \
---db.password=folio_admin \
---db.database=okapi_modules \
---db.port=54321```
+    java -jar build/libs/olf-erm-1.0.jar \
+     --grails.server.host=10.0.2.2 \
+     --okapi.service.host=localhost \
+     --okapi.service.port=9130 \
+     --db.username=folio_admin \
+     --db.password=folio_admin \
+     --db.database=okapi_modules \
+     --db.port=54321
 
-The properties that start with "db." align with the folio conventions of allowing for the environment variable "DB_USERNAME", "BD_PASSWORD" etc.
+The properties that start with "db." align with the folio conventions of allowing for the environment variable `DB_USERNAME`, `BD_PASSWORD` etc.
 Setting these environment variables should also work.
 
 The above assumes you want to connect to the postgres instance running in the vagrant image in this repo.
@@ -141,14 +145,24 @@ The above assumes you want to connect to the postgres instance running in the va
 ### Building the jar with a different profile ###
 You can build the jar using a different profile, like the one detailed above that automatically contains the database
 settings for the supplied vagrant instance of postgres, you can do the following:
-```grails -Dgrails.env=vagrant-db war```
+
+
+    grails -Dgrails.env=vagrant-db war
+
 
 This will default to the settings for the "vagrant-db" profile and thus make the run command:
-```java -jar build/libs/olf-erm-1.0.jar```
+
+    java -jar build/libs/olf-erm-1.0.jar
+
 
 Notice the lack of variables needed. This is because they are automatically set in the file `service/grails-app/conf/application-vagrant-db.yml
 
 # Troubleshooting
+
+## Connection issues when using the vagrant database
+When running any `grails` cli command it will attempt to run it in the development porfile by default, which assumes postgress to be running on port 5432.
+If you are using the database within the vagrant image, you'll need to supply the profile when running the `grails` command. So instead of just `grails`
+it will become `grails -Dgrails.env=vagrant-db`
 
 ## Integration Tests
 
@@ -172,7 +186,12 @@ After adding or editing domain classes, you will need to generate a liquibase co
 
     grails dbm-gorm-diff description-of-change.groovy --add
     grails dbm-generate-gorm-changelog my-new-changelog.groovy
+    
+_NOTE:_ If you are using the database from the vagrant image, which is on 54321 to avoid clashes with any local postgres you might have,
+the above won't be able to find your database. Try:
 
+    grails -Dgrails.env=vagrant-db dbm-gorm-diff description-of-change.groovy --add
+    grails -Dgrails.env=vagrant-db dbm-generate-gorm-changelog my-new-changelog.groovy
 
 ## Bootstraping some data
 
