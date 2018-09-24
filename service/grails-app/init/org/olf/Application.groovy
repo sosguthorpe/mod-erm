@@ -17,6 +17,7 @@ class Application extends GrailsAutoConfiguration {
     GrailsApp.run(Application, args)
   }
   
+  @Override
   void doWithDynamicMethods() {
     // Bind extra methods to the class.
     log.debug("Extending Domain classes.")
