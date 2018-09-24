@@ -33,7 +33,7 @@ class GrailsDomainRefdataHelpers {
    * @return The derived or specified category name
    */
   @Memoized(maxCacheSize=50)
-  private static String getCategoryString(final Class<?> c, final String propertyName) {
+  public static String getCategoryString(final Class<?> c, final String propertyName) {
     String typeString = "${c.simpleName}.${GrailsNameUtils.getClassName(propertyName)}"
     try {
       // Check for annotated values first.
