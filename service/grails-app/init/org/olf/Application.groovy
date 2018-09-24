@@ -13,6 +13,7 @@ import groovy.util.logging.Slf4j
 
 @Slf4j
 class Application extends GrailsAutoConfiguration {
+  
   static void main(String[] args) {
     GrailsApp.run(Application, args)
   }
