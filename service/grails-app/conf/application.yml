@@ -115,20 +115,25 @@ dataSource:
   pooled: true
   jmxExport: false
   dbCreate: none
-  username: folio
-  password: folio
+  username: "${db.username:folio}"
+  password: "${db.password:folio}"
   driverClassName: org.postgresql.Driver
   dialect: org.olf.general.KIPostgres94Dialect
-  url: jdbc:postgresql://localhost:5432/olfdev
+  url: "jdbc:postgresql://${db.host:localhost}:${db.port:5432}/${db.database:olfdev}"
   schemaHandler: com.k_int.okapi.OkapiSchemaHandler
     
+okapi:
+  schema:
+    appName: 'olf_erm'
+  
+  
 environments:
   test:
     dataSource:
-      url: jdbc:postgresql://localhost:5432/olftest
+      url: "jdbc:postgresql://${db.host:localhost}:${db.port:5432}/${db.database:olftest}"
   production:
     dataSource:
-      url: jdbc:postgresql://localhost:5432/olf
+      url: "jdbc:postgresql://${db.host:localhost}:${db.port:5432}/${db.database:olf}"
       properties:
         initialSize: 5
         maxActive: 50
@@ -148,12 +153,13 @@ environments:
         abandonWhenPercentageFull: 50
         jdbcInterceptors: ConnectionState
         defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED
+        
+  development:
+    # This is only used when the there is no request from okapi coming to the module or a none-okapi request.
+    # OKAPI supplies information about how to reach it to the modules. These options are used for self reg and other calls
+    # when the request did not come through OKAPI.
+    okapi: 
+      service:
+        host: localhost
+        port: 9130
 ---
-okapi:
-  schema:
-    appName: 'olf_erm'
-    
-  # This is only used for self registration. Uncomment for this to work. 
-  # service:
-  #   host: localhost
-  #   port: 9130
