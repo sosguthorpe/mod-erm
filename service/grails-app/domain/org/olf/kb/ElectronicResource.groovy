@@ -16,7 +16,7 @@ public class ElectronicResource implements MultiTenant<ElectronicResource> {
   String type
   TitleInstance ti
   String name
-  Platform plat
+  Pkg pkg
 
   static mapping = {
       table 'all_electronic_resources'
@@ -25,7 +25,7 @@ public class ElectronicResource implements MultiTenant<ElectronicResource> {
        type column:'type'
          ti column:'ti_id'
        name column:'name'
-       plat column:'plat_fk'
+       pkg column:'pkg_id'
   }
 
 }
