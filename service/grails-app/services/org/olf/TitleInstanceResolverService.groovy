@@ -31,6 +31,8 @@ public class TitleInstanceResolverService {
     'eissn',
     'doi'
   ];
+  
+  private static final def APPROVED = 'Approved'
 
   /**
    * Given a -valid- title citation with the minimum properties below, attempt to resolve the citation
@@ -215,7 +217,7 @@ public class TitleInstanceResolverService {
           title: result, 
           identifier: id_lookup)
         
-        io_record.setStatusFromString('Approved')
+        io_record.setStatusFromString(APPROVED)
         io_record.save(flush:true, failOnError:true)
       }
     }
@@ -334,7 +336,7 @@ public class TitleInstanceResolverService {
         id_matches.each { matched_id ->
           // For each occurrence where the STATUS is APPROVED
           matched_id.occurrences.each { io ->
-            if ( io.status?.value == 'APPROVED' ) {
+            if ( io.status?.value == APPROVED ) {
               if ( result.contains(io.title) ) {
                 // We have already seen this title, so don't add it again
               }
