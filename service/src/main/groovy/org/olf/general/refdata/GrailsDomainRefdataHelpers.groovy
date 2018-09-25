@@ -152,6 +152,15 @@ class GrailsDomainRefdataHelpers {
           def val = typeClass.find('FROM ' + typeClass.simpleName + ' as rdv WHERE rdv.value=:val AND rdv.owner.desc=:desc', [val: "${value}", desc:"${typeString}"],  ["readOnly": true])
           val
         }
+        
+        // Add instance method method for setting refdata value from string.
+        targetClass.metaClass."set${upperName}FromString" << { String value ->
+
+          // Set the refdata value by using the lookupOrCreate method
+          def rdv = typeClass.lookupOrCreate("${typeString}", value, value, typeClass)
+
+          delegate."set${upperName}"( rdv )
+        }
 
         log.debug ("Added methods ['all${upperName}Values','lookup${upperName}ByValue'] to ${targetClass}")
       }
@@ -183,6 +192,15 @@ class GrailsDomainRefdataHelpers {
             def val = genericClass.find('FROM ' + genericClass.simpleName + ' as rdv WHERE rdv.value=:val AND rdv.owner.desc=:desc', [val: "${value}", desc: "${typeString}"],  ["readOnly": true])
             
             val
+          }
+          
+          // Add instance method method for adding refdata value from string.
+          targetClass.metaClass."addTo${upperName}FromString" << { String value ->
+
+            // Set the refdata value by using the lookupOrCreate method
+            def rdv = genericClass.lookupOrCreate("${typeString}", value, value, genericClass)
+
+            delegate."addTo${upperName}" ( rdv )
           }
 
           log.debug ("Added methods ['all${upperName}Values','addTo${upperName}FromString','lookup${upperName}ByValue'] to ${targetClass}")
