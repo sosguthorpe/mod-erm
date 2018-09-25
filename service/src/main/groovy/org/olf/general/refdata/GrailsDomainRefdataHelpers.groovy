@@ -162,39 +162,16 @@ class GrailsDomainRefdataHelpers {
           typeClass.lookupOrCreate(typeString, value, value, typeClass)
         }
 
-        log.debug ("Added methods ['all${upperName}Values','lookup${upperName}(value)', 'lookupOrCreateAgreementType(value)', ] to ${targetClass}")
+        log.debug ("Added static methods ['all${upperName}Values', 'lookup${upperName}(value)', 'set${upperName}FromString', 'lookupOrCreateAgreementType(value)', ] to ${targetClass}")
         
         // Add instance method method for setting refdata value from string.
-        final String setterName = "set${upperName}"
-        final MetaMethod originalSetter = targetClass.metaClass.pickMethod(setterName, [typeClass] as Class[])
-        
-        log.debug "Original setter ${originalSetter}"
-        targetClass.metaClass."set${upperName}" = { final def value ->
+        targetClass.metaClass."set${upperName}FromString" = { final String value ->
           
-          log.info "${targetClass.simpleName}.set${upperName} ( ${value} )"
-          
-          def rdv = value
-          switch (rdv) {
-            case {it instanceof String} :
-            
-            
-              log.info "  value is String" 
-              // Set the refdata value by using the lookupOrCreate method
-               rdv = typeClass.lookupOrCreate("${typeString}", value, value, typeClass)
-               break
-               
-            case {it instanceof Map} :
-              // Set the refdata value by using the lookupOrCreate method
-              rdv = typeClass.lookupOrCreate("${typeString}", it.value, it.label ?: it.value, typeClass)
-              log.info "  value is Map"
-              break
-          }
-          
-          log.info "  invoking original setter on ${delegate} with [${rdv}]" 
-          originalSetter.invoke(delegate, [rdv] as Object[])
+          log.info "${targetClass.simpleName}.set${upperName}FromString ( '${value}' )"
+          delegate."set${upperName}" ( targetClass."lookupOrCreate${upperName}" (value) )
         }
 
-        log.debug ("Extended 'set${upperName}' on ${targetClass}")
+        log.debug ("Added instance method 'set${upperName}FromString' to ${targetClass}")
       }
 
       // Extend the class' collection properties of this type.
