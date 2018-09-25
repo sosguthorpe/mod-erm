@@ -91,7 +91,7 @@ class ErmAgreementSpec extends GebSpec {
 
         // This is a bit of a shortcut - the web interface will populate a control for this, but here we just want the value.
         // So we access the DB with the tenant Id and get back the ID of the status we need.
-        final Serializable agreement_type_id = null
+        Serializable agreement_type_id = null
         Tenants.withId(OkapiTenantResolver.getTenantSchemaName(tenant.toLowerCase())) {
           
           // All refdata values have a few helper methods on the class.
