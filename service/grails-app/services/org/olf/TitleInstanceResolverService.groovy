@@ -124,7 +124,7 @@ public class TitleInstanceResolverService {
     // a title if we know that it is a sibling of a print identifier.
     int num_class_one_identifiers_for_sibling = countClassOneIDs(citation.siblingInstanceIdentifiers)
 
-    Map issn_id = citation.siblingInstanceIdentifiers.find { it.namespace == 'issn' } ;
+    Map issn_id = citation.siblingInstanceIdentifiers.find { it.namespace == 'issn' }
     String issn = issn_id?.value;
 
     if ( issn ) {
@@ -139,7 +139,7 @@ public class TitleInstanceResolverService {
           ] ]
         ]
 
-      candidate_list = classOneMatch(sibling_citation.instanceIdentifiers);
+      candidate_list = classOneMatch(sibling_citation.instanceIdentifiers)
       switch ( candidate_list.size() ) {
         case 0:
           createNewTitleInstance(sibling_citation, work);
@@ -158,7 +158,7 @@ public class TitleInstanceResolverService {
           break;
         default:
           // Problem
-          log.warn("Detected multiple records for sibling instance match");
+          log.warn("Detected multiple records for sibling instance match")
           break;
       }
     }
@@ -175,45 +175,49 @@ public class TitleInstanceResolverService {
     // boolean title_is_valid =  ( ( citation.title?.length() > 0 ) && ( citation.instanceIdentifiers.size() > 0 ) )
     // 
     boolean title_is_valid = ( ( citation.title != null ) &&
-                               ( citation.title.length() > 0 ) );
+                               ( citation.title.length() > 0 ) )
 
     // Validate
     if ( title_is_valid == true ) {
 
       if ( work == null ) {
-        work = new Work(title:citation.title).save(flush:true, failOnError:true);
+        work = new Work(title:citation.title).save(flush:true, failOnError:true)
       }
 
       // Print or Electronic
-      def medium = null;
-      if ( ( citation.instanceMedium ) && ( citation.instanceMedium.trim().length() > 0 ) ) {
-        medium = RefdataCategory.lookupOrCreate('InstanceMedium', citation.instanceMedium, citation.instanceMedium);
-      }
+      def medium = citation.instanceMedium?.trim()
 
       // Journal or Book etc
-      def resource_type = null;
-      if ( ( citation.instanceMedia ) && ( citation.instanceMedia.trim().length() > 0 ) )  {
-        resource_type = RefdataCategory.lookupOrCreate('ResourceType', citation.instanceMedia, citation.instanceMedia);
-      }
+      def resource_type = citation.instanceMedia?.trim()
 
       result = new TitleInstance(
          title: citation.title,
-         medium: medium,
-         resourceType: resource_type,
-         work: work
+         work: citation.instanceMedium
       )
+      
+      if ((medium?.length() ?: 0) > 0) {
+        result.setMediumFromString(medium)
+      }
+      
+      if ((resource_type?.length() ?: 0) > 0) {
+        result.setResourceTypeFromString(resource_type)
+      }
 
-      result.save(flush:true, failOnError:true);
+      result.save(flush:true, failOnError:true)
 
       // Iterate over all idenifiers in the citation and add them to the title record. We manually create the identifier occurrence 
       // records rather than using the groovy collection, but it makes little difference.
       citation.instanceIdentifiers.each { id ->
-        def id_lookup = lookupOrCreateIdentifier(id.value, id.namespace);
-        RefdataValue approved_io_status = RefdataCategory.lookupOrCreate('IOStatus','APPROVED')
+        
+        def id_lookup = lookupOrCreateIdentifier(id.value, id.namespace)
+        
         def io_record = new IdentifierOccurrence(
-                                                 title: result, 
-                                                 identifier: id_lookup,
-                                                 status:approved_io_status).save(flush:true, failOnError:true);
+          title: result, 
+          identifier: id_lookup,
+          status:approved_io_status)
+        
+        io_record.setStatusFromString('APPROVED')
+        io_record.save(flush:true, failOnError:true)
       }
     }
     else { 
