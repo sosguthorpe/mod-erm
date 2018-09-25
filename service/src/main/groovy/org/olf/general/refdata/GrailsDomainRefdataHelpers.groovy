@@ -96,7 +96,7 @@ class GrailsDomainRefdataHelpers {
               log.debug "  Declared defaults:"
               defaults.value().each {
                 log.debug "    ${it}"
-                RefdataCategory.lookupOrCreateValue(
+                RefdataValue.lookupOrCreate(
                   typeString,
                   it,
                   null,
