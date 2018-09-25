@@ -192,15 +192,15 @@ public class TitleInstanceResolverService {
 
       result = new TitleInstance(
          title: citation.title,
-         work: citation.instanceMedium
+         work: work
       )
       
       if ((medium?.length() ?: 0) > 0) {
-        result.setMediumFromString(medium)
+        result.mediumFromString = medium
       }
       
       if ((resource_type?.length() ?: 0) > 0) {
-        result.setResourceTypeFromString(resource_type)
+        result.resourceTypeFromString = resource_type
       }
 
       result.save(flush:true, failOnError:true)
@@ -213,10 +213,9 @@ public class TitleInstanceResolverService {
         
         def io_record = new IdentifierOccurrence(
           title: result, 
-          identifier: id_lookup,
-          status:approved_io_status)
+          identifier: id_lookup)
         
-        io_record.setStatusFromString('APPROVED')
+        io_record.setStatusFromString('Approved')
         io_record.save(flush:true, failOnError:true)
       }
     }
