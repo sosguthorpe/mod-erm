@@ -8,7 +8,7 @@ import org.olf.general.RefdataValue
 /**
  * mod-erm representation of a BIBFRAME instance
  */
-public class TitleInstance implements MultiTenant<TitleInstance> {
+public class TitleInstance extends ElectronicResource implements MultiTenant<TitleInstance> {
 
   private static final String ENTITLEMENTS_QUERY = '''from Entitlement as ent 
 where exists ( select pci.id 
@@ -22,7 +22,6 @@ where exists ( select pci.id
    or exists ( select single_title from Entitlement as single_title where single_title=ent and single_title.pti.titleInstance = :title )
 '''
 
-  String id
   // Title IN ORIGINAL LANGUAGE OF PUBLICATION
   String title
 

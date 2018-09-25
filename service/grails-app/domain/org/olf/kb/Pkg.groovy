@@ -8,10 +8,7 @@ import org.olf.general.Org
 /**
  * mod-erm representation of a package
  */
-public class Pkg implements MultiTenant<Pkg> {
-
-  String id // Our local ID - must be unique over all KBs
-  String name
+public class Pkg extends ElectronicResource implements MultiTenant<Pkg> {
   String source
   String reference  // Reference contains the KBs authoritiative ID for this package - Reference should be unique within KB
   RemoteKB remoteKb
