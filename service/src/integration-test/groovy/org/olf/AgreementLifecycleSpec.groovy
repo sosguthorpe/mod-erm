@@ -42,10 +42,11 @@ class AgreementLifecycleSpec extends GebSpec {
   def packageIngestService
 
   @Shared
-  private Map test_info = [:]
+  private int totalContentItems = 0
 
   private static final String TENANT='TestTenantH'
   private static final String PACKAGE_QUERY = 'select p.id from Pkg as p where p.name = :name'
+  private static final String PACKAGE_CONTENT_COUNT_QUERY = 'select count(*) from PackageContentItem as pci where pci.pkg.id = :pkgId'
 
   // This is a bit of a shortcut - In this test we have loaded packages where titles only appear in one place. That
   // means we can be very general when looking up items. If we add more test data, then we would need to add more
@@ -174,7 +175,7 @@ and pti.platform.name = :platform
         Tenants.withId(OkapiTenantResolver.getTenantSchemaName(tenant.toLowerCase())) {
           
           // All refdata values have a few helper methods on the class.
-          agreement_type_id = SubscriptionAgreement.lookupOrCreateAgreementType(type).id;
+          agreement_type_id = SubscriptionAgreement.lookupOrCreateAgreementType(type).id
         }
 
         
@@ -200,17 +201,18 @@ and pti.platform.name = :platform
       // Use a GEB Data Table to load each record
       where:
         tenant | agreement_name | type
-        TENANT | 'My first agreement' | 'DRAFT'
+        TENANT | 'My first agreement' | 'Draft'
 
   }
 
   void "add a package to the agreement"(tenant,agreement_name) {
     when:"We add a package to our new agreement"
       // Find the ID of our new agreement.
-      def agreement_id = null;
-      def pkg_id = null;
-      def single_package_item_id = null;
-      def off_package_title_id = null;
+      def agreement_id = null
+      def pkg_id = null
+      def single_package_item_id = null
+      def off_package_title_id = null
+      def pkg_content_count
 
       // This is cheating a little - normally the UI would run queries to populate controls that let the user select this info,
       // here we're just grabbing the relevant IDs from the database.
@@ -219,18 +221,25 @@ and pti.platform.name = :platform
         agreement_id = SubscriptionAgreement.executeQuery('select sa.id from SubscriptionAgreement as sa where sa.name = :name',[name:agreement_name]).get(0)
 
         pkg_id = Pkg.executeQuery(PACKAGE_QUERY,[name:'American Psychological Association:Master']).get(0)
+        
+        pkg_content_count = (PackageContentItem.executeQuery(PACKAGE_CONTENT_COUNT_QUERY, [pkgId: pkg_id])?.getAt(0) ?: 0)
 
-        single_package_item_id = PackageContentItem.executeQuery(PACKAGE_CONTENT_ITEM_QUERY,[title:'Anti Inflammatory & Anti allergy Agents in Medicinal Chemistry']).get(0);
+        single_package_item_id = PackageContentItem.executeQuery(PACKAGE_CONTENT_ITEM_QUERY,[title:'Anti Inflammatory & Anti allergy Agents in Medicinal Chemistry']).get(0)
 
-        logger.debug("Find platform title instance records for current medicinal chemistry on platform bentham science");
+        logger.debug("Find platform title instance records for current medicinal chemistry on platform bentham science")
 
         off_package_title_id = PlatformTitleInstance.executeQuery(OFF_PACKAGE_TITLE_QUERY,
           [title:'Current Medicinal Chemistry - Cardiovascular & Hematological Agents',
-          platform:'Bentham Science']).get(0);
+          platform:'Bentham Science']).get(0)
       }
+      
+      
+      // Increment the total content counter for comparison later.
+      // Total for the package plus the 2 singles
+      totalContentItems += (pkg_content_count + 2)
 
-      logger.debug("Agreement ID is ${agreement_id} package to add is ${pkg_id}");
-      agreement_id != null;
+      logger.debug("Agreement ID is ${agreement_id} package to add is ${pkg_id} which contains ${pkg_content_count} titles.")
+      agreement_id != null
 
     then: "The package is Added to the agreement"
 
@@ -252,7 +261,7 @@ and pti.platform.name = :platform
           accept 'application/json'
           json content_to_add
       }
-
+      
       resp.status == OK.value()
 
     where:
@@ -271,7 +280,7 @@ and pti.platform.name = :platform
       then: "The system responds with a list of content";
         resp.status == OK.value()
         // content responds with a JSON object containing a count and a list called subscribedTitles
-        resp.json.total == 123
+        resp.json.total == totalContentItems
   }
 
   void "Delete the tenants"(tenant_id, note) {
