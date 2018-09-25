@@ -32,7 +32,7 @@ class GrailsDomainRefdataHelpers {
    * @param propertyName - The name of the property to examine.
    * @return The derived or specified category name
    */
-  @Memoized(maxCacheSize=50)
+//  @Memoized(maxCacheSize=50)
   public static String getCategoryString(final Class<?> c, final String propertyName) {
     String typeString = "${c.simpleName}.${GrailsNameUtils.getClassName(propertyName)}"
     try {
@@ -45,6 +45,7 @@ class GrailsDomainRefdataHelpers {
       // We can safely ignore this exception here. GORM does not force you to
       // explicitly declare a field in all cases.
     }
+    
     typeString
   }
   
@@ -83,7 +84,7 @@ class GrailsDomainRefdataHelpers {
           log.debug "  Found property ${fn} that has compatible type"
           
           // Create our type string once per property.
-          final String typeString = getCategoryString (targetClass, fn)
+          final String typeString = targetClass."${fn}Category"
           
           log.debug "  Category: ${typeString}"
           
@@ -135,6 +136,9 @@ class GrailsDomainRefdataHelpers {
         // The ClassName representation of the property name.
         final String upperName = GrailsNameUtils.getClassName(pd.name)
         final String typeString = GrailsDomainRefdataHelpers.getCategoryString (targetClass, pd.name)
+        
+        targetClass.metaClass.static."get${upperName}Category" = { typeString }
+        log.debug ("Added '${pd.name}Category' to ${targetClass}")
 
         // Add static method for refdata values lookup.
         targetClass.metaClass.static."all${upperName}Values" << { Map parameters = [:] ->
@@ -147,22 +151,50 @@ class GrailsDomainRefdataHelpers {
         }
         
         // Lookup single value.
-        targetClass.metaClass.static."lookup${upperName}ByValue" << { String value ->
+        targetClass.metaClass.static."lookup${upperName}" << { String value ->
           // Do the lookup.
           def val = typeClass.find('FROM ' + typeClass.simpleName + ' as rdv WHERE rdv.value=:val AND rdv.owner.desc=:desc', [val: "${value}", desc:"${typeString}"],  ["readOnly": true])
           val
         }
         
-        // Add instance method method for setting refdata value from string.
-        targetClass.metaClass."set${upperName}FromString" << { String value ->
-
-          // Set the refdata value by using the lookupOrCreate method
-          def rdv = typeClass.lookupOrCreate("${typeString}", value, value, typeClass)
-
-          delegate."set${upperName}"( rdv )
+        targetClass.metaClass.static."lookupOrCreate${upperName}" << { String value ->
+          // Do the lookup.
+          typeClass.lookupOrCreate(typeString, value, value, typeClass)
         }
 
-        log.debug ("Added methods ['all${upperName}Values','lookup${upperName}ByValue'] to ${targetClass}")
+        log.debug ("Added methods ['all${upperName}Values','lookup${upperName}(value)', 'lookupOrCreateAgreementType(value)', ] to ${targetClass}")
+        
+        // Add instance method method for setting refdata value from string.
+        final String setterName = "set${upperName}"
+        final MetaMethod originalSetter = targetClass.metaClass.pickMethod(setterName, [typeClass] as Class[])
+        
+        log.debug "Original setter ${originalSetter}"
+        targetClass.metaClass."set${upperName}" = { final def value ->
+          
+          log.info "${targetClass.simpleName}.set${upperName} ( ${value} )"
+          
+          def rdv = value
+          switch (rdv) {
+            case {it instanceof String} :
+            
+            
+              log.info "  value is String" 
+              // Set the refdata value by using the lookupOrCreate method
+               rdv = typeClass.lookupOrCreate("${typeString}", value, value, typeClass)
+               break
+               
+            case {it instanceof Map} :
+              // Set the refdata value by using the lookupOrCreate method
+              rdv = typeClass.lookupOrCreate("${typeString}", it.value, it.label ?: it.value, typeClass)
+              log.info "  value is Map"
+              break
+          }
+          
+          log.info "  invoking original setter on ${delegate} with [${rdv}]" 
+          originalSetter.invoke(delegate, [rdv] as Object[])
+        }
+
+        log.debug ("Extended 'set${upperName}' on ${targetClass}")
       }
 
       // Extend the class' collection properties of this type.
@@ -176,6 +208,9 @@ class GrailsDomainRefdataHelpers {
           // The ClassName representation of the property name.
           String upperName = GrailsNameUtils.getClassName(pd.name)
           final String typeString = GrailsDomainRefdataHelpers.getCategoryString (targetClass, pd.name)
+        
+          targetClass.metaClass.static."get${upperName}Category" = { typeString }
+          log.debug ("Added '${pd.name}Category' to ${targetClass}")
 
           targetClass.metaClass.static."all${upperName}Values" << { Map parameters = [:] ->
             // Default read only
@@ -184,14 +219,6 @@ class GrailsDomainRefdataHelpers {
 
             // Do the lookup.
             return genericClass.findAll('FROM ' + genericClass.simpleName + ' as rdv WHERE rdv.owner.desc=:desc', [desc: "${typeString}"], param)
-          }
-        
-          // Lookup single value.
-          targetClass.metaClass.static."lookup${upperName}ByValue" << { String value ->
-            // Do the lookup.
-            def val = genericClass.find('FROM ' + genericClass.simpleName + ' as rdv WHERE rdv.value=:val AND rdv.owner.desc=:desc', [val: "${value}", desc: "${typeString}"],  ["readOnly": true])
-            
-            val
           }
           
           // Add instance method method for adding refdata value from string.
