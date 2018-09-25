@@ -14,20 +14,18 @@ public class ElectronicResource implements MultiTenant<ElectronicResource> {
  
   String id
   String type
-  Pkg pkg
-  PlatformTitleInstance pti
+  TitleInstance ti
   String name
-  Platform plat
+  Pkg pkg
 
   static mapping = {
       table 'all_electronic_resources'
     version false
          id generator: 'assigned', column:'id'
        type column:'type'
-        pkg column:'pkg_id'
-        pti column:'pti_id'
+         ti column:'ti_id'
        name column:'name'
-       plat column:'plat_fk'
+       pkg column:'pkg_id'
   }
 
 }

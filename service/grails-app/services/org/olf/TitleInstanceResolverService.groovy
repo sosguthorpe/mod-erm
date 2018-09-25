@@ -63,13 +63,13 @@ public class TitleInstanceResolverService {
     List<TitleInstance> candidate_list = classOneMatch(citation.instanceIdentifiers);
     int num_class_one_identifiers = countClassOneIDs(citation.instanceIdentifiers);
     int num_matches = candidate_list.size()
-    List<TitleInstance> siblings = []
 
     // We weren't able to match directly on an identifier for this instance - see if we have an identifier
     // for a sibling instance we can use to narrow down the list.
     if ( num_matches == 0 ) {
       candidate_list = siblingMatch(citation)
       num_matches = candidate_list.size()
+      log.debug("siblingMatch for ${citation.title} found ${num_matches} titles");
     }
 
     // If we didn't have a class one identifier AND we weren't able to match anything via
@@ -144,11 +144,13 @@ public class TitleInstanceResolverService {
       candidate_list = classOneMatch(sibling_citation.instanceIdentifiers)
       switch ( candidate_list.size() ) {
         case 0:
+          log.debug("Create sibling print instance for issn ${issn}");
           createNewTitleInstance(sibling_citation, work);
           break;
         case 1:
           TitleInstance ti = candidate_list.get(0)
           if ( ti.work == null ) {
+            log.debug("Located exiting print instance for issn ${issn} that was not linked. Linking it to work ${work.id}");
             // Link the located title instance to the work
             ti.work = work;
             ti.save(flush:true, failOnError:true)
