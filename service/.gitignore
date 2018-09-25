@@ -1,5 +1,6 @@
 /.*
 !/.gitignore
+!.editorconfig
 /bin
 /build
 /_settings.gradle
