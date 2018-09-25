@@ -23,5 +23,24 @@ class RefdataValue implements MultiTenant<RefdataValue> {
   static constraints = {
     label(nullable: true, blank: false)
   }
+  
+  
+  /**
+   * Lookup or create a RefdataValue
+   * @param category_name
+   * @param value
+   * @return
+   */
+  static <T extends RefdataValue> T lookupOrCreate(final String category_name, final String value, final String label=null, Class<T> clazz = this) {
+    RefdataCategory cat = RefdataCategory.findOrCreateByDesc(category_name).save(flush:true, failOnError:true)
+    T result = clazz.findOrCreateByOwnerAndValue(cat, value)
+    
+    if (result) {
+      result.label = label ?: value
+    }
+    
+    result.save(flush:true, failOnError:true)
+    result
+  }
 
 }
