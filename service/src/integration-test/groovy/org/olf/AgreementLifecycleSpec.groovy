@@ -1,23 +1,25 @@
 package org.olf
 
-import grails.testing.mixin.integration.Integration
-import grails.transaction.*
 import static grails.web.http.HttpHeaders.*
 import static org.springframework.http.HttpStatus.*
-import spock.lang.*
-import geb.spock.*
-import grails.plugins.rest.client.RestBuilder
+
+import org.olf.erm.SubscriptionAgreement
+import org.olf.kb.PackageContentItem
+import org.olf.kb.Pkg
+import org.olf.kb.PlatformTitleInstance
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.k_int.okapi.OkapiHeaders
-import spock.lang.Shared
+import com.k_int.okapi.OkapiTenantResolver
+
+import geb.spock.*
 import grails.gorm.multitenancy.Tenants
-import org.olf.general.RefdataCategory
-import org.olf.erm.SubscriptionAgreement
-import org.olf.kb.Pkg
-import org.olf.kb.PackageContentItem
-import org.olf.kb.PlatformTitleInstance
+import grails.plugins.rest.client.RestBuilder
+import grails.testing.mixin.integration.Integration
+import grails.transaction.*
 import groovy.json.JsonSlurper
+import spock.lang.*
 
 
 /**
@@ -168,18 +170,20 @@ and pti.platform.name = :platform
 
         // This is a bit of a shortcut - the web interface will populate a control for this, but here we just want the value.
         // So we access the DB with the tenant Id and get back the ID of the status we need.
-        def agreement_type_id = null;
-        Tenants.withId(tenant.toLowerCase()+'_olf_erm') {
-          agreement_type_id = RefdataCategory.lookupOrCreate('AgreementType',type).id;
+        Serializable agreement_type_id = null
+        Tenants.withId(OkapiTenantResolver.getTenantSchemaName(tenant.toLowerCase())) {
+          
+          // All refdata values have a few helper methods on the class.
+          agreement_type_id = SubscriptionAgreement.lookupOrCreateAgreementType(type).id;
         }
 
         
         Map agreement_to_add =  [ 
-                                  'name' : agreement_name,
-                                  'agreementType':[
-                                    'id': agreement_type_id
-                                  ]
-                                ];
+          'name' : agreement_name,
+          'agreementType':[
+            'id': agreement_type_id
+          ]
+        ];
 
         def resp = restBuilder().post("$baseUrl/erm/sas") {
           header 'X-Okapi-Tenant', tenant
@@ -221,8 +225,8 @@ and pti.platform.name = :platform
         logger.debug("Find platform title instance records for current medicinal chemistry on platform bentham science");
 
         off_package_title_id = PlatformTitleInstance.executeQuery(OFF_PACKAGE_TITLE_QUERY,
-                                                                       [title:'Current Medicinal Chemistry - Cardiovascular & Hematological Agents',
-                                                                        platform:'Bentham Science']).get(0);
+          [title:'Current Medicinal Chemistry - Cardiovascular & Hematological Agents',
+          platform:'Bentham Science']).get(0);
       }
 
       logger.debug("Agreement ID is ${agreement_id} package to add is ${pkg_id}");
@@ -231,12 +235,12 @@ and pti.platform.name = :platform
     then: "The package is Added to the agreement"
 
       Map content_to_add = [
-                            content:[
-                              [ 'type':'package', 'id': pkg_id],
-                              [ 'type':'packageItem', 'id': single_package_item_id],
-                              [ 'type':'platformTitle', 'id': off_package_title_id]
-                            ]
-                           ]
+        content:[
+          [ 'type':'package', 'id': pkg_id],
+          [ 'type':'packageItem', 'id': single_package_item_id],
+          [ 'type':'platformTitle', 'id': off_package_title_id]
+        ]
+      ]
 
       String target_url = "$baseUrl/erm/sas/${agreement_id}/addToAgreement".toString();
       logger.debug("The target URL will be ${target_url}");
