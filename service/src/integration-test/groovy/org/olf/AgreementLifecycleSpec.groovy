@@ -1,23 +1,25 @@
 package org.olf
 
-import grails.testing.mixin.integration.Integration
-import grails.transaction.*
 import static grails.web.http.HttpHeaders.*
 import static org.springframework.http.HttpStatus.*
-import spock.lang.*
-import geb.spock.*
-import grails.plugins.rest.client.RestBuilder
+
+import org.olf.erm.SubscriptionAgreement
+import org.olf.kb.PackageContentItem
+import org.olf.kb.Pkg
+import org.olf.kb.PlatformTitleInstance
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.k_int.okapi.OkapiHeaders
-import spock.lang.Shared
+import com.k_int.okapi.OkapiTenantResolver
+
+import geb.spock.*
 import grails.gorm.multitenancy.Tenants
-import org.olf.general.RefdataCategory
-import org.olf.erm.SubscriptionAgreement
-import org.olf.kb.Pkg
-import org.olf.kb.PackageContentItem
-import org.olf.kb.PlatformTitleInstance
+import grails.plugins.rest.client.RestBuilder
+import grails.testing.mixin.integration.Integration
+import grails.transaction.*
 import groovy.json.JsonSlurper
+import spock.lang.*
 
 
 /**
@@ -40,10 +42,11 @@ class AgreementLifecycleSpec extends GebSpec {
   def packageIngestService
 
   @Shared
-  private Map test_info = [:]
+  private int totalContentItems = 0
 
   private static final String TENANT='TestTenantH'
   private static final String PACKAGE_QUERY = 'select p.id from Pkg as p where p.name = :name'
+  private static final String PACKAGE_CONTENT_COUNT_QUERY = 'select count(*) from PackageContentItem as pci where pci.pkg.id = :pkgId'
 
   // This is a bit of a shortcut - In this test we have loaded packages where titles only appear in one place. That
   // means we can be very general when looking up items. If we add more test data, then we would need to add more
@@ -168,18 +171,20 @@ and pti.platform.name = :platform
 
         // This is a bit of a shortcut - the web interface will populate a control for this, but here we just want the value.
         // So we access the DB with the tenant Id and get back the ID of the status we need.
-        def agreement_type_id = null;
-        Tenants.withId(tenant.toLowerCase()+'_olf_erm') {
-          agreement_type_id = RefdataCategory.lookupOrCreate('AgreementType',type).id;
+        Serializable agreement_type_id = null
+        Tenants.withId(OkapiTenantResolver.getTenantSchemaName(tenant.toLowerCase())) {
+          
+          // All refdata values have a few helper methods on the class.
+          agreement_type_id = SubscriptionAgreement.lookupOrCreateAgreementType(type).id
         }
 
         
         Map agreement_to_add =  [ 
-                                  'name' : agreement_name,
-                                  'agreementType':[
-                                    'id': agreement_type_id
-                                  ]
-                                ];
+          'name' : agreement_name,
+          'agreementType':[
+            'id': agreement_type_id
+          ]
+        ];
 
         def resp = restBuilder().post("$baseUrl/erm/sas") {
           header 'X-Okapi-Tenant', tenant
@@ -196,17 +201,18 @@ and pti.platform.name = :platform
       // Use a GEB Data Table to load each record
       where:
         tenant | agreement_name | type
-        TENANT | 'My first agreement' | 'DRAFT'
+        TENANT | 'My first agreement' | 'Draft'
 
   }
 
   void "add a package to the agreement"(tenant,agreement_name) {
     when:"We add a package to our new agreement"
       // Find the ID of our new agreement.
-      def agreement_id = null;
-      def pkg_id = null;
-      def single_package_item_id = null;
-      def off_package_title_id = null;
+      def agreement_id = null
+      def pkg_id = null
+      def single_package_item_id = null
+      def off_package_title_id = null
+      def pkg_content_count
 
       // This is cheating a little - normally the UI would run queries to populate controls that let the user select this info,
       // here we're just grabbing the relevant IDs from the database.
@@ -215,28 +221,35 @@ and pti.platform.name = :platform
         agreement_id = SubscriptionAgreement.executeQuery('select sa.id from SubscriptionAgreement as sa where sa.name = :name',[name:agreement_name]).get(0)
 
         pkg_id = Pkg.executeQuery(PACKAGE_QUERY,[name:'American Psychological Association:Master']).get(0)
+        
+        pkg_content_count = (PackageContentItem.executeQuery(PACKAGE_CONTENT_COUNT_QUERY, [pkgId: pkg_id])?.getAt(0) ?: 0)
 
-        single_package_item_id = PackageContentItem.executeQuery(PACKAGE_CONTENT_ITEM_QUERY,[title:'Anti Inflammatory & Anti allergy Agents in Medicinal Chemistry']).get(0);
+        single_package_item_id = PackageContentItem.executeQuery(PACKAGE_CONTENT_ITEM_QUERY,[title:'Anti Inflammatory & Anti allergy Agents in Medicinal Chemistry']).get(0)
 
-        logger.debug("Find platform title instance records for current medicinal chemistry on platform bentham science");
+        logger.debug("Find platform title instance records for current medicinal chemistry on platform bentham science")
 
         off_package_title_id = PlatformTitleInstance.executeQuery(OFF_PACKAGE_TITLE_QUERY,
-                                                                       [title:'Current Medicinal Chemistry - Cardiovascular & Hematological Agents',
-                                                                        platform:'Bentham Science']).get(0);
+          [title:'Current Medicinal Chemistry - Cardiovascular & Hematological Agents',
+          platform:'Bentham Science']).get(0)
       }
+      
+      
+      // Increment the total content counter for comparison later.
+      // Total for the package plus the 2 singles
+      totalContentItems += (pkg_content_count + 2)
 
-      logger.debug("Agreement ID is ${agreement_id} package to add is ${pkg_id}");
-      agreement_id != null;
+      logger.debug("Agreement ID is ${agreement_id} package to add is ${pkg_id} which contains ${pkg_content_count} titles.")
+      agreement_id != null
 
     then: "The package is Added to the agreement"
 
       Map content_to_add = [
-                            content:[
-                              [ 'type':'package', 'id': pkg_id],
-                              [ 'type':'packageItem', 'id': single_package_item_id],
-                              [ 'type':'platformTitle', 'id': off_package_title_id]
-                            ]
-                           ]
+        content:[
+          [ 'type':'package', 'id': pkg_id],
+          [ 'type':'packageItem', 'id': single_package_item_id],
+          [ 'type':'platformTitle', 'id': off_package_title_id]
+        ]
+      ]
 
       String target_url = "$baseUrl/erm/sas/${agreement_id}/addToAgreement".toString();
       logger.debug("The target URL will be ${target_url}");
@@ -248,7 +261,7 @@ and pti.platform.name = :platform
           accept 'application/json'
           json content_to_add
       }
-
+      
       resp.status == OK.value()
 
     where:
@@ -267,7 +280,7 @@ and pti.platform.name = :platform
       then: "The system responds with a list of content";
         resp.status == OK.value()
         // content responds with a JSON object containing a count and a list called subscribedTitles
-        resp.json.total == 123
+        resp.json.total == totalContentItems
   }
 
   void "Delete the tenants"(tenant_id, note) {

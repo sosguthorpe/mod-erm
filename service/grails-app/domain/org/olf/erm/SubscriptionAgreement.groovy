@@ -1,8 +1,10 @@
 package org.olf.erm
 
-import grails.gorm.MultiTenant
-import org.olf.general.RefdataValue
 import org.olf.general.Org
+import org.olf.general.RefdataValue
+import org.olf.general.refdata.Defaults
+
+import grails.gorm.MultiTenant
 
 /**
  * Subscription agreement - object holding details about an SA connecting a resource list (Composed Of packages and platform-titles).
@@ -19,8 +21,19 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   Date renewalDate
   Date nextReviewDate
 
-  // Subscription agreement type - DRAFT, TRIAL, CURRENT
+  /**
+   * By default the RefdataCategory would be generated from the concatenation
+   * of the class name and the property name. So the below property of agreementType
+   * would result in a category named SubscriptionAgreement.AgreementType
+   * 
+   * If we wanted to share a category across multiple Classes (like a global "Yes_No"),
+   * or just wanted to specify the category, we can use the \@CategoryId annotation.
+   * 
+   * @CategoryId('AgreementType') - Would create a category named 'AgreementType' for values stored here.
+   */  
+  @Defaults(['Draft', 'Trial', 'Current']) // Defaults to create for this property.
   RefdataValue agreementType
+  
   RefdataValue renewalPriority
   RefdataValue agreementStatus
   RefdataValue isPerpetual
