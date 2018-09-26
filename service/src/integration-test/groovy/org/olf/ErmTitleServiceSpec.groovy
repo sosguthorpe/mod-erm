@@ -70,7 +70,7 @@ class ErmTitleServiceSpec extends GebSpec {
       def testvalue1 = null;
 
       Tenants.withId('testtenantf_olf_erm') {
-        testvalue1 = RefdataCategory.lookupOrCreate('testcat','testvalue');
+        testvalue1 = RefdataValue.lookupOrCreate('testcat','testvalue')
       }
     then:
       testvalue1 != null;
