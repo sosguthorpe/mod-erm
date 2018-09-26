@@ -1,24 +1,26 @@
 package org.olf.kb
 
-import grails.gorm.MultiTenant
 import javax.persistence.Transient
+
 import org.olf.general.Org
+
+import grails.gorm.MultiTenant
 
 
 /**
  * mod-erm representation of a package
  */
 public class Pkg extends ElectronicResource implements MultiTenant<Pkg> {
+  String name
   String source
-  String reference  // Reference contains the KBs authoritiative ID for this package - Reference should be unique within KB
+  String reference  // Reference contains the KBs authoritative ID for this package - Reference should be unique within KB
   RemoteKB remoteKb
   Platform nominalPlatform
   Org vendor
 
   static mapping = {
                 table 'package'
-                   id column:'pkg_id', generator: 'uuid', length:36
-              version column:'pkg_version'
+                   id column:'pkd_id'
                  name column:'pkg_name'
                source column:'pkg_source'
             reference column:'pkg_reference'

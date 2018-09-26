@@ -1,28 +1,18 @@
 package org.olf.kb
 
 import grails.gorm.MultiTenant
-import javax.persistence.Transient
 
 /**
- * an ElectronicResource - Superclass of TitleInstance and Package
- * and a kind of synonym for "Buyable thing"
- *
- * N.B. THIS CLASS MAPS TO A VIEW NOT A TABLE - IT IS HERE TO SUPPORT THE eRESOURCE wireframe. TAKE CARE!
- *
+ * an ElectronicResource - Superclass
+ * Blank apart from the Identifier. This adds no real functionality apart
+ * from being able to query easily for all e-resources. 
  */
 public class ElectronicResource implements MultiTenant<ElectronicResource> {
  
   String id
-  String name
-
   static mapping = {
-      table 'all_electronic_resources'
+      tablePerHierarchy false
+         id generator: 'uuid', length:36
     version false
-         id generator: 'assigned', column:'id'
-       type column:'type'
-         ti column:'ti_id'
-       name column:'name'
-       pkg column:'pkg_id'
   }
-
 }

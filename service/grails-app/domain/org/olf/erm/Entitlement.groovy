@@ -3,6 +3,7 @@ package org.olf.erm
 import grails.gorm.MultiTenant
 import org.olf.general.RefdataValue
 import org.olf.kb.Pkg
+import org.olf.kb.ElectronicResource
 import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance
 import javax.persistence.Transient
@@ -20,10 +21,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
 
   String id
 
-  // This line item is for ONE of:
-  Pkg pkg
-  PackageContentItem pci
-  PlatformTitleInstance pti
+  ElectronicResource eResource
 
   // The date ranges on which this line item is active. These date ranges allow the system to determine
   // what content is "Live" in an agreement. Content can be "Live" without being switched on, and 
@@ -55,9 +53,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
                    id column: 'ent_id', generator: 'uuid', length:36
               version column: 'ent_version'
                 owner column: 'ent_owner_fk'
-                  pkg column: 'ent_pkg_fk'
-                  pci column: 'ent_pci_fk'
-                  pti column: 'ent_pti_fk'
+            eResource column: 'ent_eresource_fk'
               enabled column: 'ent_enabled'
            activeFrom column: 'ent_active_from'
              activeTo column: 'ent_active_to'
@@ -65,31 +61,30 @@ public class Entitlement implements MultiTenant<Entitlement> {
 
 
   static constraints = {
-        owner(nullable:true, blank:false)
-          pkg(nullable:true, blank:false)
-          pci(nullable:true, blank:false)
-          pti(nullable:true, blank:false)
-      enabled(nullable:true, blank:false)
-   activeFrom(nullable:true, blank:false)
-     activeTo(nullable:true, blank:false)
+        owner(nullable:true,  blank:false)
+    eResource(nullable:false, blank:false)
+      enabled(nullable:true,  blank:false)
+   activeFrom(nullable:true,  blank:false)
+     activeTo(nullable:true,  blank:false)
   }
 
   @Transient
   public String getExplanation() {
-    String result = null;
-    if ( pkg != null ) {
-      // Access to an item because the agreement lists a package which contains
-      // that item
-      result = 'Agreement includes a package containing this item'
-    }
-    else if ( this.pci != null ) {
-      result = 'Agreement includes this item from a package specifically'
-    }
-    else if ( this.pti != null ) {
-      result = 'Agremment includes this title directly'
+    
+    String result = null
+    switch (eResource) {
+      case { it instanceof Pkg }:
+        result = 'Agreement includes a package containing this item'
+        break
+      case { it instanceof PlatformTitleInstance }:
+        result = 'Agremment includes this title directly'
+        break
+      case { it instanceof PackageContentItem }:
+        result = 'Agreement includes this item from a package specifically'
+        break
     }
 
-    return result;
+    return result
   }
 
 }
