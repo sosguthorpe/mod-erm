@@ -752,7 +752,7 @@ databaseChangeLog = {
     changeSet(author: "ianibbo (generated)", id: "1527414162857-59") {
       grailsChange {
         change {
-          def cmd = "CREATE VIEW ${database.defaultSchemaName}.all_electronic_resources (id, type, pkg_id, ti_id, name ) as ( select pkg_id, 'pkg', pkg_id, null, pkg_name from ${database.defaultSchemaName}.package ) UNION ( select ti_id, 'title', null, ti_id, ti_title from ${database.defaultSchemaName}.title_instance )".toString()
+          def cmd = "CREATE VIEW ${database.defaultSchemaName}.all_electronic_resources (id, type, pkg_id, ti_id, name ) as ( select pkg_id, 'pkg', pkg_id, null, pkg_name from ${database.defaultSchemaName}.package ) UNION ( select ti_id, 'title', null, ti_id, ti_title from ${database.defaultSchemaName}.title_instance, ${database.defaultSchemaName}.refdata_value where rdv_id=ti_medium_fk and rdv_value = 'electronic' )".toString()
           sql.execute(cmd);
         }
       }
