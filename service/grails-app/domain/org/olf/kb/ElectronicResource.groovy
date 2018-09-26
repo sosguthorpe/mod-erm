@@ -11,8 +11,8 @@ public class ElectronicResource implements MultiTenant<ElectronicResource> {
  
   String id
   static mapping = {
-      tablePerHierarchy false
-         id generator: 'uuid', length:36
-    version false
+    tablePerHierarchy false
+                   id generator: 'uuid', length:36
+              version false
   }
 }
