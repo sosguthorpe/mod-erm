@@ -1,18 +1,21 @@
 package org.olf
 
-import grails.testing.mixin.integration.Integration
-import grails.transaction.*
 import static grails.web.http.HttpHeaders.*
 import static org.springframework.http.HttpStatus.*
-import spock.lang.*
-import geb.spock.*
-import grails.plugins.rest.client.RestBuilder
+
+import org.olf.erm.SubscriptionAgreement
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.k_int.okapi.OkapiHeaders
-import spock.lang.Shared
+import com.k_int.okapi.OkapiTenantResolver
+
+import geb.spock.*
 import grails.gorm.multitenancy.Tenants
-import org.olf.general.RefdataCategory
+import grails.plugins.rest.client.RestBuilder
+import grails.testing.mixin.integration.Integration
+import grails.transaction.*
+import spock.lang.*
 
 @Integration
 @Stepwise
@@ -88,18 +91,19 @@ class ErmAgreementSpec extends GebSpec {
 
         // This is a bit of a shortcut - the web interface will populate a control for this, but here we just want the value.
         // So we access the DB with the tenant Id and get back the ID of the status we need.
-        def agreement_type_id = null;
-        Tenants.withId(tenant.toLowerCase()+'_olf_erm') {
-          agreement_type_id = RefdataCategory.lookupOrCreate('AgreementType',type).id;
+        Serializable agreement_type_id = null
+        Tenants.withId(OkapiTenantResolver.getTenantSchemaName(tenant.toLowerCase())) {
+          
+          // All refdata values have a few helper methods on the class.
+          agreement_type_id = SubscriptionAgreement.lookupOrCreateAgreementType(type).id;
         }
 
-        
         Map agreement_to_add =  [ 
-                                  'name' : agreement_name,
-                                  'agreementType':[
-                                    'id': agreement_type_id
-                                  ]
-                                ];
+          'name' : agreement_name,
+          'agreementType':[
+            'id': agreement_type_id
+          ]
+        ]
 
         def resp = restBuilder().post("$baseUrl/erm/sas") {
           header 'X-Okapi-Tenant', tenant
@@ -116,9 +120,9 @@ class ErmAgreementSpec extends GebSpec {
       // Use a GEB Data Table to load each record
       where:
         tenant | agreement_name | type
-        'TestTenantD' | 'My first agreement' | 'DRAFT'
-        'TestTenantD' | 'My second agreement' | 'TRIAL'
-        'TestTenantD' | 'My third agreement' | 'CURRENT'
+        'TestTenantD' | 'My first agreement'  | 'Draft'
+        'TestTenantD' | 'My second agreement' | 'Trial'
+        'TestTenantD' | 'My third agreement'  | 'Current'
 
   }
 
