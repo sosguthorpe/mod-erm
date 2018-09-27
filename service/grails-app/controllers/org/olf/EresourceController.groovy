@@ -12,7 +12,8 @@ import groovy.util.logging.Slf4j
 class EresourceController extends OkapiTenantAwareController<ElectronicResource>  {
 
   EresourceController() {
-    super(ElectronicResource)
+    // True means read only. This should block post and puts to this.
+    super(ElectronicResource, true)
   }
 }
 
