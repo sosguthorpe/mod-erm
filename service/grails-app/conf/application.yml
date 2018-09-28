@@ -132,7 +132,7 @@ environments:
     dataSource:
       url: "jdbc:postgresql://${db.host:localhost}:${db.port:5432}/${db.database:olftest}"
       
-  db-gen:
+  dbGen:
     grails:
       gorm:
         multiTenancy:
