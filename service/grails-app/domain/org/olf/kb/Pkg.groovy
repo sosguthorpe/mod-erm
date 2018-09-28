@@ -20,7 +20,6 @@ public class Pkg extends ElectronicResource implements MultiTenant<Pkg> {
 
   static mapping = {
                 table 'package'
-                   id column:'pkd_id'
                  name column:'pkg_name'
                source column:'pkg_source'
             reference column:'pkg_reference'

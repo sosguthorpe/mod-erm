@@ -10,9 +10,10 @@ import grails.gorm.MultiTenant
 public class ElectronicResource implements MultiTenant<ElectronicResource> {
  
   String id
+  
   static mapping = {
     tablePerHierarchy false
                    id generator: 'uuid', length:36
-              version false
   }
+   
 }

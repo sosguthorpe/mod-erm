@@ -13,7 +13,6 @@ public class PlatformTitleInstance extends ElectronicResource implements MultiTe
   String url
 
   static mapping = {
-                   id column:'pti_id'
         titleInstance column:'pti_ti_fk'
              platform column:'pti_pt_fk'
                   url column:'pti_url'

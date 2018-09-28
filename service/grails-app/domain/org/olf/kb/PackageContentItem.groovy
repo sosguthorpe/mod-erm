@@ -36,7 +36,6 @@ public class PackageContentItem extends ElectronicResource implements MultiTenan
   ]
 
   static mapping = {
-                   id column:'pci_id'
                   pkg column:'pci_pkg_fk'
                   pti column:'pci_pti_fk'
           accessStart column:'pci_access_start'
