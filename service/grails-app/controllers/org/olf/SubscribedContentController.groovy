@@ -29,17 +29,17 @@ where exists ( select pci.id
                from PackageContentItem as pci,
                     Entitlement as ent
                where pci.pti.titleInstance = ti 
-               and ent.pkg = pci.pkg )
+               and ent.eResource = pci.pkg )
    or exists ( select pci.id 
                from PackageContentItem as pci,
                     Entitlement as ent
                where pci.pti.titleInstance = ti 
-               and ent.pci = pci )
+               and ent.eResource = pci )
    or exists ( select pti.id 
                from PlatformTitleInstance pti,
                     Entitlement as ent
                where pti.titleInstance = ti 
-               and ent.pti = pti )
+               and ent.eResource = pti )
 '''
 
   // Return platform title instance records and agreement line items for content we have access to
