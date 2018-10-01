@@ -10,7 +10,15 @@ public class PlatformTitleInstance extends ErmResource implements MultiTenant<Pl
 
   TitleInstance titleInstance
   Platform platform
-  String url
+  String url  
+  
+  static hasMany = [
+    packageOccurences: PackageContentItem,
+  ]
+
+  static mappedBy = [
+    packageOccurences: 'pti'
+  ]
 
   static mapping = {
         titleInstance column:'pti_ti_fk'

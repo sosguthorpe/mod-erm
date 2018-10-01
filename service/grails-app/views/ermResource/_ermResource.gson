@@ -4,7 +4,7 @@ model {
   ErmResource ermResource
 }
 
-System.out.println(ermResource.class.simpleName)
+System.out.println("ermResource")
 
 json g.render(ermResource)
 

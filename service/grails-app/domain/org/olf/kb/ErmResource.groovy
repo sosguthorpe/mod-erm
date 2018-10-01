@@ -14,11 +14,11 @@ public class ErmResource implements MultiTenant<ErmResource> {
   String id
   
   static hasMany = [
-    entitlements: Entitlement
+    directEntitlements: Entitlement
   ]
 
   static mappedBy = [
-    entitlements: 'eResource'
+    directEntitlements: 'resource'
   ]
   static mapping = {
     tablePerHierarchy false

@@ -21,7 +21,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
 
   String id
 
-  ErmResource eResource
+  ErmResource resource
 
   // The date ranges on which this line item is active. These date ranges allow the system to determine
   // what content is "Live" in an agreement. Content can be "Live" without being switched on, and 
@@ -53,7 +53,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
                    id column: 'ent_id', generator: 'uuid', length:36
               version column: 'ent_version'
                 owner column: 'ent_owner_fk'
-            eResource column: 'ent_eresource_fk'
+             resource column: 'ent_resource_fk'
               enabled column: 'ent_enabled'
            activeFrom column: 'ent_active_from'
              activeTo column: 'ent_active_to'
@@ -62,7 +62,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
 
   static constraints = {
         owner(nullable:true,  blank:false)
-    eResource(nullable:false, blank:false)
+     resource(nullable:false, blank:false)
       enabled(nullable:true,  blank:false)
    activeFrom(nullable:true,  blank:false)
      activeTo(nullable:true,  blank:false)
@@ -72,7 +72,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
   public String getExplanation() {
     
     String result = null
-    switch (eResource) {
+    switch (resource) {
       case { it instanceof Pkg }:
         result = 'Agreement includes a package containing this item'
         break

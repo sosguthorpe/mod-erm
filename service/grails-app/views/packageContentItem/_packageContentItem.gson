@@ -1,6 +1,8 @@
 import groovy.transform.*
 import org.olf.kb.PackageContentItem
 
+
+System.out.println("packageContentItem")
 model {
   PackageContentItem packageContentItem
 }

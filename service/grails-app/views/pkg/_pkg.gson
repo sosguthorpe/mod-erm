@@ -1,6 +1,7 @@
 import groovy.transform.*
 import org.olf.kb.Pkg
 
+System.out.println("package")
 model {
   Pkg pkg
 }

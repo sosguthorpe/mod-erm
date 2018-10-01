@@ -1,5 +1,6 @@
 package org.olf.kb
 
+import grails.gorm.DetachedCriteria
 import grails.gorm.MultiTenant
 import javax.persistence.Transient
 import org.olf.erm.Entitlement
@@ -9,37 +10,21 @@ import org.olf.general.RefdataValue
  * mod-erm representation of a BIBFRAME instance
  */
 public class TitleInstance extends ErmResource implements MultiTenant<TitleInstance> {
-  
-  private static final DetachedCriteria titlesViaPackage = new DetachedCriteria(TItleInstance).build {
-    'in' ()
-  }
-  
-  
-  static namedQueries = {
-    ownedTitles {
-      or {
-        exists (PackageContentItem.where as pci,
-               Entitlement as ent
-          where pci.pti.titleInstance = ti
-          and ent.eResource = pci.pkg )
-      }
-    }
-  }
-  
 
-  private static final String ENTITLEMENTS_QUERY = '''from Entitlement as ent 
-where exists ( select pci.id 
-               from PackageContentItem as pci
-               where pci.pti.titleInstance = :title 
-               and ent.eResource = pci.pkg )
-   or exists ( select pci.id 
-               from PackageContentItem as pci
-               where pci.pti.titleInstance = :title
-               and ent.eResource = pci )
-   or exists ( select pti.id 
-               from PlatformTitleInstance as pti
-               where pti.titleInstance = :title
-               and ent.eResource = pti )
+  private static final String ENTITLEMENTS_QUERY = '''
+  from Entitlement as ent 
+    where exists ( select pci.id 
+                 from PackageContentItem as pci
+                 where pci.pti.titleInstance = :title 
+                 and ent.resource = pci.pkg )
+     or exists ( select pci.id 
+                 from PackageContentItem as pci
+                 where pci.pti.titleInstance = :title
+                 and ent.resource = pci )
+     or exists ( select pti.id 
+                 from PlatformTitleInstance as pti
+                 where pti.titleInstance = :title
+                 and ent.resource = pti )
 '''
 
   String id
@@ -70,11 +55,13 @@ where exists ( select pci.id
   }
 
   static hasMany = [
-    identifiers: IdentifierOccurrence
+    identifiers: IdentifierOccurrence,
+    platformInstances: PlatformTitleInstance
   ]
 
   static mappedBy = [
-    identifiers: 'title'
+    identifiers: 'title',
+    platformInstances: 'titleInstance'
   ]
 
 
@@ -83,7 +70,7 @@ where exists ( select pci.id
    */
   @Transient
   List<Entitlement> getEntitlements() {
-    List<Entitlement> result = Entitlement.executeQuery('select ent '+ENTITLEMENTS_QUERY,[title:this],[max:20, offset:0]);
-    return result;
+    List<Entitlement> result = Entitlement.executeQuery('select ent '+ENTITLEMENTS_QUERY,[title:this],[max:20, offset:0])
+    result
   }
 }
