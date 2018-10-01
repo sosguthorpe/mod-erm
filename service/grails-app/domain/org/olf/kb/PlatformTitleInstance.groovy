@@ -6,7 +6,7 @@ import grails.gorm.MultiTenant
 /**
  * Recording the availability of a titleInstance on a platform
  */
-public class PlatformTitleInstance extends ElectronicResource implements MultiTenant<PlatformTitleInstance> {
+public class PlatformTitleInstance extends ErmResource implements MultiTenant<PlatformTitleInstance> {
 
   TitleInstance titleInstance
   Platform platform

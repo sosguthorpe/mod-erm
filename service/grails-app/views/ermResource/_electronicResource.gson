@@ -1,0 +1,13 @@
+package ermResource;
+import org.olf.kb.ErmResource
+
+model {
+  ErmResource ermResource
+}
+
+System.out.println(ermResource.class.simpleName)
+
+json g.render(ermResource)
+
+
+

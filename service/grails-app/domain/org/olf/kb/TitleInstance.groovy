@@ -8,7 +8,24 @@ import org.olf.general.RefdataValue
 /**
  * mod-erm representation of a BIBFRAME instance
  */
-public class TitleInstance extends ElectronicResource implements MultiTenant<TitleInstance> {
+public class TitleInstance extends ErmResource implements MultiTenant<TitleInstance> {
+  
+  private static final DetachedCriteria titlesViaPackage = new DetachedCriteria(TItleInstance).build {
+    'in' ()
+  }
+  
+  
+  static namedQueries = {
+    ownedTitles {
+      or {
+        exists (PackageContentItem.where as pci,
+               Entitlement as ent
+          where pci.pti.titleInstance = ti
+          and ent.eResource = pci.pkg )
+      }
+    }
+  }
+  
 
   private static final String ENTITLEMENTS_QUERY = '''from Entitlement as ent 
 where exists ( select pci.id 

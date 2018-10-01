@@ -3,7 +3,7 @@ package org.olf.erm
 import grails.gorm.MultiTenant
 import org.olf.general.RefdataValue
 import org.olf.kb.Pkg
-import org.olf.kb.ElectronicResource
+import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance
 import javax.persistence.Transient
@@ -21,7 +21,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
 
   String id
 
-  ElectronicResource eResource
+  ErmResource eResource
 
   // The date ranges on which this line item is active. These date ranges allow the system to determine
   // what content is "Live" in an agreement. Content can be "Live" without being switched on, and 

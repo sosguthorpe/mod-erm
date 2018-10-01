@@ -6,7 +6,7 @@ import grails.gorm.MultiTenant
 /**
  * mod-erm representation of a package
  */
-public class PackageContentItem extends ElectronicResource implements MultiTenant<PackageContentItem> {
+public class PackageContentItem extends ErmResource implements MultiTenant<PackageContentItem> {
 
   Pkg pkg
   PlatformTitleInstance pti
@@ -26,7 +26,6 @@ public class PackageContentItem extends ElectronicResource implements MultiTenan
 
   // A field primarily to deposit KBART::CoverageDepth type data
   String depth
-
   static hasMany = [
     coverageStatements: CoverageStatement
   ]

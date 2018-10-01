@@ -10,7 +10,7 @@ import grails.gorm.MultiTenant
 /**
  * mod-erm representation of a package
  */
-public class Pkg extends ElectronicResource implements MultiTenant<Pkg> {
+public class Pkg extends ErmResource implements MultiTenant<Pkg> {
   String name
   String source
   String reference  // Reference contains the KBs authoritative ID for this package - Reference should be unique within KB
