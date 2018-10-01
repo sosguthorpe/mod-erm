@@ -588,6 +588,27 @@ databaseChangeLog = {
         }
     }
 
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-19d") {
+        createTable(tableName: "po_line_proxy") {
+            column(name: "pop_id", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "pop_version", type: "BIGINT") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "pop_owner", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "pop_label", type: "VARCHAR(255)")
+
+            column(name: "pop_po_line_id", type: "VARCHAR(36)")
+        }
+    }
+
+
 
     changeSet(author: "ianibbo (generated)", id: "1527414162857-20") {
         addPrimaryKey(columnNames: "ent_id", constraintName: "entitlementPK", tableName: "entitlement")
