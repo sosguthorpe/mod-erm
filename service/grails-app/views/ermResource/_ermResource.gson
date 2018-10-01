@@ -3,10 +3,12 @@ import org.olf.kb.ErmResource
 model {
   ErmResource ermResource
 }
-
-System.out.println("ermResource")
-
-json g.render(ermResource)
+System.out.println('ERM Resource')
+json {
+  'id' ermResource.id
+  
+  '_object' (g.render(ermResource)) 
+}
 
 
 

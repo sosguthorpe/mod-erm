@@ -1,0 +1,27 @@
+import org.olf.kb.ErmResource
+
+// Because of the naming conventions we can not accurately predict the variable name here.
+// Just grab the 1st parameter as we should only get 1 passed in here.
+getBinding().variables.each { k, v ->
+  System.out.println "${k} = ${v}"
+}
+
+final Map theData = binding.variables
+
+if (theData.size() == 1) {
+  
+  json g.render(template:"../ermResource/ermResource", collection: theData.values()[0], var:'ermResource')
+  
+} else {
+  
+  json {
+    pageSize theData.pageSize
+    page theData.page
+    totalPages theData.totalPages
+    meta theData.meta
+    totalRecords theData.totalRecords
+    total theData.total
+    results g.render(template:"../ermResource/ermResource", collection: theData.results, var:'ermResource')
+  }
+  
+}

@@ -12,6 +12,13 @@ import grails.gorm.MultiTenant
 public class ErmResource implements MultiTenant<ErmResource> {
  
   String id
+  String type
+  
+  def beforeValidate() {
+    if (type == null) {
+      type = this.class.simpleName
+    } 
+  }
   
   static hasMany = [
     directEntitlements: Entitlement
@@ -23,6 +30,7 @@ public class ErmResource implements MultiTenant<ErmResource> {
   static mapping = {
     tablePerHierarchy false
                    id generator: 'uuid', length:36
+                 type nullable: false, blank: false
   }
    
 }
