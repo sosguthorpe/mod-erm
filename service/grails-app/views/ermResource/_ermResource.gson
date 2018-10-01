@@ -1,4 +1,3 @@
-package ermResource;
 import org.olf.kb.ErmResource
 
 model {
