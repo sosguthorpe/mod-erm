@@ -37,7 +37,7 @@ class RefdataValue implements MultiTenant<RefdataValue> {
   }
   
   private static String tidyLabel ( String string ) {
-    UCharacter.toTitleCase( string.trim() ).replaceAll(/\s{2,}/, ' ')
+    UCharacter.toTitleCase( string.trim(), null ).replaceAll(/\s{2,}/, ' ')
   }
   
   void setValue (String value) {
@@ -55,7 +55,7 @@ class RefdataValue implements MultiTenant<RefdataValue> {
    * @return
    */
   static <T extends RefdataValue> T lookupOrCreate(final String category_name, final String label, final String value=null, Class<T> clazz = this) {
-    RefdataCategory cat = RefdataCategory.findOrCreateByDesc(category_name).save(flush:true, failOnError:true)
+    final RefdataCategory cat = RefdataCategory.findOrCreateByDesc(category_name).save(flush:true, failOnError:true)
     
     final String norm_value = normValue( value ?: label )
     
@@ -65,6 +65,7 @@ class RefdataValue implements MultiTenant<RefdataValue> {
       result = clazz.newInstance()
       result.label = label
       result.value = norm_value
+      result.owner = cat
       result.save(flush:true, failOnError:true)
     }
     result
