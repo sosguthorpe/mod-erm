@@ -7,11 +7,16 @@ ErmResource ermResource
 json {
   'id' ermResource.id
   'class' ermResource.class.name
-  'type' g.render (ermResource.type)
-  'subType' g.render (ermResource.subType)
-  
   'name' ermResource.name
   
+  if (ermResource.type) {
+    'type' g.render (ermResource.type)
+  }
+  
+  if (ermResource.subType) {
+    'subType' g.render (ermResource.subType)
+  }
+  
   // Render the full representation of whatever this object is.
-  '_object' (g.render(ermResource))
+  '_object' (g.render(ermResource, [excludes:['id', 'name', 'type', 'subType']]))
 }
