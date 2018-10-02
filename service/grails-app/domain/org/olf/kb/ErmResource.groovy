@@ -1,6 +1,7 @@
 package org.olf.kb
 
 import org.olf.erm.Entitlement
+import org.olf.general.RefdataValue
 
 import grails.gorm.MultiTenant
 
@@ -12,13 +13,10 @@ import grails.gorm.MultiTenant
 public class ErmResource implements MultiTenant<ErmResource> {
  
   String id
-  String type
+  String name
   
-  def beforeValidate() {
-    if (type == null) {
-      type = this.class.simpleName
-    } 
-  }
+  RefdataValue type
+  RefdataValue subType
   
   static hasMany = [
     directEntitlements: Entitlement
@@ -30,7 +28,15 @@ public class ErmResource implements MultiTenant<ErmResource> {
   static mapping = {
     tablePerHierarchy false
                    id generator: 'uuid', length:36
-                 type nullable: false, blank: false
+                 name column:'res_name'
+                 type column:'res_type_fk'
+              subType column:'res_sub_type_fk'
+  }
+
+  static constraints = {
+            name (nullable:true, blank:false)
+            type (nullable:true, blank:false)
+         subType (nullable:true, blank:false)
   }
    
 }

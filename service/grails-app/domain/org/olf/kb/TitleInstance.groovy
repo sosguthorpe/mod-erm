@@ -5,6 +5,7 @@ import grails.gorm.MultiTenant
 import javax.persistence.Transient
 import org.olf.erm.Entitlement
 import org.olf.general.RefdataValue
+import org.olf.general.refdata.Defaults
 
 /**
  * mod-erm representation of a BIBFRAME instance
@@ -27,30 +28,23 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
                  and ent.resource = pti )
 '''
 
-  String id
-  // Title IN ORIGINAL LANGUAGE OF PUBLICATION
-  String title
-
-  // Journal/Book/...
-  RefdataValue resourceType
-
-  // Print/Electronic
-  RefdataValue medium
-
   // For grouping sibling title instances together - EG Print and Electronic editions of the same thing
   Work work
+  
+  // Journal/Book/...
+  @Defaults(['Journal', 'Book'])
+  RefdataValue type
+
+  // Print/Electronic
+  @Defaults(['Print', 'Electronic'])
+  RefdataValue subType
 
   static mapping = {
-                title column:'ti_title'
-                 work column:'ti_work_fk'
-               medium column:'ti_medium_fk'
-         resourceType column:'ti_resource_type_fk'
+             work column:'ti_work_fk'
   }
 
   static constraints = {
-    resourceType (nullable:true, blank:false)
-           title (nullable:false, blank:false)
-          medium (nullable:true, blank:false)
+            name (nullable:false, blank:false)
             work (nullable:true, blank:false)
   }
 

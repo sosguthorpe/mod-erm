@@ -10,7 +10,11 @@ public class PlatformTitleInstance extends ErmResource implements MultiTenant<Pl
 
   TitleInstance titleInstance
   Platform platform
-  String url  
+  String url
+  
+  String getName() {
+    "'${titleInstance.name}' on Platform '${platform.name}'"
+  }
   
   static hasMany = [
     packageOccurences: PackageContentItem,

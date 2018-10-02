@@ -14,10 +14,10 @@ databaseChangeLog = {
     // }
 
     changeSet(author: "ianibbo (generated)", id: "1537982176428-1") {
-        createIndex(indexName: "id_idx", tableName: "identifier") {
-            column(name: "id_value")
-            column(name: "id_ns_fk")
-        }
+      createIndex(indexName: "id_idx", tableName: "identifier") {
+        column(name: "id_value")
+        column(name: "id_ns_fk")
+      }
     }
 
     changeSet(author: "ianibbo (generated)", id: "1537982176428-2") {
@@ -26,22 +26,22 @@ databaseChangeLog = {
           // grailsChange gives us an sql variable which inherits the current connection, and hence should
           // get the schema
           // sql.execute seems to get a bit confused when passed a GString. Work it out before
-          def cmd = "CREATE INDEX pkg_name_trigram_idx ON ${database.defaultSchemaName}.package USING GIN (pkg_name gin_trgm_ops)".toString()
+          def cmd = "CREATE INDEX res_name_trigram_idx ON ${database.defaultSchemaName}.erm_resource USING GIN (res_name gin_trgm_ops)".toString()
           sql.execute(cmd);
         }
       }
     }
 
-    changeSet(author: "ianibbo (generated)", id: "1537982176428-3") {
-      grailsChange {
-        change {
-          // grailsChange gives us an sql variable which inherits the current connection, and hence should
-          // get the schema. sql.execute seems to get a bit confused when passed a GString. Work it out before by calling toString
-          def cmd = "CREATE INDEX ti_title_trigram_idx ON ${database.defaultSchemaName}.title_instance USING GIN (ti_title gin_trgm_ops)".toString()
-          sql.execute(cmd);
-        }
-      }
-    }
+//    changeSet(author: "ianibbo (generated)", id: "1537982176428-3") {
+//      grailsChange {
+//        change {
+//          // grailsChange gives us an sql variable which inherits the current connection, and hence should
+//          // get the schema. sql.execute seems to get a bit confused when passed a GString. Work it out before by calling toString
+//          def cmd = "CREATE INDEX ti_title_trigram_idx ON ${database.defaultSchemaName}.title_instance USING GIN (ti_title gin_trgm_ops)".toString()
+//          sql.execute(cmd);
+//        }
+//      }
+//    }
 
     changeSet(author: "ianibbo (generated)", id: "1537982176428-4") {
       grailsChange {

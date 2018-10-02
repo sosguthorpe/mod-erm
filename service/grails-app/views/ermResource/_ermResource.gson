@@ -3,12 +3,17 @@ import org.olf.kb.ErmResource
 model {
   ErmResource ermResource
 }
-System.out.println('ERM Resource')
+
 json {
   'id' ermResource.id
+  'class' ermResource.class.name
+  'type' g.render (ermResource.type)
+  'subType' g.render (ermResource.subType)
   
-  '_object' (g.render(ermResource)) 
+  // Render the full representation of whatever this object is.
+  '_object' (g.render(ermResource))
 }
 
 
 
+//"(id, type, pkg_id, ti_id, name ) as ( select pkg_id, 'pkg', pkg_id, null, pkg_name from ${database.defaultSchemaName}.package ) UNION ( select ti_id, 'title', null, ti_id, ti_title from ${database.defaultSchemaName}.title_instance, ${database.defaultSchemaName}.refdata_value where rdv_id=ti_medium_fk and rdv_value = 'electronic' )".toString()

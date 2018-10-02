@@ -10,6 +10,10 @@ public class PackageContentItem extends ErmResource implements MultiTenant<Packa
 
   Pkg pkg
   PlatformTitleInstance pti
+  
+  String getName() {
+    "${pti.name} in Package ${pkg.name}"
+  }
 
   // Track this package content item - when did we first detect it (added) when did we last
   // see it, and when did we determine it has been removed?

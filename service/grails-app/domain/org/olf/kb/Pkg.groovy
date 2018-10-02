@@ -11,16 +11,16 @@ import grails.gorm.MultiTenant
  * mod-erm representation of a package
  */
 public class Pkg extends ErmResource implements MultiTenant<Pkg> {
-  String name
   String source
   String reference  // Reference contains the KBs authoritative ID for this package - Reference should be unique within KB
   RemoteKB remoteKb
   Platform nominalPlatform
   Org vendor
+  
+  
 
   static mapping = {
                 table 'package'
-                 name column:'pkg_name'
                source column:'pkg_source'
             reference column:'pkg_reference'
              remoteKb column:'pkg_remote_kb'
