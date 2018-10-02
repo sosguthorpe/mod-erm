@@ -36,8 +36,16 @@ class RefdataValue implements MultiTenant<RefdataValue> {
     normalizer.normalize( string.trim() ).replaceAll(/\p{M}/, '').replaceAll(/\s+/, '_').toLowerCase()
   }
   
-  private static String normLabel ( String string ) {
+  private static String tidyLabel ( String string ) {
     UCharacter.toTitleCase( string.trim() ).replaceAll(/\s{2,}/, ' ')
+  }
+  
+  void setValue (String value) {
+    this.value = normValue( value )
+  }
+  
+  void setLabel (String label) {
+    this.label = tidyLabel( label )
   }
   
   /**
@@ -55,7 +63,7 @@ class RefdataValue implements MultiTenant<RefdataValue> {
     
     if (!result) {
       result = clazz.newInstance()
-      result.label = normLabel( label )
+      result.label = label
       result.value = norm_value
       result.save(flush:true, failOnError:true)
     }
