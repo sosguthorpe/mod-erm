@@ -1,11 +1,12 @@
 package org.olf.kb
 
-import grails.gorm.DetachedCriteria
-import grails.gorm.MultiTenant
 import javax.persistence.Transient
+
 import org.olf.erm.Entitlement
 import org.olf.general.RefdataValue
 import org.olf.general.refdata.Defaults
+
+import grails.gorm.MultiTenant
 
 /**
  * mod-erm representation of a BIBFRAME instance

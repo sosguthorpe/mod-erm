@@ -1,6 +1,4 @@
 package org.olf.general
-import javax.persistence.Transient
-
 import grails.gorm.MultiTenant
 
 class RefdataCategory implements MultiTenant<RefdataCategory> {
