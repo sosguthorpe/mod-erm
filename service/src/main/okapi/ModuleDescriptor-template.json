@@ -82,6 +82,9 @@
           "methods": ["GET"],
           "pathPattern": "/erm/org/find/{name}",
           "modulePermissions": [ "vendor.collection.get" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/refdataValues/{domain}/{property}"
         }
       ]
     },{

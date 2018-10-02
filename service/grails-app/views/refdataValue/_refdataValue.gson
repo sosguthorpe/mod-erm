@@ -3,4 +3,9 @@ import org.olf.general.RefdataValue
 
 @Field RefdataValue refdataValue
 
-json g.render(refdataValue, [expand: ['owner']])
+json {
+  id refdataValue.id
+  value refdataValue.value
+  label refdataValue.label
+//  g.render(refdataValue, [expand: ['owner']])
+}
