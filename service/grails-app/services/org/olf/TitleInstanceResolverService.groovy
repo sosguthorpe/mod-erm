@@ -347,7 +347,7 @@ public class TitleInstanceResolverService {
         id_matches.each { matched_id ->
           // For each occurrence where the STATUS is APPROVED
           matched_id.occurrences.each { io ->
-            if ( io.status?.value == APPROVED ) {
+            if ( io.status?.label == APPROVED ) {
               if ( result.contains(io.title) ) {
                 // We have already seen this title, so don't add it again
               }
