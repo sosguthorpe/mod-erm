@@ -1,6 +1,4 @@
 import groovy.transform.*
-import java.util.Map
-import org.olf.kb.TitleInstance
 
 @Field
 Map data
