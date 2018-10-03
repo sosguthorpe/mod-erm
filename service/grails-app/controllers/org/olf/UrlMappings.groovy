@@ -24,6 +24,7 @@ class UrlMappings {
 
     "/erm/pci"(resources:'packageContentItem')
     "/erm/entitlements"(resources:'entitlement')
+    '/erm/contacts'(resources: 'internalContact')
 
     '/erm/refdataValues'(resources: 'refdata') {
       // The collection section allows us to create methods that impact the whole set of refdataValues rather than a specific resource.
