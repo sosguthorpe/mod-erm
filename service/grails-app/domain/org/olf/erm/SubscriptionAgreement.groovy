@@ -2,6 +2,7 @@ package org.olf.erm
 
 import org.olf.general.Org
 import org.olf.general.RefdataValue
+import org.olf.general.refdata.CategoryId
 import org.olf.general.refdata.Defaults
 
 import grails.gorm.MultiTenant
@@ -34,9 +35,18 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   @Defaults(['Draft', 'Trial', 'Current']) // Defaults to create for this property.
   RefdataValue agreementType
   
+  @Defaults(['High', 'Normal', 'Low'])
   RefdataValue renewalPriority
+  
+  @Defaults(['Active', 'In Process', 'In Negotiation', 'Cancelled', 'Rejected'])
   RefdataValue agreementStatus
+  
+  @CategoryId('Global.Yes_No')
+  @Defaults(['Yes', 'No'])
   RefdataValue isPerpetual
+  
+  @CategoryId('Global.Yes_No')
+  @Defaults(['Yes', 'No'])
   RefdataValue contentReviewNeeded
 
   Boolean enabled
@@ -46,13 +56,13 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   static hasMany = [
     items:Entitlement,
     historyLines: SAEventHistory,
-	contacts: InternalContact
+    contacts: InternalContact
   ]
 
   static mappedBy = [
     items:'owner',
     historyLines:'owner',
-	contacts: 'owner'
+    contacts: 'owner'
   ]
 
   static mapping = {
