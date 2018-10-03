@@ -1,12 +1,15 @@
 package org.olf.erm
 
 import javax.persistence.Transient
-
+import org.hibernate.Hibernate
+import org.hibernate.PersistentObjectException
+import org.hibernate.proxy.HibernateProxy
+import org.hibernate.proxy.LazyInitializer
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
 import org.olf.kb.PlatformTitleInstance
-
+import org.olf.kb.TitleInstance
 import grails.gorm.MultiTenant
 
 
@@ -68,24 +71,29 @@ public class Entitlement implements MultiTenant<Entitlement> {
    activeFrom(nullable:true,  blank:false)
      activeTo(nullable:true,  blank:false)
   }
-
+  
   @Transient
   public String getExplanation() {
     
     String result = null
-    switch (resource) {
-      case { it instanceof Pkg }:
-        result = 'Agreement includes a package containing this item'
-        break
-      case { it instanceof PlatformTitleInstance }:
-        result = 'Agremment includes this title directly'
-        break
-      case { it instanceof PackageContentItem }:
-        result = 'Agreement includes this item from a package specifically'
-        break
+    
+    if (resource) {
+      // Get the class using the hibernate helper so we can
+      // be sure we have the target class and not a proxy wrapper.
+      Class c = Hibernate.getClass(resource)
+      switch (c) {
+        case Pkg:
+          result = 'Agreement includes a package containing this item'
+          break
+        case PlatformTitleInstance:
+          result = 'Agremment includes this title directly'
+          break
+        case PackageContentItem:
+          result = 'Agreement includes this item from a package specifically'
+          break
+      }
     }
-
-    return result
+    result
   }
 
 }

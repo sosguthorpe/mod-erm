@@ -2,4 +2,6 @@ import groovy.transform.*
 import org.olf.erm.Entitlement
 
 @Field Entitlement entitlement
-json g.render(entitlement, [expand: []])
+json g.render(entitlement, [expand: []]) {
+  'explanation' entitlement.getExplanation()
+}
