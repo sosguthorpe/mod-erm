@@ -113,7 +113,7 @@ class ErmTitleServiceSpec extends GebSpec {
       }
 
     then:
-      title_instance.title == 'Brain of the firm'
+      title_instance.name == 'Brain of the firm'
       title_instance.id != null
       // It would be nice to do this. but DON'T. Our session is terminated in the withId block above, so doing
       // this will cause the test to blow up as the session has gone away. Use the approach take, where we count
