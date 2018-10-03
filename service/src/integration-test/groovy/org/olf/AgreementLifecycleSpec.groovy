@@ -53,12 +53,12 @@ class AgreementLifecycleSpec extends GebSpec {
   // where clauses to actually idetify specific packages and platforms.
   private static final String PACKAGE_CONTENT_ITEM_QUERY = '''select pci.id
 from PackageContentItem as pci
-where pci.pti.titleInstance.title = :title
+where pci.pti.titleInstance.name = :title
 '''
 
   private static final String OFF_PACKAGE_TITLE_QUERY = '''select pti.id
 from PlatformTitleInstance as pti
-where pti.titleInstance.title = :title
+where pti.titleInstance.name = :title
 and pti.platform.name = :platform
 '''
 
