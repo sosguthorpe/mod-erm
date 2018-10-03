@@ -6,11 +6,14 @@ import grails.gorm.MultiTenant
 /**
  * mod-erm representation of a package
  */
-public class PackageContentItem implements MultiTenant<PackageContentItem> {
+public class PackageContentItem extends ErmResource implements MultiTenant<PackageContentItem> {
 
-  String id
   Pkg pkg
   PlatformTitleInstance pti
+  
+  String getName() {
+    "${pti.name} in Package ${pkg.name}"
+  }
 
   // Track this package content item - when did we first detect it (added) when did we last
   // see it, and when did we determine it has been removed?
@@ -27,7 +30,6 @@ public class PackageContentItem implements MultiTenant<PackageContentItem> {
 
   // A field primarily to deposit KBART::CoverageDepth type data
   String depth
-
   static hasMany = [
     coverageStatements: CoverageStatement
   ]
@@ -37,8 +39,6 @@ public class PackageContentItem implements MultiTenant<PackageContentItem> {
   ]
 
   static mapping = {
-                   id column:'pci_id', generator: 'uuid', length:36
-              version column:'pci_version'
                   pkg column:'pci_pkg_fk'
                   pti column:'pci_pti_fk'
           accessStart column:'pci_access_start'

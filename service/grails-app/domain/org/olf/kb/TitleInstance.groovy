@@ -1,62 +1,62 @@
 package org.olf.kb
 
-import grails.gorm.MultiTenant
 import javax.persistence.Transient
+
 import org.olf.erm.Entitlement
 import org.olf.general.RefdataValue
+import org.olf.general.refdata.Defaults
+
+import grails.gorm.MultiTenant
 
 /**
  * mod-erm representation of a BIBFRAME instance
  */
-public class TitleInstance implements MultiTenant<TitleInstance> {
+public class TitleInstance extends ErmResource implements MultiTenant<TitleInstance> {
 
-  private static final String ENTITLEMENTS_QUERY = '''from Entitlement as ent 
-where exists ( select pci.id 
-               from PackageContentItem as pci
-               where pci.pti.titleInstance = :title 
-               and ent.pkg = pci.pkg )
-   or exists ( select pci.id 
-               from PackageContentItem as pci
-               where pci.pti.titleInstance = :title
-               and ent.pci = pci )
-   or exists ( select single_title from Entitlement as single_title where single_title=ent and single_title.pti.titleInstance = :title )
+  private static final String ENTITLEMENTS_QUERY = '''
+  from Entitlement as ent 
+    where exists ( select pci.id 
+                 from PackageContentItem as pci
+                 where pci.pti.titleInstance = :title 
+                 and ent.resource = pci.pkg )
+     or exists ( select pci.id 
+                 from PackageContentItem as pci
+                 where pci.pti.titleInstance = :title
+                 and ent.resource = pci )
+     or exists ( select pti.id 
+                 from PlatformTitleInstance as pti
+                 where pti.titleInstance = :title
+                 and ent.resource = pti )
 '''
-
-  String id
-  // Title IN ORIGINAL LANGUAGE OF PUBLICATION
-  String title
-
-  // Journal/Book/...
-  RefdataValue resourceType
-
-  // Print/Electronic
-  RefdataValue medium
 
   // For grouping sibling title instances together - EG Print and Electronic editions of the same thing
   Work work
+  
+  // Journal/Book/...
+  @Defaults(['Journal', 'Book'])
+  RefdataValue type
+
+  // Print/Electronic
+  @Defaults(['Print', 'Electronic'])
+  RefdataValue subType
 
   static mapping = {
-                   id column:'ti_id', generator: 'uuid', length:36
-              version column:'ti_version'
-                title column:'ti_title'
-                 work column:'ti_work_fk'
-               medium column:'ti_medium_fk'
-         resourceType column:'ti_resource_type_fk'
+             work column:'ti_work_fk'
   }
 
   static constraints = {
-           title(nullable:false, blank:false)
-    resourceType(nullable:true, blank:false)
-          medium(nullable:true, blank:false)
-            work(nullable:true, blank:false)
+            name (nullable:false, blank:false)
+            work (nullable:true, blank:false)
   }
 
   static hasMany = [
-    identifiers: IdentifierOccurrence
+    identifiers: IdentifierOccurrence,
+    platformInstances: PlatformTitleInstance
   ]
 
   static mappedBy = [
-    identifiers: 'title'
+    identifiers: 'title',
+    platformInstances: 'titleInstance'
   ]
 
 
@@ -65,7 +65,7 @@ where exists ( select pci.id
    */
   @Transient
   List<Entitlement> getEntitlements() {
-    List<Entitlement> result = Entitlement.executeQuery('select ent '+ENTITLEMENTS_QUERY,[title:this],[max:20, offset:0]);
-    return result;
+    List<Entitlement> result = Entitlement.executeQuery('select ent '+ENTITLEMENTS_QUERY,[title:this],[max:20, offset:0])
+    result
   }
 }

@@ -19,10 +19,31 @@ import org.olf.general.RefdataCategory
 @Transactional
 public class TitleInstanceResolverService {
 
-  private static final float MATCH_THRESHOLD = 0.775f;
-  private static final String TEXT_MATCH_TITLE_QRY = 'select * from title_instance WHERE ti_title % :qrytitle AND similarity(ti_title, :qrytitle) > :threshold ORDER BY  similarity(ti_title, :qrytitle) desc LIMIT 20'
+  private static final float MATCH_THRESHOLD = 0.775f
+  private static final String TEXT_MATCH_TITLE_HQL = '''
+   SELECT ti from TitleInstance as ti
+    WHERE 
+      trgm_match(ti.name, :qrytitle) = true
+        AND
+      similarity(ti.name, :qrytitle) > :threshold
+    ORDER BY similarity(ti.name, :qrytitle) desc
+  '''
 
-  private static final String SIBLING_MATCH_HQL = 'select ti from TitleInstance as ti where exists ( Select sibling from TitleInstance as sibling join sibling.identifiers as io where sibling.work = ti.work and io.identifier.ns.value = :ns and io.identifier.value = :value ) and ti.medium.value = :electronic';
+  private static final String SIBLING_MATCH_HQL = '''
+    from TitleInstance as ti
+      WHERE 
+        exists ( SELECT sibling FROM TitleInstance as sibling 
+                   JOIN sibling.identifiers as io
+                 WHERE 
+                   sibling.work = ti.work
+                     AND
+                   io.identifier.ns.value = :ns
+                     AND
+                   io.identifier.value = :value
+        )
+          AND
+        ti.subType.value = :electronic
+  '''
 
   private static def class_one_namespaces = [
     'zdb',
@@ -195,16 +216,16 @@ public class TitleInstanceResolverService {
       def resource_type = citation.instanceMedia?.trim()
 
       result = new TitleInstance(
-         title: citation.title,
+         name: citation.title,
          work: work
       )
       
       if ((medium?.length() ?: 0) > 0) {
-        result.mediumFromString = medium
+        result.subTypeFromString = medium
       }
       
       if ((resource_type?.length() ?: 0) > 0) {
-        result.resourceTypeFromString = resource_type
+        result.typeFromString = resource_type
       }
 
       result.save(flush:true, failOnError:true)
@@ -280,23 +301,11 @@ public class TitleInstanceResolverService {
 
     List<TitleInstance> result = new ArrayList<TitleInstance>()
     TitleInstance.withSession { session ->
-
-      final sqlQuery = session.createSQLQuery(TEXT_MATCH_TITLE_QRY)
-
       try {
-        result = sqlQuery.with {
-          addEntity(TitleInstance)
-          // Set query title - I know this looks a little odd, we have to manually quote this and handle any
-          // relevant escaping... So this code will probably not be good enough long term.
-          setString('qrytitle',title);
-          setFloat('threshold',threshold)
-   
-          // Get all results.
-          list()
-        }
+        result = TitleInstance.executeQuery(TEXT_MATCH_TITLE_HQL,[qrytitle: (title),threshold: (threshold)], [max:20])
       }
       catch ( Exception e ) {
-        log.error("Problem attempting to run SQL Query ${TEXT_MATCH_TITLE_QRY} on string ${title} with threshold 0.6f",e);
+        log.error("Problem attempting to run HQL Query ${TEXT_MATCH_TITLE_HQL} on string ${title} with threshold ${threshold}",e)
       }
     }
  
@@ -330,7 +339,7 @@ public class TitleInstanceResolverService {
 
         // Look up each identifier
         // log.debug("${id} - try class one match");
-        def id_matches = Identifier.executeQuery('select id from Identifier as id where id.value = :value and id.ns.value = :ns',[value:id.value, ns:id.namespace])
+        def id_matches = Identifier.executeQuery('select id from Identifier as id where id.value = :value and id.ns.value = :ns',[value:id.value, ns:id.namespace], [max:2])
 
         assert ( id_matches.size() <= 1 )
 
@@ -338,7 +347,7 @@ public class TitleInstanceResolverService {
         id_matches.each { matched_id ->
           // For each occurrence where the STATUS is APPROVED
           matched_id.occurrences.each { io ->
-            if ( io.status?.value == APPROVED ) {
+            if ( io.status?.label == APPROVED ) {
               if ( result.contains(io.title) ) {
                 // We have already seen this title, so don't add it again
               }

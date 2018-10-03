@@ -153,7 +153,7 @@ class GrailsDomainRefdataHelpers {
         // Lookup single value.
         targetClass.metaClass.static."lookup${upperName}" << { String value ->
           // Do the lookup.
-          def val = typeClass.find('FROM ' + typeClass.simpleName + ' as rdv WHERE rdv.value=:val AND rdv.owner.desc=:desc', [val: "${value}", desc:"${typeString}"],  ["readOnly": true])
+          def val = typeClass.find('FROM ' + typeClass.simpleName + ' as rdv WHERE rdv.value=:val AND rdv.owner.desc=:desc', [val: typeClass.normValue(value), desc:"${typeString}"],  ["readOnly": true])
           val
         }
         
@@ -162,7 +162,7 @@ class GrailsDomainRefdataHelpers {
           typeClass.lookupOrCreate(typeString, value, value, typeClass)
         }
 
-        log.debug ("Added static methods ['all${upperName}Values', 'lookup${upperName}(value)', 'set${upperName}FromString', 'lookupOrCreateAgreementType(value)', ] to ${targetClass}")
+        log.debug ("Added static methods ['all${upperName}Values', 'lookup${upperName}(value)', 'set${upperName}FromString(value)', 'lookupOrCreate${upperName}(value)'] to ${targetClass}")
         
         // Add instance method method for setting refdata value from string.
         targetClass.metaClass."set${upperName}FromString" = { final String value ->

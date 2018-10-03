@@ -1,11 +1,6 @@
 package org.olf.erm
 
 import grails.gorm.MultiTenant
-import org.olf.general.RefdataValue
-import org.olf.kb.Pkg
-import org.olf.kb.PackageContentItem
-import org.olf.kb.PlatformTitleInstance
-import javax.persistence.Transient
 
 
 /**

@@ -131,6 +131,21 @@ environments:
   test:
     dataSource:
       url: "jdbc:postgresql://${db.host:localhost}:${db.port:5432}/${db.database:olftest}"
+      
+  dbGen:
+    grails:
+      gorm:
+        multiTenancy:
+          mode: SCHEMA
+          tenantResolverClass: org.grails.datastore.mapping.multitenancy.resolvers.SystemPropertyTenantResolver # System prop of gorm.tenantId 
+      plugin:
+        databasemigration:
+          updateOnStart: true
+          updateOnStartFileName: module-tenant-changelog.groovy
+  
+    gorm:
+      tenantId: public # Used by SystemPropertyTenantResolver
+
   production:
     dataSource:
       url: "jdbc:postgresql://${db.host:localhost}:${db.port:5432}/${db.database:olf}"

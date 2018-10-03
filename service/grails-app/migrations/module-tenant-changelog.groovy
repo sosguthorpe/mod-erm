@@ -1,3 +1,5 @@
 databaseChangeLog = {
-  include file: 'create-remote-kb.groovy'
+  include file: 'initial-model.groovy'
+  
+  include file: 'initial-customizations.groovy'
 }

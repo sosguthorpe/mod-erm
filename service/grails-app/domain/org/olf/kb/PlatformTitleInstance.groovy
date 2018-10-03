@@ -6,16 +6,25 @@ import grails.gorm.MultiTenant
 /**
  * Recording the availability of a titleInstance on a platform
  */
-public class PlatformTitleInstance implements MultiTenant<PlatformTitleInstance> {
+public class PlatformTitleInstance extends ErmResource implements MultiTenant<PlatformTitleInstance> {
 
-  String id
   TitleInstance titleInstance
   Platform platform
   String url
+  
+  String getName() {
+    "'${titleInstance.name}' on Platform '${platform.name}'"
+  }
+  
+  static hasMany = [
+    packageOccurences: PackageContentItem,
+  ]
+
+  static mappedBy = [
+    packageOccurences: 'pti'
+  ]
 
   static mapping = {
-                   id column:'pti_id', generator: 'uuid', length:36
-              version column:'pti_version'
         titleInstance column:'pti_ti_fk'
              platform column:'pti_pt_fk'
                   url column:'pti_url'

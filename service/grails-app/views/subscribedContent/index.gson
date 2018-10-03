@@ -1,6 +1,4 @@
 import groovy.transform.*
-import java.util.Map
-import org.olf.kb.TitleInstance
 
 @Field
 Map data
@@ -9,7 +7,7 @@ json {
   "total" (data.total)
   
   // Special case when you want to use a template for each collection entry.
-  "results" g.render(template:"eResource", collection: data.results, var:'title')
+  "results" g.render(data.results)
   
 //  "results" (data.results) { TitleInstance resultRow ->
 //    g.render(template: "eResource", model:[title:resultRow])

@@ -39,7 +39,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
             Pkg pkg = Pkg.get(content_item.id);
             if ( pkg != null ) {
               log.debug("Adding package ${pkg} to agreement ${sa}");
-              Entitlement ent = new Entitlement(pkg:pkg, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
+              Entitlement ent = new Entitlement(resource:pkg, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
               result.status.add([message:"Line ${lineno} - added ${pkg} - line item id is ${ent.id}"])
             }
             break;
@@ -47,7 +47,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
             PackageContentItem pci = PackageContentItem.get(content_item.id);
             if ( pci != null ) {
               log.debug("Adding title from package ${pci} to agreement ${sa}");
-              Entitlement ent = new Entitlement(pci:pci, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
+              Entitlement ent = new Entitlement(resource:pci, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
               result.status.add([message:"Line ${lineno} - added ${pci} - line item id is ${ent.id}"])
             }
             break;
@@ -55,7 +55,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
             PlatformTitleInstance pti = PlatformTitleInstance.get(content_item.id);
             if ( pti != null ) {
               log.debug("Adding title ${pti} to agreement ${sa}");
-              Entitlement ent = new Entitlement(pti:pti, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
+              Entitlement ent = new Entitlement(resource:pti, owner:sa, enabled:Boolean.TRUE).save(flush:true, failOnError:true);
               result.status.add([message:"Line ${lineno} - added ${pti} - line item id is ${ent.id}"])
             }
             break;
