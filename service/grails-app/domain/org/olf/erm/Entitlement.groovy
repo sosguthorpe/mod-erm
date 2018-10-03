@@ -1,11 +1,16 @@
 package org.olf.erm
 
-import grails.gorm.MultiTenant
-import org.olf.general.RefdataValue
-import org.olf.kb.Pkg
-import org.olf.kb.PackageContentItem
-import org.olf.kb.PlatformTitleInstance
 import javax.persistence.Transient
+import org.hibernate.Hibernate
+import org.hibernate.PersistentObjectException
+import org.hibernate.proxy.HibernateProxy
+import org.hibernate.proxy.LazyInitializer
+import org.olf.kb.ErmResource
+import org.olf.kb.PackageContentItem
+import org.olf.kb.Pkg
+import org.olf.kb.PlatformTitleInstance
+import org.olf.kb.TitleInstance
+import grails.gorm.MultiTenant
 
 
 /**
@@ -20,10 +25,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
 
   String id
 
-  // This line item is for ONE of:
-  Pkg pkg
-  PackageContentItem pci
-  PlatformTitleInstance pti
+  ErmResource resource
 
   // The date ranges on which this line item is active. These date ranges allow the system to determine
   // what content is "Live" in an agreement. Content can be "Live" without being switched on, and 
@@ -55,9 +57,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
                    id column: 'ent_id', generator: 'uuid', length:36
               version column: 'ent_version'
                 owner column: 'ent_owner_fk'
-                  pkg column: 'ent_pkg_fk'
-                  pci column: 'ent_pci_fk'
-                  pti column: 'ent_pti_fk'
+             resource column: 'ent_resource_fk'
               enabled column: 'ent_enabled'
            activeFrom column: 'ent_active_from'
              activeTo column: 'ent_active_to'
@@ -65,31 +65,35 @@ public class Entitlement implements MultiTenant<Entitlement> {
 
 
   static constraints = {
-        owner(nullable:true, blank:false)
-          pkg(nullable:true, blank:false)
-          pci(nullable:true, blank:false)
-          pti(nullable:true, blank:false)
-      enabled(nullable:true, blank:false)
-   activeFrom(nullable:true, blank:false)
-     activeTo(nullable:true, blank:false)
+        owner(nullable:true,  blank:false)
+     resource(nullable:false, blank:false)
+      enabled(nullable:true,  blank:false)
+   activeFrom(nullable:true,  blank:false)
+     activeTo(nullable:true,  blank:false)
   }
-
+  
   @Transient
   public String getExplanation() {
-    String result = null;
-    if ( pkg != null ) {
-      // Access to an item because the agreement lists a package which contains
-      // that item
-      result = 'Agreement includes a package containing this item'
+    
+    String result = null
+    
+    if (resource) {
+      // Get the class using the hibernate helper so we can
+      // be sure we have the target class and not a proxy wrapper.
+      Class c = Hibernate.getClass(resource)
+      switch (c) {
+        case Pkg:
+          result = 'Agreement includes a package containing this item'
+          break
+        case PlatformTitleInstance:
+          result = 'Agremment includes this title directly'
+          break
+        case PackageContentItem:
+          result = 'Agreement includes this item from a package specifically'
+          break
+      }
     }
-    else if ( this.pci != null ) {
-      result = 'Agreement includes this item from a package specifically'
-    }
-    else if ( this.pti != null ) {
-      result = 'Agremment includes this title directly'
-    }
-
-    return result;
+    result
   }
 
 }

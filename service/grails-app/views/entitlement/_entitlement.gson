@@ -3,16 +3,5 @@ import org.olf.erm.Entitlement
 
 @Field Entitlement entitlement
 json g.render(entitlement, [expand: []]) {
-  if ( entitlement.pkg != null ) {
-    entitlementType "Package"
-    entitlementLabel entitlement.pkg.name
-  }
-  else if ( entitlement.pci != null) {
-    entitlementType "Title from Package"
-    entitlementLabel entitlement.pci.pti?.titleInstance?.title
-  }
-  else if ( entitlement.pti != null ) {
-    entitlementType "Title on platform"
-    entitlementLabel entitlement.pti.titleInstance?.title
-  }
+  'explanation' entitlement.getExplanation()
 }

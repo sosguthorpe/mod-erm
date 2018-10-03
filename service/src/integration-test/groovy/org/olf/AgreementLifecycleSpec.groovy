@@ -26,7 +26,7 @@ import spock.lang.*
  * unlike the other integration tests, this test is about simulating the end to end process of creating and managing agreements.
  *
  * The aim of the test is
- *   Load some packages so we have some titles to work with - make sure we load enough that we have some that will be visble
+ *   Load some packages so we have some titles to work with - make sure we load enough that we have some that will be visible
  *   and some that won't
  * 
  *   Create an agreement 
@@ -53,12 +53,12 @@ class AgreementLifecycleSpec extends GebSpec {
   // where clauses to actually idetify specific packages and platforms.
   private static final String PACKAGE_CONTENT_ITEM_QUERY = '''select pci.id
 from PackageContentItem as pci
-where pci.pti.titleInstance.title = :title
+where pci.pti.titleInstance.name = :title
 '''
 
   private static final String OFF_PACKAGE_TITLE_QUERY = '''select pti.id
 from PlatformTitleInstance as pti
-where pti.titleInstance.title = :title
+where pti.titleInstance.name = :title
 and pti.platform.name = :platform
 '''
 
@@ -131,9 +131,9 @@ and pti.platform.name = :platform
       result != null
 
     where:
-      tenantid | test_package_file
-      TENANT | 'src/integration-test/resources/packages/apa_1062.json'
-      TENANT | 'src/integration-test/resources/packages/bentham_science_bentham_science_eduserv_complete_collection_2015_2017_1386.json'
+      tenantid  | test_package_file
+      TENANT    | 'src/integration-test/resources/packages/apa_1062.json'
+      TENANT    | 'src/integration-test/resources/packages/bentham_science_bentham_science_eduserv_complete_collection_2015_2017_1386.json'
 
   }
 
@@ -200,7 +200,7 @@ and pti.platform.name = :platform
 
       // Use a GEB Data Table to load each record
       where:
-        tenant | agreement_name | type
+        tenant | agreement_name       | type
         TENANT | 'My first agreement' | 'Draft'
 
   }

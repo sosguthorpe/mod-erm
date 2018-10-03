@@ -1,8 +1,13 @@
 package org.olf.general
 
+import com.ibm.icu.lang.UCharacter
+import com.ibm.icu.text.Normalizer2
+
 import grails.gorm.MultiTenant
 
 class RefdataValue implements MultiTenant<RefdataValue> {
+  
+  private static final Normalizer2 normalizer = Normalizer2.NFKDInstance
 
   String id
   String value
@@ -21,9 +26,27 @@ class RefdataValue implements MultiTenant<RefdataValue> {
   }
 
   static constraints = {
-    label(nullable: true, blank: false)
+    label (nullable: false, blank: false)
+    value (nullable: false, blank: false)
+    owner (nullable: false, blank: false)
   }
   
+  public static String normValue ( String string ) {
+    // Remove all diacritics and substitute for compatibility
+    normalizer.normalize( string.trim() ).replaceAll(/\p{M}/, '').replaceAll(/\s+/, '_').toLowerCase()
+  }
+  
+  private static String tidyLabel ( String string ) {
+    UCharacter.toTitleCase( string.trim(), null ).replaceAll(/\s{2,}/, ' ')
+  }
+  
+  void setValue (String value) {
+    this.value = normValue( value )
+  }
+  
+  void setLabel (String label) {
+    this.label = tidyLabel( label )
+  }
   
   /**
    * Lookup or create a RefdataValue
@@ -31,15 +54,20 @@ class RefdataValue implements MultiTenant<RefdataValue> {
    * @param value
    * @return
    */
-  static <T extends RefdataValue> T lookupOrCreate(final String category_name, final String value, final String label=null, Class<T> clazz = this) {
-    RefdataCategory cat = RefdataCategory.findOrCreateByDesc(category_name).save(flush:true, failOnError:true)
-    T result = clazz.findOrCreateByOwnerAndValue(cat, value)
+  static <T extends RefdataValue> T lookupOrCreate(final String category_name, final String label, final String value=null, Class<T> clazz = this) {
+    final RefdataCategory cat = RefdataCategory.findOrCreateByDesc(category_name).save(flush:true, failOnError:true)
     
-    if (result) {
-      result.label = label ?: value
+    final String norm_value = normValue( value ?: label )
+    
+    T result = clazz.findByOwnerAndValue(cat, norm_value)
+    
+    if (!result) {
+      result = clazz.newInstance()
+      result.label = label
+      result.value = norm_value
+      result.owner = cat
+      result.save(flush:true, failOnError:true)
     }
-    
-    result.save(flush:true, failOnError:true)
     result
   }
 

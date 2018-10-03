@@ -1,0 +1,14 @@
+import org.olf.kb.TitleInstance
+
+import groovy.transform.*
+
+@Field
+TitleInstance titleInstance
+
+json g.render(titleInstance, [expand: ['identifiers', 'type', 'subType']]) {
+
+  // Add the custom summary option
+  "entitlements" g.render( titleInstance.getEntitlements() )
+
+  // entitlementsTwo title.getEntitlements()
+}

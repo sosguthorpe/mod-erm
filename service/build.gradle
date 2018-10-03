@@ -7,7 +7,7 @@ buildscript {
     classpath "org.grails:grails-gradle-plugin:$grailsVersion"
     classpath "org.grails.plugins:hibernate5:${gormVersion-".RELEASE"}"
     classpath "org.grails.plugins:views-gradle:1.2.7"
-    classpath 'org.grails.plugins:database-migration:3.0.3'
+    classpath 'org.grails.plugins:database-migration:3.0.4'
     classpath "com.bmuschko:gradle-docker-plugin:3.2.1"
     
   }
@@ -68,21 +68,26 @@ dependencies {
   testRuntime "net.sourceforge.htmlunit:htmlunit:2.18"
 
   // Custom non profile deps.
-
   compile "org.postgresql:postgresql:42.2.4"
 
   runtime "org.grails.plugins:async"
   runtime "org.grails.plugins:events"
 
   compile "org.grails.plugins:spring-security-core:3.2.0"
-  compile 'org.grails.plugins:database-migration:3.0.3'
-  compile 'org.liquibase:liquibase-core:3.5.3'
+  compile 'org.grails.plugins:database-migration:3.0.4'
+  compile 'org.liquibase:liquibase-core:3.5.5'
+  compile 'com.ibm.icu:icu4j:62.1'
+  
+  // Better test reports.
+  testCompile( 'com.athaydes:spock-reports:1.6.1' ) {
+    transitive = false // this avoids affecting your version of Groovy/Spock
+  }
 
 }
 
 // Changed this to enable inline development of the includes listed below.
 def includes = [
-  'web-toolkit'   : 'com.k_int.grails:web-toolkit:3.3.8',
+  'web-toolkit'   : 'com.k_int.grails:web-toolkit:3.3.10',
   'grails-okapi'  : 'com.k_int.okapi:grails-okapi:3.3.14'
 ]
 

@@ -1,8 +1,7 @@
 package org.olf.general
-import javax.persistence.Transient
+import org.olf.general.annotations.OkapiDistributedDomain
 
 import grails.gorm.MultiTenant
-import org.olf.general.annotations.OkapiDistributedDomain
 
 @OkapiDistributedDomain(config='Org')
 class Org implements MultiTenant<Org> {

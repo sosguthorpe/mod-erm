@@ -1,7 +1,8 @@
 package org.olf.kb
 
-import grails.gorm.MultiTenant
 import org.olf.general.RefdataValue
+
+import grails.gorm.MultiTenant
 
 
 /**
