@@ -2,6 +2,7 @@ package org.olf.erm
 
 import org.olf.general.Org
 import org.olf.general.RefdataValue
+import org.olf.general.refdata.CategoryId
 import org.olf.general.refdata.Defaults
 
 import grails.gorm.MultiTenant
@@ -25,18 +26,27 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
    * By default the RefdataCategory would be generated from the concatenation
    * of the class name and the property name. So the below property of agreementType
    * would result in a category named SubscriptionAgreement.AgreementType
-   * 
+   *
    * If we wanted to share a category across multiple Classes (like a global "Yes_No"),
    * or just wanted to specify the category, we can use the \@CategoryId annotation.
-   * 
+   *
    * @CategoryId('AgreementType') - Would create a category named 'AgreementType' for values stored here.
-   */  
+   */
   @Defaults(['Draft', 'Trial', 'Current']) // Defaults to create for this property.
   RefdataValue agreementType
-  
+
+  @Defaults(['Definitely renew', 'For review', 'Definitely cancel'])
   RefdataValue renewalPriority
+
+  @Defaults(['Draft', 'Requested', 'In negotiation',  'Rejected', 'Active', 'Cancelled'])
   RefdataValue agreementStatus
+
+  @CategoryId('Global.Yes_No')
+  @Defaults(['Yes', 'No'])
   RefdataValue isPerpetual
+
+  @CategoryId('Global.Yes_No')
+  @Defaults(['Yes', 'No'])
   RefdataValue contentReviewNeeded
 
   Boolean enabled
@@ -46,13 +56,13 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   static hasMany = [
     items:Entitlement,
     historyLines: SAEventHistory,
-	contacts: InternalContact
+    contacts: InternalContact
   ]
 
   static mappedBy = [
     items:'owner',
     historyLines:'owner',
-	contacts: 'owner'
+    contacts: 'owner'
   ]
 
   static mapping = {
