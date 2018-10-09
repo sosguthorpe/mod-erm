@@ -1,0 +1,7 @@
+import org.olf.kb.IdentifierOccurrence
+
+import groovy.transform.*
+
+@Field
+IdentifierOccurrence identifierOccurrence
+json g.render(identifierOccurrence, [expand: ['identifier', 'status']])

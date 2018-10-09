@@ -18,5 +18,5 @@ json {
   }
   
   // Render the full representation of whatever this object is.
-  '_object' (g.render(ermResource, [excludes:['id', 'name', 'type', 'subType']]))
+  '_object' g.render(ermResource.class.cast(ermResource))
 }
