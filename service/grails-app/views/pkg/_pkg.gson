@@ -4,4 +4,5 @@ import org.olf.kb.Pkg
 model {
   Pkg pkg
 }
-json g.render(pkg, [expand: ['remoteKb','vendor', 'type', 'subType']])
+System.out.println("Here")
+json g.render(pkg, [expand: ['remoteKb','vendor', 'type', 'subType'], excludes:['contentItems']])
