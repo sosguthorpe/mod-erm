@@ -1,5 +1,5 @@
 #!/bin/sh
-set -vx
+#set -vx
 
 
 if [ -f ~/folio_privates.sh ]

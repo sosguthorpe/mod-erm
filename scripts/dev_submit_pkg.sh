@@ -36,13 +36,7 @@ BSEC_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../se
 echo Loading APA
 APA_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/apa_1062.json http://localhost:8080/erm/admin/loadPackage | jq -r ".newPackageId" | tr -d '\r'`
 
-AGREEMENT_TRIAL_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
-{
-  category: "AgreementType",
-  value: "TRIAL",
-  label: "Trial"
-}
-' | jq -r ".id" | tr -d '\r'`
+AGREEMENT_TRIAL_RDV=`curl -SsL -XGET -H 'X-OKAPI-TENANT: diku'  http://localhost:8080/erm/refdataValues/SubscriptionAgreement/agreementType?filters=label%3D%3DTrial | jq -r '.[] | select(.) | .id'`
 
 YNO_YES_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
 {
@@ -100,13 +94,7 @@ NICE_TO_HAVE_RENEW_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: a
 }
 ' | jq -r ".id" | tr -d '\r'`
 
-AGREEMENT_DRAFT_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
-{
-  category: "AgreementType",
-  value: "DRAFT",
-  label: "Draft"
-}
-' | jq -r ".id" | tr -d '\r'`
+AGREEMENT_DRAFT_RDV=`curl -SsL -XGET -H 'X-OKAPI-TENANT: diku'  http://localhost:8080/erm/refdataValues/SubscriptionAgreement/agreementType?filters=label%3D%3DDraft | jq -r '.[] | select(.) | .id'`
 
 echo Create a trial agreement 
 
