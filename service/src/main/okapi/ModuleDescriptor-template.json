@@ -41,6 +41,12 @@
           "pathPattern": "/erm/packages/{id}/*"
         },{
           "methods": ["GET", "POST"],
+          "pathPattern": "/erm/contacts"
+        },{
+          "methods": ["GET", "PUT", "DELETE"],
+          "pathPattern": "/erm/contacts/{id}"
+        },{
+          "methods": ["GET", "POST"],
           "pathPattern": "/erm/content"
         },{
           "methods": ["GET", "PUT", "DELETE"],
