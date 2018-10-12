@@ -1,3 +1,4 @@
 /.*
 !.gitignore
 !/.okapi
+.DS_Store

@@ -235,6 +235,10 @@ public class EbscoKBAdapter implements KBCacheUpdater {
     return result;
   }
 
-}
+  public boolean activate(Map params, KBCache cache) {
+    // Nothing to see here yet
+    return true
+  }
 
+}
 

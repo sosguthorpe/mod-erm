@@ -20,6 +20,7 @@ public class Pkg extends ErmResource implements MultiTenant<Pkg> {
   
   static hasMany = [
     contentItems: PackageContentItem
+    // tags: KIWTTag
   ]
   
   static mappedBy = [

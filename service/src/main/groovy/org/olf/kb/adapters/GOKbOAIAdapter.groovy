@@ -232,4 +232,9 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
     throw new RuntimeException("Not yet implemented");
   }
 
+  public boolean activate(Map params, KBCache cache) {
+    throw new RuntimeException("Not supported by this KB provider");
+    return false;
+  }
+
 }

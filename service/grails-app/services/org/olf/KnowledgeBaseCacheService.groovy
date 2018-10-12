@@ -14,6 +14,22 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
 
   def packageIngestService
 
+  private static final String PLATFORM_TITLES_QUERY = '''select pti, rkb from PlatformTitleInstance as pti, Entitlement as ent, RemoteKB as rkb 
+where ( exists ( select pci.id 
+               from PackageContentItem as pci
+               where pci.pti = pti
+               and ent.resource = pci.pkg )
+   or exists ( select pci.id 
+               from PackageContentItem as pci
+               where pci.pti = pti
+               and ent.resource = pci )
+   or ent.resource = pti )
+  and rkb.activationSupported = true 
+  and rkb.activationEnabled = true
+  and not exists ( select car from ContentActivationRecord as car where car.pti = pti and car.target = rkb )
+'''
+
+
   public void triggerCacheUpdate() {
     log.debug("KnowledgeBaseCacheService::triggerCacheUpdate()");
 
@@ -64,4 +80,40 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
                                String authority_id_of_package) {
   }
 
+
+  /**
+   * Trigger the activation update procedure.
+   */
+  public void triggerActivationUpdate() {
+
+    Map<String, KBCacheUpdater> adapter_cache = [:]
+
+    log.debug("KnowledgeBaseCacheService::triggerActivationUpdate()");
+    int activation_count = 0;
+    RemoteKB.executeQuery(PLATFORM_TITLES_QUERY).each { qr ->
+      log.debug("Content Activation: ${qr}");
+      def adapter = getAdapter(adapter_cache, qr[1])
+      if ( adapter.activate([:], this) ) {
+        log.debug("Activation OK - create CAR");
+      }
+      else {
+        log.debug("Activation Failed - no CAR");
+      }
+      activation_count++;
+    }
+
+    log.debug("triggerActivationUpdate() - ${activation_count} activations");
+
+    return
+  }
+
+  private KBCacheUpdater getAdapter(Map m, RemoteKB rkb) {
+    KBCacheUpdater result = m[rkb.type]
+    if ( result == null ) {
+      Class cls = Class.forName(rkb.type)
+      result = cls.newInstance();
+      m[rkb.type] = result;
+    }
+    return result;
+  }
 }

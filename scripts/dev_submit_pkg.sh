@@ -152,7 +152,9 @@ RS_GOKB_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/j
   credentials:null,
   rectype:"1",
   active:true,
-  supportsHarvesting:true
+  supportsHarvesting:true,
+  activationSupported:false,
+  activationEnabled:false
 }
 '`
 
@@ -169,10 +171,28 @@ RS_EBSCO_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/
   credentials:"'"$EBSCO_SANDBOX_API_KEY"'",
   rectype:"1",
   active:false,
-  supportsHarvesting:false
+  supportsHarvesting:false,
+  activationSupported:true,
+  activationEnabled:true,
 }
 '`
 
+RS_GBV_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/kbs -d '
+{
+  name:"GBV",
+  type:"org.olf.kb.adapters.GenericRemoteKBAdapter",
+  cursor:null,
+  uri:"",
+  listPrefix:null,
+  principal:"",
+  credentials:"",
+  rectype:"1",
+  active:false,
+  supportsHarvesting:false,
+  activationSupported:true,
+  activationEnabled:true
+}
+'`
 
 if [ -z "$EBSCO_SANDBOX_CLIENT_ID" ]
 then

@@ -39,11 +39,13 @@ public class Entitlement implements MultiTenant<Entitlement> {
   ]
 
   static hasMany = [
-    coverage: HoldingsCoverage
+    coverage: HoldingsCoverage,
+    poLines: POLineProxy
   ]
 
   static mappedBy = [
-    coverage: 'entitlement'
+    coverage: 'entitlement',
+    poLines: 'owner'
   ]
 
   // Allow users to individually switch on or off this content item. If null, should default to the agreement
