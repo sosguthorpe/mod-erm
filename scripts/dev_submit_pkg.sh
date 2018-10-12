@@ -172,8 +172,8 @@ RS_EBSCO_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/
   rectype:"1",
   active:false,
   supportsHarvesting:false,
-  activationSupported:false,
-  activationEnabled:false
+  activationSupported:true,
+  activationEnabled:true,
 }
 '`
 
@@ -189,8 +189,8 @@ RS_GBV_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/js
   rectype:"1",
   active:false,
   supportsHarvesting:false,
-  activationSupported:false,
-  activationEnabled:false
+  activationSupported:true,
+  activationEnabled:true
 }
 '`
 

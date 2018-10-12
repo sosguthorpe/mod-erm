@@ -24,6 +24,8 @@ where ( exists ( select pci.id
                where pci.pti = pti
                and ent.resource = pci )
    or ent.resource = pti )
+  and rkb.activationSupported = true 
+  and rkb.activationEnabled = true
   and not exists ( select car from ContentActivationRecord as car where car.pti = pti and car.target = rkb )
 '''
 
@@ -84,10 +86,13 @@ where ( exists ( select pci.id
    */
   public void triggerActivationUpdate() {
     log.debug("KnowledgeBaseCacheService::triggerActivationUpdate()");
- 
+    int activation_count = 0;
     RemoteKB.executeQuery(PLATFORM_TITLES_QUERY).each { qr ->
       log.debug("Content Activation: ${qr}");
+      activation_count++;
     }
+
+    log.debug("triggerActivationUpdate() - ${activation_count} activations");
 
     return
   }
