@@ -170,7 +170,7 @@ databaseChangeLog = {
 
             column(name: "ic_role", type: "VARCHAR(36)")
 
-            column(name: "ic_user_fk", type: "VARCHAR(255)")
+            column(name: "ic_user_fk", type: "VARCHAR(36)")
 
             column(name: "ic_owner_fk", type: "VARCHAR(36)") {
                 constraints(nullable: "false")
