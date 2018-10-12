@@ -64,4 +64,13 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
                                String authority_id_of_package) {
   }
 
+
+  /**
+   * Trigger the activation update procedure.
+   */
+  public void triggerActivationUpdate() {
+    log.debug("KnowledgeBaseCacheService::triggerActivationUpdate()");
+
+    return
+  }
 }

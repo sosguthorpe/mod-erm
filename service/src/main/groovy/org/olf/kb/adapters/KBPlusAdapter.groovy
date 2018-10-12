@@ -44,4 +44,8 @@ public class KBPlusAdapter implements KBCacheUpdater {
     throw new RuntimeException("Not yet implemented");
   }
 
+  public void acticate(Map params, KBCache cache) {
+    throw new RuntimeException("Not supported by this KB provider");
+  }
+
 }

@@ -43,7 +43,7 @@ class AdminController {
    *  remote KBs
    */
   public triggerCacheUpdate() {
-    kbCacheService.triggerCacheUpdate()
+    knowledgeBaseCacheService.triggerCacheUpdate()
   }
 
   public pullPackage() {
@@ -68,6 +68,10 @@ class AdminController {
     }
 
     render result as JSON
+  }
+
+  public triggerActivationUpdate() {
+    knowledgeBaseCacheService.triggerActivationUpdate();
   }
 }
 

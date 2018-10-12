@@ -235,6 +235,10 @@ public class EbscoKBAdapter implements KBCacheUpdater {
     return result;
   }
 
+  public void acticate(Map params, KBCache cache) {
+    throw new RuntimeException("Not supported by this KB provider");
+  }
+
 }
 
 

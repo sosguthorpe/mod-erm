@@ -1,4 +1,4 @@
-package org.olf.erm
+package org.olf.kb
 
 import grails.gorm.MultiTenant
 import org.olf.kb.PlatformTitleInstance;

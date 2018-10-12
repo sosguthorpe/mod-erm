@@ -61,5 +61,9 @@ public interface KBCacheUpdater {
                             KBCache cache);
                                 
  
+  /**
+   * Ask the remote service to activate a selected content item - usually using some combination of provider, platform, title ID
+   */
+  public void acticate(Map params, KBCache cache);
 
 }
