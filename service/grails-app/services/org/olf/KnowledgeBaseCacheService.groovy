@@ -85,15 +85,30 @@ where ( exists ( select pci.id
    * Trigger the activation update procedure.
    */
   public void triggerActivationUpdate() {
+
+    Map<String, KBCacheUpdater> adapter_cache = [:]
+
     log.debug("KnowledgeBaseCacheService::triggerActivationUpdate()");
     int activation_count = 0;
     RemoteKB.executeQuery(PLATFORM_TITLES_QUERY).each { qr ->
       log.debug("Content Activation: ${qr}");
+      def adapter = getAdapter(adapter_cache, qr[1])
+      adapter.activate([:], this);
       activation_count++;
     }
 
     log.debug("triggerActivationUpdate() - ${activation_count} activations");
 
     return
+  }
+
+  private KBCacheUpdater getAdapter(Map m, RemoteKB rkb) {
+    KBCacheUpdater result = m[rkb.type]
+    if ( result == null ) {
+      Class cls = Class.forName(rkb.type)
+      result = cls.newInstance();
+      m[rkb.type] = result;
+    }
+    return result;
   }
 }

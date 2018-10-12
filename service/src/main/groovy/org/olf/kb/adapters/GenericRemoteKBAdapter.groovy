@@ -49,8 +49,8 @@ public class GenericRemoteKBAdapter implements KBCacheUpdater {
     throw new RuntimeException("Not yet implemented");
   }
 
-  public void acticate(Map params, KBCache cache) {
-    throw new RuntimeException("Not supported by this KB provider");
+  public void activate(Map params, KBCache cache) {
+    // Nothing to see here yet
   }
 
 }
