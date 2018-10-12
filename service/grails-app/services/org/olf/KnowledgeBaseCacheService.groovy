@@ -14,6 +14,20 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
 
   def packageIngestService
 
+  private static final String PLATFORM_TITLES_QUERY = '''select pti, rkb from PlatformTitleInstance as pti, Entitlement as ent, RemoteKB as rkb 
+where ( exists ( select pci.id 
+               from PackageContentItem as pci
+               where pci.pti = pti
+               and ent.resource = pci.pkg )
+   or exists ( select pci.id 
+               from PackageContentItem as pci
+               where pci.pti = pti
+               and ent.resource = pci )
+   or ent.resource = pti )
+  and not exists ( select car from ContentActivationRecord as car where car.pti = pti and car.target = rkb )
+'''
+
+
   public void triggerCacheUpdate() {
     log.debug("KnowledgeBaseCacheService::triggerCacheUpdate()");
 
@@ -70,6 +84,10 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
    */
   public void triggerActivationUpdate() {
     log.debug("KnowledgeBaseCacheService::triggerActivationUpdate()");
+ 
+    RemoteKB.executeQuery(PLATFORM_TITLES_QUERY).each { qr ->
+      log.debug("Content Activation: ${qr}");
+    }
 
     return
   }

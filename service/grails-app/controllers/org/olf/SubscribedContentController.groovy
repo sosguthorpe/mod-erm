@@ -47,12 +47,12 @@ where exists ( select pci.id
 where exists ( select pci.id 
                from PackageContentItem as pci
                where pci.pti = pti
-               and ent.pkg = pci.pkg )
+               and ent.resource = pci.pkg )
    or exists ( select pci.id 
                from PackageContentItem as pci
                where pci.pti = pti
-               and ent.pci = pci )
-   or ent.pti = pti
+               and ent.resource = pci )
+   or ent.resource = pti
 '''
 
 

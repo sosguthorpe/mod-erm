@@ -71,7 +71,9 @@ class AdminController {
   }
 
   public triggerActivationUpdate() {
+    def result = [:]
     knowledgeBaseCacheService.triggerActivationUpdate();
+    render result as JSON
   }
 }
 
