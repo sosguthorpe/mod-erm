@@ -19,11 +19,11 @@ public class ErmResource implements MultiTenant<ErmResource> {
   RefdataValue subType
   
   static hasMany = [
-    directEntitlements: Entitlement
+    entitlements: Entitlement
   ]
 
   static mappedBy = [
-    directEntitlements: 'resource'
+    entitlements: 'resource'
   ]
   static mapping = {
     tablePerHierarchy false
@@ -37,6 +37,10 @@ public class ErmResource implements MultiTenant<ErmResource> {
             name (nullable:true, blank:false)
             type (nullable:true, blank:false)
          subType (nullable:true, blank:false)
+  }
+  
+  String toString() {
+    name
   }
    
 }

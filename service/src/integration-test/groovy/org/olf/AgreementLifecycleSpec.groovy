@@ -1,25 +1,27 @@
 package org.olf
 
-import static grails.web.http.HttpHeaders.*
+import static groovyx.net.http.ContentTypes.*
+import static groovyx.net.http.HttpBuilder.configure
 import static org.springframework.http.HttpStatus.*
 
-import org.olf.erm.SubscriptionAgreement
-import org.olf.kb.PackageContentItem
-import org.olf.kb.Pkg
-import org.olf.kb.PlatformTitleInstance
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.k_int.okapi.OkapiHeaders
-import com.k_int.okapi.OkapiTenantResolver
-
-import geb.spock.*
+import geb.spock.GebSpec
 import grails.gorm.multitenancy.Tenants
 import grails.plugins.rest.client.RestBuilder
 import grails.testing.mixin.integration.Integration
-import grails.transaction.*
 import groovy.json.JsonSlurper
-import spock.lang.*
+import groovy.util.logging.Slf4j
+import groovyx.net.http.ChainedHttpConfig
+import groovyx.net.http.FromServer
+import groovyx.net.http.HttpBuilder
+import groovyx.net.http.HttpVerb
+import org.olf.kb.PackageContentItem
+import org.olf.kb.Pkg
+import org.olf.kb.PlatformTitleInstance
+import spock.lang.IgnoreRest
+import spock.lang.Shared
+import spock.lang.Stepwise
+import spock.lang.Unroll
 
 
 /**
@@ -35,66 +37,33 @@ import spock.lang.*
  *                           some non-package titles
  *   Check that "My subscribed content" lists the appropriate titles
  */
+@Slf4j
 @Integration
 @Stepwise
 class AgreementLifecycleSpec extends GebSpec {
 
   def packageIngestService
 
-  @Shared
-  private int totalContentItems = 0
-
   private static final String TENANT='TestTenantH'
-  private static final String PACKAGE_QUERY = 'select p.id from Pkg as p where p.name = :name'
-  private static final String PACKAGE_CONTENT_COUNT_QUERY = 'select count(*) from PackageContentItem as pci where pci.pkg.id = :pkgId'
-
-  // This is a bit of a shortcut - In this test we have loaded packages where titles only appear in one place. That
-  // means we can be very general when looking up items. If we add more test data, then we would need to add more
-  // where clauses to actually idetify specific packages and platforms.
-  private static final String PACKAGE_CONTENT_ITEM_QUERY = '''select pci.id
-from PackageContentItem as pci
-where pci.pti.titleInstance.name = :title
-'''
-
-  private static final String OFF_PACKAGE_TITLE_QUERY = '''select pti.id
-from PlatformTitleInstance as pti
-where pti.titleInstance.name = :title
-and pti.platform.name = :platform
-'''
-
-  final Closure authHeaders = {
-    header OkapiHeaders.TOKEN, 'dummy'
-    header OkapiHeaders.USER_ID, 'dummy'
-    header OkapiHeaders.PERMISSIONS, '[ "erm.admin", "erm.user", "erm.own.read", "erm.any.read"]'
-  }
-
-  final static Logger logger = LoggerFactory.getLogger(ErmAgreementSpec.class);
+  
 
   def setup() {
   }
 
   def cleanup() {
   }
-
-  void "Set up test tenants "(tenantid, name) {
+  
+  void "Set up test tenants" () {
     when:"We post a new tenant request to the OKAPI controller"
-
-      logger.debug("Post new tenant request for ${tenantid} to ${baseUrl}_/tenant");
 
       // Lets call delete on this tenant before we call create - this will clean up any prior test runs.
       // We don't care if this fails
-      def delete_resp = restBuilder().delete("$baseUrl/_/tenant") {
-        header 'X-Okapi-Tenant', tenantid
-        authHeaders.rehydrate(delegate, owner, thisObject)()
-      }
+      def delete_resp = doDelete("/_/tenant")
+      
+      def resp = doPost("/_/tenant")
 
-      def resp = restBuilder().post("${baseUrl}_/tenant") {
-        header 'X-Okapi-Tenant', tenantid
-        authHeaders.rehydrate(delegate, owner, thisObject)()
-      }
-
-    then:"The response is correct"
-      resp.status == OK.value()
+    then:"The response is OK"
+      resp.fromServer.statusCode == OK.value()
       // resp.headers[CONTENT_TYPE] == ['application/json;charset=UTF-8']
       // resp.json.message == 'Welcome to Grails!'
 
@@ -102,18 +71,15 @@ and pti.platform.name = :platform
     // a tenant in the TenantTest we remove the schema, but are unable to remove it from the pool. Re-Adding a tenant added in a
     // previous test will find the old tenant name in the cache, but find the actual schema gone. Until a method is provided in 
     // hibernateDatastore, we will just use a new tenantId in each separate test.
-    where:
-      tenantid | name
-      TENANT | TENANT
   }
 
   // This is actually ripped off from ErmPackageSpec, but we don't do the extensive checking that test does, we just
   // want to get the data in here.
-  void "Load Packages"(tenantid, test_package_file) {
+  void "Load Packages"(test_package_file) {
 
     when:
       // Switching context, just want to make sure that the schema had time to finish initialising.
-      Thread.sleep(1000);
+      Thread.sleep(1000)
 
       def jsonSlurper = new JsonSlurper()
       def package_data = jsonSlurper.parse(new File(test_package_file))
@@ -123,185 +89,314 @@ and pti.platform.name = :platform
       // When tenantid comes through the http request it is normalised (lowecased, suffix added), we do that manually here as we are
       // directly exercising the service. It may be better to test this service via a web endpoint, however it's
       // not clear at the moment what form that endpoint will take, so exercising the service directly for now
-      Tenants.withId(tenantid.toLowerCase()+'_olf_erm') {
-        result = packageIngestService.upsertPackage(package_data);
+      Tenants.withId(TENANT.toLowerCase()+'_olf_erm') {
+        result = packageIngestService.upsertPackage(package_data)
       }
 
     then:
       result != null
 
     where:
-      tenantid  | test_package_file
-      TENANT    | 'src/integration-test/resources/packages/apa_1062.json'
-      TENANT    | 'src/integration-test/resources/packages/bentham_science_bentham_science_eduserv_complete_collection_2015_2017_1386.json'
+      test_package_file | _
+      'src/integration-test/resources/packages/apa_1062.json' | _
+      'src/integration-test/resources/packages/bentham_science_bentham_science_eduserv_complete_collection_2015_2017_1386.json' | _
 
   }
-
+  
   void "List Current Agreements"() {
 
-      when:"We ask the system to list known KBs"
-        def resp = restBuilder().get("$baseUrl/erm/sas") {
-          header 'X-Okapi-Tenant', TENANT
-          authHeaders.rehydrate(delegate, owner, thisObject)()
-        }
+    when:"We ask the system to list known KBs"
+      def resp = doGet("/erm/sas")
 
-      then: "The system responds with a list of tenants";
-        resp.status == OK.value()
-        resp.json.size() == 0
+    then: "The system responds with a list of tenants"
+      resp.fromServer.statusCode == OK.value()
+      resp.content.size() == 0
   }
 
   void "Check that we don't currently have any subscribed content"() {
 
       when:"We ask the subscribed content controller to list the titles we can access"
-        def resp = restBuilder().get("$baseUrl/erm/content") {
-          header 'X-Okapi-Tenant', TENANT
-          authHeaders.rehydrate(delegate, owner, thisObject)()
-        }
+      
+        def params = [
+          stats: true
+        ]
+      
+        def resp = doGet("/erm/titles/entitled", params)
 
-      then: "The system responds with a list of content";
-        resp.status == OK.value()
+      then: "The system responds with a list of content"
+        resp.fromServer.statusCode == OK.value()
         // content responds with a JSON object containing a count and a list called subscribedTitles
-        resp.json.total == 0
-        resp.json.results.size() == 0
+        resp.content.totalRecords == 0
+        resp.content.results.size() == 0
   }
-
-  void "Set up new agreements"(tenant, agreement_name, type) {
-
-      when:"We add a new agreement"
-
-        // This is a bit of a shortcut - the web interface will populate a control for this, but here we just want the value.
-        // So we access the DB with the tenant Id and get back the ID of the status we need.
-        Serializable agreement_type_id = null
-        Tenants.withId(OkapiTenantResolver.getTenantSchemaName(tenant.toLowerCase())) {
-          
-          // All refdata values have a few helper methods on the class.
-          agreement_type_id = SubscriptionAgreement.lookupOrCreateAgreementType(type).id
-        }
-
-        
-        Map agreement_to_add =  [ 
-          'name' : agreement_name,
-          'agreementType':[
-            'id': agreement_type_id
-          ]
-        ];
-
-        def resp = restBuilder().post("$baseUrl/erm/sas") {
-          header 'X-Okapi-Tenant', tenant
-          authHeaders.rehydrate(delegate, owner, thisObject)()
-          contentType 'application/json'
-          accept 'application/json'
-          json agreement_to_add
-        }
-
-      then:"The agreement is created OK"
-       resp.status == CREATED.value()
-
-
-      // Use a GEB Data Table to load each record
-      where:
-        tenant | agreement_name       | type
-        TENANT | 'My first agreement' | 'Draft'
-
-  }
-
-  void "add a package to the agreement"(tenant,agreement_name) {
-    when:"We add a package to our new agreement"
-      // Find the ID of our new agreement.
-      def agreement_id = null
-      def pkg_id = null
-      def single_package_item_id = null
-      def off_package_title_id = null
-      def pkg_content_count
-
-      // This is cheating a little - normally the UI would run queries to populate controls that let the user select this info,
-      // here we're just grabbing the relevant IDs from the database.
-      Tenants.withId(tenant.toLowerCase()+'_olf_erm') {
-
-        agreement_id = SubscriptionAgreement.executeQuery('select sa.id from SubscriptionAgreement as sa where sa.name = :name',[name:agreement_name]).get(0)
-
-        pkg_id = Pkg.executeQuery(PACKAGE_QUERY,[name:'American Psychological Association:Master']).get(0)
-        
-        pkg_content_count = (PackageContentItem.executeQuery(PACKAGE_CONTENT_COUNT_QUERY, [pkgId: pkg_id])?.getAt(0) ?: 0)
-
-        single_package_item_id = PackageContentItem.executeQuery(PACKAGE_CONTENT_ITEM_QUERY,[title:'Anti Inflammatory & Anti allergy Agents in Medicinal Chemistry']).get(0)
-
-        logger.debug("Find platform title instance records for current medicinal chemistry on platform bentham science")
-
-        off_package_title_id = PlatformTitleInstance.executeQuery(OFF_PACKAGE_TITLE_QUERY,
-          [title:'Current Medicinal Chemistry - Cardiovascular & Hematological Agents',
-          platform:'Bentham Science']).get(0)
-      }
+  
+  @Unroll
+  void "Create an Agreement named #agreement_name of type #type" (agreement_name, type, packageName) {
+    
+    def pkgSize = 0
+    when:"We ask the titles controller to list the titles we can access"
+      def resp = doGet("/erm/titles/entitled", [
+        stats: true
+      ])
+  
+    then: "The system responds with a list of zero content"
+      resp.fromServer.statusCode == OK.value()
+      // content responds with a JSON object containing a count and a list called subscribedTitles
+      resp.content.totalRecords == 0
+    
+    when: "Query for Agreement with name #agreement_name"
+    
+      resp = doGet("/erm/sas", [
+        filters:[
+          "name=i=${agreement_name}" // Case insensitive match
+        ]
+      ])
+      
+    then: "No agreement found"
+      resp.fromServer.statusCode == OK.value()
+      resp.content.size() == 0
       
       
-      // Increment the total content counter for comparison later.
-      // Total for the package plus the 2 singles
-      totalContentItems += (pkg_content_count + 2)
-
-      logger.debug("Agreement ID is ${agreement_id} package to add is ${pkg_id} which contains ${pkg_content_count} titles.")
-      agreement_id != null
-
-    then: "The package is Added to the agreement"
-
-      Map content_to_add = [
-        content:[
-          [ 'type':'package', 'id': pkg_id],
-          [ 'type':'packageItem', 'id': single_package_item_id],
-          [ 'type':'platformTitle', 'id': off_package_title_id]
+    when: "Looked up package with name - #packageName"
+      resp = doGet("/erm/resource", [
+        filters:[
+          "class==${Pkg.class.name}",
+          "name=i=${packageName}" // Case insensitive match
+        ]
+      ])
+      
+    then: "Package found"
+      resp.fromServer.statusCode == OK.value()
+      resp.content.size() == 1
+      resp.content[0].id != null
+      
+    when: "Looked up package item count"
+      def packageId = resp.content[0].id
+      
+      resp = doGet("/erm/resource", [
+        stats: true,
+        perPage: 1, // Just fetch one record with the stats included. We only want the full count.
+        filters:[
+          "class==${PackageContentItem.class.name}",
+          "pkg==${packageId}"
+        ]
+      ])
+      
+    then: "Response is good and we have a count"
+      resp.fromServer.statusCode == OK.value()
+      (pkgSize = resp.content.totalRecords) > 0
+      
+    when: "Post to create new agreement named #agreement_name with our package"
+    
+      Map data = [
+        'name' : agreement_name,
+        'agreementType': type, // This can be the value or id but not the label
+        'items' : [
+          [resource: packageId]
         ]
       ]
-
-      String target_url = "$baseUrl/erm/sas/${agreement_id}/addToAgreement".toString();
-      logger.debug("The target URL will be ${target_url}");
-
-      def resp = restBuilder().post(target_url) {
-          header 'X-Okapi-Tenant', tenant
-          authHeaders.rehydrate(delegate, owner, thisObject)()
-          contentType 'application/json'
-          accept 'application/json'
-          json content_to_add
-      }
+      resp = doPost("/erm/sas/", data)
+    
+    then: "Response is good and we have a new ID"
+      resp.fromServer.statusCode == CREATED.value()
+      resp.content.id != null
       
-      resp.status == OK.value()
-
+    when: "Query for Agreement with name #agreement_name"
+    
+      def agreementId = resp.content.id
+    
+      resp = doGet("/erm/sas", [
+        filters:[
+          "name=i=${agreement_name}" // Case insensitive match
+        ]
+      ])
+      
+    then: "Agreement found and ID matches returned one from before"
+      resp.fromServer.statusCode == OK.value()
+      resp.content.size() == 1
+      resp.content[0].id != null
+      resp.content[0].id == agreementId
+      
+    when:"We ask the titles controller to list the titles we can access"
+      resp = doGet("/erm/titles/entitled", [
+        stats: true
+      ])
+  
+    then: "The list of content is equal to the number of package titles"
+      resp.fromServer.statusCode == OK.value()
+      // content responds with a JSON object containing a count and a list called subscribedTitles
+      resp.content.totalRecords == pkgSize
+      
     where:
-      tenant | agreement_name
-      TENANT | 'My first agreement'
+      agreement_name        | type    | packageName
+      'My first agreement'  | 'draft' | "American Psychological Association:Master"
+  }
+  
+  @Unroll
+  void "Add #resourceType for title #titleName to the Agreement named #agreement_name" (agreement_name, resourceType, titleName, filterKey) {
+    
+    def entitledResourceCount = 0
+    when:"We ask the titles controller to list the titles we can access"
+      def resp = doGet("/erm/titles/entitled", [
+        stats: true
+      ])
+  
+    then: "The list of content is returned"
+      resp.fromServer.statusCode == OK.value()
+      // content responds with a JSON object containing a count and a list called subscribedTitles
+      (entitledResourceCount = resp.content.totalRecords) >= 0
+    
+    when: "Fetch #resourceType for title #titleName"
+      def resourceId = null
+      resp = doGet("/erm/resource", [
+        filters:[
+          "class==${resourceType}", // Case insensitive match
+          "${filterKey}=i=${titleName}" // Case insensitive match
+        ]
+      ])
+      
+    then: "Single Resource found"
+      resp.fromServer.statusCode == OK.value()
+      resp.content.size() == 1
+      (resourceId = resp.content[0].id ) != null
+      
+    when: "Query for Agreement with name #agreement_name"
+      def agreementItemCount = 0
+      def currentEntitlements = []
+      resp = doGet("/erm/sas", [
+        filters:[
+          "name=i=${agreement_name}" // Case insensitive match
+        ]
+      ])
+      
+    then: "Single Agreement found"
+      resp.fromServer.statusCode == OK.value()
+      resp.content.size() == 1
+      (agreementItemCount = resp.content[0].items.size()) >= 0
+            
+    when: "Resource added to Agreement"
+      
+      def data = [
+        'items' : resp.content[0].items.collect({ ['id': it.id] }) + [[resource: resourceId]]
+      ] 
+      
+      resp = doPut("/erm/sas/${resp.content[0].id}", data)
+          
+    then: "Response is good and item count increased by 1"
+      resp.fromServer.statusCode == OK.value()
+      resp.content.items.size() == (agreementItemCount + 1)
+      
+    when:"We ask the titles controller to list the titles we can access"
+      resp = doGet("/erm/titles/entitled", [
+        stats: true
+      ])
+  
+    then: "The list of content has increased by 1"
+      resp.fromServer.statusCode == OK.value()
+      // content responds with a JSON object containing a count and a list called subscribedTitles
+      resp.content.totalRecords == (entitledResourceCount + 1)
+      
+    where:
+      agreement_name        | resourceType                        | titleName                             | filterKey
+      'My first agreement'  | PackageContentItem.class.name       | "Pharmaceutical Nanotechnology"       | "pti.titleInstance.name"
+      'My first agreement'  | PlatformTitleInstance.class.name    | "Recent Patents on Corrosion Science" | "titleInstance.name"
   }
 
-  void "Check that we see the new titles as subscribed content"() {
+  void "Delete the tenant" () {
 
-      when:"We ask the subscribed content controller to list the titles we can access"
-        def resp = restBuilder().get("$baseUrl/erm/content") {
-          header 'X-Okapi-Tenant', TENANT
-          authHeaders.rehydrate(delegate, owner, thisObject)()
+    given: "delete request to the OKAPI controller"
+      def resp = doDelete("/_/tenant")
+      
+    expect:"OK response and deleted tennant"
+      resp.fromServer.statusCode == OK.value()
+  }
+
+  
+  /**
+   * HTTP methods for test added here.
+   */
+  private HttpBuilder client = null
+  private FromServer lastResponse
+  private HttpBuilder getClient() {
+    
+    if (!client) {
+      final String urlBase = "${baseUrl}"
+      client = configure {
+      
+        // Default root as specified in config.
+        request.uri = urlBase
+        // Intercept all verbs.
+        execution.interceptor(HttpVerb.values()) { ChainedHttpConfig cfg, fx ->
+          cfg.request.headers = [
+            (OkapiHeaders.TOKEN): 'dummy',
+            (OkapiHeaders.USER_ID): 'dummy',
+            (OkapiHeaders.PERMISSIONS): '[ "erm.admin", "erm.user", "erm.own.read", "erm.any.read"]',
+            (OkapiHeaders.TENANT): TENANT
+          ]
+          
+          // Request JSON.
+          cfg.chainedRequest.contentType = JSON[0]
+                    
+          // Apply the original action.
+          fx.apply(cfg)
         }
-
-      then: "The system responds with a list of content";
-        resp.status == OK.value()
-        // content responds with a JSON object containing a count and a list called subscribedTitles
-        resp.json.total == totalContentItems
-  }
-
-  void "Delete the tenants"(tenant_id, note) {
-
-    expect:"post delete request to the OKAPI controller for "+tenant_id+" results in OK and deleted tennant"
-      def resp = restBuilder().delete("$baseUrl/_/tenant") {
-        header 'X-Okapi-Tenant', tenant_id
-        authHeaders.rehydrate(delegate, owner, thisObject)()
+        
+        response.success { FromServer fs, Object body ->
+          lastResponse = fs
+          body
+        }
+        
+        response.failure { FromServer fs, Object body ->
+          lastResponse = fs
+          body
+        }
+      
       }
-
-      logger.debug("completed DELETE request on ${tenant_id}");
-      resp.status == OK.value()
-
-    where:
-      tenant_id | note
-      TENANT | 'note'
-  }
-
-   RestBuilder restBuilder() {
-        new RestBuilder()
     }
-
+    
+    client
+  }
+  
+  private cleanUri (String uri) {
+    uri?.startsWith('//') ? uri.substring(1) : uri
+  }
+    
+  private def doGet (final String uri, final Map params = null) {    
+    [ 'content' : getClient().get({
+        request.uri = cleanUri(uri)
+        request.uri.query = params
+      }),
+      'fromServer' : lastResponse
+    ]
+  }
+  
+  private def doPost (final String uri, final def jsonData = null, final Map params = null){
+    [ 'content' : getClient().post({
+        request.uri = cleanUri(uri)
+        request.uri.query = params
+        request.body = jsonData
+      }),
+      'fromServer' : lastResponse
+    ]
+  }
+  
+  private def doPut (final String uri, final def jsonData = null, final Map params = null) {
+    [ 'content' : getClient().put({
+        request.uri = cleanUri(uri)
+        request.uri.query = params
+        request.body = jsonData
+      }),
+      'fromServer' : lastResponse
+    ]
+  }
+  
+  private def doDelete (final String uri, final Map params = null) {
+    [ 'content' : getClient().delete({
+        request.uri = cleanUri(uri)
+        request.uri.query = params
+      }),
+      'fromServer' : lastResponse
+    ]
+  }
 }
 

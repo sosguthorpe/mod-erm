@@ -5,8 +5,4 @@ import groovy.transform.*
 @Field
 TitleInstance titleInstance
 
-json g.render(titleInstance, [expand: ['identifiers', 'type', 'subType']]) {
-
-  // Add the custom summary option
-  "entitlements" g.render( titleInstance.getEntitlements() )
-}
+json g.render(titleInstance, [expand: ['identifiers', 'type', 'subType'], excludes: ['entitlements']])

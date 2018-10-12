@@ -4,6 +4,7 @@ import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
 import com.k_int.okapi.OkapiTenantAwareController
 import org.olf.erm.Entitlement
+import org.olf.kb.ErmResource
 import grails.converters.JSON
 
 
@@ -17,6 +18,5 @@ class EntitlementController extends OkapiTenantAwareController<EntitlementContro
   EntitlementController() {
     super(Entitlement)
   }
-
 }
 
