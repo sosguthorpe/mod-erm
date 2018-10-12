@@ -12,7 +12,7 @@ public class ContentActivationRecord implements MultiTenant<ContentActivationRec
   String id
   Date dateActivation
   Date dateDeactivation
-  ContentActivationTarget target
+  RemoteKB target
   PlatformTitleInstance pti
 
   static belongsTo = [
@@ -30,7 +30,7 @@ public class ContentActivationRecord implements MultiTenant<ContentActivationRec
              version column: 'car_version'
       dateActivation column: 'car_date_activation'
     dateDeactivation column: 'car_date_deactivation'
-              target column: 'car_target_cat_fk'
+              target column: 'car_target_kb_fk'
                  pti column: 'car_pti_fk'
   }
 
