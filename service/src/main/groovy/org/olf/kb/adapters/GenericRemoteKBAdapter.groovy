@@ -49,8 +49,9 @@ public class GenericRemoteKBAdapter implements KBCacheUpdater {
     throw new RuntimeException("Not yet implemented");
   }
 
-  public void activate(Map params, KBCache cache) {
+  public boolean activate(Map params, KBCache cache) {
     // Nothing to see here yet
+    return true;
   }
 
 }

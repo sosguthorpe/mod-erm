@@ -93,7 +93,12 @@ where ( exists ( select pci.id
     RemoteKB.executeQuery(PLATFORM_TITLES_QUERY).each { qr ->
       log.debug("Content Activation: ${qr}");
       def adapter = getAdapter(adapter_cache, qr[1])
-      adapter.activate([:], this);
+      if ( adapter.activate([:], this) ) {
+        log.debug("Activation OK - create CAR");
+      }
+      else {
+        log.debug("Activation Failed - no CAR");
+      }
       activation_count++;
     }
 
