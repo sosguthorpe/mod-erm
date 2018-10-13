@@ -1,15 +1,14 @@
 package org.olf.erm
 
 import javax.persistence.Transient
+
 import org.hibernate.Hibernate
-import org.hibernate.PersistentObjectException
-import org.hibernate.proxy.HibernateProxy
-import org.hibernate.proxy.LazyInitializer
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
 import org.olf.kb.PlatformTitleInstance
-import org.olf.kb.TitleInstance
+
+import grails.databinding.BindInitializer
 import grails.gorm.MultiTenant
 
 
@@ -18,10 +17,11 @@ import grails.gorm.MultiTenant
  * title on a platform (But not listed in a package), a title named in a package, a full package of resources
  *
  * OFTEN attached to an agreement, but it's possible we know we have the right to access a resource
- * without perhaps knowning which agreement controls that right.
+ * without perhaps knowing which agreement controls that right.
  *
  */
 public class Entitlement implements MultiTenant<Entitlement> {
+  public static final Class<? extends ErmResource>[] ALLOWED_RESOURCES = [Pkg, PackageContentItem, PlatformTitleInstance] as Class[]
 
   String id
 
@@ -52,7 +52,10 @@ public class Entitlement implements MultiTenant<Entitlement> {
   // enabled setting. The activeFrom and activeTo dates determine if a content item is "live" or not. This flag
   // determines if we wish live content to be visible to patrons or not. Content can be "Live" but not enabled,
   // although that would be unusual.
-  Boolean enabled 
+  @BindInitializer({
+    Boolean.TRUE // Default this value to true when binding.
+  })
+  Boolean enabled
   
 
   static mapping = {
@@ -68,7 +71,12 @@ public class Entitlement implements MultiTenant<Entitlement> {
 
   static constraints = {
         owner(nullable:true,  blank:false)
-     resource(nullable:false, blank:false)
+     resource(nullable:false, blank:false, validator: { val, inst ->
+       Class c = Hibernate.getClass(val)
+       if (!Entitlement.ALLOWED_RESOURCES.contains(c)) {
+         ['allowedTypes', "${c.name}", "entitlement", "resource"]
+       }
+     })
       enabled(nullable:true,  blank:false)
    activeFrom(nullable:true,  blank:false)
      activeTo(nullable:true,  blank:false)

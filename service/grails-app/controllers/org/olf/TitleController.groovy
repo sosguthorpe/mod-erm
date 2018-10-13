@@ -12,7 +12,11 @@ import groovy.util.logging.Slf4j
 class TitleController extends OkapiTenantAwareController<TitleInstance>  {
 
   TitleController() {
-    super(TitleInstance)
+    super(TitleInstance, true)
+  }
+  
+  def entitled() {
+    respond doTheLookup (TitleInstance.entitled)
   }
 }
 

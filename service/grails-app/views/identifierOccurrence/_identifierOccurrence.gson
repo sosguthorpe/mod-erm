@@ -4,4 +4,4 @@ import groovy.transform.*
 
 @Field
 IdentifierOccurrence identifierOccurrence
-json g.render(identifierOccurrence, [expand: ['identifier', 'status']])
+json g.render(identifierOccurrence, [expand: ['identifier', 'status'], excludes: ['id']])

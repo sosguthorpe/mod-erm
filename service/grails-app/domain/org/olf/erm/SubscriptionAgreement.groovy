@@ -4,7 +4,7 @@ import org.olf.general.Org
 import org.olf.general.RefdataValue
 import org.olf.general.refdata.CategoryId
 import org.olf.general.refdata.Defaults
-
+import com.k_int.web.toolkit.databinding.BindImmutably
 import grails.gorm.MultiTenant
 
 /**
@@ -38,7 +38,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   @Defaults(['Definitely renew', 'For review', 'Definitely cancel'])
   RefdataValue renewalPriority
 
-  @Defaults(['Draft', 'Requested', 'In negotiation',  'Rejected', 'Active', 'Cancelled'])
+  @Defaults(['Draft', 'Requested', 'In negotiation', 'Rejected', 'Active', 'Cancelled'])
   RefdataValue agreementStatus
 
   @CategoryId('Global.Yes_No')
@@ -52,6 +52,9 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   Boolean enabled
 
   Org vendor
+  
+  @BindImmutably
+  Set<Entitlement> items
 
   static hasMany = [
     items:Entitlement,
@@ -60,8 +63,8 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   ]
 
   static mappedBy = [
-    items:'owner',
-    historyLines:'owner',
+    items: 'owner',
+    historyLines: 'owner',
     contacts: 'owner'
   ]
 
@@ -84,6 +87,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
      contentReviewNeeded column:'sa_content_review_needed'
                  enabled column:'sa_enabled'
                   vendor column:'sa_vendor_fk'
+                   items cascade: 'all-delete-orphan'
   }
 
   static constraints = {
@@ -104,6 +108,4 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
              description(nullable:true, blank:false)
                   vendor(nullable:true, blank:false)
   }
-
-
 }

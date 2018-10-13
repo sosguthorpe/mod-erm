@@ -1,21 +1,26 @@
 package org.olf
 
-import grails.gorm.multitenancy.CurrentTenant
-import groovy.json.JsonSlurper
-import groovy.util.logging.Slf4j
-import grails.converters.JSON
-import org.olf.kb.TitleInstance
-import org.olf.kb.PlatformTitleInstance
 import org.olf.erm.Entitlement
+import org.olf.kb.PlatformTitleInstance
+import org.olf.kb.TitleInstance
+
+import com.k_int.okapi.OkapiTenantAwareController
+
+import grails.converters.JSON
+import grails.gorm.multitenancy.CurrentTenant
+import groovy.util.logging.Slf4j
 
 
 /**
  * Provide a tenant with access to a list of their subscribed content - in essence all the titles and coverage that
  * we have access to, regardless of agreements or access path.
+ * 
+ * Deprecated. Will be moving this functionality to other existing controllers. Mainly the resource controller.
  */
 @Slf4j
 @CurrentTenant
-class SubscribedContentController {
+@Deprecated
+class SubscribedContentController extends OkapiTenantAwareController<TitleInstance> {
 
   /*
    * Return titles for content we have access to.
@@ -57,7 +62,7 @@ where exists ( select pci.id
 
 
   public SubscribedContentController() {
-    
+    super(TitleInstance, true)
   }
 
 
@@ -65,25 +70,7 @@ where exists ( select pci.id
    * Return titles where we have currently live access through some route....
    */
   def index() {
-    def result = [:]
-    def query_params = [:]
-    def meta_params = [max:10]
-
-    def additional_criteria = null;
-
-    if ( params.q ) {
-      additional_criteria = ' and ti.title like :title'
-      query_params['title'] = params.q
-    }
-
-    result.results = (List<TitleInstance>) TitleInstance.executeQuery('select ti '+TITLES_QUERY+(additional_criteria?:''), query_params,meta_params)
-    result.total = TitleInstance.executeQuery('select count(ti.id) '+TITLES_QUERY+(additional_criteria?:''), query_params,meta_params).get(0)
-    result.pageSize=100
-    result.totalPages=1
-    result.meta=[:]
-    result.page=1
-
-    respond (["data" : result])
+    respond doTheLookup (TitleInstance.entitled)
   }
 
   /**
