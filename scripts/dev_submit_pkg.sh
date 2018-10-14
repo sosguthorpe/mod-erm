@@ -177,23 +177,6 @@ RS_EBSCO_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/
 }
 '`
 
-RS_GBV_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/kbs -d '
-{
-  name:"GBV",
-  type:"org.olf.kb.adapters.GenericRemoteKBAdapter",
-  cursor:null,
-  uri:"",
-  listPrefix:null,
-  principal:"",
-  credentials:"",
-  rectype:"1",
-  active:false,
-  supportsHarvesting:false,
-  activationSupported:true,
-  activationEnabled:true
-}
-'`
-
 if [ -z "$EBSCO_SANDBOX_CLIENT_ID" ]
 then
   echo "No Ebsco API credentials set, skipping pull package"

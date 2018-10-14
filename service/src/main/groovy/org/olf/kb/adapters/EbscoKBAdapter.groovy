@@ -24,6 +24,13 @@ import static groovy.json.JsonOutput.*
 import java.text.*
 import groovy.util.logging.Slf4j
 
+/**
+ * Get and Put KB records from the EBSCO API. Documentation can be found:
+ *    https://developer.ebsco.com/gettingstarted
+ *    https://developer.ebsco.com/docs
+ * 
+ */
+
 @Slf4j
 public class EbscoKBAdapter implements KBCacheUpdater {
 
@@ -144,8 +151,9 @@ public class EbscoKBAdapter implements KBCacheUpdater {
 
             json.titles.each { title ->
 
-              String tipp_medium = title.pubType?.toLowerCase()
-              String tipp_media = 'electronic';
+              String tipp_media = title.pubType?.toLowerCase()
+              String tipp_medium = 'electronic';
+
 
               def instance_identifiers = [];
               title.identifiersList.each { id ->
@@ -235,8 +243,12 @@ public class EbscoKBAdapter implements KBCacheUpdater {
     return result;
   }
 
+  /**
+   * @See https://github.com/folio-org/mod-kb-ebsco/blob/master/app/models/resource.rb
+   */
   public boolean activate(Map params, KBCache cache) {
     // Nothing to see here yet
+    //
     return true
   }
 
