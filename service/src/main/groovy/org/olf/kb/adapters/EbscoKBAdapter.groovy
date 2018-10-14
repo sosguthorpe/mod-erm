@@ -151,8 +151,9 @@ public class EbscoKBAdapter implements KBCacheUpdater {
 
             json.titles.each { title ->
 
-              String tipp_medium = title.pubType?.toLowerCase()
-              String tipp_media = 'electronic';
+              String tipp_media = title.pubType?.toLowerCase()
+              String tipp_medium = 'electronic';
+
 
               def instance_identifiers = [];
               title.identifiersList.each { id ->
