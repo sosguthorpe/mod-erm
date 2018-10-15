@@ -59,8 +59,12 @@ public class PackageIngestService {
     def pkg = Pkg.findBySourceAndReference(package_data.header.packageSource, package_data.header.packageSlug)
 
     def vendor = null;
-    if ( package_data.header?.packageProvider?.name ) {
+    if ( ( package_data.header?.packageProvider?.name != null ) && ( package_data.header?.packageProvider?.name.trim().length() > 0 ) ) {
       vendor = dependentServiceProxyService.coordinateOrg(package_data.header?.packageProvider?.name)
+      vendor.enrich(['reference':package_data.header?.packageProvider?.reference]);
+    }
+    else {
+      log.warn('Package ingest - no provider information present');
     }
 
     if ( pkg == null ) {

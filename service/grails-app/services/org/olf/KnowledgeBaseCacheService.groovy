@@ -4,6 +4,9 @@ import grails.gorm.multitenancy.Tenants;
 import grails.gorm.transactions.Transactional
 import org.olf.kb.RemoteKB;
 import org.olf.kb.KBCacheUpdater;
+import org.olf.kb.PlatformTitleInstance
+import org.olf.kb.ContentActivationRecord
+import org.olf.erm.Entitlement
 import org.springframework.transaction.TransactionDefinition
 
 /**
@@ -14,7 +17,7 @@ public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
 
   def packageIngestService
 
-  private static final String PLATFORM_TITLES_QUERY = '''select pti, rkb from PlatformTitleInstance as pti, Entitlement as ent, RemoteKB as rkb 
+  private static final String PLATFORM_TITLES_QUERY = '''select pti, rkb, ent from PlatformTitleInstance as pti, Entitlement as ent, RemoteKB as rkb 
 where ( exists ( select pci.id 
                from PackageContentItem as pci
                where pci.pti = pti
@@ -92,9 +95,18 @@ where ( exists ( select pci.id
     int activation_count = 0;
     RemoteKB.executeQuery(PLATFORM_TITLES_QUERY).each { qr ->
       log.debug("Content Activation: ${qr}");
-      def adapter = getAdapter(adapter_cache, qr[1])
-      if ( adapter.activate([:], this) ) {
+      PlatformTitleInstance pti = qr[0]
+      RemoteKB rkb = qr[1]
+      Entitlement ent = qr[2]
+
+      def adapter = getAdapter(adapter_cache, rkb);
+      
+      if ( adapter.activate([pti:pti, ent:ent], this) ) {
         log.debug("Activation OK - create CAR");
+        def car = new ContentActivationRecord(dateActivation:new Date(),
+                                              dateDeactivation:null,
+                                              target: rkb,
+                                              pti: pti).save(flush:true, failOnError:true);
       }
       else {
         log.debug("Activation Failed - no CAR");
