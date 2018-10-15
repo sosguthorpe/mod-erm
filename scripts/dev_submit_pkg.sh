@@ -28,13 +28,13 @@ echo Running
 
 # Prepolpulate with data.
 echo Loading k-int test package
-KI_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/simple_pkg_1.json http://localhost:8080/erm/admin/loadPackage | jq -r ".newPackageId"  | tr -d '\r'`
+KI_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/simple_pkg_1.json http://localhost:8080/erm/admin/loadPackage | jq -r ".packageId"  | tr -d '\r'`
 
 echo loading betham science
-BSEC_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/bentham_science_bentham_science_eduserv_complete_collection_2015_2017_1386.json http://localhost:8080/erm/admin/loadPackage | jq -r ".newPackageId" | tr -d '\r'`
+BSEC_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/bentham_science_bentham_science_eduserv_complete_collection_2015_2017_1386.json http://localhost:8080/erm/admin/loadPackage | jq -r ".packageId" | tr -d '\r'`
 
 echo Loading APA
-APA_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/apa_1062.json http://localhost:8080/erm/admin/loadPackage | jq -r ".newPackageId" | tr -d '\r'`
+APA_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/apa_1062.json http://localhost:8080/erm/admin/loadPackage | jq -r ".packageId" | tr -d '\r'`
 
 STATUS_DRAFT_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreement/agreementStatus | jq -r '.[] | select(.label=="Draft") | .id'`
 STATUS_ACTIVE_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreement/agreementStatus | jq -r '.[] | select(.label=="Active") | .id'`
@@ -42,6 +42,10 @@ ISPERPETUAL_YES_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 ISPERPETUAL_NO_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreement/isPerpetual | jq -r '.[] | select(.label=="No") | .id'`
 RENEW_DEFRENEW_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreement/renewalPriority | jq -r '.[] | select(.label=="Definitely Renew") | .id'`
 RENEW_REVIEW_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreement/renewalPriority | jq -r '.[] | select(.label=="For Review") | .id'`
+
+# Find the package content item entitle for Clinical Cancer Drugs in K-Int Test Package 001
+CCD_IN_KI_TEST_PKG=`curl --header "X-Okapi-Tenant: diku" "http://localhost:8080/erm/pci?filters=pti.titleInstance.title%3D%3DClinical+Cancer+Drugs&filters=pkg.name%3D%3DK-Int+Test+Package+001" -X GET | jq -r ".[0].id" | tr -d '\r'`
+
 
 echo Create a trial agreement
 
@@ -63,7 +67,12 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
     vendorsUuid: "05f327a6-c4d3-43c2-828f-7d6e7e401c99",
     name:"My Super Vendor",
     sourceURI:"/vendors/some/uri?05f327a6-c4d3-43c2-828f-7d6e7e401c99"
-  }
+  },
+  items: [
+    {
+      resource : { id : "'"$BSEC_PKG_ID"'" }
+    }
+  ]
 }
 ' | jq -r ".id" | tr -d '\r'`
 
@@ -90,8 +99,6 @@ ACTIVE_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 
 echo Look up package content item ID for CCD in the k-int test package
 
-# Find the package content item entitle for Clinical Cancer Drugs in K-Int Test Package 001
-CCD_IN_KI_TEST_PKG=`curl --header "X-Okapi-Tenant: diku" "http://localhost:8080/erm/pci?filters=pti.titleInstance.title%3D%3DClinical+Cancer+Drugs&filters=pkg.name%3D%3DK-Int+Test+Package+001" -X GET | jq -r ".[0].id" | tr -d '\r'`
 
 # List agreements
 # AGREEMENT_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" http://localhost:8080/erm/sas -X GET | jq ".[0].id" | tr -d '\r'`
@@ -99,27 +106,7 @@ CCD_IN_KI_TEST_PKG=`curl --header "X-Okapi-Tenant: diku" "http://localhost:8080/
 # We now get the package back when we load the package above, this is still a cool way to work tho
 # PACKAGE_ID=`curl --header "X-Okapi-Tenant: ${TENANT}" http://localhost:8080/erm/packages?stats=true -X GET | jq ".[0].id" | tr -d '\r'`
 
-echo Add the APA package to our trial agreement
-
-curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas/$TRIAL_AGREEMENT_ID/addToAgreement -d ' {
-  content:[
-    { "type":"package", "id": "'"$APA_PKG_ID"'" }
-  ]
-}
-'
-
-echo Add individual title for clincal cancer drugs from package k-int test package to our trial agreement
-
-# Add the title clinical cancer drugs from the package K-Int Test Package 001 to this agreement as a title
-curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas/$TRIAL_AGREEMENT_ID/addToAgreement -d ' {
-  content:[
-    { "type":"packageItem", "id": "'"$CCD_IN_KI_TEST_PKG"'" }
-  ]
-}
-'
-
 echo Add a KB record describing KB+
-
 # Register a remote source
 RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/kbs -d '
 {
@@ -183,6 +170,7 @@ then
 else
   echo Import EBSCO Bentham Science Package
   EBSCO_BENTHAM_SCI_ID=`curl --header "X-Okapi-Tenant: diku" -X POST "http://localhost:8080/erm/admin/pullPackage?kb=EBSCO&vendorid=301&packageid=3707" | jq -r ".packageId"  | tr -d '\r'`
+  echo Result of loading bentham sci from ebsco: $EBSCO_BENTHAM_SCI_ID.
 fi
 
 

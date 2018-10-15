@@ -78,6 +78,8 @@ public class PackageIngestService {
       result.newPackageId = pkg.id
     }
 
+    result.packageId = pkg.id
+
     int rownum = 0;
 
     package_data.packageContents.each { pc ->

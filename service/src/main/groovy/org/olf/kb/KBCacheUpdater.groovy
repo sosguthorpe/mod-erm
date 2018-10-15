@@ -57,8 +57,7 @@ public interface KBCacheUpdater {
    * using a native package identifier, request a specific package from the remote source and add it to the KB Cache.
    * If the package already exists, implementors MAY update the existing package with the new information.
    */
-  public void importPackage(Map params,
-                            KBCache cache);
+  public Map importPackage(Map params, KBCache cache);
                                 
  
   /**

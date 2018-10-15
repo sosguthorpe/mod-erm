@@ -41,8 +41,8 @@ public interface KBCache {
    *  "PackageSource":"",
    *  "PackageName":"",
    */
-  public void onPackageChange(String rkb_name, 
-                              Object canonical_package_definition);
+  public Map onPackageChange(String rkb_name, 
+                             Object canonical_package_definition);
 
   public void updateCursor(String rkb_name, String cursor);
 

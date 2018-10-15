@@ -47,7 +47,7 @@ class AdminController {
   }
 
   public pullPackage() {
-    def result = [:]
+    def result = null;
     RemoteKB rkb = RemoteKB.findByName(params.kb)
 
     if ( rkb ) {
@@ -60,7 +60,7 @@ class AdminController {
         Class cls = Class.forName(rkb.type)
         KBCacheUpdater cache_updater = cls.newInstance();
         log.debug("Import package: ${import_params}");
-        cache_updater.importPackage(import_params, knowledgeBaseCacheService);
+        result = cache_updater.importPackage(import_params, knowledgeBaseCacheService);
       }
       catch ( Exception e ) {
         log.error("Problem pulling package from ${params.kb}",e);
