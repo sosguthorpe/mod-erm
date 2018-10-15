@@ -35,6 +35,7 @@ public class ContentActivationRecord implements MultiTenant<ContentActivationRec
   }
 
   static constraints = {
+        dateDeactivation(nullable:true, blank:false)
   }
 
 }
