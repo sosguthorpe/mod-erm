@@ -67,12 +67,16 @@ where ( exists ( select pci.id
    *  Examples can be found in src/intergation-test/resources/packages. The function should be called with the
    *  result of parsing that JSON into a map, eg via JsonSlurper
    */
-  public void onPackageChange(String rkb_name, 
+  public Map onPackageChange(String rkb_name, 
                               Object package_data) {
+    Map result = null;
     RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
       log.debug("onPackageChange(${rkb_name},...)");
-      packageIngestService.upsertPackage(package_data, rkb_name);
+      result = packageIngestService.upsertPackage(package_data, rkb_name);
     }
+    log.debug("onPackageChange(${rkb_name},...) returning ${result}");
+
+    return result;
   }
 
   /**

@@ -52,14 +52,15 @@ public class EbscoKBAdapter implements KBCacheUpdater {
    * using a native package identifier, request a specific package from the remote source and add it to the KB Cache.
    * If the package already exists, implementors MAY update the existing package with the new information.
    */
-  public void importPackage(Map params,
+  public Map importPackage(Map params,
                             KBCache cache) {
 
     def erm_package = buildErmPackage(params.vendorid,
                                       params.packageid,
                                       params.principal,
                                       params.credentials)
-    cache.onPackageChange(params.kb, erm_package);
+
+    return cache.onPackageChange(params.kb, erm_package);
   }
 
   /**

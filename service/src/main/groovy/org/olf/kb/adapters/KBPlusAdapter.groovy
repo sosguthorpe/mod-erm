@@ -39,9 +39,10 @@ public class KBPlusAdapter implements KBCacheUpdater {
     throw new RuntimeException("Not yet implemented");
   }
 
-  public void importPackage(Map params,
+  public Map importPackage(Map params,
                             KBCache cache) {
     throw new RuntimeException("Not yet implemented");
+    return null;
   }
 
   public boolean activate(Map params, KBCache cache) {
