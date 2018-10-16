@@ -118,7 +118,7 @@ dataSource:
   username: "${db.username:folio}"
   password: "${db.password:folio}"
   driverClassName: org.postgresql.Driver
-  dialect: org.olf.general.KIPostgres94Dialect
+  dialect: com.k_int.hibernate.dialects.postgres.KIPostgres94Dialect
   url: "jdbc:postgresql://${db.host:localhost}:${db.port:5432}/${db.database:olfdev}"
   schemaHandler: com.k_int.okapi.OkapiSchemaHandler
     

@@ -93,7 +93,12 @@ ACTIVE_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
     vendorsUuid: "05f327a6-c4d3-43c2-828f-7d6e7e401c99",
     name:"My Super Vendor",
     sourceURI:"/vendors/some/uri?05f327a6-c4d3-43c2-828f-7d6e7e401c99"
-  }
+  },
+  items: [
+    {
+      resource : { id : "'"$CCD_IN_KI_TEST_PKG"'" }
+    }
+  ]
 }
 ' | jq -r ".id" | tr -d '\r'`
 
