@@ -1,16 +1,17 @@
 package org.olf
 
+import org.hibernate.Hibernate
 import org.hibernate.sql.JoinType
 import org.olf.erm.Entitlement
-import org.olf.general.RefdataValue
 import org.olf.kb.ErmResource
+import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
+import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.TitleInstance
 
 import com.k_int.okapi.OkapiTenantAwareController
 
 import grails.gorm.multitenancy.CurrentTenant
-import groovy.lang.Closure
 import groovy.util.logging.Slf4j
 
 @Slf4j
@@ -95,9 +96,10 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
     // We use criteria here to ensure
     
     final ErmResource res = resourceId ? ErmResource.read ( resourceId ) : null
+    final Class<? extends ErmResource> resClass = res ? Hibernate.getClass( res ) : null
     
     // Not title. Just show a 404
-    if (!res || !([TitleInstance] + Entitlement.ALLOWED_RESOURCES).contains(res.class)) {
+    if (resClass == null || (!(resClass == TitleInstance || Entitlement.ALLOWED_RESOURCES.contains( resClass )))) {
       response.status = 404
       return
     }
