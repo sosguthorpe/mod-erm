@@ -66,6 +66,12 @@ where ( exists ( select pci.id
    *  Drive -> ERM-Project Team -> WorkInProgress -> olf-erm analysis and design -> PackageDescription--JSON format
    *  Examples can be found in src/intergation-test/resources/packages. The function should be called with the
    *  result of parsing that JSON into a map, eg via JsonSlurper
+   *
+   *  @param rkb_name the ID string of the remote KB as defined in the remoteKB domain
+   *  @param package_data the parsed JSON upload format - for example see the package at
+   *              https://github.com/folio-org/mod-erm/blob/master/service/src/integration-test/resources/packages/apa_1062.json
+   *
+   *  @return map containing information about the packageId of the newly loaded or existing updated package
    */
   public Map onPackageChange(String rkb_name, 
                               Object package_data) {
