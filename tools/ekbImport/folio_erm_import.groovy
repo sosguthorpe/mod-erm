@@ -80,6 +80,52 @@ File bad_file = new File(options.f+'.bad');
 
 println("Starting... ${args}");
 
+def  default_column_mappings = [
+  'vendorID':                   [columns:['vendorID'],                   colNo:null],
+  'packageID':                  [columns:['packageID'],                  colNo:null],
+  'KBID':                       [columns:['KBID'],                       colNo:null],
+  'Title':                      [columns:['Title'],                      colNo:null],
+  'AlternateTitle':             [columns:['AlternateTitle'],             colNo:null],
+  'PackageName':                [columns:['PackageName'],                colNo:null],
+  'URL':                        [columns:['URL'],                        colNo:null],
+  'ProxiedURL':                 [columns:['ProxiedURL'],                 colNo:null],
+  'Publisher':                  [columns:['Publisher'],                  colNo:null],
+  'Edition':                    [columns:['Edition'],                    colNo:null],
+  'Author':                     [columns:['Author'],                     colNo:null],
+  'Editor':                     [columns:['Editor'],                     colNo:null],
+  'Illustrator':                [columns:['Illustrator'],                colNo:null],
+  'PrintISSN':                  [columns:['PrintISSN'],                  colNo:null],
+  'OnlineISSN':                 [columns:['OnlineISSN'],                 colNo:null],
+  'PrintISBN':                  [columns:['PrintISBN'],                  colNo:null],
+  'OnlineISBN':                 [columns:['OnlineISBN'],                 colNo:null],
+  'DOI':                        [columns:['DOI'],                        colNo:null],
+  'PeerReviewed':               [columns:['PeerReviewed'],               colNo:null],
+  'ManagedCoverageBegin':       [columns:['ManagedCoverageBegin'],       colNo:null],
+  'ManagedCoverageEnd':         [columns:['ManagedCoverageEnd'],         colNo:null],
+  'CustomCoverageBegin':        [columns:['CustomCoverageBegin'],        colNo:null],
+  'CustomCoverageEnd':          [columns:['CustomCoverageEnd'],          colNo:null],
+  'CoverageStatement':          [columns:['CoverageStatement'],          colNo:null],
+  'Embargo':                    [columns:['Embargo'],                    colNo:null],
+  'CustomEmbargo':              [columns:['CustomEmbargo'],              colNo:null],
+  'Description':                [columns:['Description'],                colNo:null],
+  'Subject':                    [columns:['Subject'],                    colNo:null],
+  'ResourceType':               [columns:['ResourceType'],               colNo:null],
+  'PackageContentType':         [columns:['PackageContentType'],         colNo:null],
+  'CreateCustom':               [columns:['CreateCustom'],               colNo:null],
+  'HideOnPublicationFinder':    [columns:['HideOnPublicationFinder'],    colNo:null],
+  'Delete':                     [columns:['Delete'],                     colNo:null],
+  'OrderedThroughEBSCO':        [columns:['OrderedThroughEBSCO'],        colNo:null],
+  'IsCustom':                   [columns:['IsCustom'],                   colNo:null],
+  'UserDefinedField1':          [columns:['UserDefinedField1'],          colNo:null],
+  'UserDefinedField2':          [columns:['UserDefinedField2'],          colNo:null],
+  'UserDefinedField3':          [columns:['UserDefinedField3'],          colNo:null],
+  'UserDefinedField4':          [columns:['UserDefinedField4'],          colNo:null],
+  'UserDefinedField5':          [columns:['UserDefinedField5'],          colNo:null],
+  'PackageType':                [columns:['PackageType'],                colNo:null],
+  'AllowEbscoToAddNewTitles':   [columns:['AllowEbscoToAddNewTitles'],   colNo:null],
+
+]
+
 if ( options.f ) {
   try {
     CSVReader r = new CSVReader( new InputStreamReader( new FileInputStream(options.f), java.nio.charset.Charset.forName('UTF-8') ), '\t' as char)
