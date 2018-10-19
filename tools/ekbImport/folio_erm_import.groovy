@@ -10,16 +10,13 @@
   @Grab(group='org.codehaus.groovy.modules.http-builder', module='http-builder', version='0.7.1'),
   @Grab(group='org.apache.httpcomponents', module='httpmime', version='4.1.2'),
   @Grab(group='org.slf4j', module='slf4j-api', version='1.7.6'),
-  @Grab(group='org.slf4j', module='jcl-over-slf4j', version='1.7.6'),
-  @Grab(group='net.sourceforge.nekohtml', module='nekohtml', version='1.9.22'),
-  @Grab(group='xerces', module='xercesImpl', version='2.11.0')
+  @Grab(group='org.slf4j', module='jcl-over-slf4j', version='1.7.6')
 ])
 
 import groovyx.net.http.*
 import static groovyx.net.http.ContentType.URLENC
 import static groovyx.net.http.ContentType.*
 import static groovyx.net.http.Method.*
-import groovyx.net.http.*
 import org.apache.http.entity.mime.*
 import org.apache.http.entity.mime.content.*
 import org.apache.http.*
