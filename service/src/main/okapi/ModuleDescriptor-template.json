@@ -65,10 +65,10 @@
           "pathPattern": "/erm/knowledgebase/*"
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/resources"
+          "pathPattern": "/erm/resource"
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/resources/*"
+          "pathPattern": "/erm/resource/*"
         }, {
           "methods": ["GET"],
           "pathPattern": "/erm/entitlements"
