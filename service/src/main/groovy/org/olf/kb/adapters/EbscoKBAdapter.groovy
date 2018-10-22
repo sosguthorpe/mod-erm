@@ -49,7 +49,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
   }
 
   public String makePackageReference(Map params) {
-    return "${params.vendorid}:${params.packageid}".toString()
+    return "EKB:${params.vendorid}:${params.packageid}".toString()
   }
 
   /**
@@ -62,9 +62,10 @@ public class EbscoKBAdapter implements KBCacheUpdater {
     def erm_package = buildErmPackage(params.vendorid,
                                       params.packageid,
                                       params.principal,
-                                      params.credentials)
+                                      params.credentials,
+                                      makePackageReference(params))
 
-    return cache.onPackageChange(params.kb, erm_package, makePackageReference(params));
+    return cache.onPackageChange(params.kb, erm_package);
   }
 
   /**
@@ -108,7 +109,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
       response.success = { resp, json ->
         log.debug("Package header: ${json}");
         result.header.reference = package_reference;
-        result.header.packageSlug = json.packageId;
+        result.header.packageSlug = package_reference;
         result.header.packageName = json.packageName
         result.header.packageProvider.name = json.vendorName
         result.header.packageProvider.reference = json.vendorId
