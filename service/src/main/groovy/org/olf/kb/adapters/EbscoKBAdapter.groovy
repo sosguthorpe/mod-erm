@@ -64,7 +64,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
                                       params.principal,
                                       params.credentials)
 
-    return cache.onPackageChange(params.kb, erm_package);
+    return cache.onPackageChange(params.kb, erm_package, makePackageReference(params));
   }
 
   /**
@@ -72,7 +72,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
    * @param params - A map containing vendorid and packageid
    * @return the canonicalpackage definition.
    */
-  private Map buildErmPackage(String vendorid, String packageid, String principal, String credentials) {
+  private Map buildErmPackage(String vendorid, String packageid, String principal, String credentials, String package_reference) {
 
     log.debug("buildErmPackage(${vendorid},${packageid},${principal},${credentials})");
 
@@ -107,7 +107,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
       uri.path="/rm/rmaccounts/${principal}/vendors/${vendorid}/packages/${packageid}"
       response.success = { resp, json ->
         log.debug("Package header: ${json}");
-        result.header.reference = json.packageId;
+        result.header.reference = package_reference;
         result.header.packageSlug = json.packageId;
         result.header.packageName = json.packageName
         result.header.packageProvider.name = json.vendorName
