@@ -48,6 +48,10 @@ public class EbscoKBAdapter implements KBCacheUpdater {
     throw new RuntimeException("Not yet implemented");
   }
 
+  public String makePackageReference(Map params) {
+    return "${params.vendorid}:${params.packageid}".toString()
+  }
+
   /**
    * using a native package identifier, request a specific package from the remote source and add it to the KB Cache.
    * If the package already exists, implementors MAY update the existing package with the new information.

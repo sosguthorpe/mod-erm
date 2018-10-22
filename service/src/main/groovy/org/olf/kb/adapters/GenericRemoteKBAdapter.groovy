@@ -41,6 +41,11 @@ public class GenericRemoteKBAdapter implements KBCacheUpdater {
     throw new RuntimeException("Not yet implemented");
   }
 
+  public String makePackageReference(Map params) {
+    throw new RuntimeException("Not yet implemented");
+    return null;
+  }
+
   /**
    *
    */
