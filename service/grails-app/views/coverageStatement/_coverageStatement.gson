@@ -1,0 +1,11 @@
+import groovy.transform.*
+import org.olf.kb.CoverageStatement
+
+@Field
+CoverageStatement coverageStatement
+
+json g.render(coverageStatement, [excludes: ['id','pti','ti','pci']]) {
+  
+  // Add the custom summary option 
+  summary "${coverageStatement}"
+}
