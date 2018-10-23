@@ -53,6 +53,8 @@ public interface KBCacheUpdater {
                                   String source_name,
                                   KBCache cache);
 
+  public String makePackageReference(Map params);
+
   /**
    * using a native package identifier, request a specific package from the remote source and add it to the KB Cache.
    * If the package already exists, implementors MAY update the existing package with the new information.

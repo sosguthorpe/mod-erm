@@ -238,4 +238,10 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
     return false;
   }
 
+  public String makePackageReference(Map params) {
+    throw new RuntimeException("Not yet implemented");
+    return null;
+  }
+
+
 }

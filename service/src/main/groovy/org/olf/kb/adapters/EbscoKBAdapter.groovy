@@ -48,6 +48,10 @@ public class EbscoKBAdapter implements KBCacheUpdater {
     throw new RuntimeException("Not yet implemented");
   }
 
+  public String makePackageReference(Map params) {
+    return "EKB:${params.vendorid}:${params.packageid}".toString()
+  }
+
   /**
    * using a native package identifier, request a specific package from the remote source and add it to the KB Cache.
    * If the package already exists, implementors MAY update the existing package with the new information.
@@ -58,7 +62,8 @@ public class EbscoKBAdapter implements KBCacheUpdater {
     def erm_package = buildErmPackage(params.vendorid,
                                       params.packageid,
                                       params.principal,
-                                      params.credentials)
+                                      params.credentials,
+                                      makePackageReference(params))
 
     return cache.onPackageChange(params.kb, erm_package);
   }
@@ -68,7 +73,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
    * @param params - A map containing vendorid and packageid
    * @return the canonicalpackage definition.
    */
-  private Map buildErmPackage(String vendorid, String packageid, String principal, String credentials) {
+  private Map buildErmPackage(String vendorid, String packageid, String principal, String credentials, String package_reference) {
 
     log.debug("buildErmPackage(${vendorid},${packageid},${principal},${credentials})");
 
@@ -103,8 +108,8 @@ public class EbscoKBAdapter implements KBCacheUpdater {
       uri.path="/rm/rmaccounts/${principal}/vendors/${vendorid}/packages/${packageid}"
       response.success = { resp, json ->
         log.debug("Package header: ${json}");
-        result.header.reference = json.packageId;
-        result.header.packageSlug = json.packageId;
+        result.header.reference = package_reference;
+        result.header.packageSlug = package_reference;
         result.header.packageName = json.packageName
         result.header.packageProvider.name = json.vendorName
         result.header.packageProvider.reference = json.vendorId
