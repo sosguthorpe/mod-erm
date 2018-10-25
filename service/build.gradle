@@ -243,7 +243,8 @@ import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 ext {
-  dockerTag = "${project.dockerRepo}/${project.name}:${project.version}${dockerTagSuffix}".toLowerCase()
+  // dockerTag = "${project.dockerRepo}/${project.name}:${project.version}${dockerTagSuffix}".toLowerCase()
+  dockerTag = "${project.dockerRepo}/${project.name}:${project.version}${dockerTagSuffix}"
   dockerBuildDir = mkdir("${buildDir}/docker")
 }
 

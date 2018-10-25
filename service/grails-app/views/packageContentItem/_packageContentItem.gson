@@ -3,8 +3,4 @@ import org.olf.kb.PackageContentItem
 model {
   PackageContentItem packageContentItem
 }
-json g.render(packageContentItem, [expand: ['pkg', 'pti']]) {
-  
-  // Add the custom summary option 
-  coverage packageContentItem.generateCoverageSummary()
-}
+json g.render(packageContentItem, [expand: ['pkg', 'pti', 'coverageStatements']])

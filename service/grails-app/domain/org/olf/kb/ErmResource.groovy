@@ -7,8 +7,6 @@ import grails.gorm.MultiTenant
 
 /**
  * an ErmResource - Superclass
- * Blank apart from the Identifier. This adds no real functionality apart
- * from being able to query easily for all e-resources. 
  */
 public class ErmResource implements MultiTenant<ErmResource> {
  

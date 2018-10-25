@@ -65,10 +65,10 @@
           "pathPattern": "/erm/knowledgebase/*"
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/resources"
+          "pathPattern": "/erm/resource"
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/resources/*"
+          "pathPattern": "/erm/resource/*"
         }, {
           "methods": ["GET"],
           "pathPattern": "/erm/entitlements"
@@ -155,5 +155,12 @@
         "vendor_category.item.get"
       ]
     }
-  ]
+  ],
+  "launchDescriptor": {
+    "dockerImage": "${info.app.name}:${info.app.version}",
+    "dockerArgs": {
+      "HostConfig": { "PortBindings": { "8080/tcp":  [{ "HostPort": "%p" }] } }
+    },
+    "dockerPull" : false
+  }
 }
