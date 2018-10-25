@@ -1,5 +1,6 @@
 import groovy.transform.Field
 import org.olf.kb.ErmResource
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 
 @Field
 ErmResource ermResource
@@ -18,5 +19,5 @@ json {
   }
   
   // Render the full representation of whatever this object is.
-  '_object' g.render(ermResource.class.cast(ermResource))
+  '_object' g.render(ermResource.class.cast(GrailsHibernateUtil.unwrapIfProxy(ermResource)))
 }
