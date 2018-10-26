@@ -5,6 +5,7 @@ import org.olf.general.RefdataValue
 import org.olf.general.refdata.CategoryId
 import org.olf.general.refdata.Defaults
 import com.k_int.web.toolkit.databinding.BindImmutably
+import com.k_int.web.toolkit.tags.Tag
 import grails.gorm.MultiTenant
 
 /**
@@ -53,13 +54,14 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
 
   Org vendor
   
-  @BindImmutably
+//  @BindImmutably
   Set<Entitlement> items
-
+  
   static hasMany = [
     items:Entitlement,
     historyLines: SAEventHistory,
-    contacts: InternalContact
+    contacts: InternalContact,
+    tags: Tag
   ]
 
   static mappedBy = [
@@ -87,7 +89,6 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
      contentReviewNeeded column:'sa_content_review_needed'
                  enabled column:'sa_enabled'
                   vendor column:'sa_vendor_fk'
-                   items cascade: 'all-delete-orphan'
   }
 
   static constraints = {

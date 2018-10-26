@@ -77,11 +77,6 @@ dependencies {
   compile 'org.grails.plugins:database-migration:3.0.4'
   compile 'org.liquibase:liquibase-core:3.5.5'
   compile 'com.ibm.icu:icu4j:62.1'
-
-  // compile "org.grails.plugins:gorm-graphql:1.0.2"
-  // Uncomment the above and add static graphql = true to any domain class to participate in the /graphql endpoint
-
-
   
   // Better test reports.
   testCompile( 'com.athaydes:spock-reports:1.6.1' ) {
@@ -92,7 +87,7 @@ dependencies {
 
 // Changed this to enable inline development of the includes listed below.
 def includes = [
-  'web-toolkit'   : 'com.k_int.grails:web-toolkit:3.3.15',
+  'web-toolkit'   : 'com.k_int.grails:web-toolkit:3.3.16',
   'grails-okapi'  : 'com.k_int.okapi:grails-okapi:3.3.15'
 ]
 
@@ -243,8 +238,7 @@ import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 ext {
-  // dockerTag = "${project.dockerRepo}/${project.name}:${project.version}${dockerTagSuffix}".toLowerCase()
-  dockerTag = "${project.dockerRepo}/${project.name}:${project.version}${dockerTagSuffix}"
+  dockerTag = "${project.dockerRepo}/${project.name}:${project.version}${dockerTagSuffix}".toLowerCase()
   dockerBuildDir = mkdir("${buildDir}/docker")
 }
 
