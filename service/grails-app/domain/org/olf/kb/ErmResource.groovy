@@ -2,6 +2,7 @@ package org.olf.kb
 
 import org.olf.erm.Entitlement
 import org.olf.general.RefdataValue
+import org.olf.general.refdata.Defaults
 
 import grails.gorm.MultiTenant
 
@@ -9,13 +10,14 @@ import grails.gorm.MultiTenant
  * an ErmResource - Superclass
  */
 public class ErmResource implements MultiTenant<ErmResource> {
- 
+
   String id
   String name
-  
+
+  @Defaults(['Audio', 'Book', 'Database', 'Film', 'Image', 'Journal'])
   RefdataValue type
   RefdataValue subType
-  
+
   static hasMany = [
     entitlements: Entitlement
   ]
@@ -36,9 +38,9 @@ public class ErmResource implements MultiTenant<ErmResource> {
             type (nullable:true, blank:false)
          subType (nullable:true, blank:false)
   }
-  
+
   String toString() {
     name
   }
-   
+
 }
