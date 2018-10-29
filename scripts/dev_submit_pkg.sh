@@ -186,6 +186,7 @@ fi
 
 # If all goes well, you'll get a status message back. After that, try searching your subscribed titles:
 
+echo GET page 1 of subscribed content
 curl --header "X-Okapi-Tenant: diku" http://localhost:8080/erm/content -X GET
 
 
@@ -195,3 +196,5 @@ curl --header "X-Okapi-Tenant: diku" http://localhost:8080/erm/content -X GET
 # Pull an ID from that record and ask the codex interface for some details
 #RECORD_ID="ff80818162a5e9600162a5e9ef63002f"
 #curl --header "X-Okapi-Tenant: diku" http://localhost:8080/codex-instances/$RECORD_ID -X GET
+
+echo dev_submit_pkg.sh completed
