@@ -3,7 +3,7 @@
 pipeline {
 
   environment {
-    ORG_GRADLE_PROJECT_appName = 'mod-erm'
+    ORG_GRADLE_PROJECT_appName = 'mod-agreements'
     GRADLEW_OPTS = '--console plain --no-daemon'
     BUILD_DIR = "${env.WORKSPACE}/service"
     MD = "${env.WORKSPACE}/service/build/resources/main/okapi/ModuleDescriptor.json"
