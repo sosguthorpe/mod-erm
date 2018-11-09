@@ -58,7 +58,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   Set<Entitlement> items
   
   static hasMany = [
-    items:Entitlement,
+    items: Entitlement,
     historyLines: SAEventHistory,
     contacts: InternalContact,
     tags: Tag
@@ -89,6 +89,10 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
      contentReviewNeeded column:'sa_content_review_needed'
                  enabled column:'sa_enabled'
                   vendor column:'sa_vendor_fk'
+                   items cascade: 'all-delete-orphan'
+                contacts cascade: 'all-delete-orphan'
+            historyLines cascade: 'all-delete-orphan'
+                    tags cascade: 'all-delete-orphan'
   }
 
   static constraints = {
