@@ -28,7 +28,7 @@ class PlatformSpec extends GebSpec {
     header OkapiHeaders.PERMISSIONS, '[ "erm.admin", "erm.user", "erm.own.read", "erm.any.read"]'
   }
 
-  final static Logger logger = LoggerFactory.getLogger(ErmTenantSpec.class);
+  final static Logger logger = LoggerFactory.getLogger(PlatformSpec.class);
 
   def setup() {
   }
