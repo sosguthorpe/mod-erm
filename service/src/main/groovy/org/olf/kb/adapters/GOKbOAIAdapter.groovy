@@ -60,7 +60,10 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
     }
 
     while ( found_records ) {
+
  
+      println("** GET https://gokbt.gbv.de/gokb/oai/index/packages ${query_params}");
+
       jpf_api.request(Method.GET) { req ->
         // uri.path=''
         // requestContentType = ContentType.JSON
@@ -123,7 +126,12 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
       System.out.println(package_name);
 
       def json_package_description = gokbToERM(record);
-      cache.onPackageChange(source_name, json_package_description);
+      if ( json_package_description.header.status == 'deleted' ) {
+        // ToDo: Decide what to do about deleted records
+      }
+      else {
+        cache.onPackageChange(source_name, json_package_description);
+      }
 
       if ( datestamp > result.new_cursor ) {
         System.out.println("New cursor value - ${datestamp} > ${result.new_cursor} ");
@@ -147,7 +155,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
 
     def result = null;
 
-    if ( package_record != null ) {
+    if ( ( package_record != null ) && ( package_record.name != null ) ) {
 
       def package_name = package_record.name?.text()
       def package_shortcode = package_record.shortcode?.text()
@@ -156,6 +164,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
   
       result = [
         header:[
+          status: xml_gokb_record?.header?.status,
           availability:[
             type: 'general'
           ],
@@ -221,8 +230,9 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
         ])
       }
     }
-
-    println(result)
+    else {
+      throw new RuntimeException("Problem decoding package record: ${package_record}");
+    }
 
     return result;
   }
