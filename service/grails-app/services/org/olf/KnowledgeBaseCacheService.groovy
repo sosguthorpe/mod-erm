@@ -42,7 +42,7 @@ where ( exists ( select pci.id
     log.debug("KnowledgeBaseCacheService::runSync(${remotekb_id})");
     RemoteKB rkb = RemoteKB.read(remotekb_id) 
     if ( rkb ) {
-      log.debug("Run remote kb synv:: ${rkb}");
+      log.debug("Run remote kb sync:: ${rkb.id}/${rkb.name}/${rkb.uri}");
       Class cls = Class.forName(rkb.type)
       KBCacheUpdater cache_updater = cls.newInstance();
       cache_updater.freshenPackageData(rkb.name, rkb.uri, rkb.cursor, this)
@@ -91,6 +91,7 @@ where ( exists ( select pci.id
   public void onPackageRemoved(String rkb_name,
                                String authority,
                                String authority_id_of_package) {
+    log.debug("onPackageRemoved(${rkb_name},${authority}, ${authority_id_of_package})");
   }
 
 
