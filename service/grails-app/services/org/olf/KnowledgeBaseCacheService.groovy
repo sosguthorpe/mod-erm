@@ -42,7 +42,7 @@ where ( exists ( select pci.id
     log.debug("KnowledgeBaseCacheService::runSync(${remotekb_id})");
     RemoteKB rkb = RemoteKB.read(remotekb_id) 
     if ( rkb ) {
-      log.debug("Run remote kb synv:: ${rkb}");
+      log.debug("Run remote kb synv:: ${rkb.id}/${rkb.name}/${rkb.uri}");
       Class cls = Class.forName(rkb.type)
       KBCacheUpdater cache_updater = cls.newInstance();
       cache_updater.freshenPackageData(rkb.name, rkb.uri, rkb.cursor, this)
