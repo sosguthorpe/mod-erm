@@ -181,7 +181,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
       package_record.TIPPs?.TIPP.each { tipp_entry ->
 
         def tipp_title = tipp_entry?.title?.name?.text()
-        def tipp_medium = tipp_entry?.title?.medium?.text()
+        def tipp_medium = tipp_entry?.medium?.text()
         def tipp_media = 'journal'
         def tipp_instance_identifiers = [] // [ "namespace": "issn", "value": "0278-7393" ]
         def tipp_sibling_identifiers = []
