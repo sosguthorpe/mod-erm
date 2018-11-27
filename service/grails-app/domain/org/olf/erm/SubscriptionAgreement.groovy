@@ -62,13 +62,15 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
     items: Entitlement,
     historyLines: SAEventHistory,
     contacts: InternalContact,
-    tags: Tag
+    tags: Tag,
+    orgs: SAOrg
   ]
 
   static mappedBy = [
     items: 'owner',
     historyLines: 'owner',
-    contacts: 'owner'
+    contacts: 'owner',
+    orgs: 'owner'
   ]
 
   static mapping = {
