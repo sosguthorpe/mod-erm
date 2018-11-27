@@ -17,6 +17,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   String name
   String localReference
   String vendorReference
+  String attachedLicenceId
   Date cancellationDeadline
   Date startDate
   Date endDate
@@ -89,6 +90,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
      contentReviewNeeded column:'sa_content_review_needed'
                  enabled column:'sa_enabled'
                   vendor column:'sa_vendor_fk'
+       attachedLicenceId column:'sa_licence_fk'
                    items cascade: 'all-delete-orphan'
                 contacts cascade: 'all-delete-orphan'
             historyLines cascade: 'all-delete-orphan'
@@ -112,5 +114,6 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
                  enabled(nullable:true, blank:false)
              description(nullable:true, blank:false)
                   vendor(nullable:true, blank:false)
+       attachedLicenceId(nullable:true, blank:false)
   }
 }
