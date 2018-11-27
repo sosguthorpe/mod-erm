@@ -42,6 +42,7 @@ ISPERPETUAL_YES_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 ISPERPETUAL_NO_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreement/isPerpetual | jq -r '.[] | select(.label=="No") | .id'`
 RENEW_DEFRENEW_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreement/renewalPriority | jq -r '.[] | select(.label=="Definitely Renew") | .id'`
 RENEW_REVIEW_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreement/renewalPriority | jq -r '.[] | select(.label=="For Review") | .id'`
+ROLE_CONTENT_PROVIDER=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SAOrg/role | jq -r '.[] | select(.label=="Content Provider") | .id'`
 
 # Find the package content item entitle for Clinical Cancer Drugs in K-Int Test Package 001
 CCD_IN_KI_TEST_PKG=`curl --header "X-Okapi-Tenant: diku" "http://localhost:8080/erm/pci?filters=pti.titleInstance.title%3D%3DClinical+Cancer+Drugs&filters=pkg.name%3D%3DK-Int+Test+Package+001" -X GET | jq -r ".[0].id" | tr -d '\r'`
@@ -77,6 +78,15 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
     {value: "Legacy"},
     "Other value",
     "legacy"
+  ],
+  orgs: [
+    {
+      role: { id : "'"$ROLE_CONTENT_PROVIDER"'" },
+      org: {
+        vendorsUuid: "05f327a6-c4d3-43c2-828f-7d6e7e401c97",
+        name: "A test content provider org"
+      }
+    }
   ]
 }
 ' | jq -r ".id" | tr -d '\r'`
