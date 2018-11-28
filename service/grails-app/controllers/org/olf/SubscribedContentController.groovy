@@ -163,20 +163,7 @@ where exists ( select pci.id
     log.debug("SubscribedContentController::codexSearch(${params})");
     // See https://github.com/folio-org/raml/blob/7596a06a9b4ee5c2d296e7d528146d6d30c3151f/examples/codex/instanceCollection.sample
 
-    def result=[
-      instances:[]
-    ]
-
-    TitleInstance.executeQuery('select ti '+BASE_QUERY,[:],[max:10]).each { title ->
-      result.instances.add(
-        [ 
-          id: title.id,
-          title: title.title
-        ]
-      );
-    }
-
-    render result as JSON
+    respond doTheLookup (TitleInstance.entitled)
   }
 
   def codexItem() {

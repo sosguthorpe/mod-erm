@@ -1,0 +1,12 @@
+import org.olf.kb.TitleInstance
+import groovy.transform.*
+
+@Field
+List<TitleInstance> titleInstanceList
+
+json {
+  instances (titleInstanceList) { TitleInstance ti ->
+    id ti.id
+    title ti.name
+  }
+}
