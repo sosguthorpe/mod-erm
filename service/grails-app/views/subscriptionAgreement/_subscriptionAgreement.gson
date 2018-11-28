@@ -7,4 +7,5 @@ json g.render(subscriptionAgreement, [expand: ['agreementType',
                                                'agreementStatus',
                                                'isPerpetual',
                                                'contentReviewNeeded',
+                                               'orgs',
                                                'vendor']])

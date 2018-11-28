@@ -63,7 +63,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
     historyLines: SAEventHistory,
     contacts: InternalContact,
     tags: Tag,
-    orgs: SAOrg
+    orgs: SubscriptionAgreementOrg
   ]
 
   static mappedBy = [

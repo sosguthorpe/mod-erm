@@ -96,7 +96,7 @@ public class TitleInstanceResolverService {
     // If we didn't have a class one identifier AND we weren't able to match anything via
     // a sibling match, try to do a fuzzy match as a last resort
     if ( ( num_matches == 0 ) && ( num_class_one_identifiers == 0 ) ) {
-      // log.debug("No matches on identifier - try a fuzzy text match on title(${citation.title})");
+      log.debug("No matches on identifier - try a fuzzy text match on title(${citation.title})");
       // No matches - try a simple title match
       candidate_list = titleMatch(citation.title,MATCH_THRESHOLD);
       num_matches = candidate_list.size()
@@ -115,7 +115,7 @@ public class TitleInstanceResolverService {
           checkForEnrichment(result, citation);
           break;
         default:
-          log.warn("title matched ${num_matches} records with a threshold >= ${MATCH_THRESHOLD} . Unable to continue. Matching IDs: ${candidate_list.collect { it.id }}");
+          log.warn("title matched ${num_matches} records with a threshold >= ${MATCH_THRESHOLD} . Unable to continue. Matching IDs: ${candidate_list.collect { it.id }}. class one identifier count: ${num_class_one_identifiers}");
           // throw new RuntimeException("Title match returned too many items (${num_matches})");
           break;
       }

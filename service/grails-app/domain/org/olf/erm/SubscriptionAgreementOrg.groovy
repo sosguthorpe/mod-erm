@@ -9,7 +9,7 @@ import org.olf.general.Org
 /**
  * Link a subscription agreement with an org and attach a role
  */
-public class SAOrg implements MultiTenant<SAOrg>{
+public class SubscriptionAgreementOrg implements MultiTenant<SubscriptionAgreementOrg>{
   
   String id
   Org org
