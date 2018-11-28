@@ -159,11 +159,15 @@ where exists ( select pci.id
   }
 
 
+  // N.B. We arrive here via UrlMappings which quitly adds stats=true on to the request so we get the hit count etc
   def codexSearch() {
     log.debug("SubscribedContentController::codexSearch(${params})");
     // See https://github.com/folio-org/raml/blob/7596a06a9b4ee5c2d296e7d528146d6d30c3151f/examples/codex/instanceCollection.sample
 
-    respond doTheLookup (TitleInstance.entitled)
+    params.stats=true
+    Map codexSearchResponse = doTheLookup(TitleInstance.entitled)
+    render(view:'codexSearch', model:codexSearchResponse);
+    // respond doTheLookup (TitleInstance.entitled)
   }
 
   def codexItem() {

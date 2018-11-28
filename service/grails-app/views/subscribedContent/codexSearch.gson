@@ -1,12 +1,22 @@
 import org.olf.kb.TitleInstance
 import groovy.transform.*
 
-@Field
-List<TitleInstance> titleInstanceList
+model {
+  Iterable<TitleInstance> results
+  Integer totalRecords
+}
+
+def meta = ['totalRecords': (totalRecords) ]
 
 json {
-  instances (titleInstanceList) { TitleInstance ti ->
+  instances (results) { TitleInstance ti ->
     id ti.id
     title ti.name
+  }
+  resultInfo {
+    'totalRecords' totalRecords
+  }
+  diagnostics {
+    status 'OK'
   }
 }
