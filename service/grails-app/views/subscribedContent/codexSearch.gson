@@ -16,7 +16,4 @@ json {
   resultInfo {
     'totalRecords' totalRecords
   }
-  diagnostics {
-    status 'OK'
-  }
 }

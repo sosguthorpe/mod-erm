@@ -165,6 +165,7 @@ where exists ( select pci.id
     // See https://github.com/folio-org/raml/blob/7596a06a9b4ee5c2d296e7d528146d6d30c3151f/examples/codex/instanceCollection.sample
 
     params.stats=true
+    params.max = params.limit
     Map codexSearchResponse = doTheLookup(TitleInstance.entitled)
     render(view:'codexSearch', model:codexSearchResponse);
     // respond doTheLookup (TitleInstance.entitled)
