@@ -81,7 +81,7 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
   ],
   orgs: [
     {
-      role: { id : "'"$ROLE_CONTENT_PROVIDER"'" },
+      role: "Content Provider",
       org: {
         vendorsUuid: "05f327a6-c4d3-43c2-828f-7d6e7e401c97",
         name: "A test content provider org"
