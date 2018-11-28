@@ -1,4 +1,5 @@
 import org.olf.kb.TitleInstance
+import org.olf.kb.IdentifierOccurrence
 import groovy.transform.*
 
 model {
@@ -12,6 +13,16 @@ json {
   instances (results) { TitleInstance ti ->
     id ti.id
     title ti.name
+    // type ti.type?.value
+    // format ti.subType?.value
+    source 'ERM'
+    rights ''
+    version ''
+    lastModified ''
+    // identifier(ti.identifiers) { IdentifierOccurrence io ->
+    //   value io.identifier.value
+    //   type io.identifier.ns.value
+    // }
   }
   resultInfo {
     'totalRecords' totalRecords
