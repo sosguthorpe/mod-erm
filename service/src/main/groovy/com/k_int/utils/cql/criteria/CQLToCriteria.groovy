@@ -117,25 +117,31 @@ class CQLToCriteria {
     List result = []
 
     cfg.associations.each { k,v ->
-      addIfRequired(k, v, required_aliases, result);
+      addIfRequired(null, k, v, required_aliases, result);
     }
     
     result
   }
 
   // We go depth first BUT add new aliases to the start of the list
-  private List addIfRequired(String prop, Map alias_definition, List required_aliases, List generated_list) {
+  private boolean addIfRequired(String parent_alias, String prop, Map alias_definition, List required_aliases, List generated_list) {
+
+    boolean result = false;
+
     log.debug("addIfRequired(${prop},${alias_definition},${required_aliases},${generated_list})");
 
     alias_definition.children?.each { k,v  ->
-      addIfRequired(k, v, required_aliases, generated_list);
+      result = result || addIfRequired(alias_definition.alias, k, v, required_aliases, generated_list);
     }
 
     // The alias we are currently considering is in the required list
-    if ( required_aliases.contains(alias_definition.alias) ) {
+    if ( result || required_aliases.contains(alias_definition.alias) ) {
       log.debug("Add ${k} ${v}");
-      // generated_list.add(assoc)
+      generated_list.add(0,[prop:prop, alias:alias_definition.alias])
+      result = true;
     }
+
+    return result;
   }
 
 }
