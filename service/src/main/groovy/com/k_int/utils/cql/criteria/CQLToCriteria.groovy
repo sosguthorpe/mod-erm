@@ -31,7 +31,10 @@ class CQLToCriteria {
       requiredAliases:[]
     ]
 
+    // Walk the CQL tree, creating and decorating a tree of Criteria objects as we go
     visit(cfg, 0, cql_root, builder_context, result);
+
+    List aliases = generateRequiredAliases(builder_context.requiredAliases, cfg);
 
     log.debug("At end ${builder_context}");
 
@@ -43,12 +46,15 @@ class CQLToCriteria {
     log.debug("${INDENT*depth}${depth} ${node.class.name} ${parent?.class.name}");
     switch(node.class) {
       case CQLSortNode:
+        // Push on to main query tree
         visit(cfg, depth+1,((CQLSortNode)node).getSubtree(), builder_context, parent)
         break;
       case CQLBooleanNode:
+        // Recurse into subtrees
         handleBoolean(cfg, depth+1,(CQLBooleanNode)node, builder_context, parent);
         break;
       case CQLTermNode:
+        // use the config to add any dependent nodes
         handleTerm(cfg, depth+1,(CQLTermNode)node, builder_context, parent);
         break;
       default:
@@ -104,4 +110,32 @@ class CQLToCriteria {
     CQLNode root = parser.parse(cql);
     return root;
   }
+
+  private List generateRequiredAliases(List required_aliases, Map cfg) {
+    // Walk through the tree of namespaces, adding any that are required
+    // Visit the leaf nodes first. As leaf nodes are added, they may add their own dependencies
+    List result = []
+
+    cfg.associations.each { k,v ->
+      addIfRequired(k, v, required_aliases, result);
+    }
+    
+    result
+  }
+
+  // We go depth first BUT add new aliases to the start of the list
+  private List addIfRequired(String prop, Map alias_definition, List required_aliases, List generated_list) {
+    log.debug("addIfRequired(${prop},${alias_definition},${required_aliases},${generated_list})");
+
+    alias_definition.children?.each { k,v  ->
+      addIfRequired(k, v, required_aliases, generated_list);
+    }
+
+    // The alias we are currently considering is in the required list
+    if ( required_aliases.contains(alias_definition.alias) ) {
+      log.debug("Add ${k} ${v}");
+      // generated_list.add(assoc)
+    }
+  }
+
 }
