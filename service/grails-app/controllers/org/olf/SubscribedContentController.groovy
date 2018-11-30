@@ -10,6 +10,10 @@ import grails.converters.JSON
 import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
 
+import grails.gorm.DetachedCriteria;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.sql.JoinType;
+
 
 /**
  * Provide a tenant with access to a list of their subscribed content - in essence all the titles and coverage that
@@ -21,6 +25,37 @@ import groovy.util.logging.Slf4j
 @CurrentTenant
 @Deprecated
 class SubscribedContentController extends OkapiTenantAwareController<TitleInstance> {
+
+  private static Map CQLCFG = [
+    baseEntity: TitleInstance,
+    associations:[
+      'platformInstances' : [ 
+        'alias':'pi',
+        'children':[
+          'packageOccurences':[
+            'alias':'pi_po',
+            'type':JoinType.LEFT_OUTER_JOIN,
+            'children':[
+              'pkg':[
+                'alias':'pi_po_pkg',
+                'type':JoinType.LEFT_OUTER_JOIN
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    indexes:[
+                  'title': [ type:'txtIndexField', requiredAliases:['assocTitle'], criteria: { p, v -> println('hello '+v); p.ilike('name', v.replaceAll('\\*','%')) } ],
+              'safetitle': [ type:'txtIndexField', requiredAliases:['assocTitle'], criteria: { p, v -> p.ilike('assocTitle.name', v.replaceAll('*','%')) } ],
+           'ext.selected': [ type:'boolIndexField', criteria: { p, v -> return } ],
+      'safe.ext.selected': [ type:'boolIndexField', criteria: { p, v ->
+                                                  p.or {
+                                                    p.isNotEmpty 'pi.entitlements'
+                                                    p.isNotEmpty 'pi_po.entitlements'
+                                                    p.isNotEmpty 'pi_po_pkg.entitlements' } } ]
+    ]
+  ];
 
   /*
    * Return titles for content we have access to.
@@ -163,6 +198,12 @@ where exists ( select pci.id
   def codexSearch() {
     log.debug("SubscribedContentController::codexSearch(${params})");
     // See https://github.com/folio-org/raml/blob/7596a06a9b4ee5c2d296e7d528146d6d30c3151f/examples/codex/instanceCollection.sample
+
+    com.k_int.utils.cql.criteria.CQLToCriteria c = new com.k_int.utils.cql.criteria.CQLToCriteria()
+    DetachedCriteria crit = c.build(CQLCFG, params.query)
+
+    def test = crit.list(max:30);
+    log.debug("Result of test: ${test}");
 
     params.stats=true
     params.max = params.limit
