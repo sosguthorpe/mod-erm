@@ -20,6 +20,10 @@ class CQLToCriteria {
   private static String INDENT = '   ';
 
   DetachedCriteria build(Map cfg, String query) {
+
+   // Criteria criteria = getSession().createCriteria(Table_a.class);
+   // https://stackoverflow.com/questions/12078960/hibernate-criteria-api-joining-tables-with-custom-join
+
     DetachedCriteria result = new DetachedCriteria(cfg.baseEntity);
 
    // result has a java.util.List<Criterion>  criteria
