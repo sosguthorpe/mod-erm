@@ -201,8 +201,8 @@ where exists ( select pci.id
     com.k_int.utils.cql.criteria.CQLToCriteria c = new com.k_int.utils.cql.criteria.CQLToCriteria()
     DetachedCriteria crit = c.build(CQLCFG, params.query)
 
-    def test = crit.list(max:30);
-    log.debug("Result of test: ${test}");
+    def test = crit.list(max:params.limit, offset:params.offset);
+    log.debug("Result of test: ${test} ${test.getTotalCount()}");
 
     params.stats=true
     params.max = params.limit

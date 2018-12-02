@@ -34,9 +34,14 @@ class CQLToCriteria {
     // Walk the CQL tree, creating and decorating a tree of Criteria objects as we go
     visit(cfg, 0, cql_root, builder_context, result);
 
-    List aliases = generateRequiredAliases(builder_context.requiredAliases, cfg);
+    List required_aliases = generateRequiredAliases(builder_context.requiredAliases, cfg);
 
-    log.debug("At end ${builder_context}");
+    required_aliases.each { al ->
+      log.debug("Adding ${al.parent ? al.parent + '.' : ''}${al.prop} ${al.alias}");
+      result.createAlias("${al.parent ? al.parent + '.' : ''}${al.prop}", al.alias) // , al.type ?: org.hibernate.sql.JoinType.INNER_JOIN )
+    }
+
+    log.debug("At end ${builder_context} ${required_aliases}");
 
     return result;
   }
@@ -136,8 +141,8 @@ class CQLToCriteria {
 
     // The alias we are currently considering is in the required list
     if ( result || required_aliases.contains(alias_definition.alias) ) {
-      log.debug("Add ${k} ${v}");
-      generated_list.add(0,[prop:prop, alias:alias_definition.alias])
+      log.debug("Add ${parent_alias}.${prop} ${alias_definition.alias} ${alias_definition.type}");
+      generated_list.add(0,[parent:parent_alias, prop:prop, alias:alias_definition.alias, type:alias_definition.type])
       result = true;
     }
 
