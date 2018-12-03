@@ -113,3 +113,14 @@ where pci_pkg_fk = pkg_id
 
 CREATE VIEW diku_olf_erm.all_electronic_resources (type, pkg_id, pti_id, name, plat_fk) as ( select 'pkg', pkg_id, null, pkg_name from diku_olf_erm.package, null ) UNION ( select 'title', null, pti_id, ti_title, pti_pt_fk from diku_olf_erm.platform_title_instance, diku_olf_erm.title_instance where pti_ti_fk = ti_id )
 
+
+
+
+select count(*) as y0_ from title_instance this_ 
+                          inner join erm_resource this_1_ on this_.id=this_1_.id 
+			  inner join platform_title_instance pi1_ on this_.id=pi1_.pti_ti_fk 
+			  left outer join erm_resource pi1_1_ on pi1_.id=pi1_1_.id 
+			  left outer join package_content_item pi_po2_ on pi1_.id=pi_po2_.pci_pti_fk 
+			  left outer join erm_resource pi_po2_1_ on pi_po2_.id=pi_po2_1_.id 
+			  left outer join package pi_po_pkg3_ on pi_po2_.pci_pkg_fk=pi_po_pkg3_.id 
+			  left outer join erm_resource pi_po_pkg3_1_ on pi_po_pkg3_.id=pi_po_pkg3_1_.id

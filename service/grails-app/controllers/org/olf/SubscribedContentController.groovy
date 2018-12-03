@@ -10,6 +10,12 @@ import grails.converters.JSON
 import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
 
+import grails.gorm.DetachedCriteria;
+import grails.orm.HibernateCriteriaBuilder 
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.sql.JoinType;
+import grails.orm.PagedResultList
+
 
 /**
  * Provide a tenant with access to a list of their subscribed content - in essence all the titles and coverage that
@@ -21,6 +27,42 @@ import groovy.util.logging.Slf4j
 @CurrentTenant
 @Deprecated
 class SubscribedContentController extends OkapiTenantAwareController<TitleInstance> {
+
+  private static Map CQLCFG = [
+    baseEntity: TitleInstance,
+    associations:[
+      'platformInstances' : [ 
+        'alias':'pi',
+        'children':[
+          'packageOccurences':[
+            'alias':'pi_po',
+            'type':JoinType.LEFT_OUTER_JOIN,
+            'children':[
+              'pkg':[
+                'alias':'pi_po_pkg',
+                'type':JoinType.LEFT_OUTER_JOIN
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    indexes:[
+                  // 'title': [ type:'txtIndexField', criteria: { p, v -> p.ilike('name', v.replaceAll('\\*','%')) } ],
+                  'title': [ type:'txtIndexField', criteria: { v -> return Restrictions.ilike('name', v.replaceAll('\\*','%'))  } ],
+           'ext.selected': [ type:'boolIndexField', requiredAliases:['pi_po_pkg','pi_po','pi'], criteria: { v ->
+                                              if( v?.equalsIgnoreCase('true') ) {
+                                                System.out.println("bool is true");
+                                                return Restrictions.or (
+                                                  Restrictions.isNotEmpty('pi.entitlements'),
+                                                  Restrictions.or (
+                                                    Restrictions.isNotEmpty('pi_po.entitlements'),
+                                                    Restrictions.isNotEmpty('pi_po_pkg.entitlements') ) )
+                                              } else {
+                                                System.out.println("boolFieldNotTrue ${v} ${v.class.name}")
+                                              } } ]
+    ]
+  ];
 
   /*
    * Return titles for content we have access to.
@@ -159,24 +201,22 @@ where exists ( select pci.id
   }
 
 
+  // N.B. We arrive here via UrlMappings which quitly adds stats=true on to the request so we get the hit count etc
   def codexSearch() {
     log.debug("SubscribedContentController::codexSearch(${params})");
     // See https://github.com/folio-org/raml/blob/7596a06a9b4ee5c2d296e7d528146d6d30c3151f/examples/codex/instanceCollection.sample
 
-    def result=[
-      instances:[]
-    ]
+    com.k_int.utils.cql.criteria.CQLToCriteria c = new com.k_int.utils.cql.criteria.CQLToCriteria()
+    PagedResultList prl = c.list(CQLCFG, params.query, [max:params.limit, offset:params.offset])
+    // log.debug("Result of ${prl.class.name} c.list: ${prl} totalCount:${prl.getTotalCount()}");
 
-    TitleInstance.executeQuery('select ti '+BASE_QUERY,[:],[max:10]).each { title ->
-      result.instances.add(
-        [ 
-          id: title.id,
-          title: title.title
-        ]
-      );
-    }
+    Map result = [ prl: prl ]
 
-    render result as JSON
+    // params.stats=true
+    // params.max = params.limit
+    // Map codexSearchResponse = doTheLookup(TitleInstance.entitled)
+    // render(view:'codexSearch', mode:l:prl);
+    respond(result, status:200)
   }
 
   def codexItem() {

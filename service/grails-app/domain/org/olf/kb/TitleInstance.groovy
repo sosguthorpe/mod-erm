@@ -54,6 +54,8 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
 
   static mapping = {
              work column:'ti_work_fk'
+             type column:'ti_type_fk'
+          subType column:'ti_subtype_fk'
   }
 
   static constraints = {

@@ -1,0 +1,37 @@
+import org.olf.kb.TitleInstance
+import org.olf.kb.IdentifierOccurrence
+import groovy.transform.*
+import grails.orm.PagedResultList;
+
+
+// System.out.println("***DEBUG***");
+// binding.variables.each{ 
+//   System.out.println("binding ${it}");
+// }
+
+model {
+//   Iterable<TitleInstance> results;
+//   Integer totalRecords;
+  grails.orm.PagedResultList prl;
+}
+
+json {
+  instances (prl) { TitleInstance ti ->
+    id ti.id
+    title ti.name
+    type ti.type?.value
+    format ti.subType?.value
+    source 'ERM'
+    rights ''
+    version ''
+    lastModified ''
+    identifier(ti.identifiers) { IdentifierOccurrence io ->
+      value io.identifier.value
+      type io.identifier.ns.value
+    }
+  }
+  resultInfo {
+    'totalRecords' prl.getTotalCount()
+  }
+
+}

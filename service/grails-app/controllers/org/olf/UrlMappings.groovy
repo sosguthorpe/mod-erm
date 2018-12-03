@@ -50,8 +50,8 @@ class UrlMappings {
     "/erm/content"(controller:'subscribedContent', action:'index')
     "/erm/content/$action"(controller:'subscribedContent')
 
-    "/erm/codex-instances" ( controller:'subscribedContent', action:'codexSearch')
-    "/erm/codex-instances/$id" ( controller:'subscribedContent', action:'codexItem')
+    "/codex-instances" ( controller:'subscribedContent', action:'codexSearch', stats:'true')
+    "/codex-instances/$id" ( controller:'subscribedContent', action:'codexItem')
 
     "/erm/knowledgebase" ( controller:'kb', action:'index')
     "/erm/knowledgebase/$action" ( controller:'kb' )

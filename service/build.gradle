@@ -29,6 +29,8 @@ repositories {
   mavenLocal()
   maven { url 'https://repo.grails.org/grails/core' }
   maven { url 'http://maven.k-int.com/content/repositories/releases' }
+  maven { url 'http://maven.indexdata.com/' }
+
 }
 
 dependencies {
@@ -52,14 +54,15 @@ dependencies {
   compile "org.grails.plugins:hibernate5"
   compile "org.hibernate:hibernate-core:5.1.5.Final"
   compile "org.grails.plugins:views-json:1.2.7"
-//  compile "org.grails.plugins:views-json-templates"
   console "org.grails:grails-console"
   compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
-  // compile "org.grails.plugins:gorm-graphql:1.0.3.BUILD-SNAPSHOT"
+  compile 'org.z3950.zing:cql-java:1.13'
+
   profile "org.grails.profiles:rest-api"
   runtime "org.glassfish.web:el-impl:2.1.2-b03"
   runtime "com.h2database:h2"
   runtime "org.apache.tomcat:tomcat-jdbc"
+
   testCompile "org.grails:grails-gorm-testing-support"
   testCompile "org.grails:grails-datastore-rest-client"
   testCompile "org.grails:grails-web-testing-support"
