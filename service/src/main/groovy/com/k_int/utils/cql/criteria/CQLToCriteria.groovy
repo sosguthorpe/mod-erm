@@ -54,7 +54,8 @@ class CQLToCriteria {
       required_aliases.each { al ->
         createAlias("${al.parent ? al.parent + '.' : ''}${al.prop}".toString(), al.alias, al.type ?: org.hibernate.sql.JoinType.INNER_JOIN )
       }
-      built_criteria 
+      
+      criteria.add(built_criteria)
     };
   }
 
@@ -114,18 +115,17 @@ class CQLToCriteria {
 
     Criterion result = null;
 
+    Criterion lhs = visit(cfg, depth+1,node.getLeftOperand(), builder_context);
+    Criterion rhs = visit(cfg, depth+1,node.getRightOperand(), builder_context);
+
+    log.debug("handleBoolean:: ${node.getOperator()} ${lhs} ${rhs}");
+
     switch ( node.getOperator() ) {
       case 'AND':
-        result = Restrictions.and (
-          visit(cfg, depth+1,node.getLeftOperand(), builder_context),
-          visit(cfg, depth+1,node.getRightOperand(), builder_context)
-        )
+        result = Restrictions.and (lhs,rhs);
         break;
       case 'OR':
-        result = Restrictions.or (
-          visit(cfg, depth+1,node.getLeftOperand(), builder_context),
-          visit(cfg, depth+1,node.getRightOperand(), builder_context)
-        )
+        result = Restrictions.or (lhs,rhs);
         break;
       default:
         throw new RuntimeException('Unhandled operator '+node.getOperator());

@@ -11,6 +11,7 @@ dataSource:
   driverClassName: org.postgresql.Driver
   dialect: com.k_int.hibernate.dialects.postgres.KIPostgres94Dialect
   schemaHandler: com.k_int.okapi.OkapiSchemaHandler
+  logSql: false
   properties:
       jmxEnabled: false
       initialSize: 5

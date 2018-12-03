@@ -49,14 +49,18 @@ class SubscribedContentController extends OkapiTenantAwareController<TitleInstan
     ],
     indexes:[
                   // 'title': [ type:'txtIndexField', criteria: { p, v -> p.ilike('name', v.replaceAll('\\*','%')) } ],
-                  'title': [ type:'txtIndexField', criteria: { v -> Restrictions.ilike('name', v.replaceAll('\\*','%'))  } ],
+                  'title': [ type:'txtIndexField', criteria: { v -> return Restrictions.ilike('name', v.replaceAll('\\*','%'))  } ],
            'ext.selected': [ type:'boolIndexField', requiredAliases:['pi_po_pkg','pi_po','pi'], criteria: { v ->
                                               if( v?.equalsIgnoreCase('true') ) {
+                                                System.out.println("bool is true");
+                                                return Restrictions.or (
+                                                  Restrictions.isNotEmpty('pi.entitlements'),
                                                   Restrictions.or (
-                                                    Restrictions.isNotEmpty('pi.entitlements'),
-                                                    Restrictions.or (
-                                                      Restrictions.isNotEmpty('pi_po.entitlements'),
-                                                      Restrictions.isNotEmpty('pi_po_pkg.entitlements') ) ) } } ]
+                                                    Restrictions.isNotEmpty('pi_po.entitlements'),
+                                                    Restrictions.isNotEmpty('pi_po_pkg.entitlements') ) )
+                                              } else {
+                                                System.out.println("boolFieldNotTrue ${v} ${v.class.name}")
+                                              } } ]
     ]
   ];
 
