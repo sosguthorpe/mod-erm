@@ -86,6 +86,10 @@
           "pathPattern": "/erm/pci/{id}/*"
         },{
           "methods": ["GET"],
+          "pathPattern": "/erm/org",
+          "modulePermissions": [ "vendor.collection.get" ]
+        }, {
+          "methods": ["GET"],
           "pathPattern": "/erm/org/find/{name}",
           "modulePermissions": [ "vendor.collection.get" ]
         },{
