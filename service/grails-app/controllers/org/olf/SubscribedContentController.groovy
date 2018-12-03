@@ -200,10 +200,13 @@ where exists ( select pci.id
     log.debug("SubscribedContentController::codexSearch(${params})");
     // See https://github.com/folio-org/raml/blob/7596a06a9b4ee5c2d296e7d528146d6d30c3151f/examples/codex/instanceCollection.sample
 
+    HibernateCriteriaBuilder cb = CQLCFG.baseEntity.createCriteria()
     com.k_int.utils.cql.criteria.CQLToCriteria c = new com.k_int.utils.cql.criteria.CQLToCriteria()
-    HibernateCriteriaBuilder crit = c.build(CQLCFG, params.query)
 
-    def test = crit.list(max:params.limit, offset:params.offset);
+    Closure crit = c.build(cb, CQLCFG, params.query)
+
+    def test = cb.list(max:params.limit, offset:params.offset) crit;
+
     log.debug("Result of test: ${test} ${test.getTotalCount()}");
 
     Map codexSearchResponse = [:]
