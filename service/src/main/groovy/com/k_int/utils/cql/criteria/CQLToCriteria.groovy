@@ -42,14 +42,16 @@ class CQLToCriteria {
     // Walk the CQL tree, creating and decorating a tree of Criteria objects as we go
     visit(cfg, 0, cql_root, builder_context, result);
 
+    // Work out what alias definitions are required, Only add in those aliases that our where clauses need
     List required_aliases = generateRequiredAliases(builder_context.requiredAliases, cfg);
 
+    // Actually add the aliases
     required_aliases.each { al ->
       log.debug("Adding ${al.parent ? al.parent + '.' : ''}${al.prop} ${al.alias}");
       result.createAlias("${al.parent ? al.parent + '.' : ''}${al.prop}", al.alias, al.type ?: org.hibernate.sql.JoinType.INNER_JOIN )
     }
 
-    log.debug("At end ${builder_context} ${required_aliases}");
+    log.debug("At end ${builder_context} ${required_aliases} - returning ${result}");
 
     return result;
   }
