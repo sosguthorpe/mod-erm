@@ -4,15 +4,14 @@ import groovy.transform.*
 import grails.orm.PagedResultList;
 
 
-System.out.println("***DEBUG***");
-
-binding.variables.each{ 
-  System.out.println("binding ${it}");
-}
+// System.out.println("***DEBUG***");
+// binding.variables.each{ 
+//   System.out.println("binding ${it}");
+// }
 
 model {
-  Iterable<TitleInstance> results;
-  Integer totalRecords;
+//   Iterable<TitleInstance> results;
+//   Integer totalRecords;
   grails.orm.PagedResultList prl;
 }
 

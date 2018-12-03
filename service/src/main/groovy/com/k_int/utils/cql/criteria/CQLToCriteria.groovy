@@ -7,6 +7,8 @@ import org.hibernate.criterion.*
 import org.hibernate.criterion.Criterion
 // import org.grails.datastore.mapping.query.api.Criteria
 import grails.orm.HibernateCriteriaBuilder;
+import org.hibernate.criterion.Restrictions;
+
 
 /*
  * See: https://docs.jboss.org/hibernate/orm/3.3/reference/en/html/querycriteria.html
@@ -46,14 +48,14 @@ class CQLToCriteria {
     // Work out what alias definitions are required, Only add in those aliases that our where clauses need
     List required_aliases = generateRequiredAliases(builder_context.requiredAliases, cfg);
 
-    // Actually add the aliases
-    required_aliases.each { al ->
-      log.debug("Adding ${al.parent ? al.parent + '.' : ''}${al.prop} ${al.alias}");
-      hb.createAlias("${al.parent ? al.parent + '.' : ''}${al.prop}", al.alias, al.type ?: org.hibernate.sql.JoinType.INNER_JOIN )
-    }
-
     // Execute our search closure using the builder and return the query result
-    return hb.list(args) { built_criteria };
+    return hb.list(args) { 
+      // Actually add the aliases
+      required_aliases.each { al ->
+        createAlias("${al.parent ? al.parent + '.' : ''}${al.prop}".toString(), al.alias, al.type ?: org.hibernate.sql.JoinType.INNER_JOIN )
+      }
+      built_criteria 
+    };
   }
 
   private Criterion visit(Map cfg, int depth, CQLNode node, Map builder_context) {
@@ -114,16 +116,16 @@ class CQLToCriteria {
 
     switch ( node.getOperator() ) {
       case 'AND':
-        result = builder.and {
-          visit(cfg, depth+1,node.getLeftOperand(), builder_context);
-          visit(cfg, depth+1,node.getRightOperand(), builder_context);
-        }
+        result = Restrictions.and (
+          visit(cfg, depth+1,node.getLeftOperand(), builder_context),
+          visit(cfg, depth+1,node.getRightOperand(), builder_context)
+        )
         break;
       case 'OR':
-        result = builder.or {
-          visit(cfg, depth+1,node.getLeftOperand(), builder_context);
-          visit(cfg, depth+1,node.getRightOperand(), builder_context);
-        }
+        result = Restrictions.or (
+          visit(cfg, depth+1,node.getLeftOperand(), builder_context),
+          visit(cfg, depth+1,node.getRightOperand(), builder_context)
+        )
         break;
       default:
         throw new RuntimeException('Unhandled operator '+node.getOperator());

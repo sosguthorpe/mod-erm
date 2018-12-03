@@ -52,10 +52,11 @@ class SubscribedContentController extends OkapiTenantAwareController<TitleInstan
                   'title': [ type:'txtIndexField', criteria: { v -> Restrictions.ilike('name', v.replaceAll('\\*','%'))  } ],
            'ext.selected': [ type:'boolIndexField', requiredAliases:['pi_po_pkg','pi_po','pi'], criteria: { v ->
                                               if( v?.equalsIgnoreCase('true') ) {
-                                                  Restrictions.or {
-                                                    Restrictions.isNotEmpty 'pi.entitlements'
-                                                    Restrictions.isNotEmpty 'pi_po.entitlements'
-                                                    Restrictions.isNotEmpty 'pi_po_pkg.entitlements' } } } ]
+                                                  Restrictions.or (
+                                                    Restrictions.isNotEmpty('pi.entitlements'),
+                                                    Restrictions.or (
+                                                      Restrictions.isNotEmpty('pi_po.entitlements'),
+                                                      Restrictions.isNotEmpty('pi_po_pkg.entitlements') ) ) } } ]
     ]
   ];
 
