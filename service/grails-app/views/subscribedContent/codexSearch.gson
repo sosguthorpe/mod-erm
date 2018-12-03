@@ -26,10 +26,10 @@ json {
     rights ''
     version ''
     lastModified ''
-    // identifier(ti.identifiers) { IdentifierOccurrence io ->
-    //   value io.identifier.value
-    //   type io.identifier.ns.value
-    // }
+    identifier(ti.identifiers) { IdentifierOccurrence io ->
+      value io.identifier.value
+      type io.identifier.ns.value
+    }
   }
   resultInfo {
     'totalRecords' prl.getTotalCount()
