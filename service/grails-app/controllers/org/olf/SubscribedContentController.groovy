@@ -14,6 +14,7 @@ import grails.gorm.DetachedCriteria;
 import grails.orm.HibernateCriteriaBuilder 
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
+import grails.orm.PagedResultList
 
 
 /**
@@ -201,14 +202,16 @@ where exists ( select pci.id
     // See https://github.com/folio-org/raml/blob/7596a06a9b4ee5c2d296e7d528146d6d30c3151f/examples/codex/instanceCollection.sample
 
     com.k_int.utils.cql.criteria.CQLToCriteria c = new com.k_int.utils.cql.criteria.CQLToCriteria()
-    grails.orm.PagedResultList prl = c.list(CQLCFG, params.query, [max:params.limit, offset:params.offset])
-    log.debug("Result of ${prl.class.name} c.list: ${prl} totalCount:${prl.getTotalCount()}");
+    PagedResultList prl = c.list(CQLCFG, params.query, [max:params.limit, offset:params.offset])
+    // log.debug("Result of ${prl.class.name} c.list: ${prl} totalCount:${prl.getTotalCount()}");
+
+    Map result = [ prl: prl ]
 
     // params.stats=true
     // params.max = params.limit
     // Map codexSearchResponse = doTheLookup(TitleInstance.entitled)
-    // render(view:'codexSearch', model:prl);
-    respond prl
+    // render(view:'codexSearch', mode:l:prl);
+    respond(result, status:200)
   }
 
   def codexItem() {

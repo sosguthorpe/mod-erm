@@ -4,11 +4,20 @@ import groovy.transform.*
 import grails.orm.PagedResultList;
 
 
-@Field
-PagedResultList prl
+System.out.println("***DEBUG***");
+
+binding.variables.each{ 
+  System.out.println("binding ${it}");
+}
+
+model {
+  Iterable<TitleInstance> results;
+  Integer totalRecords;
+  grails.orm.PagedResultList prl;
+}
 
 json {
-  instances (prl.iterator()) { TitleInstance ti ->
+  instances (prl) { TitleInstance ti ->
     id ti.id
     title ti.name
     // type ti.type?.value
@@ -25,4 +34,5 @@ json {
   resultInfo {
     'totalRecords' prl.getTotalCount()
   }
+
 }
