@@ -20,8 +20,8 @@ json {
   instances (prl) { TitleInstance ti ->
     id ti.id
     title ti.name
-    // type ti.type?.value
-    // format ti.subType?.value
+    type ti.type?.value
+    format ti.subType?.value
     source 'ERM'
     rights ''
     version ''
