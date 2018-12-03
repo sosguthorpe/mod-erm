@@ -11,6 +11,7 @@ import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
 
 import grails.gorm.DetachedCriteria;
+import grails.orm.HibernateCriteriaBuilder 
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
 
@@ -46,7 +47,8 @@ class SubscribedContentController extends OkapiTenantAwareController<TitleInstan
       ]
     ],
     indexes:[
-                  'title': [ type:'txtIndexField', criteria: { p, v -> p.ilike('name', v.replaceAll('\\*','%')) } ],
+                  // 'title': [ type:'txtIndexField', criteria: { p, v -> p.ilike('name', v.replaceAll('\\*','%')) } ],
+                  'title': [ type:'txtIndexField', criteria: { p, v -> p.add(Restrictions.ilike('name', v.replaceAll('\\*','%')))  } ],
            'ext.selected': [ type:'boolIndexField', requiredAliases:['pi_po_pkg','pi_po','pi'], criteria: { p, v ->
                                               if( v?.equalsIgnoreCase('true') ) {
                                                   p.or {
@@ -199,14 +201,16 @@ where exists ( select pci.id
     // See https://github.com/folio-org/raml/blob/7596a06a9b4ee5c2d296e7d528146d6d30c3151f/examples/codex/instanceCollection.sample
 
     com.k_int.utils.cql.criteria.CQLToCriteria c = new com.k_int.utils.cql.criteria.CQLToCriteria()
-    DetachedCriteria crit = c.build(CQLCFG, params.query)
+    HibernateCriteriaBuilder crit = c.build(CQLCFG, params.query)
 
     def test = crit.list(max:params.limit, offset:params.offset);
     log.debug("Result of test: ${test} ${test.getTotalCount()}");
 
-    params.stats=true
-    params.max = params.limit
-    Map codexSearchResponse = doTheLookup(TitleInstance.entitled)
+    Map codexSearchResponse = [:]
+
+    // params.stats=true
+    // params.max = params.limit
+    // Map codexSearchResponse = doTheLookup(TitleInstance.entitled)
     render(view:'codexSearch', model:codexSearchResponse);
     // respond doTheLookup (TitleInstance.entitled)
   }

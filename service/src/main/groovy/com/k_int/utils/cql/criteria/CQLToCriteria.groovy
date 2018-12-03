@@ -5,6 +5,7 @@ import org.z3950.zing.cql.*
 import groovy.util.logging.Log4j
 import org.hibernate.criterion.*
 import org.grails.datastore.mapping.query.api.Criteria
+import grails.orm.HibernateCriteriaBuilder;
 
 /*
  * See: https://docs.jboss.org/hibernate/orm/3.3/reference/en/html/querycriteria.html
@@ -19,16 +20,19 @@ class CQLToCriteria {
 
   private static String INDENT = '   ';
 
-  DetachedCriteria build(Map cfg, String query) {
+  HibernateCriteriaBuilder build(Map cfg, String cql_query_string) {
+
+    log.debug("CQLToCriteria::build(${cfg},${cql_query_string})");
 
    // Criteria criteria = getSession().createCriteria(Table_a.class);
    // https://stackoverflow.com/questions/12078960/hibernate-criteria-api-joining-tables-with-custom-join
 
-    DetachedCriteria result = new DetachedCriteria(cfg.baseEntity);
+    // DetachedCriteria result = new DetachedCriteria(cfg.baseEntity);
+    HibernateCriteriaBuilder result = cfg.baseEntity.createCriteria()
 
    // result has a java.util.List<Criterion>  criteria
 
-    CQLNode cql_root = parseCQL(query);
+    CQLNode cql_root = parseCQL(cql_query_string);
     log.debug("Result of parse: ${cql_root.toCQL()}");
 
     Map builder_context = [
@@ -42,7 +46,7 @@ class CQLToCriteria {
 
     required_aliases.each { al ->
       log.debug("Adding ${al.parent ? al.parent + '.' : ''}${al.prop} ${al.alias}");
-      result.createAlias("${al.parent ? al.parent + '.' : ''}${al.prop}", al.alias) // , al.type ?: org.hibernate.sql.JoinType.INNER_JOIN )
+      result.createAlias("${al.parent ? al.parent + '.' : ''}${al.prop}", al.alias, al.type ?: org.hibernate.sql.JoinType.INNER_JOIN )
     }
 
     log.debug("At end ${builder_context} ${required_aliases}");
@@ -84,6 +88,7 @@ class CQLToCriteria {
         builder_context.requiredAliases.addAll(index_config.requiredAliases)
 
       // Call the index_config criteria closure using the parent criteria and the term we are seeking
+      log.debug((INDENT*depth)+"Calling closure to add required criteria");
       index_config.criteria(parent, term)
     }
     else {
@@ -92,6 +97,7 @@ class CQLToCriteria {
   }
 
   private handleBoolean(Map cfg, int depth, CQLBooleanNode node, Map builder_context, Criteria parent) {
+    log.debug("Handle boolean");
 
     Criteria bool_crit = null;
 
