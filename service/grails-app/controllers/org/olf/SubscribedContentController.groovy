@@ -48,13 +48,13 @@ class SubscribedContentController extends OkapiTenantAwareController<TitleInstan
     ],
     indexes:[
                   // 'title': [ type:'txtIndexField', criteria: { p, v -> p.ilike('name', v.replaceAll('\\*','%')) } ],
-                  'title': [ type:'txtIndexField', criteria: { p, v -> p.add(Restrictions.ilike('name', v.replaceAll('\\*','%')))  } ],
-           'ext.selected': [ type:'boolIndexField', requiredAliases:['pi_po_pkg','pi_po','pi'], criteria: { p, v ->
+                  'title': [ type:'txtIndexField', criteria: { v -> Restrictions.ilike('name', v.replaceAll('\\*','%'))  } ],
+           'ext.selected': [ type:'boolIndexField', requiredAliases:['pi_po_pkg','pi_po','pi'], criteria: { v ->
                                               if( v?.equalsIgnoreCase('true') ) {
-                                                  p.or {
-                                                    p.isNotEmpty 'pi.entitlements'
-                                                    p.isNotEmpty 'pi_po.entitlements'
-                                                    p.isNotEmpty 'pi_po_pkg.entitlements' } } } ]
+                                                  Restrictions.or {
+                                                    Restrictions.isNotEmpty 'pi.entitlements'
+                                                    Restrictions.isNotEmpty 'pi_po.entitlements'
+                                                    Restrictions.isNotEmpty 'pi_po_pkg.entitlements' } } } ]
     ]
   ];
 
@@ -200,22 +200,15 @@ where exists ( select pci.id
     log.debug("SubscribedContentController::codexSearch(${params})");
     // See https://github.com/folio-org/raml/blob/7596a06a9b4ee5c2d296e7d528146d6d30c3151f/examples/codex/instanceCollection.sample
 
-    HibernateCriteriaBuilder cb = CQLCFG.baseEntity.createCriteria()
     com.k_int.utils.cql.criteria.CQLToCriteria c = new com.k_int.utils.cql.criteria.CQLToCriteria()
-
-    Closure crit = c.build(cb, CQLCFG, params.query)
-
-    def test = cb.list(max:params.limit, offset:params.offset) crit;
-
-    log.debug("Result of test: ${test} ${test.getTotalCount()}");
-
-    Map codexSearchResponse = [:]
+    grails.orm.PagedResultList prl = c.list(CQLCFG, params.query, [max:params.limit, offset:params.offset])
+    log.debug("Result of ${prl.class.name} c.list: ${prl} totalCount:${prl.getTotalCount()}");
 
     // params.stats=true
     // params.max = params.limit
     // Map codexSearchResponse = doTheLookup(TitleInstance.entitled)
-    render(view:'codexSearch', model:codexSearchResponse);
-    // respond doTheLookup (TitleInstance.entitled)
+    // render(view:'codexSearch', model:prl);
+    respond prl
   }
 
   def codexItem() {

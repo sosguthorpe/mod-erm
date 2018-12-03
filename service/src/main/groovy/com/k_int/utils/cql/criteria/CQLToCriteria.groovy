@@ -4,7 +4,8 @@ import grails.gorm.DetachedCriteria;
 import org.z3950.zing.cql.*
 import groovy.util.logging.Log4j
 import org.hibernate.criterion.*
-import org.grails.datastore.mapping.query.api.Criteria
+import org.hibernate.criterion.Criterion
+// import org.grails.datastore.mapping.query.api.Criteria
 import grails.orm.HibernateCriteriaBuilder;
 
 /*
@@ -20,15 +21,15 @@ class CQLToCriteria {
 
   private static String INDENT = '   ';
 
-  HibernateCriteriaBuilder build(Map cfg, String cql_query_string) {
+  Object list(Map cfg, String cql_query_string, Map args) {
 
-    log.debug("CQLToCriteria::build(${cfg},${cql_query_string})");
+    log.debug("CQLToCriteria::build(${cfg},${cql_query_string},${args})");
 
    // Criteria criteria = getSession().createCriteria(Table_a.class);
    // https://stackoverflow.com/questions/12078960/hibernate-criteria-api-joining-tables-with-custom-join
 
     // DetachedCriteria result = new DetachedCriteria(cfg.baseEntity);
-    HibernateCriteriaBuilder result = cfg.baseEntity.createCriteria()
+    HibernateCriteriaBuilder hb = cfg.baseEntity.createCriteria()
 
    // result has a java.util.List<Criterion>  criteria
 
@@ -40,7 +41,7 @@ class CQLToCriteria {
     ]
 
     // Walk the CQL tree, creating and decorating a tree of Criteria objects as we go
-    visit(cfg, 0, cql_root, builder_context, result);
+    Criterion built_criteria = visit(cfg, 0, cql_root, builder_context);
 
     // Work out what alias definitions are required, Only add in those aliases that our where clauses need
     List required_aliases = generateRequiredAliases(builder_context.requiredAliases, cfg);
@@ -48,38 +49,44 @@ class CQLToCriteria {
     // Actually add the aliases
     required_aliases.each { al ->
       log.debug("Adding ${al.parent ? al.parent + '.' : ''}${al.prop} ${al.alias}");
-      result.createAlias("${al.parent ? al.parent + '.' : ''}${al.prop}", al.alias, al.type ?: org.hibernate.sql.JoinType.INNER_JOIN )
+      hb.createAlias("${al.parent ? al.parent + '.' : ''}${al.prop}", al.alias, al.type ?: org.hibernate.sql.JoinType.INNER_JOIN )
     }
 
-    log.debug("At end ${builder_context} ${required_aliases} - returning ${result}");
-
-    return result;
+    // Execute our search closure using the builder and return the query result
+    return hb.list(args) { built_criteria };
   }
 
-  private void visit(Map cfg, int depth, CQLNode node, Map builder_context, Criteria parent) {
+  private Criterion visit(Map cfg, int depth, CQLNode node, Map builder_context) {
 
-    log.debug("${INDENT*depth}${depth} ${node.class.name} ${parent?.class.name}");
+    Criterion result = null;
+
+    log.debug("${INDENT*depth}${depth} ${node.class.name}");
     switch(node.class) {
       case CQLSortNode:
         // Push on to main query tree
-        visit(cfg, depth+1,((CQLSortNode)node).getSubtree(), builder_context, parent)
+        result = visit(cfg, depth+1,((CQLSortNode)node).getSubtree(), builder_context);
         break;
       case CQLBooleanNode:
         // Recurse into subtrees
-        handleBoolean(cfg, depth+1,(CQLBooleanNode)node, builder_context, parent);
+        result = handleBoolean(cfg, depth+1,(CQLBooleanNode)node, builder_context);
         break;
       case CQLTermNode:
         // use the config to add any dependent nodes
-        handleTerm(cfg, depth+1,(CQLTermNode)node, builder_context, parent);
+        result = handleTerm(cfg, depth+1,(CQLTermNode)node, builder_context);
         break;
       default:
         log.debug("${INDENT*depth}Unhandled node type: ${node.class.name}");
         break;
     }
+
+    return result;
   }
 
   // See: https://github.com/indexdata/cql-java/blob/master/src/main/java/org/z3950/zing/cql/CQLTermNode.java
-  private handleTerm(Map cfg, int depth, CQLTermNode node, Map builder_context, Criteria parent) {
+  private Criterion handleTerm(Map cfg, int depth, CQLTermNode node, Map builder_context) {
+
+    Criterion result = null;
+
     log.debug((INDENT*depth)+"handle term ${node.getIndex()} ${node.getTerm()}");
     String index = node.getIndex()
     String term = node.getTerm()
@@ -91,35 +98,37 @@ class CQLToCriteria {
 
       // Call the index_config criteria closure using the parent criteria and the term we are seeking
       log.debug((INDENT*depth)+"Calling closure to add required criteria");
-      index_config.criteria(parent, term)
+      result = index_config.criteria(term)
     }
     else {
       throw new RuntimeException("Unable to locate config for index ${index}");
     }
+
+    return result;
   }
 
-  private handleBoolean(Map cfg, int depth, CQLBooleanNode node, Map builder_context, Criteria parent) {
+  private Criterion handleBoolean(Map cfg, int depth, CQLBooleanNode node, Map builder_context) {
     log.debug("Handle boolean");
 
-    Criteria bool_crit = null;
+    Criterion result = null;
 
     switch ( node.getOperator() ) {
       case 'AND':
-        bool_crit = parent.and {
-          visit(cfg, depth+1,node.getLeftOperand(), builder_context, delegate);
-          visit(cfg, depth+1,node.getRightOperand(), builder_context, delegate);
+        result = builder.and {
+          visit(cfg, depth+1,node.getLeftOperand(), builder_context);
+          visit(cfg, depth+1,node.getRightOperand(), builder_context);
         }
         break;
       case 'OR':
-        bool_crit = parent.or {
-          visit(cfg, depth+1,node.getLeftOperand(), builder_context, delegate);
-          visit(cfg, depth+1,node.getRightOperand(), builder_context, delegate);
+        result = builder.or {
+          visit(cfg, depth+1,node.getLeftOperand(), builder_context);
+          visit(cfg, depth+1,node.getRightOperand(), builder_context);
         }
         break;
       default:
         throw new RuntimeException('Unhandled operator '+node.getOperator());
     }
-
+    return result;
   }
 
   CQLNode parseCQL(String cql) {

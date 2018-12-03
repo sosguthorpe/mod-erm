@@ -1,16 +1,14 @@
 import org.olf.kb.TitleInstance
 import org.olf.kb.IdentifierOccurrence
 import groovy.transform.*
+import grails.orm.PagedResultList;
 
-model {
-  Iterable<TitleInstance> results
-  Integer totalRecords
-}
 
-def meta = ['totalRecords': (totalRecords) ]
+@Field
+PagedResultList prl
 
 json {
-  instances (results) { TitleInstance ti ->
+  instances (prl.iterator()) { TitleInstance ti ->
     id ti.id
     title ti.name
     // type ti.type?.value
@@ -25,6 +23,6 @@ json {
     // }
   }
   resultInfo {
-    'totalRecords' totalRecords
+    'totalRecords' prl.getTotalCount()
   }
 }
