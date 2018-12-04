@@ -33,7 +33,7 @@ pipeline {
             // if release 
             if ( foliociLib.isRelease() ) {
               // make sure git tag and version match
-              if ( foliociLib.tagMatch(version) ) {
+              if ( foliociLib.tagMatch(gradleVersion) ) {
                 env.isRelease = true 
                 env.dockerRepo = 'folioorg'
                 env.version = gradleVersion
