@@ -16,7 +16,7 @@ Vagrant.configure(2) do |config|
   # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "folio/testing-backend"
   #config.vm.box_version = "5.0.0-20180813.956"
-  config.vm.box_version = "5.0.0-20181022.1192"
+  # config.vm.box_version = "5.0.0-20181022.1192"
     
   config.vm.provider "virtualbox" do |v|
     v.memory = 10240
