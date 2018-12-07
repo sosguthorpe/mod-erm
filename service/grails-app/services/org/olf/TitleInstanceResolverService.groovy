@@ -48,7 +48,7 @@ public class TitleInstanceResolverService {
   private static def class_one_namespaces = [
     'zdb',
     'isbn',
-    'issn',
+    'issn',  // This really isn't true - we get electronic items identified by the issn of their print sibling.. Needs thought
     'eissn',
     'doi'
   ];
@@ -84,6 +84,9 @@ public class TitleInstanceResolverService {
     List<TitleInstance> candidate_list = classOneMatch(citation.instanceIdentifiers);
     int num_class_one_identifiers = countClassOneIDs(citation.instanceIdentifiers);
     int num_matches = candidate_list.size()
+    if ( num_matches > 1 ) {
+      log.error("class one match found multiple titles:: ${candidate_list}");
+    }
 
     // We weren't able to match directly on an identifier for this instance - see if we have an identifier
     // for a sibling instance we can use to narrow down the list.
@@ -91,6 +94,9 @@ public class TitleInstanceResolverService {
       candidate_list = siblingMatch(citation)
       num_matches = candidate_list.size()
       log.debug("siblingMatch for ${citation.title} found ${num_matches} titles");
+      if ( num_matches > 1 ) {
+        log.error("Sibling match found multiple titles:: ${candidate_list}");
+      }
     }
 
     // If we didn't have a class one identifier AND we weren't able to match anything via
