@@ -24,8 +24,8 @@ public class TitleInstanceResolverService {
    SELECT ti from TitleInstance as ti
     WHERE 
       trgm_match(ti.name, :qrytitle) = true
-        AND
-      similarity(ti.name, :qrytitle) > :threshold
+      AND similarity(ti.name, :qrytitle) > :threshold
+      AND ti.subType.value like :subtype
     ORDER BY similarity(ti.name, :qrytitle) desc
   '''
 
@@ -304,11 +304,15 @@ public class TitleInstanceResolverService {
    * Attempt a fuzzy match on the title
    */
   private List<TitleInstance> titleMatch(String title, float threshold) {
+    return titleMatch(title, threshold, 'electronic');
+  }
+
+  private List<TitleInstance> titleMatch(String title, float threshold, String subtype) {
 
     List<TitleInstance> result = new ArrayList<TitleInstance>()
     TitleInstance.withSession { session ->
       try {
-        result = TitleInstance.executeQuery(TEXT_MATCH_TITLE_HQL,[qrytitle: (title),threshold: (threshold)], [max:20])
+        result = TitleInstance.executeQuery(TEXT_MATCH_TITLE_HQL,[qrytitle: (title),threshold: (threshold), subtype:subtype], [max:20])
       }
       catch ( Exception e ) {
         log.error("Problem attempting to run HQL Query ${TEXT_MATCH_TITLE_HQL} on string ${title} with threshold ${threshold}",e)

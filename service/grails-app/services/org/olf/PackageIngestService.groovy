@@ -123,7 +123,7 @@ public class PackageIngestService {
             PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null; 
 
             if ( pci == null ) {
-              log.debug("Create new package content item");
+              log.debug("[${rownum}] Create new package content item");
               pci = new PackageContentItem(
                                            pti:pti, 
                                            pkg:pkg, 
@@ -136,7 +136,7 @@ public class PackageIngestService {
             }
             else {
               // Note that we have seen the package content item now - so we don't delete it at the end.
-              log.debug("update package content item (${pci.id}) set last seen to ${result.updateTime}");
+              log.debug("[${rownum}] update package content item (${pci.id}) set last seen to ${result.updateTime}");
               pci.lastSeenTimestamp = result.updateTime;
               // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
             }
@@ -159,9 +159,8 @@ public class PackageIngestService {
             pci.save(flush:true, failOnError:true);
           }
           catch ( Exception e ) {
-            log.error("problem",e);
+            log.error("[${rowum}] problem",e);
           }
-
         }
         else {
           log.error("row ${rownum} Unable to resolve title ${pc.title} ${pc.instanceIdentifiers}");
@@ -196,6 +195,7 @@ public class PackageIngestService {
       //   "coverageDepth": "fulltext",
       //   "coverageNote": null
       //   }
+      rownum++;
     }
 
     // At the end - Any PCIs that are currently live (Don't have a removedTimestamp) but whos lastSeenTimestamp is < result.updateTime
