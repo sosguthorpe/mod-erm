@@ -162,6 +162,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
 
 
               def instance_identifiers = [];
+              def sibling_instance_identifiers = [];
               title.identifiersList.each { id ->
                 switch ( id.type ) {
                   case 0: //ISSN
@@ -169,7 +170,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
                       case 0:
                         break;
                       case 1: // PRINT
-                        instance_identifiers.add([namespace:'issn',value:id.id])
+                        sibling_instance_identifiers.add([namespace:'issn',value:id.id])
                         break;
                       case 2: // ONLINE
                         instance_identifiers.add([namespace:'eissn',value:id.id])
@@ -219,7 +220,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
                   "instanceMedium": tipp_medium,
                   "instanceMedia": tipp_media,
                   "instanceIdentifiers": instance_identifiers,
-                  // "siblingInstanceIdentifiers": tipp_sibling_identifiers,
+                  "siblingInstanceIdentifiers": sibling_instance_identifiers,
                   "coverage": tipp_coverage,
                   // "embargo": null,
                   // "coverageDepth": tipp_coverage_depth,

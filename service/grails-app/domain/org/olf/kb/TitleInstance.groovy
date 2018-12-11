@@ -16,13 +16,8 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   static namedQueries = {
     entitled {
       createAlias ('platformInstances', 'pi')
-//        createAlias ('pi.entitlements', 'pi_entitlements', JoinType.LEFT_OUTER_JOIN)
-        createAlias ('pi.packageOccurences', 'pi_po', JoinType.LEFT_OUTER_JOIN)
-//          createAlias ('pi_po.entitlements', 'pi_po_entitlements', JoinType.LEFT_OUTER_JOIN)
-          createAlias ('pi_po.pkg', 'pi_po_pkg', JoinType.LEFT_OUTER_JOIN)
-//            createAlias ('pi_po_pkg.entitlements', 'pi_po_pkg_entitlements', JoinType.LEFT_OUTER_JOIN)
-            
-            
+      createAlias ('pi.packageOccurences', 'pi_po', JoinType.LEFT_OUTER_JOIN)
+      createAlias ('pi_po.pkg', 'pi_po_pkg', JoinType.LEFT_OUTER_JOIN)
       or {
         isNotEmpty 'pi.entitlements'
         isNotEmpty 'pi_po.entitlements'
@@ -61,5 +56,12 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   static constraints = {
             name (nullable:false, blank:false)
             work (nullable:true, blank:false)
+  }
+
+  public String getCodexSummary() {
+    dev num_entitlements = 0;
+    dev num_current_entitlements = 0;
+    dev num_package_appearences = 0;
+    return "${name} (${type?.value}/${subType?.value})";
   }
 }
