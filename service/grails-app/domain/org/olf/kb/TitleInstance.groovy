@@ -62,6 +62,6 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
     dev num_entitlements = 0;
     dev num_current_entitlements = 0;
     dev num_package_appearences = 0;
-    return "${name} (${type?.value}/${subType?.value});
+    return "${name} (${type?.value}/${subType?.value})";
   }
 }
