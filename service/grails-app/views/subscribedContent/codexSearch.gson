@@ -30,7 +30,7 @@ model {
 json {
   instances (prl) { TitleInstance ti ->
     id ti.id
-    title ti.name
+    title ti.codexSummary
     type translateLocalType(ti.type?.value) 
     format ti.subType?.value
     source 'ERM'

@@ -61,7 +61,7 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
   localReference: "TRIAL_ALR_001",
   vendorReference: "TRIAL_AVR_001",
   startDate: "2018-01-01",
-  endDate: "2018-12-31",
+  endDate: "2019-12-31",
   renewalDate: "2019-01-01",
   nextReviewDate: "2018-10-01",
   vendor: {
