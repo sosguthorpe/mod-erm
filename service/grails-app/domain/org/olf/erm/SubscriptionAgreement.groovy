@@ -54,10 +54,10 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   Boolean enabled
 
   Org vendor
-  
+
 //  @BindImmutably
   Set<Entitlement> items
-  
+
   static hasMany = [
     items: Entitlement,
     historyLines: SAEventHistory,
@@ -97,6 +97,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
                 contacts cascade: 'all-delete-orphan'
             historyLines cascade: 'all-delete-orphan'
                     tags cascade: 'all-delete-orphan'
+                    orgs cascade: 'all-delete-orphan'
   }
 
   static constraints = {

@@ -85,7 +85,7 @@
           "methods": ["GET"],
           "pathPattern": "/erm/pci/{id}/*"
         },{
-          "methods": ["GET"],
+          "methods": ["GET", "POST"],
           "pathPattern": "/erm/org",
           "modulePermissions": [ "vendor.collection.get" ]
         }, {
