@@ -4,6 +4,7 @@ import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
 import com.k_int.okapi.OkapiTenantAwareController
 import org.olf.erm.SubscriptionAgreement
+import org.olf.erm.SubscriptionAgreementDataService
 import org.olf.erm.SubscriptionAgreementService
 import org.olf.erm.Entitlement
 import org.olf.kb.Pkg
@@ -22,7 +23,7 @@ import grails.converters.JSON
 class SubscriptionAgreementController extends OkapiTenantAwareController<SubscriptionAgreement>  {
   
   // Data service
-  SubscriptionAgreementService subscriptionAgreementService
+  SubscriptionAgreementDataService subscriptionAgreementDataService
 
   SubscriptionAgreementController() {
     super(SubscriptionAgreement)

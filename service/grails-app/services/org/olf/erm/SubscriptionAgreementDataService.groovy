@@ -1,14 +1,17 @@
 package org.olf.erm
 
-import grails.gorm.services.Service
 import org.hibernate.sql.JoinType
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance
 
+import grails.gorm.services.Service
+import grails.gorm.transactions.Transactional
+
 @Service(SubscriptionAgreement)
-abstract class SubscriptionAgreementService {
+abstract class SubscriptionAgreementDataService {
   
+  @Transactional
   List<ErmResource> resourcesFor (Serializable id) {
     List<ErmResource> list = [] 
     if (id) {
