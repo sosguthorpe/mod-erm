@@ -35,7 +35,7 @@ class UrlMappings {
       // WIthout this, the url here would be /erm/refdataValues/RDV_ID/lookupOrCreate which is not what we want. Having this here gives us a URL of
       // /erm/refdataValues/lookupOrCreate which is what we want
       collection {
-        "/$domain/$property" (controller: 'refdataValue', action: 'lookup', method: 'GET')
+        "/$domain/$property" (controller: 'refdata', action: 'lookup', method: 'GET')
       }
     }
     
