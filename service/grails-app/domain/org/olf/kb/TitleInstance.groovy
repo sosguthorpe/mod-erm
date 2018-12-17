@@ -3,8 +3,8 @@ package org.olf.kb
 import javax.persistence.Transient
 import org.hibernate.sql.JoinType
 import org.olf.erm.Entitlement
-import org.olf.general.RefdataValue
-import org.olf.general.refdata.Defaults
+import com.k_int.web.toolkit.refdata.RefdataValue
+import com.k_int.web.toolkit.refdata.Defaults
 
 import grails.gorm.MultiTenant
 

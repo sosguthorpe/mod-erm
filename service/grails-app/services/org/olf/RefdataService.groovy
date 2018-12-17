@@ -2,7 +2,7 @@ package org.olf
 
 import grails.events.Event
 import grails.events.annotation.Subscriber
-import org.olf.general.refdata.GrailsDomainRefdataHelpers
+import com.k_int.web.toolkit.refdata.GrailsDomainRefdataHelpers
 
 public class RefdataService {
     

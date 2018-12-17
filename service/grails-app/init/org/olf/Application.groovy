@@ -1,6 +1,6 @@
 package org.olf
 
-import org.olf.general.refdata.GrailsDomainRefdataHelpers
+import com.k_int.web.toolkit.refdata.GrailsDomainRefdataHelpers
 import org.springframework.boot.context.embedded.undertow.UndertowEmbeddedServletContainerFactory
 import org.springframework.context.annotation.Bean
 
