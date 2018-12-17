@@ -1,9 +1,9 @@
 package org.olf.erm
 
 import org.olf.general.Org
-import org.olf.general.RefdataValue
-import org.olf.general.refdata.CategoryId
-import org.olf.general.refdata.Defaults
+import com.k_int.web.toolkit.refdata.RefdataValue
+import com.k_int.web.toolkit.refdata.CategoryId
+import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.databinding.BindImmutably
 import com.k_int.web.toolkit.tags.Tag
 import grails.gorm.MultiTenant

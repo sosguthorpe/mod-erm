@@ -1,17 +1,12 @@
 package org.olf
 
-import grails.gorm.multitenancy.Tenants
-import org.olf.kb.RemoteKB
-import grails.events.annotation.Subscriber
-import grails.gorm.multitenancy.WithoutTenant
-import grails.gorm.transactions.Transactional
-import org.olf.kb.TitleInstance
 import org.olf.kb.Identifier
 import org.olf.kb.IdentifierNamespace
 import org.olf.kb.IdentifierOccurrence
+import org.olf.kb.TitleInstance
 import org.olf.kb.Work
-import org.olf.general.RefdataValue
-import org.olf.general.RefdataCategory
+
+import grails.gorm.transactions.Transactional
 
 /**
  * This service works at the module level, it's often called without a tenant context.
