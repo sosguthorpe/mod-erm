@@ -14,16 +14,4 @@ class RefdataController extends OkapiTenantAwareController<RefdataCategory> {
   RefdataController() {
     super(RefdataCategory)
   }
-  
-  def lookup (String domain, String property) {
-    def c = DomainUtils.resolveDomainClass(domain)?.javaClass
-    def cat = c ? GrailsDomainRefdataHelpers.getCategoryString(c, property) : null
-    
-    // Bail if no cat.
-    if (!cat) {
-      render status: 404
-    } else {
-      forward action: "index", params: [filters: ["owner.desc==${cat}"]]
-    }
-  }
 }

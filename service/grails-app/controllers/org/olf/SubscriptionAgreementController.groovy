@@ -28,8 +28,8 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
     super(SubscriptionAgreement)
   }
   
-  def resources (Serializable id) {
-    subscriptionAgreementService.resourcesFor (id)
+  def resources (String subscriptionAgreementId) {
+    subscriptionAgreementService.resourcesFor (subscriptionAgreementId)
   }
 }
 
