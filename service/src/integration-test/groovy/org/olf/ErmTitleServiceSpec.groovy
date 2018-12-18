@@ -10,11 +10,10 @@ import grails.plugins.rest.client.RestBuilder
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.k_int.okapi.OkapiHeaders
+import com.k_int.web.toolkit.refdata.RefdataValue
 import spock.lang.Shared
 import groovy.json.JsonSlurper
 import grails.gorm.multitenancy.Tenants
-import org.olf.general.RefdataValue
-import org.olf.general.RefdataCategory
 import org.olf.kb.TitleInstance
 
 @Integration

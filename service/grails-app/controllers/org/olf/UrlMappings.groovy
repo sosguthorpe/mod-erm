@@ -6,7 +6,6 @@ class UrlMappings {
   static mappings = {
 
     "/"(controller: 'application', action:'index')
-    "/_/tenant"(controller: 'okapi', action:'tenant')
     "500"(view: '/error')
     "404"(view: '/notFound')
 
@@ -16,6 +15,7 @@ class UrlMappings {
     // Map /sas to SubscriptionAgreementController
     '/erm/sas'(resources: 'subscriptionAgreement') {
 //       "/addToAgreement"(action:'addToAgreement')
+      "/resources" (action: 'resources', method: 'GET')
     }
 
     '/erm/titles'(resources: 'title') {
@@ -35,7 +35,7 @@ class UrlMappings {
       // WIthout this, the url here would be /erm/refdataValues/RDV_ID/lookupOrCreate which is not what we want. Having this here gives us a URL of
       // /erm/refdataValues/lookupOrCreate which is what we want
       collection {
-        "/$domain/$property" (controller: 'refdata', action: 'lookup')
+        "/$domain/$property" (controller: 'refdata', action: 'lookup', method: 'GET')
       }
     }
     

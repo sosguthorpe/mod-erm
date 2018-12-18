@@ -11,11 +11,15 @@ if [ ! -d "$DESCRIPTORDIR" ]; then
     ./gradlew generateDescriptors
 fi
 
-curl -XDELETE http://localhost:9130/_/proxy/tenants/diku/modules/olf-erm-1.0.3
-curl -XDELETE http://localhost:9130/_/discovery/modules/olf-erm-1.0.0/localhost-olf-erm-1.0.3
-curl -XDELETE http://localhost:9130/_/proxy/modules/olf-erm-1.0.3
+DEP_DESC=`cat ${DESCRIPTORDIR}/DeploymentDescriptor.json`
+SVC_ID=`echo $DEP_DESC | jq -rc '.srvcId'`
+INS_ID=`echo $DEP_DESC | jq -rc '.instId'`
+
+curl -XDELETE "http://localhost:9130/_/proxy/tenants/diku/modules/${SVC_ID}"
+curl -XDELETE "http://localhost:9130/_/discovery/modules/${SVC_ID}/${INS_ID}"
+curl -XDELETE "http://localhost:9130/_/proxy/modules/${SVC_ID}"
 # ./gradlew clean generateDescriptors
 curl -XPOST http://localhost:9130/_/proxy/modules -d @"${DESCRIPTORDIR}/ModuleDescriptor.json"
-curl -XPOST http://localhost:9130/_/discovery/modules -d @"${DESCRIPTORDIR}/DeploymentDescriptor.json"
-curl -XPOST http://localhost:9130/_/proxy/tenants/diku/modules -d '{"id": "olf-erm-1.0.3"}'
+curl -XPOST http://localhost:9130/_/discovery/modules -d "$DEP_DESC"
+curl -XPOST http://localhost:9130/_/proxy/tenants/diku/modules -d `echo $DEP_DESC | jq -rc '{id: .srvcId}'`
 popd

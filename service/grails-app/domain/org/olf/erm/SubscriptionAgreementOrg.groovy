@@ -1,9 +1,10 @@
 package org.olf.erm
 import org.olf.general.Org
-import org.olf.general.RefdataValue
-import org.olf.general.refdata.Defaults
+
+import com.k_int.web.toolkit.refdata.Defaults
+import com.k_int.web.toolkit.refdata.RefdataValue
+
 import grails.gorm.MultiTenant
-import org.olf.general.Org
 
 
 /**

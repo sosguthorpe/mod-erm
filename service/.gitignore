@@ -3,4 +3,5 @@
 !.editorconfig
 /bin
 /build
+/docs
 /_settings.gradle

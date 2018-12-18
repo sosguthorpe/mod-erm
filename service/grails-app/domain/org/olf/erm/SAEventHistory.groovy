@@ -1,6 +1,6 @@
 package org.olf.erm
 
-import org.olf.general.RefdataValue
+import com.k_int.web.toolkit.refdata.RefdataValue
 
 import grails.gorm.MultiTenant
 
