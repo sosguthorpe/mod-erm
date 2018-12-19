@@ -28,7 +28,13 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
   def resources (String subscriptionAgreementId) {
     if (subscriptionAgreementId) {
       
-      respond doTheLookup (ErmResource) {
+      def items = ErmResource.withCriteria {
+        
+        or {
+          eq ('class', PlatformTitleInstance)
+          eq ('class', PackageContentItem)
+        }
+        
         or {
           // Resources linked via a package.
           createAlias 'pkg', 'pci_pkg', JoinType.LEFT_OUTER_JOIN
@@ -37,9 +43,19 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           
           // Ptis linked explicitly.
           createAlias 'entitlements', 'pti_ent', JoinType.LEFT_OUTER_JOIN
-            eq 'pti_ent.owner.id', subscriptionAgreementId    
+            eq 'pti_ent.owner.id', subscriptionAgreementId
+        }
+        
+        projections {
+          distinct ('id')
         }
       }
+      
+      // Dedupe in a way that means pagination still works.
+      respond doTheLookup (ErmResource) {
+        'in' 'id', items
+      }
+      
     } else {
       respond (params.boolean('stats') ? Collections.EMPTY_MAP : Collections.EMPTY_SET)
     }
