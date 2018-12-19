@@ -94,6 +94,12 @@
           "modulePermissions": [ "vendor.collection.get" ]
         },{
           "methods": ["GET"],
+          "pathPattern": "/erm/refdataValues"
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/refdataValues/*"
+        },{
+          "methods": ["GET"],
           "pathPattern": "/erm/refdataValues/{domain}/{property}"
         }
       ]
