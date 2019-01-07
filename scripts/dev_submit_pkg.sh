@@ -117,6 +117,81 @@ ACTIVE_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 }
 ' | jq -r ".id" | tr -d '\r'`
 
+ELSEVIER_FC_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas -d '
+{
+  name: "Freedom Collection",
+  description: "An agreement that describes all the content that we buy from Elsevier",
+  agreementStatus: { id: "'"$STATUS_ACTIVE_RDV"'" },
+  isPerpetual: { id: "'"$ISPERPETUAL_NO_RDV"'" },
+  renewalPriority: { id: "'"$RENEW_DEFRENEW_RDV"'" },
+  localReference: "AGG_LR_002",
+  vendorReference: "AGG_VR_002",
+  startDate: "2018-01-01",
+  vendor: {
+    name:"Elsevier"
+  },
+  items: [
+  ]
+}
+' | jq -r ".id" | tr -d '\r'`
+
+WILEY_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas -d '
+{
+  name: "Wiley Test Agreement",
+  description: "An agreement that describes all the content that we buy from Wiley",
+  agreementStatus: { id: "'"$STATUS_ACTIVE_RDV"'" },
+  isPerpetual: { id: "'"$ISPERPETUAL_NO_RDV"'" },
+  renewalPriority: { id: "'"$RENEW_DEFRENEW_RDV"'" },
+  localReference: "AGG_LR_002",
+  vendorReference: "AGG_VR_002",
+  startDate: "2018-01-01",
+  vendor: {
+    name:"Wiley"
+  },
+  items: [
+  ]
+}
+' | jq -r ".id" | tr -d '\r'`
+
+SPRINGER_NATURE_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas -d '
+{
+  name: "Springer Nature",
+  description: "An agreement that describes all the content that we access via Springer Nature",
+  agreementStatus: { id: "'"$STATUS_ACTIVE_RDV"'" },
+  isPerpetual: { id: "'"$ISPERPETUAL_NO_RDV"'" },
+  renewalPriority: { id: "'"$RENEW_DEFRENEW_RDV"'" },
+  localReference: "AGG_LR_002",
+  vendorReference: "AGG_VR_002",
+  startDate: "2018-01-01",
+  vendor: {
+    name:"Springer"
+  },
+  items: [
+  ]
+}
+' | jq -r ".id" | tr -d '\r'`
+
+BENTHAM_EXTERNAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas -d '
+{
+  name: "Bentham Science (External/EKB)",
+  description: "This agreement is a test case for where the content an agreement provides access to is defined externally - in this case EKB vendor 301/package 3707.",
+  agreementStatus: { id: "'"$STATUS_ACTIVE_RDV"'" },
+  isPerpetual: { id: "'"$ISPERPETUAL_NO_RDV"'" },
+  renewalPriority: { id: "'"$RENEW_DEFRENEW_RDV"'" },
+  localReference: "EBSCO_TC1",
+  vendorReference: "301:3707",
+  startDate: "2018-01-01",
+  vendor: {
+    name:"Bentham Science"
+  },
+  items: [
+  ]
+}
+' | jq -r ".id" | tr -d '\r'`
+
+
+
+
 echo Look up package content item ID for CCD in the k-int test package
 
 
