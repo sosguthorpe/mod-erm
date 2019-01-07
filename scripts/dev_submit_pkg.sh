@@ -26,6 +26,13 @@ fi
 
 echo Running
 
+FOLIO_AUTH_TOKEN=`okapi_login`
+FOLIO_BASE_URL="http://localhost:3000"
+TENANT="diku"
+
+# Run OKAPI commands with
+# curl -sSL -XGET -H "X-Okapi-Token: ${FOLIO_AUTH_TOKEN}" -H 'accept: application/json' -H 'Content-type: application/json' -H "X-Okapi-Tenant: $TENANT" --connect-timeout 5 --max-time 30 "${OKAPI}${URI}"
+
 # Prepolpulate with data.
 echo Loading k-int test package
 KI_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/simple_pkg_1.json http://localhost:8080/erm/admin/loadPackage | jq -r ".packageId"  | tr -d '\r'`

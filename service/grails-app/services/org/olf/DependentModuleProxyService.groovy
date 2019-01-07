@@ -30,14 +30,18 @@ public class DependentServiceProxyService {
     if (!org) {
       log.debug "No local org for ${orgName}. Check vendors."
       
-      // This fetches a max of 2 (we should decide how to handle multiple matches) vendors with an exact name match.
-      // def resp = okapiClient.get("/vendor", [
-      //   limit: 2,
-      //   query: ('(name=="' + orgName + '")') // CQL
-      // ])
-
-      // Disable mod_vendor lookup
-      def resp = [ total_records: 0 ]
+      def mod_vendor_lookup_result = null;
+      if ( grailsApplication.config.useModVendors ) {
+        // This fetches a max of 2 (we should decide how to handle multiple matches) vendors with an exact name match.
+        mod_vendor_lookup_result = okapiClient.get("/vendor", [
+          limit: 2,
+          query: ('(name=="' + orgName + '")') // CQL
+        ])
+      }
+      else {
+        // Disable mod_vendor lookup
+        mod_vendor_lookup_result = [ total_records: 0 ]
+      }
       
       // Resp is a lazy map representation of the JSON returned by the module.
       /*
@@ -49,10 +53,10 @@ public class DependentServiceProxyService {
         }
        */
       
-      switch (resp.total_records) {
+      switch (mod_vendor_lookup_result.total_records) {
         case 1:
           // Exact match
-          def result = resp.vendors[0]
+          def result = mod_vendor_lookup_result.vendors[0]
           
           org = new Org(
             name: result.name,
@@ -62,10 +66,15 @@ public class DependentServiceProxyService {
           break
           
         case 0:
+          // No match
+          // We should add in an option to create vendors if users configure that
+          if ( grailsApplication.config.createMissingVendors ) {
+            throw new RuntimeException("Not yet implemented");
+          }
+
           // Create a new local one.
           log.debug "No vendor found. Adding local org for ${orgName}"
           org = (new Org(name:orgName)).save(flush:true, failOnError:true)
-          // No match
           break
           
         default:
