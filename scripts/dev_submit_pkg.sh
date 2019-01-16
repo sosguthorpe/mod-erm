@@ -275,8 +275,9 @@ else
   echo Result of loading bentham sci from ebsco: $EBSCO_BENTHAM_SCI_ID.
 
   # Load academic source complete - a good test case for large package ingest performance and test case for title create transaction boundary
-  EBSCO_ACADEMIC_SOURCE_COMPLETE_ID=`curl --header "X-Okapi-Tenant: diku" -X POST "http://localhost:8080/erm/admin/pullPackage?kb=EBSCO&vendorid=19&packageid=1615" | jq -r ".packageId"  | tr -d '\r'`
-  echo Result of loading academic source complete from ebsco: $EBSCO_ACADEMIC_SOURCE_COMPLETE_ID.
+  # Message from Ian: don't do this without talking to EBSCO first - 
+  # EBSCO_ACADEMIC_SOURCE_COMPLETE_ID=`curl --header "X-Okapi-Tenant: diku" -X POST "http://localhost:8080/erm/admin/pullPackage?kb=EBSCO&vendorid=19&packageid=1615" | jq -r ".packageId"  | tr -d '\r'`
+  # echo Result of loading academic source complete from ebsco: $EBSCO_ACADEMIC_SOURCE_COMPLETE_ID.
 fi
 
 
