@@ -37,7 +37,7 @@ Most developers will run some variant of the following commands the first time t
 
 Start the vagrant image up from the project root
 
-    vagrant destory
+    vagrant destroy
     vagrant up
 
 Sometimes okapi does not start cleanly in the vagrant image - you can check this with
