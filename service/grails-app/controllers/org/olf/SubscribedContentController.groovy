@@ -60,7 +60,8 @@ class SubscribedContentController extends OkapiTenantAwareController<TitleInstan
                                                     Restrictions.isNotEmpty('pi_po_pkg.entitlements') ) )
                                               } else {
                                                 System.out.println("boolFieldNotTrue ${v} ${v.class.name}")
-                                              } } ]
+                                              } } ],
+                'source' : [ type:'ignore' ]
     ]
   ];
 

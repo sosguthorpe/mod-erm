@@ -96,12 +96,17 @@ class CQLToCriteria {
 
     def index_config = cfg.indexes[index]
     if ( index_config ) {
-      if ( index_config.requiredAliases )
-        builder_context.requiredAliases.addAll(index_config.requiredAliases)
+      if ( index_config.type == 'ignore' ) {
+        // Mapping type ignore - added initially for codex source attribute
+      }
+      else {
+        if ( index_config.requiredAliases )
+          builder_context.requiredAliases.addAll(index_config.requiredAliases)
 
-      // Call the index_config criteria closure using the parent criteria and the term we are seeking
-      log.debug((INDENT*depth)+"Calling closure to add required criteria");
-      result = index_config.criteria(term)
+        // Call the index_config criteria closure using the parent criteria and the term we are seeking
+        log.debug((INDENT*depth)+"Calling closure to add required criteria");
+        result = index_config.criteria(term)
+      }
     }
     else {
       throw new RuntimeException("Unable to locate config for index ${index}");
@@ -120,16 +125,30 @@ class CQLToCriteria {
 
     log.debug("handleBoolean:: ${node.getOperator()} ${lhs} ${rhs}");
 
-    switch ( node.getOperator() ) {
-      case 'AND':
-        result = Restrictions.and (lhs,rhs);
-        break;
-      case 'OR':
-        result = Restrictions.or (lhs,rhs);
-        break;
-      default:
-        throw new RuntimeException('Unhandled operator '+node.getOperator());
+    // If either of the leaf nodes return null, don't bother creating the boolean node, just return the one
+    // present.
+    if ( ( lhs != null ) && ( rhs != null ) ) {
+      switch ( node.getOperator() ) {
+        case 'AND':
+          result = Restrictions.and (lhs,rhs);
+          break;
+        case 'OR':
+          result = Restrictions.or (lhs,rhs);
+          break;
+        default:
+          throw new RuntimeException('Unhandled operator '+node.getOperator());
+      }
     }
+    else if ( rhs != null ) {
+      result = rhs;
+    }
+    else if (lhs != null ) {
+      result = lhs;
+    }
+    else {
+      result = null;
+    }
+
     return result;
   }
 

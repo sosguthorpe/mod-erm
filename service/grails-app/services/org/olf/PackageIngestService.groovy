@@ -43,129 +43,135 @@ public class PackageIngestService {
   public Map upsertPackage(Map package_data, String remotekbname) {
 
     def result = [:];
+    result.startTime = System.currentTimeMillis();
+    result.titleCount=0;
+    result.averageTimePerTitle=0;
 
-    // ERM caches many remote KB sources in it's local package inventory
-    // Look up which remote kb via the name
-    RemoteKB kb = RemoteKB.findByName(remotekbname) ?: new RemoteKB( name:remotekbname,
-                                                                     rectype: new Long(1),
-                                                                     active:Boolean.TRUE).save(flush:true, failOnError:true);
+    Pkg pkg = null;
+
+    Pkg.withNewTransaction { status ->
+      // ERM caches many remote KB sources in it's local package inventory
+      // Look up which remote kb via the name
+      RemoteKB kb = RemoteKB.findByName(remotekbname) ?: new RemoteKB( name:remotekbname,
+                                                                       rectype: new Long(1),
+                                                                       active:Boolean.TRUE).save(flush:true, failOnError:true);
 
 
-    result.updateTime = System.currentTimeMillis();
+      result.updateTime = System.currentTimeMillis();
+  
+      log.debug("Package header: ${package_data.header} - update start time is ${result.updateTime}");
 
-    log.debug("Package header: ${package_data.header} - update start time is ${result.updateTime}");
+      // header.packageSlug contains the package maintainers authoritative identifier for this package.
+      pkg = Pkg.findBySourceAndReference(package_data.header.packageSource, package_data.header.packageSlug)
 
-    // header.packageSlug contains the package maintainers authoritative identifier for this package.
-    def pkg = Pkg.findBySourceAndReference(package_data.header.packageSource, package_data.header.packageSlug)
+      def vendor = null;
+      if ( ( package_data.header?.packageProvider?.name != null ) && ( package_data.header?.packageProvider?.name.trim().length() > 0 ) ) {
+        vendor = dependentServiceProxyService.coordinateOrg(package_data.header?.packageProvider?.name)
+        vendor.enrich(['reference':package_data.header?.packageProvider?.reference]);
+      }
+      else {
+        log.warn('Package ingest - no provider information present');
+      }
 
-    def vendor = null;
-    if ( ( package_data.header?.packageProvider?.name != null ) && ( package_data.header?.packageProvider?.name.trim().length() > 0 ) ) {
-      vendor = dependentServiceProxyService.coordinateOrg(package_data.header?.packageProvider?.name)
-      vendor.enrich(['reference':package_data.header?.packageProvider?.reference]);
+      if ( pkg == null ) {
+        pkg = new Pkg(
+                              name: package_data.header.packageName,
+                             source: package_data.header.packageSource,
+                          reference: package_data.header.packageSlug,
+                           remoteKb: kb,
+                             vendor: vendor).save(flush:true, failOnError:true);
+      }
+      result.packageId = pkg.id
     }
-    else {
-      log.warn('Package ingest - no provider information present');
-    }
-
-    if ( pkg == null ) {
-      pkg = new Pkg(
-                             name: package_data.header.packageName,
-                           source: package_data.header.packageSource,
-                        reference: package_data.header.packageSlug,
-                         remoteKb: kb,
-                           vendor: vendor).save(flush:true, failOnError:true);
-
-      result.newPackageId = pkg.id
-    }
-
-    result.packageId = pkg.id
-
-    int rownum = 0;
 
     package_data.packageContents.each { pc ->
       // log.debug("Try to resolve ${pc}");
 
       try {
-        // resolve may return null, used to throw exception which causes the whole package to be rejected. Needs
-        // discussion to work out best way to handle.
-        TitleInstance title = titleInstanceResolverService.resolve(pc);
 
-        if ( title != null ) {
+       PackageContentItem.withNewTransaction { status ->
 
-          // log.debug("platform ${pc.platformUrl} ${pc.platformName} (item URL is ${pc.url})");
-
-          // lets try and work out the platform for the item
-          try {
-            def platform_url_to_use = pc.platformUrl;
-
-            if ( ( pc.platformUrl == null ) && ( pc.url != null ) ) {
-              // No platform URL, but a URL for the title. Parse the URL and generate a platform URL
-              def parsed_url = new java.net.URL(pc.url);
-              platform_url_to_use = "${parsed_url.getProtocol()}://${parsed_url.getHost()}"
+          // resolve may return null, used to throw exception which causes the whole package to be rejected. Needs
+          // discussion to work out best way to handle.
+          TitleInstance title = titleInstanceResolverService.resolve(pc);
+  
+          if ( title != null ) {
+  
+            // log.debug("platform ${pc.platformUrl} ${pc.platformName} (item URL is ${pc.url})");
+  
+            // lets try and work out the platform for the item
+            try {
+              def platform_url_to_use = pc.platformUrl;
+  
+              if ( ( pc.platformUrl == null ) && ( pc.url != null ) ) {
+                // No platform URL, but a URL for the title. Parse the URL and generate a platform URL
+                def parsed_url = new java.net.URL(pc.url);
+                platform_url_to_use = "${parsed_url.getProtocol()}://${parsed_url.getHost()}"
+              }
+  
+              Platform platform = Platform.resolve(platform_url_to_use, pc.platformName);
+              // log.debug("Platform: ${platform}");
+  
+              // See if we already have a title platform record for the presence of this title on this platform
+              PlatformTitleInstance pti = PlatformTitleInstance.findByTitleInstanceAndPlatform(title, platform)
+  
+              if ( pti == null ) 
+                pti = new PlatformTitleInstance(titleInstance:title, 
+                                                platform:platform,
+                                                url:pc.url).save(flush:true, failOnError:true);
+  
+  
+              // Lookup or create a package content item record for this title on this platform in this package
+              // We only check for currently live pci records, as titles can come and go from the package.
+              // N.B. addedTimestamp removedTimestamp lastSeenTimestamp
+              def pci_qr = PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pti = :pti and pci.pkg.id = :pkg and pci.removedTimestamp is null',
+                                                           [pti:pti, pkg:result.packageId]);
+              PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null; 
+  
+              if ( pci == null ) {
+                log.debug("[${result.titleCount}] Create new package content item");
+                pci = new PackageContentItem(
+                                             pti:pti, 
+                                             pkg:Pkg.get(result.packageId), 
+                                             note:pc.coverageNote, 
+                                             depth:pc.coverageDepth,
+                                             accessStart:null,
+                                             accessEnd:null, 
+                                             addedTimestamp:result.updateTime,
+                                             lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true);
+              }
+              else {
+                // Note that we have seen the package content item now - so we don't delete it at the end.
+                log.debug("[${result.titleCount}] update package content item (${pci.id}) set last seen to ${result.updateTime}");
+                pci.lastSeenTimestamp = result.updateTime;
+                // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
+              }
+  
+              // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
+              // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
+              // We store this generally for the title on the platform, and specifically for this title in this package on this platform.
+              if ( pc.coverage ) {
+  
+                // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
+                // to the list of mpas that coverageExtenderService.extend expects
+                List cov = pc.coverage instanceof List ? pc.coverage : [ pc.coverage ]
+  
+                coverageExtenderService.extend(pti, cov, 'pti');
+                coverageExtenderService.extend(pci, cov, 'pci');
+                coverageExtenderService.extend(title, cov, 'ti');
+              }
+  
+              // Save needed either way
+              pci.save(flush:true, failOnError:true);
             }
-
-            Platform platform = Platform.resolve(platform_url_to_use, pc.platformName);
-            // log.debug("Platform: ${platform}");
-
-            // See if we already have a title platform record for the presence of this title on this platform
-            PlatformTitleInstance pti = PlatformTitleInstance.findByTitleInstanceAndPlatform(title, platform)
-
-            if ( pti == null ) 
-              pti = new PlatformTitleInstance(titleInstance:title, 
-                                              platform:platform,
-                                              url:pc.url).save(flush:true, failOnError:true);
-
-
-            // Lookup or create a package content item record for this title on this platform in this package
-            // We only check for currently live pci records, as titles can come and go from the package.
-            // N.B. addedTimestamp removedTimestamp lastSeenTimestamp
-            def pci_qr = PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pti = :pti and pci.pkg = :pkg and pci.removedTimestamp is null',[pti:pti, pkg:pkg]);
-            PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null; 
-
-            if ( pci == null ) {
-              log.debug("[${rownum}] Create new package content item");
-              pci = new PackageContentItem(
-                                           pti:pti, 
-                                           pkg:pkg, 
-                                           note:pc.coverageNote, 
-                                           depth:pc.coverageDepth,
-                                           accessStart:null,
-                                           accessEnd:null, 
-                                           addedTimestamp:result.updateTime,
-                                           lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true);
+            catch ( Exception e ) {
+              log.error("[${rowum}] problem",e);
             }
-            else {
-              // Note that we have seen the package content item now - so we don't delete it at the end.
-              log.debug("[${rownum}] update package content item (${pci.id}) set last seen to ${result.updateTime}");
-              pci.lastSeenTimestamp = result.updateTime;
-              // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
-            }
-
-            // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
-            // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
-            // We store this generally for the title on the platform, and specifically for this title in this package on this platform.
-            if ( pc.coverage ) {
-
-              // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
-              // to the list of mpas that coverageExtenderService.extend expects
-              List cov = pc.coverage instanceof List ? pc.coverage : [ pc.coverage ]
-
-              coverageExtenderService.extend(pti, cov, 'pti');
-              coverageExtenderService.extend(pci, cov, 'pci');
-              coverageExtenderService.extend(title, cov, 'ti');
-            }
-
-            // Save needed either way
-            pci.save(flush:true, failOnError:true);
           }
-          catch ( Exception e ) {
-            log.error("[${rowum}] problem",e);
+          else {
+            log.error("row ${result.titleCount} Unable to resolve title ${pc.title} ${pc.instanceIdentifiers}");
           }
         }
-        else {
-          log.error("row ${rownum} Unable to resolve title ${pc.title} ${pc.instanceIdentifiers}");
-        }
-
       }
       catch ( Exception e ) {
         log.error("Problem with line ${pc} in package load. Ignoring this row",e);
@@ -195,7 +201,11 @@ public class PackageIngestService {
       //   "coverageDepth": "fulltext",
       //   "coverageNote": null
       //   }
-      rownum++;
+      result.titleCount++;
+      result.averageTimePerTitle=(System.currentTimeMillis()-result.startTime)/result.titleCount;
+      if ( result.titleCount % 100 == 0 ) {
+        log.info("Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}");
+      }
     }
 
     // At the end - Any PCIs that are currently live (Don't have a removedTimestamp) but whos lastSeenTimestamp is < result.updateTime
