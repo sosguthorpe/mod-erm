@@ -93,13 +93,13 @@
           "pathPattern": "/erm/org/find/{name}",
           "modulePermissions": [ "vendor.collection.get" ]
         },{
-          "methods": ["GET"],
+          "methods": ["GET", "POST", "DELETE"],
           "pathPattern": "/erm/refdataValues"
         },{
-          "methods": ["GET"],
+          "methods": ["GET", "POST", "DELETE"],
           "pathPattern": "/erm/refdataValues/*"
         },{
-          "methods": ["GET"],
+          "methods": ["GET", "POST", "DELETE"],
           "pathPattern": "/erm/refdataValues/{domain}/{property}"
         }
       ]

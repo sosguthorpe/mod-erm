@@ -29,11 +29,11 @@ with further FOLIO Developer documentation at [dev.folio.org](https://dev.folio.
     grails -Dgrails.env=vagrant-db run-app
 
 
-## initial setup
+## Initial Setup
 
 Most developers will run some variant of the following commands the first time through
 
-### in window #1
+### In window #1
 
 Start the vagrant image up from the project root
 
@@ -46,7 +46,7 @@ Sometimes okapi does not start cleanly in the vagrant image - you can check this
 
 then once logged in
 
-    doocker ps
+    docker ps
 
 should list running images - if no processes are listed, you will need to restart okapi (In the vagrant image) with
 
@@ -66,7 +66,7 @@ Build and run mod-agreements stand alone
     grails war
     ../scripts/run_external_reg.sh
 
-### in window #3
+### In window #3
 
 Register the module and load some test data
 
@@ -79,10 +79,14 @@ Register the module and load some test data
 
 Run up a stripes platform containing erm
 
+See [UI Agreements quick start](https://github.com/folio-org/ui-agreements/blob/master/README.md)
+
 This section is run in a local setup, not from any particular checked out project, YMMV
 
     cd ../platform/stripes/platform-erm
     stripes serve ./stripes.config.js --has-all-perms
+
+
 
 You should get back
 
