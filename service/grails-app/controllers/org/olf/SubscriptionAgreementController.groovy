@@ -26,39 +26,47 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
   }
   
   def resources (String subscriptionAgreementId) {
+    
     if (subscriptionAgreementId) {
       
-      def items = ErmResource.withCriteria {
+      // The in clause below will freak out is the subquery returns an empty list. So we should test for
+      // the entitlements list being empty first.
+      if (SubscriptionAgreement.read(subscriptionAgreementId)?.items?.size() ?: 0 > 0) {
         
-        or {
-          eq ('class', PlatformTitleInstance)
-          eq ('class', PackageContentItem)
-        }
-        
-        or {
-          // Resources linked via a package.
-          createAlias 'pkg', 'pci_pkg', JoinType.LEFT_OUTER_JOIN
-            createAlias 'pci_pkg.entitlements', 'pci_pkg_ent', JoinType.LEFT_OUTER_JOIN
-              eq 'pci_pkg_ent.owner.id', subscriptionAgreementId
+        def items = ErmResource.withCriteria {
           
-          // Ptis linked explicitly.
-          createAlias 'entitlements', 'pti_ent', JoinType.LEFT_OUTER_JOIN
-            eq 'pti_ent.owner.id', subscriptionAgreementId
+          or {
+            eq ('class', PlatformTitleInstance)
+            eq ('class', PackageContentItem)
+          }
+          
+          or {
+            // Resources linked via a package.
+            createAlias 'pkg', 'pci_pkg', JoinType.LEFT_OUTER_JOIN
+              createAlias 'pci_pkg.entitlements', 'pci_pkg_ent', JoinType.LEFT_OUTER_JOIN
+                eq 'pci_pkg_ent.owner.id', subscriptionAgreementId
+            
+            // Ptis linked explicitly.
+            createAlias 'entitlements', 'pti_ent', JoinType.LEFT_OUTER_JOIN
+              eq 'pti_ent.owner.id', subscriptionAgreementId
+          }
+          
+          projections {
+            distinct ('id')
+          }
         }
         
-        projections {
-          distinct ('id')
+        // Dedupe in a way that means pagination still works.
+        respond doTheLookup (ErmResource) {
+          'in' 'id', items
         }
+        return
       }
       
-      // Dedupe in a way that means pagination still works.
-      respond doTheLookup (ErmResource) {
-        'in' 'id', items
-      }
-      
-    } else {
-      respond (params.boolean('stats') ? Collections.EMPTY_MAP : Collections.EMPTY_SET)
     }
+    
+    // If not matched above return with empty collection...
+    respond (params.boolean('stats') ? Collections.EMPTY_MAP : Collections.EMPTY_SET)
   }
 }
 
