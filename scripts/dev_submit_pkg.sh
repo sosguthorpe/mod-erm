@@ -225,31 +225,15 @@ RS_KBPLUS_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application
   supportsHarvesting:true
 }
 '`
+# The GOKb_TEST adapter used to be created here - this has moved to the tenant activation section of org.olf.ErmHousekeepingService
 
-echo Add a KB record describing GOKB
+if [ -z "$EBSCO_SANDBOX_CLIENT_ID" ]
+then
+  echo "No Ebsco API credentials set, skipping pull package"
+else
+  echo Add a KB record describing EBSCO sandbox API
 
-# Register a remote source
-RS_GOKB_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/kbs -d '
-{
-  name:"GOKb",
-  type:"org.olf.kb.adapters.GOKbOAIAdapter", // K-Int Json Package Format Adapter
-  cursor:null,
-  uri:"https://gokbt.gbv.de/gokb/oai/index/packages",
-  listPrefix:null,
-  fullPrefix:"gokb",
-  principal:null,
-  credentials:null,
-  rectype:"1",
-  active:true,
-  supportsHarvesting:true,
-  activationSupported:false,
-  activationEnabled:false
-}
-'`
-
-echo Add a KB record describing EBSCO sandbox API
-
-RS_EBSCO_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/kbs -d '
+  RS_EBSCO_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/kbs -d '
 {
   name:"EBSCO",
   type:"org.olf.kb.adapters.EbscoKBAdapter",
@@ -266,10 +250,6 @@ RS_EBSCO_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/
 }
 '`
 
-if [ -z "$EBSCO_SANDBOX_CLIENT_ID" ]
-then
-  echo "No Ebsco API credentials set, skipping pull package"
-else
   echo Import EBSCO Bentham Science Package
   EBSCO_BENTHAM_SCI_ID=`curl --header "X-Okapi-Tenant: diku" -X POST "http://localhost:8080/erm/admin/pullPackage?kb=EBSCO&vendorid=301&packageid=3707" | jq -r ".packageId"  | tr -d '\r'`
   echo Result of loading bentham sci from ebsco: $EBSCO_BENTHAM_SCI_ID.
@@ -278,6 +258,7 @@ else
   # Message from Ian: don't do this without talking to EBSCO first - 
   # EBSCO_ACADEMIC_SOURCE_COMPLETE_ID=`curl --header "X-Okapi-Tenant: diku" -X POST "http://localhost:8080/erm/admin/pullPackage?kb=EBSCO&vendorid=19&packageid=1615" | jq -r ".packageId"  | tr -d '\r'`
   # echo Result of loading academic source complete from ebsco: $EBSCO_ACADEMIC_SOURCE_COMPLETE_ID.
+
 fi
 
 

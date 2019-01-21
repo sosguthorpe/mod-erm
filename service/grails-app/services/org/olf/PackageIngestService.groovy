@@ -213,13 +213,18 @@ public class PackageIngestService {
     // this is how we detect deletions in the package file.
     log.debug("end of packageUpsert. Remove any content items that have disappeared since the last upload. ${pkg.name}/${pkg.source}/${pkg.reference}/${result.updateTime}");
     int removal_counter = 0;
-    PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime',[pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
-      log.debug("Removal candidate: pci.id #${removal_candidate.id} (Last seen ${removal_candidate.lastSeenTimestamp}, thisUpdate ${result.updateTime}) -- Set removed");
-      removal_candidate.removedTimestamp = result.updateTime;
-      removal_candidate.save(flush:true, failOnError:true);
-      removal_counter++;
+    
+    PackageContentItem.withNewTransaction { status ->
+      PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime',
+                                      [pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
+        log.debug("Removal candidate: pci.id #${removal_candidate.id} (Last seen ${removal_candidate.lastSeenTimestamp}, thisUpdate ${result.updateTime}) -- Set removed");
+        removal_candidate.removedTimestamp = result.updateTime;
+        removal_candidate.save(flush:true, failOnError:true);
+        removal_counter++;
+      }
+      log.debug("${removal_counter} removed");
+      result.numTitlesRemoved = removal_counter;
     }
-    log.debug("${removal_counter} removed");
 
     return result;
   }
