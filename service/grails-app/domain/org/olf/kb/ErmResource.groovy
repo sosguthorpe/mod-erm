@@ -7,6 +7,7 @@ import grails.gorm.MultiTenant
 
 /**
  * an ErmResource - Superclass
+ * Represents a selectable resource - a package, a title in a package, a title on a platform, etc
  */
 public class ErmResource implements MultiTenant<ErmResource> {
  
