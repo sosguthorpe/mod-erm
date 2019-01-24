@@ -118,7 +118,9 @@ ACTIVE_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
   },
   items: [
     {
-      resource : { id : "'"$CCD_IN_KI_TEST_PKG"'" }
+      authority: 'LPC',
+      reference : "'"$CCD_IN_KI_TEST_PKG"'",
+      label: 'Local Package Cache - Title Clinical Cancer Drugs'
     }
   ]
 }
@@ -192,6 +194,11 @@ BENTHAM_EXTERNAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-
     name:"Bentham Science"
   },
   items: [
+    {
+      authority: 'EKB',
+      reference : '301-3707'
+      label: 'Bentham Science Complete, defined in eHoldings'
+    }
   ]
 }
 ' | jq -r ".id" | tr -d '\r'`
