@@ -7,6 +7,8 @@ import groovy.transform.CompileStatic
 import groovy.transform.CompileDynamic
 import groovy.util.logging.Slf4j
 import static grails.async.Promises.*
+import com.k_int.okapi.OkapiTenantAdminService;
+import grails.gorm.multitenancy.Tenants
 
 import org.olf.kb.RemoteKB
 
@@ -19,22 +21,30 @@ import org.olf.kb.RemoteKB
 @Transactional
 class KbHarvestService {
 
+  // WIthout this, the service will not be lazy initialised, and the tasks won't be scheduled until an external 
+  // tries to access the instance.
+  boolean lazyInit = false 
+
+  OkapiTenantAdminService okapiTenantAdminService
   KnowledgeBaseCacheService knowledgeBaseCacheService
 
-  @Scheduled(fixedDelay = 45000L, initialDelay = 5000L) 
+  @Scheduled(fixedDelay = 3600000L, initialDelay = 120000L) // Run task every hour, wait 2 mins before running at startup
   void triggerSync() {
-    // log.info "Simple Job every 45 seconds :{}", new SimpleDateFormat("dd/M/yyyy hh:mm:ss").format(new Date())
+    log.debug "Simple Job every 45 seconds :{}", new SimpleDateFormat("dd/M/yyyy hh:mm:ss").format(new Date())
+    okapiTenantAdminService.getAllTenantSchemaIds().each { tenant_id ->
+      log.debug "Perform trigger sync for tenant ${tenant_id}";
+      Tenants.withId(tenant_id) {
+        triggerCacheUpdate();
+      }
+    }
   }
 
   public void triggerCacheUpdate() {
     log.debug("KBHarvestService::triggerCacheUpdate()");
-    // org.olf.kb.adapters.KBPlusAdapter kbpa = new org.olf.kb.adapters.KBPlusAdapter()
-    // def p1 = task {
-      RemoteKB.executeQuery('select rkb.id from RemoteKB as rkb where rkb.type is not null and rkb.active = :true',['true':true]).each { remotekb_id ->
-        log.debug("Run sync on ${remotekb_id}");
-        knowledgeBaseCacheService.runSync((String)remotekb_id);
-      }
-    // }
+    RemoteKB.executeQuery('select rkb.id from RemoteKB as rkb where rkb.type is not null and rkb.active = :true',['true':true]).each { remotekb_id ->
+      log.debug("Run sync on ${remotekb_id}");
+      knowledgeBaseCacheService.runSync((String)remotekb_id);
+    }
     log.debug("KbHarvestService::triggerCacheUpdate() completed");
   }
 

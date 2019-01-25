@@ -27,6 +27,8 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
   String credentials
   Long rectype  // 1-PACKAGE
 
+  public static final Long RECTYPE_PACKAGE = new Long(1);
+
   // Harvesting role
   /** Does this remote KB support harvesting */
   Boolean supportsHarvesting

@@ -10,7 +10,7 @@
           "methods": ["GET", "POST"],
           "pathPattern": "/erm/sas"
         },{
-          "methods": ["GET", "PUT", "DELETE"],
+          "methods": ["GET", "PUT", "DELETE", "POST"],
           "pathPattern": "/erm/sas/{id}"
         },{
           "methods": ["GET"],

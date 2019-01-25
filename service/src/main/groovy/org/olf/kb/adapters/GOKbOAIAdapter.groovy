@@ -73,7 +73,9 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
         response.success = { resp, xml ->
           // println "Success! ${resp.status} ${xml}"
           Map page_result = processPage(cursor, xml, source_name, cache)
-          println("processPage returned, processed ${page_result.count} packages");
+
+          println("processPage returned, processed ${page_result.count} packages, cursor will be ${page_result.new_cursor}");
+          // Store the cursor so we know where we are up to
           cache.updateCursor(source_name,page_result.new_cursor);
 
           if ( page_result.count > 0 ) {
