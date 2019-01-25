@@ -85,6 +85,7 @@ public class PackageIngestService {
     }
 
     package_data.packageContents.each { pc ->
+
       // log.debug("Try to resolve ${pc}");
 
       try {
@@ -165,7 +166,7 @@ public class PackageIngestService {
               pci.save(flush:true, failOnError:true);
             }
             catch ( Exception e ) {
-              log.error("[${rownum}] problem",e);
+              log.error("[${result.titleCount}] problem",e);
             }
           }
           else {
