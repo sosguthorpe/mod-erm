@@ -165,7 +165,7 @@ public class PackageIngestService {
               pci.save(flush:true, failOnError:true);
             }
             catch ( Exception e ) {
-              log.error("[${rowum}] problem",e);
+              log.error("[${rownum}] problem",e);
             }
           }
           else {

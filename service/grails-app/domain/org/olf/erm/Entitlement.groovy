@@ -34,6 +34,17 @@ public class Entitlement implements MultiTenant<Entitlement> {
   Date activeFrom
   Date activeTo
 
+  // Type - must be set to external for externally defined packages, null or local for things defined in the local DB
+  String type
+
+  // These three properties allow us to create an entitlement which is externally defined. An externally defined
+  // entitlement does not link to a resource in the tenant database, but instead will use API calls to define
+  // the contents of a package. An example would be Authority:'eHoldings', reference: '301-3707', label 'Bentham science complete
+  // as defined in EKB'
+  String authority
+  String reference
+  String label
+
   static belongsTo = [
     owner:SubscriptionAgreement
   ]
@@ -63,23 +74,39 @@ public class Entitlement implements MultiTenant<Entitlement> {
               version column: 'ent_version'
                 owner column: 'ent_owner_fk'
              resource column: 'ent_resource_fk'
+                 type column: 'ent_type'
               enabled column: 'ent_enabled'
            activeFrom column: 'ent_active_from'
              activeTo column: 'ent_active_to'
+            authority column: 'ent_authority'
+            reference column: 'ent_reference'
+                label column: 'ent_label'
+           
+
   }
 
 
   static constraints = {
         owner(nullable:true,  blank:false)
-     resource(nullable:false, blank:false, validator: { val, inst ->
-       Class c = Hibernate.getClass(val)
-       if (!Entitlement.ALLOWED_RESOURCES.contains(c)) {
-         ['allowedTypes', "${c.name}", "entitlement", "resource"]
+
+     // Now that resources can be internally or externally defined, the internal resource link CAN be null,
+     // but if it is, there should be authorty, reference and label properties.
+     resource(nullable:true, blank:false, validator: { val, inst ->
+       if ( val ) {
+         Class c = Hibernate.getClass(val)
+         if (!Entitlement.ALLOWED_RESOURCES.contains(c)) {
+           ['allowedTypes', "${c.name}", "entitlement", "resource"]
+         }
        }
      })
+
+         type(nullable:true,  blank:false)
       enabled(nullable:true,  blank:false)
    activeFrom(nullable:true,  blank:false)
      activeTo(nullable:true,  blank:false)
+    authority(nullable:true,  blank:false)
+    reference(nullable:true,  blank:false)
+        label(nullable:true,  blank:false)
   }
   
   @Transient
