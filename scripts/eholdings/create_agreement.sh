@@ -14,6 +14,7 @@ echo is perpetual $ISPERPETUAL_YES_RDV
 echo renewal $RENEW_DEFRENEW_RDV
 
 echo Create a new agreement, and include an entitement for bentham science defined externally by eholdings
+echo Note - you could equally post items[] and then add the entitlment to the agreement, as in the RESP2 request below
 
 RESP1=`curl --header "X-Okapi-Tenant: diku" -H "X-Okapi-Token: ${AUTH_TOKEN}" -H "Content-Type: application/json" -X POST http://localhost:9130/erm/sas -d ' {
   name: "EHTC1: Agreement for Bentham and ASC",
