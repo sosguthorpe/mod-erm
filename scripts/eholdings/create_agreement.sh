@@ -2,25 +2,20 @@
 
 AUTH_TOKEN=`../okapi-login`
 
-STATUS_ACTIVE_RDV=`curl --header "X-Okapi-Tenant: diku" -H "X-Okapi-Token: ${AUTH_TOKEN}" -H "Content-Type: application/json" http://localhost:9130/erm/refdataValues/SubscriptionAgreement/agreementStatus | jq -r '.[] | select(.label=="Active") | .id'`
+echo Create a new agreement, and include an entitement for bentham science defined externally by eholdings
+echo Note - you could equally post an empty items array and then add the entitlment to the agreement, as in the RESP2 request below
 
-ISPERPETUAL_NO_RDV=`curl --header "X-Okapi-Tenant: diku" -H "X-Okapi-Token: ${AUTH_TOKEN}" -H "Content-Type: application/json" http://localhost:9130/erm/refdataValues/SubscriptionAgreement/isPerpetual | jq -r '.[] | select(.label=="No") | .id'`
-
-RENEW_DEFRENEW_RDV=`curl --header "X-Okapi-Tenant: diku" -H "X-Okapi-Token: ${AUTH_TOKEN}" -H "Content-Type: application/json" http://localhost:9130/erm/refdataValues/SubscriptionAgreement/renewalPriority | jq -r '.[] | select(.label=="Definitely Renew") | .id'`
-
-echo Looked up the following refdata
-echo active status $STATUS_ACTIVE_RDV
-echo is perpetual $ISPERPETUAL_YES_RDV
-echo renewal $RENEW_DEFRENEW_RDV
+echo Please note - agreementStatus, isPerpetual and renewalPriority are refdata values, and the module is doing clever lookups to try and
+echo make the API more usable. Values CAN be rejected however
 
 echo Create a new agreement, and include an entitement for bentham science defined externally by eholdings
 
 RESP1=`curl --header "X-Okapi-Tenant: diku" -H "X-Okapi-Token: ${AUTH_TOKEN}" -H "Content-Type: application/json" -X POST http://localhost:9130/erm/sas -d ' {
   name: "EHTC1: Agreement for Bentham and ASC",
   description: "eHoldings test case 1 - an agreement that will be used to hold entitlements for bentham science and ASC",
-  agreementStatus: { id: "'"$STATUS_ACTIVE_RDV"'" },
-  isPerpetual: { id: "'"$ISPERPETUAL_NO_RDV"'" },
-  renewalPriority: { id: "'"$RENEW_DEFRENEW_RDV"'" },
+  agreementStatus: "Active",
+  isPerpetual: "No",
+  renewalPriority: "Definitely Renew",
   localReference: "EHTC1",
   startDate: "2019-01-01",
   items: [
