@@ -18,6 +18,12 @@ import org.olf.general.Org
 @Transactional
 public class PackageIngestService {
 
+  // This boolean controls the behaviour of the loader when we encounter a title that does not have
+  // a platform URL. We can error the row and do nothing, or create a row and point it at a proxy
+  // platform to flag the error. Currently trialling the latter case. set to false to error and ignore the
+  // row.
+  private boolean PROXY_MISSING_PLATFORM = true;
+
   def titleInstanceResolverService
   def coverageExtenderService
 
@@ -112,58 +118,68 @@ public class PackageIngestService {
   
               Platform platform = Platform.resolve(platform_url_to_use, pc.platformName);
               // log.debug("Platform: ${platform}");
-  
-              // See if we already have a title platform record for the presence of this title on this platform
-              PlatformTitleInstance pti = PlatformTitleInstance.findByTitleInstanceAndPlatform(title, platform)
-  
-              if ( pti == null ) 
-                pti = new PlatformTitleInstance(titleInstance:title, 
-                                                platform:platform,
-                                                url:pc.url).save(flush:true, failOnError:true);
-  
-  
-              // Lookup or create a package content item record for this title on this platform in this package
-              // We only check for currently live pci records, as titles can come and go from the package.
-              // N.B. addedTimestamp removedTimestamp lastSeenTimestamp
-              def pci_qr = PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pti = :pti and pci.pkg.id = :pkg and pci.removedTimestamp is null',
-                                                           [pti:pti, pkg:result.packageId]);
-              PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null; 
-  
-              if ( pci == null ) {
-                log.debug("[${result.titleCount}] Create new package content item");
-                pci = new PackageContentItem(
-                                             pti:pti, 
-                                             pkg:Pkg.get(result.packageId), 
-                                             note:pc.coverageNote, 
-                                             depth:pc.coverageDepth,
-                                             accessStart:null,
-                                             accessEnd:null, 
-                                             addedTimestamp:result.updateTime,
-                                             lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true);
+
+              if ( platform == null && PROXY_MISSING_PLATFORM ) {
+                platform = Platform.resolve('http://localhost.localdomain', 'This platform entry is used for error cases');
+              }
+
+              if ( platform != null ) {
+    
+                // See if we already have a title platform record for the presence of this title on this platform
+                PlatformTitleInstance pti = PlatformTitleInstance.findByTitleInstanceAndPlatform(title, platform)
+    
+                if ( pti == null ) 
+                  pti = new PlatformTitleInstance(titleInstance:title, 
+                                                  platform:platform,
+                                                  url:pc.url).save(flush:true, failOnError:true);
+    
+    
+                // Lookup or create a package content item record for this title on this platform in this package
+                // We only check for currently live pci records, as titles can come and go from the package.
+                // N.B. addedTimestamp removedTimestamp lastSeenTimestamp
+                def pci_qr = PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pti = :pti and pci.pkg.id = :pkg and pci.removedTimestamp is null',
+                                                             [pti:pti, pkg:result.packageId]);
+                PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null; 
+    
+                if ( pci == null ) {
+                  log.debug("[${result.titleCount}] Create new package content item");
+                  pci = new PackageContentItem(
+                                               pti:pti, 
+                                               pkg:Pkg.get(result.packageId), 
+                                               note:pc.coverageNote, 
+                                               depth:pc.coverageDepth,
+                                               accessStart:null,
+                                               accessEnd:null, 
+                                               addedTimestamp:result.updateTime,
+                                               lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true);
+                }
+                else {
+                  // Note that we have seen the package content item now - so we don't delete it at the end.
+                  log.debug("[${result.titleCount}] update package content item (${pci.id}) set last seen to ${result.updateTime}");
+                  pci.lastSeenTimestamp = result.updateTime;
+                  // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
+                }
+    
+                // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
+                // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
+                // We store this generally for the title on the platform, and specifically for this title in this package on this platform.
+                if ( pc.coverage ) {
+    
+                  // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
+                  // to the list of mpas that coverageExtenderService.extend expects
+                  List cov = pc.coverage instanceof List ? pc.coverage : [ pc.coverage ]
+    
+                  coverageExtenderService.extend(pti, cov, 'pti');
+                  coverageExtenderService.extend(pci, cov, 'pci');
+                  coverageExtenderService.extend(title, cov, 'ti');
+                }
+    
+                // Save needed either way
+                pci.save(flush:true, failOnError:true);
               }
               else {
-                // Note that we have seen the package content item now - so we don't delete it at the end.
-                log.debug("[${result.titleCount}] update package content item (${pci.id}) set last seen to ${result.updateTime}");
-                pci.lastSeenTimestamp = result.updateTime;
-                // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
+                log.error("[${result.titleCount}] unable to identify platform for package content item :: ${platform_url_to_use}, ${pc.platformName}");
               }
-  
-              // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
-              // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
-              // We store this generally for the title on the platform, and specifically for this title in this package on this platform.
-              if ( pc.coverage ) {
-  
-                // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
-                // to the list of mpas that coverageExtenderService.extend expects
-                List cov = pc.coverage instanceof List ? pc.coverage : [ pc.coverage ]
-  
-                coverageExtenderService.extend(pti, cov, 'pti');
-                coverageExtenderService.extend(pci, cov, 'pci');
-                coverageExtenderService.extend(title, cov, 'ti');
-              }
-  
-              // Save needed either way
-              pci.save(flush:true, failOnError:true);
             }
             catch ( Exception e ) {
               log.error("[${result.titleCount}] problem",e);
