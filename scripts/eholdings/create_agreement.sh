@@ -3,10 +3,12 @@
 AUTH_TOKEN=`../okapi-login`
 
 echo Create a new agreement, and include an entitement for bentham science defined externally by eholdings
-echo Note - you could equally post items[] and then add the entitlment to the agreement, as in the RESP2 request below
+echo Note - you could equally post an empty items array and then add the entitlment to the agreement, as in the RESP2 request below
 
 echo Please note - agreementStatus, isPerpetual and renewalPriority are refdata values, and the module is doing clever lookups to try and
 echo make the API more usable. Values CAN be rejected however
+
+echo Create a new agreement, and include an entitement for bentham science defined externally by eholdings
 
 RESP1=`curl --header "X-Okapi-Tenant: diku" -H "X-Okapi-Token: ${AUTH_TOKEN}" -H "Content-Type: application/json" -X POST http://localhost:9130/erm/sas -d ' {
   name: "EHTC1: Agreement for Bentham and ASC",
