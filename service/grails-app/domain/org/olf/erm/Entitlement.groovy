@@ -19,17 +19,13 @@ import grails.gorm.MultiTenant
  * OFTEN attached to an agreement, but it's possible we know we have the right to access a resource
  * without perhaps knowing which agreement controls that right.
  *
- * An entitlement is for a list of content which is defined elsewhere - it may be defined in our local package
- * cache, it might be defined in eHoldings.
- *
  */
 public class Entitlement implements MultiTenant<Entitlement> {
+  public static final Class<? extends ErmResource>[] ALLOWED_RESOURCES = [Pkg, PackageContentItem, PlatformTitleInstance] as Class[]
 
   String id
 
-  String authority
-  String reference
-  String label
+  ErmResource resource
 
   // The date ranges on which this line item is active. These date ranges allow the system to determine
   // what content is "Live" in an agreement. Content can be "Live" without being switched on, and 
@@ -66,9 +62,8 @@ public class Entitlement implements MultiTenant<Entitlement> {
                    id column: 'ent_id', generator: 'uuid', length:36
               version column: 'ent_version'
                 owner column: 'ent_owner_fk'
-            authority column: 'ent_authority'
-            reference column: 'ent_reference'
-                label column: 'ent_label'
+             resource column: 'ent_resource_fk'
+              enabled column: 'ent_enabled'
            activeFrom column: 'ent_active_from'
              activeTo column: 'ent_active_to'
   }
@@ -76,9 +71,12 @@ public class Entitlement implements MultiTenant<Entitlement> {
 
   static constraints = {
         owner(nullable:true,  blank:false)
-    authority(nullable:true,  blank:false)
-    reference(nullable:true,  blank:false)
-        label(nullable:true,  blank:false)
+     resource(nullable:false, blank:false, validator: { val, inst ->
+       Class c = Hibernate.getClass(val)
+       if (!Entitlement.ALLOWED_RESOURCES.contains(c)) {
+         ['allowedTypes', "${c.name}", "entitlement", "resource"]
+       }
+     })
       enabled(nullable:true,  blank:false)
    activeFrom(nullable:true,  blank:false)
      activeTo(nullable:true,  blank:false)
