@@ -31,6 +31,9 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       
       // The in clause below will freak out is the subquery returns an empty list. So we should test for
       // the entitlements list being empty first.
+      //
+      // Ian: It's now possible for an agreement to have entitlements that do not link to a resource. Need
+      // to talk through with steve about how this should work.
       if (SubscriptionAgreement.read(subscriptionAgreementId)?.items?.size() ?: 0 > 0) {
         
         def items = ErmResource.withCriteria {
