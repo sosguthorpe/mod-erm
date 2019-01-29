@@ -33,7 +33,7 @@ logger ('okapi', INFO)
 logger ('folio', DEBUG)
 logger ('org.olf', DEBUG)
 logger ('com.k_int.okapi.OkapiSchemaHandler', WARN)
-logger ('com.k_int.okapi.OkapiClient', WARN)
+logger ('com.k_int.okapi.OkapiClient', INFO)
 logger ('com.k_int.web.toolkit.refdata.GrailsDomainRefdataHelpers', WARN)
 
 // Uncomment below logging for output of OKAPI client http.

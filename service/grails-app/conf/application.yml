@@ -129,6 +129,9 @@ dataSource:
 okapi:
   schema:
     appName: 'olf_erm'
+  service:
+    register: false
+    deploy: false
   
   
 environments:
@@ -177,10 +180,13 @@ environments:
     # This is only used when the there is no request from okapi coming to the module or a none-okapi request.
     # OKAPI supplies information about how to reach it to the modules. These options are used for self reg and other calls
     # when the request did not come through OKAPI.
-    okapi: 
+    okapi:
       service:
         host: localhost
         port: 9130
+
+        register: true
+        deploy: true
 ---
 # Set useModVendors to true if you are running in a full FOLIO stack and wish to coordinate
 # Agreement vendors (And anywhere else we link to vendors) with records in mod-vendors
