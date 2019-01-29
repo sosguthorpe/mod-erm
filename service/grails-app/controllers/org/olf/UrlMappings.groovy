@@ -56,6 +56,10 @@ class UrlMappings {
     "/erm/knowledgebase" ( controller:'kb', action:'index')
     "/erm/knowledgebase/$action" ( controller:'kb' )
 
+
+     // This is the URL path used by the eresources screen.
+     // See http://docs.grails.org/latest/guide/theWebLayer.html#embeddedVariables#_dynamically_resolved_variables for information on
+     // how we might make this path more dynamic.
     "/erm/resource" ( resources:'resource', excludes: ['delete', 'update', 'patch', 'save']) {
       collection {
         "/electronic" ( action:'electronic' )
@@ -63,5 +67,6 @@ class UrlMappings {
       "/entitlementOptions" ( action:'entitlementOptions' )
       "/entitlements" ( action:'entitlements' )
     }
+
   }
 }
