@@ -61,7 +61,8 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
         
         // Dedupe in a way that means pagination still works.
         respond doTheLookup (ErmResource) {
-          'in' 'id', items
+          
+          'in' 'id', items + ["0"]
         }
         return
       }
