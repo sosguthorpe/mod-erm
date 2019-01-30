@@ -60,6 +60,8 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
         }
         
         // Dedupe in a way that means pagination still works.
+        // This isn't good - if there are 10000 resources linked to an entitlement, this will serialise the list of ID's out of the withCriteria
+        // above, the inject them as a list into the in query below.
         respond doTheLookup (ErmResource) {
           'in' 'id', items
         }
