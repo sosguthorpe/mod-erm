@@ -16,6 +16,7 @@ class UrlMappings {
     '/erm/sas'(resources: 'subscriptionAgreement') {
 //       "/addToAgreement"(action:'addToAgreement')
       "/resources" (action: 'resources', method: 'GET')
+      "/resources2" (action: 'resources2', method: 'GET')
     }
 
     '/erm/titles'(resources: 'title') {

@@ -5,11 +5,14 @@ import org.olf.erm.SubscriptionAgreement
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance
+import org.olf.erm.Entitlement
 
 import com.k_int.okapi.OkapiTenantAwareController
 
 import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
+
+import grails.gorm.DetachedCriteria
 
 
 /**
@@ -70,7 +73,42 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       }
       
     }
-    
+  }
+
+  def resources2(String subscriptionAgreementId) {
+    if (SubscriptionAgreement.read(subscriptionAgreementId)?.items?.size() ?: 0 > 0) {
+
+        DetachedCriteria resources_with_an_entitlement = ErmResource.where {
+
+          def res = ErmResource
+
+          // Where there is an entitlement directly for this resource
+          exists Entitlement.where {
+            def e1 = Entitlement
+            def r = resource
+            // e1.resource is a property on Entitlement, res is the outer resource
+            return r.id == res.id
+          }.id()
+          // || exists Entitlement.where {
+          //   // OR there is an entitlement for a package that contais this resource.
+          //   Entitlement e2
+          //   // e1.resource is a property on Entitlement, res is the outer resource
+          //   e2.resource.id == res.id
+          // }
+        }
+
+        println("number of resources with an entitlement ${resources_with_an_entitlement.list().size()}");
+
+        DetachedCriteria resources_with_an_entitlement_2 = ErmResource.where {
+          id == 'hello'
+        }
+
+        println("number of resources with an entitlement_2 ${resources_with_an_entitlement_2.list().size()}");
+
+        respond doTheLookup (ErmResource) { resources_with_an_entitlement_2 }
+    }
+
+    return
     // If not matched above return with empty collection...
     respond (params.boolean('stats') ? Collections.EMPTY_MAP : Collections.EMPTY_SET)
   }
