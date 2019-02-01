@@ -89,21 +89,20 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
     // select sa, e, e.resource, nvl(pci, e.resource)
     // from SubscriptionAgreement as sa join sa.entitlements as e left outer join PackageContentItem as pci on pci.pkg = e.resource
 
-    DetachedCriteria resources_with_an_entitlement = ErmResource.where {
-      def res = ErmResource
-      // Where there is an entitlement directly for this resource
-      exists Entitlement.where {
-        def e1 = Entitlement
-        def r = resource
-        r.id == res.id
-        // || exists PackageContentItem.where {
-        //      def pci = PackageContentItem
-        //      return ( pci.pkg.id == r.id && pci.pti.id == res.id )
-        // }
-      } 
-    }
+    String q1 = 'select sa, e, e.resource, coalesce(pci, e.resource) from SubscriptionAgreement as sa join sa.items as e left outer join PackageContentItem as pci with pci.pkg = e.resource'
 
-    println("number of resources with an entitlement ${resources_with_an_entitlement.list().size()}");
+
+    // This query will list all entitlements. Where the entitlement is a package, it will list each of the titles in that
+    // package. A user can list all the titles by iterating through this result set and processing the entitlement if the resource is an explicit title (pci.id will be null)
+    // or the pci.id will contain the package content item of a package item.
+    String q2 = '''select sa.id, e.id, pci.id
+                   from SubscriptionAgreement sa 
+                          join sa.items as e 
+                          left outer join PackageContentItem as pci on pci.pkg = e.resource'''
+
+    def available_items = ErmResource.executeQuery(q2);
+    println("Query version returns ${available_items.size()} resources");
+    println(available_items);
 
     DetachedCriteria resources_with_an_entitlement_2 = ErmResource.where {
       id == 'hello'
