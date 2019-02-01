@@ -95,7 +95,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
     // This query will list all entitlements. Where the entitlement is a package, it will list each of the titles in that
     // package. A user can list all the titles by iterating through this result set and processing the entitlement if the resource is an explicit title (pci.id will be null)
     // or the pci.id will contain the package content item of a package item.
-    String q2 = '''select sa.id, e.id, pci.id
+    String q2 = '''select sa.id, e.id, COALESCE(pci.id, e.id)
                    from SubscriptionAgreement sa 
                           join sa.items as e 
                           left outer join PackageContentItem as pci on pci.pkg = e.resource'''
