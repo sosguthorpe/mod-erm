@@ -11,4 +11,5 @@ json g.render(entitlement, [expand: ['owner', 'resource' ]]) {
   'authority' entitlement.getAuthority()
   'reference' entitlement.getReference()
   'label' entitlement.getLabel()
+  'haveAccess' entitlement.getHaveAccess()
 }
