@@ -34,6 +34,8 @@ public class Entitlement implements MultiTenant<Entitlement> {
   Date activeFrom
   Date activeTo
 
+  Date contentUpdated
+
   // Type - must be set to external for externally defined packages, null or local for things defined in the local DB
   String type
 
@@ -76,6 +78,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
              resource column: 'ent_resource_fk'
                  type column: 'ent_type'
               enabled column: 'ent_enabled'
+       contentUpdated column: 'ent_content_updated'
            activeFrom column: 'ent_active_from'
              activeTo column: 'ent_active_to'
             authority column: 'ent_authority'
@@ -84,7 +87,6 @@ public class Entitlement implements MultiTenant<Entitlement> {
            
 
   }
-
 
   static constraints = {
         owner(nullable:true,  blank:false)
@@ -100,13 +102,14 @@ public class Entitlement implements MultiTenant<Entitlement> {
        }
      })
 
-         type(nullable:true,  blank:false)
-      enabled(nullable:true,  blank:false)
-   activeFrom(nullable:true,  blank:false)
-     activeTo(nullable:true,  blank:false)
-    authority(nullable:true,  blank:false)
-    reference(nullable:true,  blank:false)
-        label(nullable:true,  blank:false)
+              type(nullable:true,  blank:false)
+           enabled(nullable:true,  blank:false)
+    contentUpdated(nullable:true,  blank:false)
+        activeFrom(nullable:true,  blank:false)
+          activeTo(nullable:true,  blank:false)
+         authority(nullable:true,  blank:false)
+         reference(nullable:true,  blank:false)
+             label(nullable:true,  blank:false)
   }
   
   @Transient
@@ -133,4 +136,29 @@ public class Entitlement implements MultiTenant<Entitlement> {
     result
   }
 
+  public boolean getHaveAccess() {
+    return haveAccessAsAt(new Date());
+  }
+
+  /**
+   * If activeFrom <= date <= activeTo 
+   */
+  public boolean haveAccessAsAt(Date point_in_time) {
+    boolean result = false;
+    if ( ( activeFrom != null ) && ( activeTo != null ) ) {
+      result = ( ( activeFrom.getTime() <= point_in_time.getTime() ) && ( point_in_time.getTime() <= activeTo.getTime() ) )
+    }
+    else if ( activeFrom != null ) {
+      result = ( activeFrom.getTime() <= point_in_time.getTime() )
+    }
+    else if ( activeTo != null ) {
+      result = ( point_in_time.getTime() <= activeTo.getTime() )
+    }
+    else {
+      // activeFrom and activeTo are both null - we assume this is perpetual then, so true
+      return true;
+    }
+    return result;
+  }
+ 
 }
