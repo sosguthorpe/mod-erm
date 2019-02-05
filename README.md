@@ -5,7 +5,23 @@ Copyright (C) 2018-2019 The Open Library Foundation
 This software is distributed under the terms of the Apache License,
 Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
 
-## Introduction
+# Introduction - developers looking to enhance the resources that mod-agreements provides
+
+Mod-Agreements is a FOLIO module to manage agreements which control an institutions access to resources. Normally, this will be 
+subscribed access to packages of electronic resources, although the aim is to make the affordances offered by mod-agreements as general as possible.
+
+Mod-Agreements can create agreements that control access to content bundled into packages and defined in knowledgebase systems, it can 
+identify specific electronic or print resources, and act as a bridge between those resources and associated licenses and purchase documents.
+
+Developers looking to access the services exposed by mod-agreements can find more information in the following sections
+
+## Resources exposed by this module
+
+### /erm/sas resource - SubscriptionAgreements
+
+The /erm/sas resource allows module clients to Create, Retrieve, Update and Delete SubscriptionAgreement entities, and to search for SAs. [See the documentation](./doc/subscription_agreement_resource.md)
+
+# For module developers looking to extend or modify the resources presented by this module
 
 This is the main starter repository for the Grails-based OLF - ERM backend modules.
 
