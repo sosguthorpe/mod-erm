@@ -2,6 +2,14 @@ import groovy.transform.*
 import org.olf.erm.Entitlement
 
 @Field Entitlement entitlement
-json g.render(entitlement, [expand: ['owner', 'resource']]) {
+json g.render(entitlement, [expand: ['owner', 'resource' ]]) {
   'explanation' entitlement.getExplanation()
+  'startDate' entitlement.getActiveFrom()
+  'endDate' entitlement.getActiveTo()
+  'type' entitlement.getType()
+  'contentUpdated' entitlement.getContentUpdated()
+  'authority' entitlement.getAuthority()
+  'reference' entitlement.getReference()
+  'label' entitlement.getLabel()
+  'haveAccess' entitlement.getHaveAccess()
 }

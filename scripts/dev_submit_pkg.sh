@@ -192,15 +192,19 @@ BENTHAM_EXTERNAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-
     name:"Bentham Science"
   },
   items: [
+    { type:"external", authority:"EKB", reference:"301-3707", label:"Bentham Science via eHoldings" },
+    { type:"external", authority:"EKB", reference:"19-1615", label:"Academic Source Complete via eHoldings" }
   ]
 }
 ' | jq -r ".id" | tr -d '\r'`
 
+# Lets see if we can list agreements by the EKB references they contain
+echo List agreements containing the externally referenced package "301-3707"
+curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X GET "http://localhost:8080/erm/sas?filters=items.reference%3d301-3707&stats=true"
+
 # These are the 2 items which define a package in EKB, however, it looks like the query in
 # grails-app/controllers/org/olf/SubscriptionAgreementController.groovy gets confused. For now
 # commenting these out. Will talk this through with steve tomorrow.
-# { type:"external", authority:"EKB", reference:"301-3707", label:"Bentham Science via eHoldings" },
-# { type:"external", authority:"EKB", reference:"19-1615", label:"Academic Source Complete via eHoldings" },
 
 
 
