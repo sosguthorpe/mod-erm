@@ -1,1 +1,1 @@
-json g.render (template: '../resource/resourceList', model: (binding.variables))
+json g.render (template: '/resource/resourceList', model: (binding.variables))
