@@ -14,7 +14,7 @@ final Map theData = binding.variables
 // If we have exactly 1 parameter we assume that it is a collection as per a regular restful 'get' for a collection.  
 if (theData.size() == 1) {
   
-  json g.render(template:"../ermResource/ermResource", collection: theData.values()[0], var:'ermResource')
+  json g.render(template:"/ermResource/ermResource", collection: theData.values()[0], var:'ermResource')
   
 } else {
   
@@ -26,7 +26,7 @@ if (theData.size() == 1) {
     meta theData.meta
     totalRecords theData.totalRecords
     total theData.total
-    results g.render(template:"../ermResource/ermResource", collection: theData.results, var:'ermResource')
+    results g.render(template:"/ermResource/ermResource", collection: theData.results, var:'ermResource')
   }
   
 }
