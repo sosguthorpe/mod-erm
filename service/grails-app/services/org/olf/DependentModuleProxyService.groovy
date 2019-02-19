@@ -15,7 +15,7 @@ import org.olf.general.Org
  * if they are not. It also gives us a hook onto which we can cache information for performance reasons.
  */
 @Slf4j
-public class DependentServiceProxyService {
+public class DependentModuleProxyService {
 
   def grailsApplication
   OkapiClient okapiClient

@@ -184,7 +184,22 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
 
         def tipp_title = tipp_entry?.title?.name?.text()
         def tipp_medium = tipp_entry?.medium?.text()
-        def tipp_media = 'journal'
+        def tipp_media = null;
+        
+        // It appears that tipp_entry?.title?.type?.value() can be a list
+        String title_type = tipp_entry?.title?.type?.text()
+
+        switch ( title_type ) {
+          case 'JournalInstance':
+            tipp_media = 'journal'
+            break;
+          case 'BookInstance':
+            tipp_media = 'book'
+            break;
+          default:
+            tipp_media = 'journal'
+            break;
+        }
         def tipp_instance_identifiers = [] // [ "namespace": "issn", "value": "0278-7393" ]
         def tipp_sibling_identifiers = []
 
