@@ -233,3 +233,6 @@ curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://
 echo search
 
 curl --header "X-Okapi-Tenant: diku" http://localhost:9130/vendor -X GET
+
+./okapi-cmd /vendor?query=code%3d%3dSREBSCO
+

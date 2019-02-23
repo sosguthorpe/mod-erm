@@ -21,6 +21,24 @@ Developers looking to access the services exposed by mod-agreements can find mor
 
 The /erm/sas resource allows module clients to Create, Retrieve, Update and Delete SubscriptionAgreement entities, and to search for SAs. [See the documentation](./doc/subscription_agreement_resource.md)
 
+### /erm/refdataValues
+
+This resource allows module owners to obtain tenant extensible lists of controlled values. The URL pattern is "/erm/refdataValues/$domain/$property" 
+
+As of 2019-02-20 the following are defined
+|Redata Category|URL for values|
+|TitleInstance.SubType|/erm/refdataValues/TitleInstance/SubType|
+|TitleInstance.Type|/erm/refdataValues/TitleInstance/Type|
+|InternalContact.Role|/erm/refdataValues/InternalContact/Role|
+|SubscriptionAgreementOrg.Role|/erm/refdataValues/SubscriptionAgreementOrg/Role|
+|SubscriptionAgreement.AgreementType|/erm/refdataValues/SubscriptionAgreement/AgreementType|
+|SubscriptionAgreement.RenewalPriority|/erm/refdataValues/SubscriptionAgreement/RenewalPriority|
+|Global.Yes_No|/erm/refdataValues/Global/Yes_No|
+|SubscriptionAgreement.AgreementStatus|/erm/refdataValues/SubscriptionAgreement/AgreementStatus|
+|Pkg.Type|/erm/refdataValues/Pkg/Type|
+|IdentifierOccurrence.Status|/erm/refdataValues/IdentifierOccurrence/Status|
+
+
 # For module developers looking to extend or modify the resources presented by this module
 
 This is the main starter repository for the Grails-based OLF - ERM backend modules.
