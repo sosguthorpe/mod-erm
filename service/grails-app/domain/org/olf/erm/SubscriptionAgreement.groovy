@@ -1,6 +1,7 @@
 package org.olf.erm
 
 import org.olf.general.Org
+import org.olf.general.DocumentAttachment
 import com.k_int.web.toolkit.refdata.RefdataValue
 import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
@@ -63,7 +64,8 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
     historyLines: SAEventHistory,
     contacts: InternalContact,
     tags: Tag,
-    orgs: SubscriptionAgreementOrg
+    orgs: SubscriptionAgreementOrg,
+    docs: DocumentAttachment
   ]
 
   static mappedBy = [

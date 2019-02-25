@@ -12,7 +12,6 @@ dataSource:
   dialect: com.k_int.hibernate.dialects.postgres.KIPostgres94Dialect
   schemaHandler: com.k_int.okapi.OkapiSchemaHandler
   logSql: false
-  # logSql: true
   properties:
       jmxEnabled: false
       initialSize: 5

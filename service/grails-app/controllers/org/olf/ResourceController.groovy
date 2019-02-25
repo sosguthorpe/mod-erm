@@ -42,11 +42,13 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
    * @return List of resources representing things that can be added to an Entitlement
    */
   def entitlementOptions ( String resourceId ) {
+    log.debug("entitlementOptions(${resourceId})");
     
     // Easiest way to check that this resource is a title is to read it in as one.
     // We use criteria here to ensure
     
     final TitleInstance ti = resourceId ? TitleInstance.findByIdAndSubType ( resourceId, TitleInstance.lookupOrCreateSubType('electronic') ) : null
+    log.debug("Got ti ${ti.id}");
     
     // Not title. Just show a 404
     if (!ti) {
@@ -58,6 +60,7 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
     // resources that can be added to an Entitlement, that lead back to this title
     // Lets build the base query and pass into the simpleLookupService.
     // This will allow the usual parameters to be used to filter the results even further.
+    log.debug("Start query");
     respond doTheLookup ({
       
       // First check in allowed types... This will allow the query to grow with validation.
@@ -88,6 +91,7 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
         eq 'pkg_pti.titleInstance', ti
       }
     })
+    log.debug("completed");
   }
   
   def entitlements (String resourceId) {
