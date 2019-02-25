@@ -81,6 +81,9 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
       resource : { id : "'"$BSEC_PKG_ID"'" }
     }
   ],
+  "docs": [
+    { "name": "A test document attachment", "location":"http://a.b.c/d/e/f.doc", "note":"This is a document attachment",  "atType":"License" }
+  ],
   tags: [
     {value: "Legacy"},
     "Other value",
