@@ -38,4 +38,9 @@ databaseChangeLog = {
     addForeignKeyConstraint(baseColumnNames: "document_attachment_id", baseTableName: "subscription_agreement_document_attachment", constraintName: "FKgwss7xoeluk8be4btg3eljeui", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "da_id", referencedTableName: "document_attachment")
   }
 
+  changeSet(author: "ibbo (manual)", id: "20190226-001") {
+    addColumn (tableName: "document_attachment" ) {
+      column(name: "da_url", type: "varchar(255)")
+    }
+  }
 }
