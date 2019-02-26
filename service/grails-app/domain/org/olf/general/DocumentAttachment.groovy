@@ -9,6 +9,7 @@ class DocumentAttachment implements MultiTenant<DocumentAttachment> {
   String id
   String name
   String location
+  String url
   String note
   Date dateCreated
   Date lastUpdated
@@ -21,6 +22,7 @@ class DocumentAttachment implements MultiTenant<DocumentAttachment> {
         version column: 'da_version'
            name column: 'da_name'
        location column: 'da_location'
+            url column: 'da_url'
            note column: 'da_note', type:'text'
          atType column: 'da_type_rdv_fk'
     dateCreated column: 'da_date_created'
@@ -30,6 +32,7 @@ class DocumentAttachment implements MultiTenant<DocumentAttachment> {
   static constraints = {
            name(nullable:true, blank:false)
        location(nullable:true, blank:false)
+            url(nullable:true, blank:false)
            note(nullable:true, blank:false)
          atType(nullable:true, blank:false)
     dateCreated(nullable:true, blank:false)
