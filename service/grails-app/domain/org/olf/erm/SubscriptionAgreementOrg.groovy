@@ -15,7 +15,7 @@ public class SubscriptionAgreementOrg implements MultiTenant<SubscriptionAgreeme
   String id
   Org org
 
-  @Defaults(['Licensor', 'Licensee', 'Content Provider', 'Licensing Consortium', 'Negotiator', 'Subscriber', 'Provider', 'Subscription Agent', 'Subscription Consortia', 'Package Consortia'])
+  @Defaults(['Content Provider', 'Subscription Agent', 'Vendor'])
   RefdataValue role
   
   static belongsTo = [
