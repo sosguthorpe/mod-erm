@@ -9,5 +9,6 @@ json g.render(subscriptionAgreement, [expand: ['agreementType',
                                                'contentReviewNeeded',
                                                'contacts',
                                                'orgs',
+                                               'externalLicenseDocs',
                                                'docs',
                                                'vendor']])
