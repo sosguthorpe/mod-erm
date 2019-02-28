@@ -693,6 +693,8 @@ databaseChangeLog = {
             column(name: "sa_enabled", type: "BOOLEAN")
 
             column(name: "sa_description", type: "VARCHAR(255)")
+
+            column(name: "sa_license_note", type: "VARCHAR(255)")
         }
     }
 
