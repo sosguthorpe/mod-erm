@@ -43,4 +43,9 @@ databaseChangeLog = {
       column(name: "da_url", type: "varchar(255)")
     }
   }
+  changeSet(author: "Claudia (manual)", id: "20190301-0001") {
+	  addColumn (tableName: "subscription_agreement" ) {
+	  column(name: "sa_license_note", type: "VARCHAR(255)")
+	}
+  }
 }
