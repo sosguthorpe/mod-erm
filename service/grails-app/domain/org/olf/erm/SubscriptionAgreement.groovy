@@ -61,12 +61,13 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   Set<Entitlement> items
 
   static hasMany = [
-    items: Entitlement,
-    historyLines: SAEventHistory,
-    contacts: InternalContact,
-    tags: Tag,
-    orgs: SubscriptionAgreementOrg,
-    docs: DocumentAttachment
+                  items: Entitlement,
+           historyLines: SAEventHistory,
+               contacts: InternalContact,
+                   tags: Tag,
+                   orgs: SubscriptionAgreementOrg,
+    externalLicenseDocs: DocumentAttachment,
+                   docs: DocumentAttachment,
   ]
 
   static mappedBy = [
@@ -102,6 +103,8 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
             historyLines cascade: 'all-delete-orphan'
                     tags cascade: 'all-delete-orphan'
                     orgs cascade: 'all-delete-orphan'
+                    docs cascade: 'all-delete-orphan'
+     externalLicenseDocs cascade: 'all-delete-orphan',  joinTable: [name: 'subscription_agreement_ext_lic_doc', key: 'saeld_sa_fk', column: 'saeld_da_fk']
   }
 
   static constraints = {

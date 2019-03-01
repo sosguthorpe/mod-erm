@@ -84,6 +84,9 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
   "docs": [
     { "name": "A test document attachment", "location":"sent in, sent back, queried, lost, found, subjected to public inquiry, lost again, and finally buried in soft peat for three months and recycled as firelighters.", "url":"http://a.b.c/d/e/f.doc", "note":"This is a document attachment",  "atType":"License" }
   ],
+  "externalLicenseDocs": [
+    { "name": "An External license document", "location":"sent in, sent back, queried, lost, found, subjected to public inquiry, lost again, and finally buried in soft peat for three months and recycled as firelighters.", "url":"http://a.b.c/d/e/f.doc", "note":"This is a document attachment",  "atType":"License" }
+  ],
   tags: [
     {value: "Legacy"},
     "Other value",
