@@ -54,6 +54,11 @@ databaseChangeLog = {
     }
   }
 
+  changeSet(author: "Claudia (manual)", id: "20190301-0001") {
+	  addColumn (tableName: "subscription_agreement" ) {
+	    column(name: "sa_license_note", type: "VARCHAR(255)")
+  	}
+  }
 
   // Foreign key constraints for external license documents
   changeSet(author: "ibbo (generated)", id: "2019-02-28-00002") {
@@ -73,7 +78,4 @@ databaseChangeLog = {
                             referencedColumnNames: "da_id", 
                             referencedTableName: "document_attachment")
   }
-
-
-
 }
