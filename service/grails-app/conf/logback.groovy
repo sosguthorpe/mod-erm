@@ -33,14 +33,16 @@ logger ('okapi', INFO)
 logger ('folio', DEBUG)
 logger ('org.olf', DEBUG)
 logger ('com.k_int.okapi.OkapiSchemaHandler', WARN)
-logger ('com.k_int.okapi.OkapiClient', INFO)
 logger ('com.k_int.web.toolkit.refdata.GrailsDomainRefdataHelpers', WARN)
 logger ('com.k_int.web.toolkit.utils.RequestUtils', DEBUG)
 
+logger ('com.k_int.okapi.remote_resources.RemoteOkapiLinkListener', DEBUG)
+
 // Uncomment below logging for output of OKAPI client http.
-//logger 'groovy.net.http.JavaHttpBuilder', DEBUG
-//logger 'groovy.net.http.JavaHttpBuilder.content', DEBUG
-//logger 'groovy.net.http.JavaHttpBuilder.headers', DEBUG
+logger ('com.k_int.okapi.OkapiClient', TRACE)
+logger 'groovy.net.http.JavaHttpBuilder', DEBUG
+logger 'groovy.net.http.JavaHttpBuilder.content', DEBUG
+logger 'groovy.net.http.JavaHttpBuilder.headers', DEBUG
 
 if (Environment.currentEnvironment == Environment.TEST) {
   logger 'groovy.net.http.JavaHttpBuilder', DEBUG
