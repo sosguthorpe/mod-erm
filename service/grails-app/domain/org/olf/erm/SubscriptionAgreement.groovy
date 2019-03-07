@@ -68,13 +68,15 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
                    orgs: SubscriptionAgreementOrg,
     externalLicenseDocs: DocumentAttachment,
                    docs: DocumentAttachment,
+         linkedLicenses: RemoteLicenseLink
   ]
 
   static mappedBy = [
     items: 'owner',
     historyLines: 'owner',
     contacts: 'owner',
-    orgs: 'owner'
+    orgs: 'owner',
+    linkedLicenses: 'owner'
   ]
 
   static mapping = {
@@ -97,7 +99,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
                  enabled column:'sa_enabled'
                   vendor column:'sa_vendor_fk'
        attachedLicenceId column:'sa_licence_fk'
-	   		 licenseNote column:'sa_license_note'
+	   		     licenseNote column:'sa_license_note'
                    items cascade: 'all-delete-orphan'
                 contacts cascade: 'all-delete-orphan'
             historyLines cascade: 'all-delete-orphan'
@@ -105,6 +107,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
                     orgs cascade: 'all-delete-orphan'
                     docs cascade: 'all-delete-orphan'
      externalLicenseDocs cascade: 'all-delete-orphan',  joinTable: [name: 'subscription_agreement_ext_lic_doc', key: 'saeld_sa_fk', column: 'saeld_da_fk']
+          linkedLicenses cascade: 'all-delete-orphan'
   }
 
   static constraints = {
@@ -125,6 +128,12 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
              description(nullable:true, blank:false)
                   vendor(nullable:true, blank:false)
        attachedLicenceId(nullable:true, blank:false)
-	   		 licenseNote(nullable:true, blank:false)
+	   		     licenseNote(nullable:true, blank:false)
+              
+          linkedLicenses(validator: { Collection<RemoteLicenseLink> license_links ->
+            
+            int controlling_count = ((license_links?.findAll({ RemoteLicenseLink license -> license.status?.value == 'controlling' })?.size()) ?: 0)
+            ( controlling_count > 1 ? [ 'only.one.controlling.license' ] : true )
+          })
   }
 }
