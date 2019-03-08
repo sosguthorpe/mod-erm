@@ -98,7 +98,7 @@ def includes = [
 ]
 
 bootRun {
-  jvmArgs('-Dspring.output.ansi.enabled=always')
+  jvmArgs(['-Dspring.output.ansi.enabled=always', '-server', '-Xms1536m', '-Xmx1536m'])
   addResources = true
   String springProfilesActive = 'spring.profiles.active'
   systemProperty springProfilesActive, System.getProperty(springProfilesActive)

@@ -4,4 +4,11 @@ import org.olf.erm.RemoteLicenseLink
 @Field RemoteLicenseLink remoteLicenseLink
 
 inherits template: "/remoteOkapiLink/remoteOkapiLink"
-json g.render(remoteLicenseLink, ['excludes': ['id', 'remoteId', 'version'], 'expand':['status']])
+
+def should_expand = ['status']
+
+if (params.controller == 'remoteLicenseLink' ) {
+  should_expand << 'owner'
+}
+
+json g.render(remoteLicenseLink, ['excludes': ['id', 'remoteId', 'version'], 'expand':should_expand])
