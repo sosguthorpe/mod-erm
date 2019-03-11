@@ -17,6 +17,19 @@ class UrlMappings {
 //       "/addToAgreement"(action:'addToAgreement')
       "/resources" (action: 'resources', method: 'GET')
       "/resources2" (action: 'resources2', method: 'GET')
+      
+      '/linkedLicenses' {
+        controller = 'remoteLicenseLink'
+        method = 'GET'
+        filters = { "owner==${params.subscriptionAgreementId}" }
+      }
+      
+      collection {
+        '/linkedLicenses' {
+          controller = 'remoteLicenseLink'
+          method = 'GET'
+        }
+      }
     }
 
     '/erm/titles'(resources: 'title') {
