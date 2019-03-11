@@ -2,14 +2,21 @@ import groovy.transform.*
 import org.olf.erm.SubscriptionAgreement
 
 @Field SubscriptionAgreement subscriptionAgreement
-json g.render(subscriptionAgreement, [expand: ['agreementType',
-                                               'renewalPriority',
-                                               'agreementStatus',
-                                               'isPerpetual',
-                                               'contentReviewNeeded',
-                                               'contacts',
-                                               'orgs',
-                                               'externalLicenseDocs',
-                                               'linkedLicenses',
-                                               'docs',
-                                               'vendor']])
+
+final def should_expand = [
+  'agreementType',
+  'renewalPriority',
+  'agreementStatus',
+  'isPerpetual',
+  'contentReviewNeeded',
+  'contacts',
+  'orgs',
+  'externalLicenseDocs',
+  'docs',
+  'vendor'
+]
+if (params.controller != 'remoteLicenseLink' ) {
+  should_expand << 'linkedLicenses'
+}
+
+json g.render(subscriptionAgreement, [expand: should_expand])

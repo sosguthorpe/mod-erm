@@ -108,12 +108,12 @@ dependencies {
 
 // Changed this to enable inline development of the includes listed below.
 def includes = [
-  'web-toolkit-ce'   : 'com.k_int.grails:web-toolkit-ce:3.3.24',
-  'grails-okapi'  : 'com.k_int.okapi:grails-okapi:3.4.3'
+  'web-toolkit-ce'   : 'com.k_int.grails:web-toolkit-ce:3.3.25',
+  'grails-okapi'  : 'com.k_int.okapi:grails-okapi:3.4.6'
 ]
 
 bootRun {
-  jvmArgs('-Dspring.output.ansi.enabled=always')
+  jvmArgs(['-Dspring.output.ansi.enabled=always', '-server', '-Xms1536m', '-Xmx1536m'])
   addResources = true
   String springProfilesActive = 'spring.profiles.active'
   systemProperty springProfilesActive, System.getProperty(springProfilesActive)
