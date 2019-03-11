@@ -24,6 +24,21 @@ apply plugin:"idea"
 apply plugin:"org.grails.grails-web"
 apply plugin:"org.grails.plugins.views-json"
 apply plugin:"com.bmuschko.docker-remote-api"
+apply plugin:"jacoco"
+
+
+jacoco {
+    toolVersion = "0.8.2"
+    reportsDir = file("$buildDir/customJacocoReportDir")
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination file("${buildDir}/jacocoHtml")
+    }
+}
 
 repositories {
   mavenLocal()
@@ -281,5 +296,7 @@ task buildImage(type: DockerBuildImage, dependsOn: createDockerfile) {
   tag = dockerTag
 }
 
-
+jacocoTestReport {
+    executionData integrationTest, test
+}
 
