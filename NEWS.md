@@ -1,3 +1,5 @@
+## 1.2.0 Opened
+
 ## 1.1.0 2019-03-12
  * ERM-59 Manage licenses linked to agreements
    * ERM-71 Add Model for JSON resource
