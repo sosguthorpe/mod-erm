@@ -22,10 +22,12 @@ public class ErmResource implements MultiTenant<ErmResource> {
   Date lastUpdated
   
   static hasMany = [
+    coverage: CoverageStatement,
     entitlements: Entitlement
   ]
 
   static mappedBy = [
+    coverage: 'resource',
     entitlements: 'resource'
   ]
   static mapping = {
@@ -37,6 +39,7 @@ public class ErmResource implements MultiTenant<ErmResource> {
           dateCreated column:'res_date_created'
           lastUpdated column:'res_last_updated'
               subType column:'res_sub_type_fk'
+             coverage cascade: 'all-delete-orphan'
   }
 
   static constraints = {

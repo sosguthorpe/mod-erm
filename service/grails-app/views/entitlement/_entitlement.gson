@@ -3,6 +3,21 @@ import org.olf.erm.Entitlement
 
 @Field Entitlement entitlement
 json g.render(entitlement, [expand: ['owner', 'resource' ]]) {
+  
+  if (entitlement.coverage) {
+    
+    'coverage' g.render (entitlement.coverage)
+    'customCoverage' true
+     
+  } else if (entitlement?.resource?.coverage) {
+    'coverage' g.render (entitlement?.resource?.coverage)
+    'customCoverage' false
+    
+  } else {
+    'coverage' []
+    'customCoverage' false
+  }
+  
   'explanation' entitlement.getExplanation()
   'startDate' entitlement.getActiveFrom()
   'endDate' entitlement.getActiveTo()

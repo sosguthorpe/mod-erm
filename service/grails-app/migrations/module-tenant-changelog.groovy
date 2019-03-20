@@ -4,4 +4,5 @@ databaseChangeLog = {
   include file: 'initial-customizations.groovy'
   include file: 'docs.groovy'
   include file: 'linked-licenses.groovy'
+  include file: 'coverage-unification.groovy'
 }

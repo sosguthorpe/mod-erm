@@ -30,13 +30,6 @@ public class PackageContentItem extends ErmResource implements MultiTenant<Packa
 
   // A field primarily to deposit KBART::CoverageDepth type data
   String depth
-  static hasMany = [
-    coverageStatements: CoverageStatement
-  ]
-
-  static mappedBy = [ 
-    coverageStatements: 'pci'
-  ]
 
   static mapping = {
                   pkg column:'pci_pkg_fk'

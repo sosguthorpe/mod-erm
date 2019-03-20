@@ -1,20 +1,19 @@
 package org.olf
 
-import grails.gorm.multitenancy.Tenants
-import grails.events.annotation.Subscriber
-import grails.gorm.multitenancy.WithoutTenant
+import org.olf.kb.PackageContentItem
+import org.olf.kb.Pkg
+import org.olf.kb.Platform
+import org.olf.kb.PlatformTitleInstance
+import org.olf.kb.RemoteKB
+import org.olf.kb.TitleInstance
+
 import grails.gorm.transactions.Transactional
-import org.olf.kb.Pkg;
-import org.olf.kb.Platform;
-import org.olf.kb.TitleInstance;
-import org.olf.kb.PlatformTitleInstance;
-import org.olf.kb.PackageContentItem;
-import org.olf.kb.RemoteKB;
-import org.olf.general.Org
+import groovy.util.logging.Slf4j
 
 /**
  * This service works at the module level, it's often called without a tenant context.
  */
+@Slf4j
 @Transactional
 public class PackageIngestService {
 
@@ -22,19 +21,19 @@ public class PackageIngestService {
   // a platform URL. We can error the row and do nothing, or create a row and point it at a proxy
   // platform to flag the error. Currently trialling the latter case. set to false to error and ignore the
   // row.
-  private boolean PROXY_MISSING_PLATFORM = true;
+  private boolean PROXY_MISSING_PLATFORM = true
 
-  def titleInstanceResolverService
-  def coverageExtenderService
+  TitleInstanceResolverService titleInstanceResolverService
+  CoverageService coverageService
 
   // dependentModuleProxyService is a service which hides the fact that we might be dependent upon other
   // services for our reference data. In this class - vendors are erm Org entries, but in folio these are
   // managed by the vendors app. If we are running in folio mode, this service hides the detail of
   // looking up an Org in vendors and stashing the vendor info in the local cache table.
-  def dependentModuleProxyService
+  DependentModuleProxyService dependentModuleProxyService
 
   public Map upsertPackage(Map package_data) {
-    return upsertPackage(package_data,'LOCAL');
+    return upsertPackage(package_data,'LOCAL')
   }
 
   /**
@@ -48,35 +47,35 @@ public class PackageIngestService {
    */
   public Map upsertPackage(Map package_data, String remotekbname) {
 
-    def result = [:];
-    result.startTime = System.currentTimeMillis();
-    result.titleCount=0;
-    result.averageTimePerTitle=0;
+    def result = [:]
+    result.startTime = System.currentTimeMillis()
+    result.titleCount=0
+    result.averageTimePerTitle=0
 
-    Pkg pkg = null;
+    Pkg pkg = null
 
     Pkg.withNewTransaction { status ->
       // ERM caches many remote KB sources in it's local package inventory
       // Look up which remote kb via the name
       RemoteKB kb = RemoteKB.findByName(remotekbname) ?: new RemoteKB( name:remotekbname,
                                                                        rectype: new Long(1),
-                                                                       active:Boolean.TRUE).save(flush:true, failOnError:true);
+                                                                       active:Boolean.TRUE).save(flush:true, failOnError:true)
 
 
-      result.updateTime = System.currentTimeMillis();
+      result.updateTime = System.currentTimeMillis()
   
-      log.debug("Package header: ${package_data.header} - update start time is ${result.updateTime}");
+      log.debug("Package header: ${package_data.header} - update start time is ${result.updateTime}")
 
       // header.packageSlug contains the package maintainers authoritative identifier for this package.
       pkg = Pkg.findBySourceAndReference(package_data.header.packageSource, package_data.header.packageSlug)
 
-      def vendor = null;
+      def vendor = null
       if ( ( package_data.header?.packageProvider?.name != null ) && ( package_data.header?.packageProvider?.name.trim().length() > 0 ) ) {
         vendor = dependentModuleProxyService.coordinateOrg(package_data.header?.packageProvider?.name)
-        vendor.enrich(['reference':package_data.header?.packageProvider?.reference]);
+        vendor.enrich(['reference':package_data.header?.packageProvider?.reference])
       }
       else {
-        log.warn('Package ingest - no provider information present');
+        log.warn('Package ingest - no provider information present')
       }
 
       if ( pkg == null ) {
@@ -85,14 +84,14 @@ public class PackageIngestService {
                              source: package_data.header.packageSource,
                           reference: package_data.header.packageSlug,
                            remoteKb: kb,
-                             vendor: vendor).save(flush:true, failOnError:true);
+                             vendor: vendor).save(flush:true, failOnError:true)
       }
       result.packageId = pkg.id
     }
 
     package_data.packageContents.each { pc ->
 
-      // log.debug("Try to resolve ${pc}");
+      // log.debug("Try to resolve ${pc}")
 
       try {
 
@@ -100,27 +99,27 @@ public class PackageIngestService {
 
           // resolve may return null, used to throw exception which causes the whole package to be rejected. Needs
           // discussion to work out best way to handle.
-          TitleInstance title = titleInstanceResolverService.resolve(pc);
+          TitleInstance title = titleInstanceResolverService.resolve(pc)
   
           if ( title != null ) {
   
-            // log.debug("platform ${pc.platformUrl} ${pc.platformName} (item URL is ${pc.url})");
+            // log.debug("platform ${pc.platformUrl} ${pc.platformName} (item URL is ${pc.url})")
   
             // lets try and work out the platform for the item
             try {
-              def platform_url_to_use = pc.platformUrl;
+              def platform_url_to_use = pc.platformUrl
   
               if ( ( pc.platformUrl == null ) && ( pc.url != null ) ) {
                 // No platform URL, but a URL for the title. Parse the URL and generate a platform URL
-                def parsed_url = new java.net.URL(pc.url);
+                def parsed_url = new java.net.URL(pc.url)
                 platform_url_to_use = "${parsed_url.getProtocol()}://${parsed_url.getHost()}"
               }
   
-              Platform platform = Platform.resolve(platform_url_to_use, pc.platformName);
-              // log.debug("Platform: ${platform}");
+              Platform platform = Platform.resolve(platform_url_to_use, pc.platformName)
+              // log.debug("Platform: ${platform}")
 
               if ( platform == null && PROXY_MISSING_PLATFORM ) {
-                platform = Platform.resolve('http://localhost.localdomain', 'This platform entry is used for error cases');
+                platform = Platform.resolve('http://localhost.localdomain', 'This platform entry is used for error cases')
               }
 
               if ( platform != null ) {
@@ -131,32 +130,32 @@ public class PackageIngestService {
                 if ( pti == null ) 
                   pti = new PlatformTitleInstance(titleInstance:title, 
                                                   platform:platform,
-                                                  url:pc.url).save(flush:true, failOnError:true);
+                                                  url:pc.url).save(flush:true, failOnError:true)
     
     
                 // Lookup or create a package content item record for this title on this platform in this package
                 // We only check for currently live pci records, as titles can come and go from the package.
                 // N.B. addedTimestamp removedTimestamp lastSeenTimestamp
                 def pci_qr = PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pti = :pti and pci.pkg.id = :pkg and pci.removedTimestamp is null',
-                                                             [pti:pti, pkg:result.packageId]);
+                                                             [pti:pti, pkg:result.packageId])
                 PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null; 
     
                 if ( pci == null ) {
-                  log.debug("[${result.titleCount}] Create new package content item");
+                  log.debug("[${result.titleCount}] Create new package content item")
                   pci = new PackageContentItem(
                                                pti:pti, 
                                                pkg:Pkg.get(result.packageId), 
-                                               note:pc.coverageNote, 
+                                               note:pc.coverageNote,
                                                depth:pc.coverageDepth,
                                                accessStart:null,
                                                accessEnd:null, 
                                                addedTimestamp:result.updateTime,
-                                               lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true);
+                                               lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true)
                 }
                 else {
                   // Note that we have seen the package content item now - so we don't delete it at the end.
-                  log.debug("[${result.titleCount}] update package content item (${pci.id}) set last seen to ${result.updateTime}");
-                  pci.lastSeenTimestamp = result.updateTime;
+                  log.debug("[${result.titleCount}] update package content item (${pci.id}) set last seen to ${result.updateTime}")
+                  pci.lastSeenTimestamp = result.updateTime
                   // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
                 }
     
@@ -166,32 +165,32 @@ public class PackageIngestService {
                 if ( pc.coverage ) {
     
                   // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
-                  // to the list of mpas that coverageExtenderService.extend expects
+                  // to the list of maps that coverageService.extend expects
                   List cov = pc.coverage instanceof List ? pc.coverage : [ pc.coverage ]
     
-                  coverageExtenderService.extend(pti, cov, 'pti');
-                  coverageExtenderService.extend(pci, cov, 'pci');
-                  coverageExtenderService.extend(title, cov, 'ti');
+                  coverageService.extend(pti, cov)
+                  coverageService.extend(pci, cov)
+                  coverageService.extend(title, cov)
                 }
     
                 // Save needed either way
-                pci.save(flush:true, failOnError:true);
+                pci.save(flush:true, failOnError:true)
               }
               else {
-                log.error("[${result.titleCount}] unable to identify platform for package content item :: ${platform_url_to_use}, ${pc.platformName}");
+                log.error("[${result.titleCount}] unable to identify platform for package content item :: ${platform_url_to_use}, ${pc.platformName}")
               }
             }
             catch ( Exception e ) {
-              log.error("[${result.titleCount}] problem",e);
+              log.error("[${result.titleCount}] problem",e)
             }
           }
           else {
-            log.error("row ${result.titleCount} Unable to resolve title ${pc.title} ${pc.instanceIdentifiers}");
+            log.error("row ${result.titleCount} Unable to resolve title ${pc.title} ${pc.instanceIdentifiers}")
           }
         }
       }
       catch ( Exception e ) {
-        log.error("Problem with line ${pc} in package load. Ignoring this row",e);
+        log.error("Problem with line ${pc} in package load. Ignoring this row",e)
       }
 
       // {
@@ -218,31 +217,31 @@ public class PackageIngestService {
       //   "coverageDepth": "fulltext",
       //   "coverageNote": null
       //   }
-      result.titleCount++;
-      result.averageTimePerTitle=(System.currentTimeMillis()-result.startTime)/result.titleCount;
+      result.titleCount++
+      result.averageTimePerTitle=(System.currentTimeMillis()-result.startTime)/result.titleCount
       if ( result.titleCount % 100 == 0 ) {
-        log.info("Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}");
+        log.info("Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}")
       }
     }
 
     // At the end - Any PCIs that are currently live (Don't have a removedTimestamp) but whos lastSeenTimestamp is < result.updateTime
     // were not found on this run, and have been removed. We *may* introduce some extra checks here - like 3 times or a time delay, but for now,
     // this is how we detect deletions in the package file.
-    log.debug("end of packageUpsert. Remove any content items that have disappeared since the last upload. ${pkg.name}/${pkg.source}/${pkg.reference}/${result.updateTime}");
-    int removal_counter = 0;
+    log.debug("end of packageUpsert. Remove any content items that have disappeared since the last upload. ${pkg.name}/${pkg.source}/${pkg.reference}/${result.updateTime}")
+    int removal_counter = 0
     
     PackageContentItem.withNewTransaction { status ->
       PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime',
                                       [pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
-        log.debug("Removal candidate: pci.id #${removal_candidate.id} (Last seen ${removal_candidate.lastSeenTimestamp}, thisUpdate ${result.updateTime}) -- Set removed");
-        removal_candidate.removedTimestamp = result.updateTime;
-        removal_candidate.save(flush:true, failOnError:true);
-        removal_counter++;
+        log.debug("Removal candidate: pci.id #${removal_candidate.id} (Last seen ${removal_candidate.lastSeenTimestamp}, thisUpdate ${result.updateTime}) -- Set removed")
+        removal_candidate.removedTimestamp = result.updateTime
+        removal_candidate.save(flush:true, failOnError:true)
+        removal_counter++
       }
-      log.debug("${removal_counter} removed");
-      result.numTitlesRemoved = removal_counter;
+      log.debug("${removal_counter} removed")
+      result.numTitlesRemoved = removal_counter
     }
 
-    return result;
+    return result
   }
 }

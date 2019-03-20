@@ -7,6 +7,8 @@ import groovy.transform.CompileStatic
 import groovy.transform.CompileDynamic
 import groovy.util.logging.Slf4j
 import static grails.async.Promises.*
+import static groovy.transform.TypeCheckingMode.SKIP
+
 import com.k_int.okapi.OkapiTenantAdminService;
 import grails.gorm.multitenancy.Tenants
 
@@ -17,7 +19,7 @@ import org.olf.kb.RemoteKB
  * scheduling tasks
  */
 @Slf4j 
-@CompileStatic 
+@CompileStatic
 @Transactional
 class KbHarvestService {
 
@@ -28,7 +30,7 @@ class KbHarvestService {
   OkapiTenantAdminService okapiTenantAdminService
   KnowledgeBaseCacheService knowledgeBaseCacheService
 
-  @Scheduled(fixedDelay = 3600000L, initialDelay = 120000L) // Run task every hour, wait 2 mins before running at startup
+  @Scheduled(fixedDelay = 3600000L, initialDelay = 10000L) // Run task every hour, wait 2 mins before running at startup
   void triggerSync() {
     log.debug "Simple Job every 45 seconds :{}", new SimpleDateFormat("dd/M/yyyy hh:mm:ss").format(new Date())
     okapiTenantAdminService.getAllTenantSchemaIds().each { tenant_id ->
@@ -38,7 +40,8 @@ class KbHarvestService {
       }
     }
   }
-
+  
+  @CompileStatic(SKIP)
   public void triggerCacheUpdate() {
     log.debug("KBHarvestService::triggerCacheUpdate()");
     RemoteKB.executeQuery('select rkb.id from RemoteKB as rkb where rkb.type is not null and rkb.active = :true',['true':true]).each { remotekb_id ->

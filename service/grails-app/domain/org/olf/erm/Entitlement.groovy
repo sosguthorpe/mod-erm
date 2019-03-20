@@ -84,7 +84,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
             authority column: 'ent_authority'
             reference column: 'ent_reference'
                 label column: 'ent_label'
-           
+             coverage cascade: 'all-delete-orphan'
 
   }
 
