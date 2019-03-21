@@ -1,7 +1,10 @@
 package org.olf.kb
 
-import grails.gorm.MultiTenant
+import java.time.LocalDate
+
 import org.hibernate.Hibernate
+
+import grails.gorm.MultiTenant
 
 
 /**
@@ -15,6 +18,32 @@ public class CoverageStatement extends AbstractCoverageStatement implements Mult
   
   // pci, pti or ti - See validator below.
   ErmResource resource
+  
+  LocalDate startDate
+  LocalDate endDate
+  
+  String startVolume
+  String startIssue
+  String endVolume
+  String endIssue
+  
+  static constraints = {
+    startDate(nullable:true)
+    endDate(nullable:true, blank:false)
+    startVolume(nullable:true, blank:false)
+    startIssue(nullable:true, blank:false)
+    endVolume(nullable:true, blank:false)
+    endIssue(nullable:true, blank:false)
+    
+    resource(nullable:false, validator: { val, inst ->
+      if ( val ) {
+        Class c = Hibernate.getClass(val)
+        if (!CoverageStatement.ALLOWED_RESOURCES.contains(c)) {
+          ['allowedTypes', "${c.name}", "entitlement", "resource"]
+        }
+      }
+    })
+  }
 
   static mapping = {
                    id column:'cs_id', generator: 'uuid', length:36
@@ -26,17 +55,5 @@ public class CoverageStatement extends AbstractCoverageStatement implements Mult
            startIssue column:'cs_start_issue'
             endVolume column:'cs_end_volume'
              endIssue column:'cs_end_issue'
-  }
-
-  static constraints = {
-    importFrom AbstractCoverageStatement
-    resource(nullable:false, validator: { val, inst ->
-      if ( val ) {
-        Class c = Hibernate.getClass(val)
-        if (!CoverageStatement.ALLOWED_RESOURCES.contains(c)) {
-          ['allowedTypes', "${c.name}", "entitlement", "resource"]
-        }
-      }
-    })
   }
 }

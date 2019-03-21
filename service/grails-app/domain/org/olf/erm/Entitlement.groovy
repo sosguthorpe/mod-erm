@@ -136,6 +136,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
     result
   }
 
+  @Transient
   public boolean getHaveAccess() {
     return haveAccessAsAt(new Date());
   }

@@ -1,5 +1,7 @@
 package org.olf.erm
 
+import java.time.LocalDate
+
 import org.olf.kb.AbstractCoverageStatement
 
 import grails.gorm.MultiTenant
@@ -11,8 +13,17 @@ import grails.gorm.MultiTenant
 public class HoldingsCoverage extends AbstractCoverageStatement implements MultiTenant<HoldingsCoverage> {
   
   String id
-  Entitlement entitlement
 
+  LocalDate startDate
+  LocalDate endDate
+  
+  String startVolume
+  String startIssue
+  String endVolume
+  String endIssue
+  
+  static belongsTo = [entitlement: Entitlement]
+  
   static mapping = {
              id column:'co_id', generator: 'uuid', length:36
         version column:'co_version'
@@ -26,7 +37,12 @@ public class HoldingsCoverage extends AbstractCoverageStatement implements Multi
   }
   
   static constraints = {
-    importFrom AbstractCoverageStatement
     entitlement(nullable:false)
+    startDate(nullable:true)
+    endDate(nullable:true, blank:false)
+    startVolume(nullable:true, blank:false)
+    startIssue(nullable:true, blank:false)
+    endVolume(nullable:true, blank:false)
+    endIssue(nullable:true, blank:false)
   }
 }

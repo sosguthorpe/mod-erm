@@ -1,27 +1,18 @@
 package org.olf.kb
 
+import grails.gorm.annotation.Entity
 import java.time.LocalDate
 import org.olf.erm.Entitlement
 
 abstract class AbstractCoverageStatement {
 
-  LocalDate startDate
-  LocalDate endDate
+  abstract LocalDate getStartDate()
+  abstract LocalDate getEndDate()
   
-  String startVolume
-  String startIssue
-  String endVolume
-  String endIssue
-  
-  static constraints = {
-    startDate(nullable:true)
-    endDate(nullable:true, blank:false)
-    startVolume(nullable:true, blank:false)
-    startIssue(nullable:true, blank:false)
-    endVolume(nullable:true, blank:false)
-    endIssue(nullable:true, blank:false)
-  }
-
+  abstract String getStartVolume()
+  abstract String getStartIssue()
+  abstract String getEndVolume()
+  abstract String getEndIssue()
 
   public String toString() {
     "v${startVolume?:'*'}/i${startIssue?:'*'}/${startDate} - v${endVolume?:'*'}/i${endIssue?:'*'}/${endDate?:'*'}".toString()
