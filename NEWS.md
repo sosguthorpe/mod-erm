@@ -1,4 +1,9 @@
-## 1.2.0 Opened
+## 1.2.0 2019-03-22
+ * ERM-130 Sort order of multiple coverage statements should be ascending by start date
+ * ERM-129 Cannot edit custom coverage dates once they have been added
+ * ERM-65 Manage custom entitlement coverage for titles
+    * ERM-91 Indicate the coverage for a title within an Agreement
+ * ERM-63 View linked agreement details in a license 
 
 ## 1.1.0 2019-03-12
  * ERM-59 Manage licenses linked to agreements
