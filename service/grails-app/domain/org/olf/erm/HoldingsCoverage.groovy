@@ -38,8 +38,8 @@ public class HoldingsCoverage extends AbstractCoverageStatement implements Multi
   
   static constraints = {
     entitlement(nullable:false)
-    startDate(nullable:true)
-    endDate(nullable:true, blank:false)
+    startDate(nullable:false, validator: STATEMENT_START_VALIDATOR)
+    endDate(nullable:true)
     startVolume(nullable:true, blank:false)
     startIssue(nullable:true, blank:false)
     endVolume(nullable:true, blank:false)

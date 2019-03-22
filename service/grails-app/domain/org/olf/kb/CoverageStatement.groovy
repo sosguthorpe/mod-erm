@@ -28,8 +28,8 @@ public class CoverageStatement extends AbstractCoverageStatement implements Mult
   String endIssue
   
   static constraints = {
-    startDate(nullable:true)
-    endDate(nullable:true, blank:false)
+    startDate(nullable:false, validator: STATEMENT_START_VALIDATOR)
+    endDate(nullable:true)
     startVolume(nullable:true, blank:false)
     startIssue(nullable:true, blank:false)
     endVolume(nullable:true, blank:false)
