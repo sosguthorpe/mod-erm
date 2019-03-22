@@ -102,7 +102,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
             }
           })
           
-          coverage (validator: HoldingsCoverage.STATEMENT_COLLECTION_VALIDATOR)
+          coverage (validator: HoldingsCoverage.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
 
               type(nullable:true,  blank:false)
            enabled(nullable:true,  blank:false)

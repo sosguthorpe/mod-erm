@@ -49,7 +49,7 @@ public class ErmResource implements MultiTenant<ErmResource> {
          subType (nullable:true, blank:false)
      dateCreated (nullable:true, blank:false)
      lastUpdated (nullable:true, blank:false)
-      coverage (validator: CoverageStatement.STATEMENT_COLLECTION_VALIDATOR)
+      coverage (validator: CoverageStatement.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
   }
   
   String toString() {
