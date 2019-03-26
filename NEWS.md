@@ -1,4 +1,25 @@
-## 1.0.4 OPEN
+## 1.2.0 2019-03-22
+ * ERM-130 Sort order of multiple coverage statements should be ascending by start date
+ * ERM-129 Cannot edit custom coverage dates once they have been added
+ * ERM-65 Manage custom entitlement coverage for titles
+    * ERM-91 Indicate the coverage for a title within an Agreement
+ * ERM-63 View linked agreement details in a license 
+
+## 1.1.0 2019-03-12
+ * ERM-59 Manage licenses linked to agreements
+   * ERM-71 Add Model for JSON resource
+
+ * ERM-47 Fix defaults in SubsciriptionAgreementOrg
+ 
+ * ERM-46 Update note about a license for an agreement
+ 
+ * ERM-41 Manage external licenses for an Agreement
+   * ERM-70 Add LicenseAttachment Domain model
+   * ERM-44 Remove an external license from an Agreement
+   * ERM-43 Edit external license details
+   * ERM-42 Add external license for an Agreement
+ 
+ * ERM-7 	Add an Organisation to a License 
 
 ## 1.0.3 2019-02-23
 

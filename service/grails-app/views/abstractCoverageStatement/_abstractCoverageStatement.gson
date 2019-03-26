@@ -1,0 +1,36 @@
+import java.time.LocalDate
+
+import org.olf.kb.AbstractCoverageStatement
+
+import groovy.transform.*
+
+@Field
+AbstractCoverageStatement abstractCoverageStatement
+
+json {
+  id abstractCoverageStatement.getAt('id')
+  startDate abstractCoverageStatement.startDate
+  
+  if (abstractCoverageStatement.endDate) {
+    endDate abstractCoverageStatement.endDate
+  }
+  
+  if (abstractCoverageStatement.startVolume) {
+    startVolume abstractCoverageStatement.startVolume
+  }
+  
+  if (abstractCoverageStatement.startIssue) {
+    startIssue abstractCoverageStatement.startIssue
+  }
+  
+  if (abstractCoverageStatement.endVolume) {
+    endVolume abstractCoverageStatement.endVolume
+  }
+  
+  if (abstractCoverageStatement.endIssue) {
+    endIssue abstractCoverageStatement.endIssue
+  }
+  
+  // Add the custom summary option
+  summary "${abstractCoverageStatement}"
+}

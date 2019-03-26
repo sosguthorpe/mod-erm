@@ -67,8 +67,10 @@ dependencies {
   compile "org.grails.plugins:async"
   compile "org.grails.plugins:events"
   compile "org.grails.plugins:hibernate5"
-  compile "org.hibernate:hibernate-core:5.1.16.Final"
-//  compile "org.hibernate:hibernate-core:5.2.17.Final"
+  compile 'org.grails.plugins:grails-java8'
+  
+  compile "org.hibernate:hibernate-java8:5.1.17.Final"
+  compile "org.hibernate:hibernate-core:5.1.17.Final"
   compile "org.grails.plugins:views-json"
   console "org.grails:grails-console"
   compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
@@ -76,8 +78,6 @@ dependencies {
 
   profile "org.grails.profiles:rest-api"
   runtime "org.glassfish.web:el-impl:2.1.2-b03"
-  runtime "com.h2database:h2"
-//  runtime "org.apache.tomcat:tomcat-jdbc"
   runtime "com.zaxxer:HikariCP:3.2.0"
 
   testCompile "org.grails:grails-gorm-testing-support"
@@ -89,7 +89,7 @@ dependencies {
   testRuntime "net.sourceforge.htmlunit:htmlunit:2.18"
 
   // Custom non profile deps.
-  compile "org.postgresql:postgresql:42.2.4"
+  compile "org.postgresql:postgresql:42.2.5"
 
   runtime "org.grails.plugins:async"
   runtime "org.grails.plugins:events"
@@ -109,11 +109,11 @@ dependencies {
 // Changed this to enable inline development of the includes listed below.
 def includes = [
   'web-toolkit-ce'   : 'com.k_int.grails:web-toolkit-ce:3.3.25',
-  'grails-okapi'  : 'com.k_int.okapi:grails-okapi:3.4.6'
+  'grails-okapi'  : 'com.k_int.okapi:grails-okapi:3.4.8'
 ]
 
 bootRun {
-  jvmArgs(['-Dspring.output.ansi.enabled=always', '-server', '-Xms1536m', '-Xmx1536m'])
+  jvmArgs(['-Dspring.output.ansi.enabled=always', '-server', '-Xms1024m', '-Xmx1024m'])
   addResources = true
   String springProfilesActive = 'spring.profiles.active'
   systemProperty springProfilesActive, System.getProperty(springProfilesActive)
@@ -297,6 +297,6 @@ task buildImage(type: DockerBuildImage, dependsOn: createDockerfile) {
 }
 
 jacocoTestReport {
-    executionData integrationTest, test
+  executionData integrationTest, test
 }
 

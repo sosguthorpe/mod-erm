@@ -84,23 +84,25 @@ public class Entitlement implements MultiTenant<Entitlement> {
             authority column: 'ent_authority'
             reference column: 'ent_reference'
                 label column: 'ent_label'
-           
+             coverage cascade: 'all-delete-orphan'
 
   }
 
   static constraints = {
-        owner(nullable:true,  blank:false)
+            owner(nullable:true,  blank:false)
 
-     // Now that resources can be internally or externally defined, the internal resource link CAN be null,
-     // but if it is, there should be authorty, reference and label properties.
-     resource(nullable:true, blank:false, validator: { val, inst ->
-       if ( val ) {
-         Class c = Hibernate.getClass(val)
-         if (!Entitlement.ALLOWED_RESOURCES.contains(c)) {
-           ['allowedTypes', "${c.name}", "entitlement", "resource"]
-         }
-       }
-     })
+          // Now that resources can be internally or externally defined, the internal resource link CAN be null,
+          // but if it is, there should be authorty, reference and label properties.
+          resource (nullable:true, validator: { val, inst ->
+            if ( val ) {
+              Class c = Hibernate.getClass(val)
+              if (!Entitlement.ALLOWED_RESOURCES.contains(c)) {
+                ['allowedTypes', "${c.name}", "entitlement", "resource"]
+              }
+            }
+          })
+          
+          coverage (validator: HoldingsCoverage.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
 
               type(nullable:true,  blank:false)
            enabled(nullable:true,  blank:false)
@@ -136,6 +138,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
     result
   }
 
+  @Transient
   public boolean getHaveAccess() {
     return haveAccessAsAt(new Date());
   }

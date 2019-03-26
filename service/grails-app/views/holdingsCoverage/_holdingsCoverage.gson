@@ -1,0 +1,6 @@
+import groovy.transform.*
+import org.olf.erm.HoldingsCoverage
+
+@Field
+HoldingsCoverage holdingsCoverage
+json tmpl.'/abstractCoverageStatement/abstractCoverageStatement' (holdingsCoverage)
