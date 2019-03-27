@@ -25,8 +25,10 @@ The /erm/sas resource allows module clients to Create, Retrieve, Update and Dele
 
 This resource allows module owners to obtain tenant extensible lists of controlled values. The URL pattern is "/erm/refdataValues/$domain/$property" 
 
-As of 2019-02-20 the following are defined
-|Redata Category|URL for values|
+As of 2019-02-20 the following are defined:
+
+| Refdata Category | URL for values |
+| --- | --- |
 |TitleInstance.SubType|/erm/refdataValues/TitleInstance/SubType|
 |TitleInstance.Type|/erm/refdataValues/TitleInstance/Type|
 |InternalContact.Role|/erm/refdataValues/InternalContact/Role|
