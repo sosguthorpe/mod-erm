@@ -34,9 +34,8 @@ logger ('folio', DEBUG)
 logger ('org.olf', DEBUG)
 logger ('com.k_int.okapi.OkapiSchemaHandler', WARN)
 logger ('com.k_int.web.toolkit.refdata.GrailsDomainRefdataHelpers', WARN)
-logger ('com.k_int.web.toolkit.utils.RequestUtils', DEBUG)
-
-logger ('com.k_int.okapi.remote_resources.RemoteOkapiLinkListener', DEBUG)
+logger ('com.k_int.web.toolkit.utils.RequestUtils', WARN)
+logger ('com.k_int.okapi.remote_resources.RemoteOkapiLinkListener', WARN)
 
 // Uncomment below logging for output of OKAPI client http.
 logger ('com.k_int.okapi.OkapiClient', TRACE)
