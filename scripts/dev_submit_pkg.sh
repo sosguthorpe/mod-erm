@@ -198,8 +198,9 @@ BENTHAM_EXTERNAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-
     name:"Bentham Science"
   },
   items: [
-    { type:"external", authority:"EKB", reference:"301-3707", label:"Bentham Science via eHoldings" },
-    { type:"external", authority:"EKB", reference:"19-1615", label:"Academic Source Complete via eHoldings" }
+    { type:"external", authority:"EKB-PACKAGE", reference:"301-3707", label:"Bentham Science via eHoldings" },
+    { type:"external", authority:"EKB-PACKAGE", reference:"19-1615", label:"Academic Source Complete via eHoldings" },
+    { type:"external", authority:"EKB-TITLE",   reference:"32498-16793-19948731", label:"Moby Dick via eHoldings" }
   ]
 }
 ' | jq -r ".id" | tr -d '\r'`
