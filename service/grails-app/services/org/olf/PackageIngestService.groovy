@@ -145,8 +145,8 @@ public class PackageIngestService {
                   pci = new PackageContentItem(
                                                pti:pti, 
                                                pkg:Pkg.get(result.packageId), 
-                                               note:pc.coverageNote,
-                                               depth:pc.coverageDepth,
+                                               note:(pc.coverageNote) ? pc.coverageNote : null,
+                                               depth:(pc.coverageDepth) ? pc.coverageDepth : null,
                                                accessStart:null,
                                                accessEnd:null, 
                                                addedTimestamp:result.updateTime,
@@ -231,14 +231,20 @@ public class PackageIngestService {
     int removal_counter = 0
     
     PackageContentItem.withNewTransaction { status ->
-      PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime',
-                                      [pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
-        log.debug("Removal candidate: pci.id #${removal_candidate.id} (Last seen ${removal_candidate.lastSeenTimestamp}, thisUpdate ${result.updateTime}) -- Set removed")
-        removal_candidate.removedTimestamp = result.updateTime
-        removal_candidate.save(flush:true, failOnError:true)
-        removal_counter++
-      }
-      log.debug("${removal_counter} removed")
+      
+      
+        PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime',
+                                        [pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
+          try {
+            log.debug("Removal candidate: pci.id #${removal_candidate.id} (Last seen ${removal_candidate.lastSeenTimestamp}, thisUpdate ${result.updateTime}) -- Set removed")
+            removal_candidate.removedTimestamp = result.updateTime
+            removal_candidate.save(flush:true, failOnError:true)
+          } catch ( Exception e ) {
+            log.error("Problem with line ${removal_candidate} in package load. Ignoring this row",e)
+          }
+          removal_counter++
+        }
+        log.debug("${removal_counter} removed")
       result.numTitlesRemoved = removal_counter
     }
 
