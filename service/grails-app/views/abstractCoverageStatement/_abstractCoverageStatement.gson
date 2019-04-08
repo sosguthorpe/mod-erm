@@ -7,8 +7,10 @@ import groovy.transform.*
 @Field
 AbstractCoverageStatement abstractCoverageStatement
 
+def theId = abstractCoverageStatement.getAt('id')
+
 json {
-  id abstractCoverageStatement.getAt('id')
+  if (theId) id (theId)
   startDate abstractCoverageStatement.startDate
   
   if (abstractCoverageStatement.endDate) {
