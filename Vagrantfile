@@ -15,10 +15,10 @@ Vagrant.configure(2) do |config|
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "folio/testing-backend"
-  config.vm.box_version = "5.0.0-20181204.1332"
+  config.vm.box_version = "5.0.0-20190329.1860"
   #config.vm.box_version = "5.0.0-20180813.956"
   # config.vm.box_version = "5.0.0-20181022.1192"
-    
+
   config.vm.provider "virtualbox" do |v|
     v.memory = 10240
     v.cpus = 5
@@ -45,7 +45,7 @@ Vagrant.configure(2) do |config|
   # `vagrant box outdated`. This is not recommended.
   # config.vm.box_check_update = false
 
-  # Expose the postgres instance that is installed so that apps running outside the 
+  # Expose the postgres instance that is installed so that apps running outside the
   # vbox instance can use it.
   config.vm.network "forwarded_port", guest: 5432, host: 54321
   config.vm.network "forwarded_port", guest: 9130, host: 9130
