@@ -41,7 +41,11 @@ class UrlMappings {
     '/erm/packages'(resources: 'package')
 
     "/erm/pci"(resources:'packageContentItem')
-    "/erm/entitlements"(resources:'entitlement')
+    "/erm/entitlements"(resources:'entitlement') {
+      collection {
+        "/external" ( action: 'external' )
+      }
+    }
     '/erm/contacts'(resources: 'internalContact')
 
     '/erm/refdataValues'(resources: 'refdata') {

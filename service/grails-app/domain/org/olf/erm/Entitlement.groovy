@@ -1,5 +1,7 @@
 package org.olf.erm
 
+import java.time.LocalDate
+
 import javax.persistence.Transient
 
 import org.hibernate.Hibernate
@@ -8,8 +10,11 @@ import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
 import org.olf.kb.PlatformTitleInstance
 
+import com.k_int.okapi.remote_resources.OkapiLookup
+
 import grails.databinding.BindInitializer
 import grails.gorm.MultiTenant
+import groovy.util.logging.Slf4j
 
 
 /**
@@ -20,6 +25,7 @@ import grails.gorm.MultiTenant
  * without perhaps knowing which agreement controls that right.
  *
  */
+@Slf4j
 public class Entitlement implements MultiTenant<Entitlement> {
   public static final Class<? extends ErmResource>[] ALLOWED_RESOURCES = [Pkg, PackageContentItem, PlatformTitleInstance] as Class[]
 
@@ -40,12 +46,70 @@ public class Entitlement implements MultiTenant<Entitlement> {
   String type
 
   // These three properties allow us to create an entitlement which is externally defined. An externally defined
-  // entitlement does not link to a resource in the tenant database, but instead will use API calls to define
-  // the contents of a package. An example would be Authority:'eHoldings', reference: '301-3707', label 'Bentham science complete
-  // as defined in EKB'
+  // entitlement does not link to a resource in the tenant database, but instead will use API calls to define its contents
   String authority
+  
+  @OkapiLookup(
+    value = '${obj.authority?.toLowerCase() == "ekb-package" ? "/eholdings/packages" : "/eholdings/resources" }/${obj.reference}',
+    converter = {
+      // delegate, owner and thisObject should be the instance of Entitlement
+      final Entitlement outerEntitlement = delegate
+      
+      log.debug "Converter called with delegate: ${outerEntitlement} and it: ${it}"
+      
+      final String theType = it.data?.attributes?.publicationType ?:
+         it.data?.type?.replaceAll(/^\s*([\S])(.*?)s?\s*$/, {match, String firstChar, String nonePlural -> "${firstChar.toUpperCase()}${nonePlural}"})
+      
+      def map = [
+        label: it.data?.attributes?.name,
+        type: (theType),
+        provider: it.data?.attributes?.providerName
+      ]
+      
+      def count = it.data?.attributes?.titleCount
+      if (count) {
+        map.titleCount = count
+      }
+      
+      // Merge external coverages.
+      final boolean isPackage = theType?.toLowerCase() == 'package'
+      
+      log.debug "${isPackage ? 'Is' : 'Is not'} Package"
+      outerEntitlement.metaClass.external_customCoverage = false
+      
+      final def custCoverage = it.data?.attributes?.getAt("customCoverage${isPackage ? '' : 's'}")
+      
+      log.debug "Custom Coverage: ${custCoverage}"
+      if (custCoverage) {
+        
+        log.debug "Found custom coverage."
+        // Simply ensure a collection.
+        if (!(custCoverage instanceof Collection)) {
+          log.debug "Found single custom coverage entry turn into a collection."
+          custCoverage = [custCoverage]
+          log.debug "...${custCoverage}"
+        }
+        
+        custCoverage.each { Map <String, String> coverageEntry ->
+          if (coverageEntry.beginCoverage) {
+            outerEntitlement.coverage << new HoldingsCoverage (startDate: LocalDate.parse(coverageEntry.beginCoverage), endDate: coverageEntry.endCoverage ? LocalDate.parse(coverageEntry.endCoverage): null)
+            outerEntitlement.metaClass.external_customCoverage = true
+          }
+        }
+        
+      } else if (!isPackage) {
+        log.debug "Adding managed title coverages."
+        it.data?.attributes?.managedCoverages?.each { Map <String, String> coverageEntry ->
+          if (coverageEntry.beginCoverage) {
+            outerEntitlement.coverage << new HoldingsCoverage (startDate: LocalDate.parse(coverageEntry.beginCoverage), endDate: coverageEntry.endCoverage ? LocalDate.parse(coverageEntry.endCoverage): null)
+          }
+        }
+      }
+      
+      map
+    }
+  )
   String reference
-  String label
 
   static belongsTo = [
     owner:SubscriptionAgreement
@@ -56,10 +120,24 @@ public class Entitlement implements MultiTenant<Entitlement> {
     poLines: POLineProxy
   ]
 
+  Set<HoldingsCoverage> coverage = []
+  
   static mappedBy = [
     coverage: 'entitlement',
     poLines: 'owner'
   ]
+  
+  // We should 
+  def beforeValidate() {
+    this.type = this.type?.toLowerCase()
+    this.authority = this.authority?.toUpperCase()
+    
+    if (this.type == 'external') {
+      // Clear the coverage.
+      this.coverage = []
+    }
+  }
+  
 
   // Allow users to individually switch on or off this content item. If null, should default to the agreement
   // enabled setting. The activeFrom and activeTo dates determine if a content item is "live" or not. This flag
@@ -69,7 +147,6 @@ public class Entitlement implements MultiTenant<Entitlement> {
     Boolean.TRUE // Default this value to true when binding.
   })
   Boolean enabled
-  
 
   static mapping = {
                    id column: 'ent_id', generator: 'uuid', length:36
@@ -83,35 +160,63 @@ public class Entitlement implements MultiTenant<Entitlement> {
              activeTo column: 'ent_active_to'
             authority column: 'ent_authority'
             reference column: 'ent_reference'
-                label column: 'ent_label'
              coverage cascade: 'all-delete-orphan'
-
   }
 
   static constraints = {
             owner(nullable:true,  blank:false)
 
           // Now that resources can be internally or externally defined, the internal resource link CAN be null,
-          // but if it is, there should be authorty, reference and label properties.
+          // but if it is, there should be authorty, and reference properties.
           resource (nullable:true, validator: { val, inst ->
-            if ( val ) {
+            
+            if (inst.type?.toLowerCase() == 'external') {
+              // External resource should have null internal resource reference.
+              return val != null ? ['externalEntitlement.resource.not.null'] : true
+              
+            } else if ( val ) {
               Class c = Hibernate.getClass(val)
               if (!Entitlement.ALLOWED_RESOURCES.contains(c)) {
                 ['allowedTypes', "${c.name}", "entitlement", "resource"]
               }
+            } else {
+              
+              // Resource is null but type is internal.
+              return ['entitlement.resource.is.null']
             }
           })
           
           coverage (validator: HoldingsCoverage.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
 
-              type(nullable:true,  blank:false)
-           enabled(nullable:true,  blank:false)
-    contentUpdated(nullable:true,  blank:false)
-        activeFrom(nullable:true,  blank:false)
-          activeTo(nullable:true,  blank:false)
-         authority(nullable:true,  blank:false)
-         reference(nullable:true,  blank:false)
-             label(nullable:true,  blank:false)
+              type(nullable:true, blank:false)
+           enabled(nullable:true, blank:false)
+    contentUpdated(nullable:true, blank:false)
+        activeFrom(nullable:true, blank:false)
+          activeTo(nullable:true, blank:false)
+          
+         authority(nullable:true, blank:false, validator: { val, inst ->
+            
+            if (inst.type?.toLowerCase() == 'external') {
+              // External resource should have authority.
+              return val == null ? ['externalEntitlement.authority.is.null'] : true
+              
+            } else {
+              // Resource is null but type is internal.
+              return val != null ? ['externalEntitlement.authority.not.null'] : true
+            }
+          })
+         
+         reference (nullable:true, blank:false, validator: { val, inst ->
+            
+            if (inst.type?.toLowerCase() == 'external') {
+              // External resource should have authority.
+              return val == null ? ['externalEntitlement.reference.is.null'] : true
+              
+            } else {
+              // Resource is null but type is internal.
+              return val != null ?  ['externalEntitlement.reference.not.null'] : true
+            }
+          })
   }
   
   @Transient

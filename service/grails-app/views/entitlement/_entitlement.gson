@@ -2,29 +2,31 @@ import groovy.transform.*
 import org.olf.erm.Entitlement
 
 @Field Entitlement entitlement
-json g.render(entitlement, [expand: ['owner', 'resource' ]]) {
-  
-  if (entitlement.coverage) {
+
+if (entitlement.type == 'external') {
+  json tmpl."externalEntitlement"(entitlement)
+} else {
+
+  json g.render(entitlement, [expand: ['owner', 'resource' ]]) {
     
-    'coverage' g.render (entitlement.coverage)
-    'customCoverage' true
-     
-  } else if (entitlement?.resource?.coverage) {
-    'coverage' g.render (entitlement?.resource?.coverage)
-    'customCoverage' false
+    if (entitlement.coverage) {
+      
+      'coverage' g.render (entitlement.coverage)
+      'customCoverage' true
+       
+    } else if (entitlement?.resource?.coverage) {
+      'coverage' g.render (entitlement?.resource?.coverage)
+      'customCoverage' false
+      
+    } else {
+      'coverage' []
+      'customCoverage' false
+    }
     
-  } else {
-    'coverage' []
-    'customCoverage' false
+    'explanation' entitlement.getExplanation()
+    'startDate' entitlement.getActiveFrom()
+    'endDate' entitlement.getActiveTo()
+    'contentUpdated' entitlement.getContentUpdated()
+    'haveAccess' entitlement.getHaveAccess()
   }
-  
-  'explanation' entitlement.getExplanation()
-  'startDate' entitlement.getActiveFrom()
-  'endDate' entitlement.getActiveTo()
-  'type' entitlement.getType()
-  'contentUpdated' entitlement.getContentUpdated()
-  'authority' entitlement.getAuthority()
-  'reference' entitlement.getReference()
-  'label' entitlement.getLabel()
-  'haveAccess' entitlement.getHaveAccess()
 }
