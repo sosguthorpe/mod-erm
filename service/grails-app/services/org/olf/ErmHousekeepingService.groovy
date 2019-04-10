@@ -12,6 +12,8 @@ import grails.gorm.transactions.Transactional
 @Transactional
 public class ErmHousekeepingService {
 
+  def coverageService
+
   /**
    * This is called by the eventing mechanism - There is no web request context
    * there may be something funky to do with events and multi tenant setup.
@@ -59,5 +61,10 @@ public class ErmHousekeepingService {
 
 
     }
+  }
+
+  public void triggerHousekeeping() {
+    // An administrative process - attempt to coalesce any rogue coverage statements
+    coverageService.coalesceCoverageStatements();
   }
 }

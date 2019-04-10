@@ -119,6 +119,7 @@ public class CoverageService {
   public void extend(final ErmResource title, final List<Map> coverage_statements) {
     log.debug("Extend coverage statements on ${title} with ${coverage_statements}")
 
+    // Iterate through each of the statements we want to add
     coverage_statements.each { Map cs ->
       
       // First we should convert any string dates
@@ -163,25 +164,31 @@ public class CoverageService {
 
 
         if ( existing_coverage.size() > 0 ) {
-          log.warn("Located existing coverage, determin extend or create additional")
+          log.warn("Located ${existing_coverage.size()} existing coverage statements overlapping with ${cs}, determine extend or create additional")
   
           boolean new_coverage_is_already_subsumed = false
           existing_coverage.each { final CoverageStatement existing_cs ->
   
+            log.debug("Checking existing start: ${existing_cs.startDate} end: ${existing_cs.endDate} new start: ${cs.startDate} new end: ${cs.endDate}");
+
             // If the new coverage statement starts AFTER the one we are currently considering AND the statement we are currently
             // considering has an open end OR a date < the new statement, then the new coverage statement lies within the range of the first statement.
-            if ( ( existing_cs.startDate <= cs.startDate ) && 
-                 ( ( existing_cs.endDate == null ) || ( existing_cs.endDate <= cs.endDate ) ) ) {
+            if ( ( existing_cs.startDate <= cs.startDate ) &&               // If the existing coverage starts before the new
+                 ( ( existing_cs.endDate == null ) ||                       // and the existing is open ended
+                   ( existing_cs.endDate != null && cs.endDate == null ) || //     or the existing is not null and the new one is not set
+                   ( existing_cs.endDate >= cs.endDate ) ) ) {              //     or the existing ends after the new coverage statement
               new_coverage_is_already_subsumed = true
               // We need to consider if we should set the END DATE in this scenario however!
             }
           }
   
-          if ( !new_coverage_is_already_subsumed ) {
-            // We need to create a new CS. For now, create as from the source - later on we will need to do something smarter
-            // where we coalesce all the statements.
-            def new_cs = new CoverageStatement(cs)
-  
+          if ( new_coverage_is_already_subsumed ) {
+            // The coverage we are being asked to merge is already covered by the existing statements. Do nothing.
+          }
+          else {
+            // After checking, we need to create a new coverage statement as no overlap was found
+            log.debug("Detailed checking shows no overlap with existing coverage - add new statement");
+            def new_cs = new CoverageStatement()
             new_cs.resource = title
             new_cs.startDate = cs.startDate
             new_cs.endDate = cs.endDate
@@ -194,9 +201,8 @@ public class CoverageService {
         }
         else {
           // no existing coverage -- create it
-          log.debug("No existing coverage - create new record")
+          log.debug("New coverage is not subsumed by existing - create a new coverage statement");
           def new_cs = new CoverageStatement()
-  
           new_cs.resource = title
           new_cs.startDate = cs.startDate
           new_cs.endDate = cs.endDate
@@ -209,6 +215,12 @@ public class CoverageService {
       } else {
         log.warn("Coverage entry ${cs} contains no startDate")
       }
+    }
+  }
+
+  public void coalesceCoverageStatements() {
+    CoverageStatement.executeQuery('select cs.resource.id,count(*) from CoverageStatement as cs group by cs.startDate, cs,endDate').each {
+      log.debug("statements for ${it[0]} has ${it[1]} possibly duplicate coverage statements");
     }
   }
 }
