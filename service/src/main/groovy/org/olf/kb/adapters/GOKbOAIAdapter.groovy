@@ -137,12 +137,13 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
       }
 
       if ( datestamp > result.new_cursor ) {
+        println("Datestamp from record \"${datestamp}\" larger than current cursor (\"${result.new_cursor}\" - updated it")
         // Because OAI uses >= we want to nudge up the cursor timestamp by 1s (2019-02-06T11:19:20Z)
-        Date parsed_datestamp = sdf.parse(result.new_cursor);
+        Date parsed_datestamp = sdf.parse(datestamp);
         long incremented_datestamp = parsed_datestamp.getTime()+1000;
         String new_string_datestamp = sdf.format(new Date(incremented_datestamp));
 
-        System.out.println("New cursor value - ${datestamp} > ${result.new_cursor} - updating as ${new_string_datestamp}");
+        System.out.println("New cursor value - \"${datestamp}\" > \"${result.new_cursor}\" - updating as ${new_string_datestamp}");
         result.new_cursor = new_string_datestamp;
       }
     }
@@ -220,13 +221,17 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
         }
 
         def tipp_coverage = [] // [ "startVolume": "8", "startIssue": "1", "startDate": "1982-01-01", "endVolume": null, "endIssue": null, "endDate": null ],
+
+        // Our domain model does not allow blank startDate or endDate, but they can be null
+        String start_date_string = tipp_entry.coverage?.@startDate?.toString()
+        String end_date_string = tipp_entry.coverage?.@endDate?.toString()
  
         tipp_coverage.add(["startVolume": tipp_entry.coverage?.@startVolume?.toString(),
                            "startIssue": tipp_entry.coverage?.@startIssue?.toString(),
-                           "startDate": tipp_entry.coverage?.@startDate?.toString(),
+                           "startDate": start_date_string?.length() > 0 ? start_date_string : null,
                            "endVolume":tipp_entry.coverage?.@endVolume?.toString(),
                            "endIssue": tipp_entry.coverage?.@endIssue?.toString(),
-                           "endDate": tipp_entry.coverage?.@endDate?.toString()])
+                           "endDate": end_date_string?.length() > 0 ? end_date_string : null)
 
         def tipp_coverage_depth = tipp_entry.coverage.@coverageDepth?.toString()
         def tipp_coverage_note = tipp_entry.coverage.@coverageNote?.toString()
