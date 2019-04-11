@@ -28,7 +28,9 @@ abstract class AbstractCoverageStatement {
         startDate &&
         ( startDate > statement.endDate) ) {
       // Custom validators should return property name, class name, property value, other values
-      return [ 'start_after_end_date', statement.class.name, 'startDate', statement.startDate, statement.endDate]
+      println("failed AbstractCoverageStatement::statment_start_validator");
+      // statement.errors.rejectValue('startDate', 'start_after_end_date')
+      return [ 'start_after_end_date', 'startDate', statement.class.name, statement.startDate, statement.endDate]
     }
   }
   
@@ -72,6 +74,7 @@ abstract class AbstractCoverageStatement {
               (statement.endDate == null || compareTo.startDate < statement.endDate))
 
           if (overlapping) {
+            println("failed AbstractCoverageStatement::coveragestatement.overlap");
             return [ 'coveragestatement.overlap', statement, compareTo ]
           }
         }
