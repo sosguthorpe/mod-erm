@@ -33,6 +33,8 @@ class KbHarvestService {
   @Scheduled(fixedDelay = 3600000L, initialDelay = 10000L) // Run task every hour, wait 2 mins before running at startup
   void triggerSync() {
     log.debug "Simple Job every 45 seconds :{}", new SimpleDateFormat("dd/M/yyyy hh:mm:ss").format(new Date())
+
+    // ToDo: Don't think this will work for newly added tenants - need to investigate.
     okapiTenantAdminService.getAllTenantSchemaIds().each { tenant_id ->
       log.debug "Perform trigger sync for tenant ${tenant_id}";
       Tenants.withId(tenant_id) {

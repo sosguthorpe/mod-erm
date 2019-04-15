@@ -13,6 +13,7 @@ class AdminController {
 
   def packageIngestService
   def knowledgeBaseCacheService
+  def ermHousekeepingService
 
   public AdminController() {
   }
@@ -74,6 +75,10 @@ class AdminController {
     def result = [:]
     knowledgeBaseCacheService.triggerActivationUpdate();
     render result as JSON
+  }
+
+  public triggerHousekeeping() {
+    ermHousekeepingService.triggerHousekeeping()
   }
 }
 

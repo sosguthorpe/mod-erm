@@ -20,9 +20,17 @@ abstract class AbstractCoverageStatement {
   
   public static final Closure STATEMENT_START_VALIDATOR = { LocalDate startDate, AbstractCoverageStatement statement ->
     
+    // When GOKb closes out or removes a tipp on a package, it appears that the startDate may be nulled out.
+    // therefore, it appears in this case that a coverageStatement might be updated to have no startDate.
+
     // Check start date is before end date.
-    if (statement.endDate && startDate > statement.endDate) {
-      return [ 'coveragestatement.start.after.end', statement.endDate]
+    if (statement.endDate && 
+        startDate &&
+        ( startDate > statement.endDate) ) {
+      // Custom validators should return property name, class name, property value, other values
+      println("failed AbstractCoverageStatement::statment_start_validator");
+      // statement.errors.rejectValue('startDate', 'start_after_end_date')
+      return [ 'start_after_end_date', 'startDate', statement.class.name, statement.startDate, statement.endDate]
     }
   }
   
@@ -66,6 +74,7 @@ abstract class AbstractCoverageStatement {
               (statement.endDate == null || compareTo.startDate < statement.endDate))
 
           if (overlapping) {
+            println("failed AbstractCoverageStatement::coveragestatement.overlap");
             return [ 'coveragestatement.overlap', statement, compareTo ]
           }
         }
