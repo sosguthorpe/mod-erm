@@ -116,7 +116,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
     def result = [:]
 
     // If there is no cursor, initialise it to an empty string.
-    result.new_cursor = (cursor && cursor.trim() != '' ? cursor : '';
+    result.new_cursor = (cursor && cursor.trim()) != '' ? cursor : '';
     result.count = 0;
 
     log.debug("GOKbOAIAdapter::processPage(${cursor},...");
