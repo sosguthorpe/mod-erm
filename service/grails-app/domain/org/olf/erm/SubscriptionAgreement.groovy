@@ -103,7 +103,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
                    items cascade: 'all-delete-orphan'
                 contacts cascade: 'all-delete-orphan'
             historyLines cascade: 'all-delete-orphan'
-                    tags cascade: 'all-delete-orphan'
+                    tags cascade: 'save-update'
                     orgs cascade: 'all-delete-orphan'
                     docs cascade: 'all-delete-orphan'
      externalLicenseDocs cascade: 'all-delete-orphan',  joinTable: [name: 'subscription_agreement_ext_lic_doc', key: 'saeld_sa_fk', column: 'saeld_da_fk']
