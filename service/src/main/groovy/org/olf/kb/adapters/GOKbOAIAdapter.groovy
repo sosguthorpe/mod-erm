@@ -138,9 +138,9 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
       }
 
       if ( datestamp > result.new_cursor ) {
-        log.debug("Datestamp from record \"${datestamp}\" larger than current cursor (\"${result.new_cursor}\" - updated it")
+        log.debug("Datestamp from record \"${datestamp}\" larger than current cursor (\"${result.new_cursor}\") - update it")
         // Because OAI uses >= we want to nudge up the cursor timestamp by 1s (2019-02-06T11:19:20Z)
-        Date parsed_datestamp = sdf.parse(datestamp);
+        Date parsed_datestamp = parseDate(datestamp) // sdf.parse(datestamp);
         long incremented_datestamp = parsed_datestamp.getTime()+1000;
         String new_string_datestamp = sdf.format(new Date(incremented_datestamp));
 
@@ -282,5 +282,11 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
     return null;
   }
 
+  // Move date parsing here - we might want to do something more sophistocated with different fallback formats
+  // here in the future.
+  Date parseDate(String s) {
+    final SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX")
+    return sdf.parse(s);
+  }
 
 }
