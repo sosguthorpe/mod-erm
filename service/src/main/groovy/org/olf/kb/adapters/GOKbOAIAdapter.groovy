@@ -114,7 +114,9 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
     
     final SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
     def result = [:]
-    result.new_cursor = (cursor && cursor.trim() != '' ? cursor : sdf.format(new Date()));
+
+    // If there is no cursor, initialise it to an empty string.
+    result.new_cursor = (cursor && cursor.trim() != '' ? cursor : '';
     result.count = 0;
 
     log.debug("GOKbOAIAdapter::processPage(${cursor},...");
