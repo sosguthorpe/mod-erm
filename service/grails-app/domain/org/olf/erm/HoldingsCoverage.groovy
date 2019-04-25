@@ -25,7 +25,7 @@ public class HoldingsCoverage extends AbstractCoverageStatement implements Multi
   static belongsTo = [entitlement: Entitlement]
   
   static mapping = {
-             id column:'co_id', generator: 'uuid', length:36
+             id column:'co_id', generator: 'uuid2', length:36
         version column:'co_version'
     entitlement column:'co_ent_fk'
       startDate column:'co_start_date'

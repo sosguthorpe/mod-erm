@@ -81,7 +81,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
 
   static mapping = {
              description column:'sa_description'
-                      id column:'sa_id', generator: 'uuid', length:36
+                      id column:'sa_id', generator: 'uuid2', length:36
                  version column:'sa_version'
                     name column:'sa_name'
           localReference column:'sa_local_reference'

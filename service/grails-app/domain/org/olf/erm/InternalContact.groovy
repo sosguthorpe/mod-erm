@@ -17,7 +17,7 @@ public class InternalContact implements MultiTenant<InternalContact>{
 
     static mapping = {
 //    table 'internal_contact'
-                   id column: 'ic_id', generator: 'uuid', length:36
+                   id column: 'ic_id', generator: 'uuid2', length:36
               version column: 'ic_version'
                 owner column: 'ic_owner_fk'
                  user column: 'ic_user_fk'
