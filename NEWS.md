@@ -1,5 +1,14 @@
 ## 1.5.0 Open
 
+ * ERM-166 Remove unwanted extra license section
+ * ERM-133 Configure Document Categories
+ * ERM-143 Add License / Supplementaty License Information Panel UI
+ * ERM-181 Fix data sync issue with GOKb (Resumption Token and Broken Coverage)
+ * ERM-139 Convert from SearchAndSort to SearchAndSortQuery
+ * ERM-79 Set supplementary informaiton for a license
+ * ERM-173 Manage Tags on Agreements
+ * ERM-174 Seach Agreements by Tag
+ * ERM-194 BUGFIX: Opening edit/create license with only one page does not work
 
 ## 1.4.0 2019-04-08
 
