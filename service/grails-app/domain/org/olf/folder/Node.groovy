@@ -16,7 +16,7 @@ public class Node implements MultiTenant<Node> {
   String referenceId // referenced item id
 
   static mapping = {
-                   id column:'nd_id', generator: 'uuid', length:36
+                   id column:'nd_id', generator: 'uuid2', length:36
               version column:'nd_version'
                 label column:'nd_label'
              nodeType column:'nd_node_type'

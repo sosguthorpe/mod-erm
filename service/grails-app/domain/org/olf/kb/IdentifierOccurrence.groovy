@@ -27,7 +27,7 @@ public class IdentifierOccurrence implements MultiTenant<IdentifierOccurrence> {
 
 
   static mapping = {
-                   id column:'io_id', generator: 'uuid', length:36
+                   id column:'io_id', generator: 'uuid2', length:36
               version column:'io_version'
            identifier column:'io_identifier_fk'
                 title column:'io_ti_fk'

@@ -25,7 +25,7 @@ public class POLineProxy implements MultiTenant<POLineProxy> {
 
   static mapping = {
            table 'po_line_proxy'
-                   id column: 'pop_id', generator: 'uuid', length:36
+                   id column: 'pop_id', generator: 'uuid2', length:36
               version column: 'pop_version'
                 owner column: 'pop_owner'
              poLineId column: 'pop_po_line_id'

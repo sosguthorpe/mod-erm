@@ -32,7 +32,7 @@ public class ErmResource implements MultiTenant<ErmResource> {
   ]
   static mapping = {
     tablePerHierarchy false
-                   id generator: 'uuid', length:36
+                   id generator: 'uuid2', length:36
                  name column:'res_name'
           description column:'res_description'
                  type column:'res_type_fk'

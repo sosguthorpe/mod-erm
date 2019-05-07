@@ -29,7 +29,7 @@ public class SAEventHistory implements MultiTenant<SAEventHistory> {
 
   static mapping = {
      table 'sa_event_history'
-                      id column:'eh_id', generator: 'uuid', length:36
+                      id column:'eh_id', generator: 'uuid2', length:36
                  version column:'eh_version'
                    owner column:'eh_owner'
                eventType column:'eh_event_type'
