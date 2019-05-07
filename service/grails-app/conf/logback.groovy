@@ -34,15 +34,21 @@ logger ('folio', DEBUG)
 logger ('org.olf', DEBUG)
 logger ('com.k_int.okapi.OkapiSchemaHandler', WARN)
 logger ('com.k_int.web.toolkit.refdata.GrailsDomainRefdataHelpers', WARN)
-logger ('com.k_int.web.toolkit.utils.RequestUtils', DEBUG)
+logger ('com.k_int.web.toolkit.utils.RequestUtils', WARN)
+logger ('com.k_int.okapi.remote_resources.RemoteOkapiLinkListener', WARN)
 
-logger ('com.k_int.okapi.remote_resources.RemoteOkapiLinkListener', DEBUG)
+//logger("org.hibernate.SQL", DEBUG)
+//logger("org.hibernate.type.descriptor.sql.BasicBinder", TRACE)
+
+
+//logger("org.hibernate.SQL", DEBUG)
+//logger("org.hibernate.type.descriptor.sql.BasicBinder", TRACE)
 
 // Uncomment below logging for output of OKAPI client http.
-logger ('com.k_int.okapi.OkapiClient', TRACE)
-logger 'groovy.net.http.JavaHttpBuilder', DEBUG
-logger 'groovy.net.http.JavaHttpBuilder.content', DEBUG
-logger 'groovy.net.http.JavaHttpBuilder.headers', DEBUG
+logger ('com.k_int.okapi.OkapiClient', DEBUG)
+//logger 'groovy.net.http.JavaHttpBuilder', DEBUG
+//logger 'groovy.net.http.JavaHttpBuilder.content', DEBUG
+//logger 'groovy.net.http.JavaHttpBuilder.headers', DEBUG
 
 if (Environment.currentEnvironment == Environment.TEST) {
   logger 'groovy.net.http.JavaHttpBuilder', DEBUG

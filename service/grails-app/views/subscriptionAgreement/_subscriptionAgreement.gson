@@ -13,7 +13,8 @@ final def should_expand = [
   'orgs',
   'externalLicenseDocs',
   'docs',
-  'vendor'
+  'vendor',
+  'tags'
 ]
 if (params.controller != 'remoteLicenseLink' ) {
   should_expand << 'linkedLicenses'

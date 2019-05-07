@@ -8,7 +8,7 @@ public class InternalContact implements MultiTenant<InternalContact>{
   
   String id
   String user
-  @Defaults(['Agreement owner', 'Subject specialist', 'General Contact']) // Defaults to create for this property.
+  @Defaults(['Agreement owner', 'Authorized signatory', 'ERM librarian', 'Subject specialist']) // Defaults to create for this property.
   RefdataValue role
   
   static belongsTo = [

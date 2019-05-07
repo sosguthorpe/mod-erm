@@ -12,6 +12,8 @@ import grails.gorm.transactions.Transactional
 @Transactional
 public class ErmHousekeepingService {
 
+  def coverageService
+
   /**
    * This is called by the eventing mechanism - There is no web request context
    * there may be something funky to do with events and multi tenant setup.
@@ -46,18 +48,23 @@ public class ErmHousekeepingService {
                                                                         supportsHarvesting:true,
                                                                         activationEnabled:false).save(flush:true, failOnError:true);
 
-      RemoteKB ebsco_live = RemoteKB.findByName('EBSCO_API') ?: new RemoteKB( name:'EBSCO_LIVE',
-                                                                        type:'org.olf.kb.adapters.EbscoKBAdapter',
-                                                                        uri:'https://sandbox.ebsco.io',
-                                                                        principal:'YOUR_CLIENT_ID',
-                                                                        credentials:'YOUR_API_KEY',
-                                                                        rectype: RemoteKB.RECTYPE_PACKAGE,
-                                                                        active:Boolean.FALSE,
-                                                                        supportsHarvesting:false,
-                                                                        activationSupported:true,
-                                                                        activationEnabled:false).save(flush:true, failOnError:true);
+      RemoteKB ebsco_live = RemoteKB.findByName('EBSCO_LIVE') ?: new RemoteKB( name:'EBSCO_LIVE',
+                                                                               type:'org.olf.kb.adapters.EbscoKBAdapter',
+                                                                               uri:'https://sandbox.ebsco.io',
+                                                                               principal:'YOUR_CLIENT_ID',
+                                                                               credentials:'YOUR_API_KEY',
+                                                                               rectype: RemoteKB.RECTYPE_PACKAGE,
+                                                                               active:Boolean.FALSE,
+                                                                               supportsHarvesting:false,
+                                                                               activationSupported:true,
+                                                                               activationEnabled:false).save(flush:true, failOnError:true);
 
 
     }
+  }
+
+  public void triggerHousekeeping() {
+    // An administrative process - attempt to coalesce any rogue coverage statements
+    coverageService.coalesceCoverageStatements();
   }
 }

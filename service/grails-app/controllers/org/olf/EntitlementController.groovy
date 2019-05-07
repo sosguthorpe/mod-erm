@@ -1,11 +1,11 @@
 package org.olf
 
+import org.olf.erm.Entitlement
+
+import com.k_int.okapi.OkapiTenantAwareController
+
 import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
-import com.k_int.okapi.OkapiTenantAwareController
-import org.olf.erm.Entitlement
-import org.olf.kb.ErmResource
-import grails.converters.JSON
 
 
 /**
@@ -17,6 +17,18 @@ class EntitlementController extends OkapiTenantAwareController<EntitlementContro
 
   EntitlementController() {
     super(Entitlement)
+  }
+  
+  def external() {
+    Entitlement ent = new Entitlement ()
+    ent.properties = params
+    
+    // Force external type.
+    ent.type = 'external'
+    
+    // Ensure we have uppercase reference.
+    ent.authority = ent.authority?.toUpperCase()
+    respond ent
   }
 }
 

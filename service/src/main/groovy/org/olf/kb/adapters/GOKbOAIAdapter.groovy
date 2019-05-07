@@ -22,9 +22,8 @@ import org.apache.http.protocol.*
 import java.text.SimpleDateFormat
 import java.nio.charset.Charset
 import static groovy.json.JsonOutput.*
-
-
 import java.text.*
+import groovy.util.logging.Slf4j
 
 
 /**
@@ -32,6 +31,8 @@ import java.text.*
  *   https://gokbt.gbv.de/gokb/oai/index/packages?verb=ListRecords&metadataPrefix=gokb
  * and our internal KBCache implementation.
  */
+
+@Slf4j
 public class GOKbOAIAdapter implements KBCacheUpdater {
 
 
@@ -40,7 +41,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
                                  String current_cursor,
                                  KBCache cache) {
 
-    println("GOKbOAIAdapter::freshen - fetching from URI: ${base_url}");
+    log.debug("GOKbOAIAdapter::freshen - fetching from URI: ${base_url}");
     def jpf_api = new HTTPBuilder(base_url)
 
     def query_params = [
@@ -62,7 +63,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
     while ( found_records ) {
 
  
-      println("** GET https://gokbt.gbv.de/gokb/oai/index/packages ${query_params}");
+      log.debug("** GET https://gokbt.gbv.de/gokb/oai/index/packages ${query_params}");
 
       jpf_api.request(Method.GET) { req ->
         // uri.path=''
@@ -74,7 +75,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
           // println "Success! ${resp.status} ${xml}"
           Map page_result = processPage(cursor, xml, source_name, cache)
 
-          println("processPage returned, processed ${page_result.count} packages, cursor will be ${page_result.new_cursor}");
+          log.debug("processPage returned, processed ${page_result.count} packages, cursor will be ${page_result.new_cursor}");
           // Store the cursor so we know where we are up to
           cache.updateCursor(source_name,page_result.new_cursor);
 
@@ -94,7 +95,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
         }
 
         response.failure = { resp ->
-          println "Request failed with status ${resp.status}"
+          log.debug "Request failed with status ${resp.status}"
           found_records = false;
         }
       }
@@ -113,10 +114,12 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
     
     final SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
     def result = [:]
-    result.new_cursor = (cursor && cursor.trim() != '' ? cursor : sdf.format(new Date()));
+
+    // If there is no cursor, initialise it to an empty string.
+    result.new_cursor = (cursor && cursor.trim()) != '' ? cursor : '';
     result.count = 0;
 
-    // log.debug("GOKbOAIAdapter::processPage(${cursor},...");
+    log.debug("GOKbOAIAdapter::processPage(${cursor},...");
 
     oai_page.ListRecords.record.each { record ->
       result.count++;
@@ -124,9 +127,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
       def package_name = record?.metadata?.gokb?.package?.name?.text()
       def datestamp = record?.header?.datestamp?.text()
 
-      System.out.println(result.count)
-      System.out.println(record_identifier)
-      System.out.println(package_name);
+      log.debug("Processing OAI record :: ${result.count} ${record_identifier} ${package_name}");
 
       def json_package_description = gokbToERM(record);
       if ( json_package_description.header.status == 'deleted' ) {
@@ -137,12 +138,13 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
       }
 
       if ( datestamp > result.new_cursor ) {
+        log.debug("Datestamp from record \"${datestamp}\" larger than current cursor (\"${result.new_cursor}\") - update it")
         // Because OAI uses >= we want to nudge up the cursor timestamp by 1s (2019-02-06T11:19:20Z)
-        Date parsed_datestamp = sdf.parse(result.new_cursor);
+        Date parsed_datestamp = parseDate(datestamp) // sdf.parse(datestamp);
         long incremented_datestamp = parsed_datestamp.getTime()+1000;
         String new_string_datestamp = sdf.format(new Date(incremented_datestamp));
 
-        System.out.println("New cursor value - ${datestamp} > ${result.new_cursor} - updating as ${new_string_datestamp}");
+        log.debug("New cursor value - \"${datestamp}\" > \"${result.new_cursor}\" - updating as ${new_string_datestamp}");
         result.new_cursor = new_string_datestamp;
       }
     }
@@ -220,13 +222,17 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
         }
 
         def tipp_coverage = [] // [ "startVolume": "8", "startIssue": "1", "startDate": "1982-01-01", "endVolume": null, "endIssue": null, "endDate": null ],
+
+        // Our domain model does not allow blank startDate or endDate, but they can be null
+        String start_date_string = tipp_entry.coverage?.@startDate?.toString()
+        String end_date_string = tipp_entry.coverage?.@endDate?.toString()
  
         tipp_coverage.add(["startVolume": tipp_entry.coverage?.@startVolume?.toString(),
                            "startIssue": tipp_entry.coverage?.@startIssue?.toString(),
-                           "startDate": tipp_entry.coverage?.@startDate?.toString(),
+                           "startDate": start_date_string?.length() > 0 ? start_date_string : null,
                            "endVolume":tipp_entry.coverage?.@endVolume?.toString(),
                            "endIssue": tipp_entry.coverage?.@endIssue?.toString(),
-                           "endDate": tipp_entry.coverage?.@endDate?.toString()])
+                           "endDate": end_date_string?.length() > 0 ? end_date_string : null])
 
         def tipp_coverage_depth = tipp_entry.coverage.@coverageDepth?.toString()
         def tipp_coverage_note = tipp_entry.coverage.@coverageNote?.toString()
@@ -276,5 +282,11 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
     return null;
   }
 
+  // Move date parsing here - we might want to do something more sophistocated with different fallback formats
+  // here in the future.
+  Date parseDate(String s) {
+    final SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX")
+    return sdf.parse(s);
+  }
 
 }

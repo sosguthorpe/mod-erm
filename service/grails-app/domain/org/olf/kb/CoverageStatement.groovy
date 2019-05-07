@@ -39,7 +39,8 @@ public class CoverageStatement extends AbstractCoverageStatement implements Mult
       if ( val ) {
         Class c = Hibernate.getClass(val)
         if (!CoverageStatement.ALLOWED_RESOURCES.contains(c)) {
-          ['allowedTypes', "${c.name}", "entitlement", "resource"]
+          println("resource custom validation failure");
+          ['allowedTypes', "resource", "CoverageStatement", "${c.name}"]
         }
       }
     })
