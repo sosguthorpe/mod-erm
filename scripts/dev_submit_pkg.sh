@@ -72,9 +72,8 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
   renewalDate: "2019-01-01",
   nextReviewDate: "2018-10-01",
   vendor: {
-    vendorsUuid: "05f327a6-c4d3-43c2-828f-7d6e7e401c99",
-    name:"My Super Vendor",
-    sourceURI:"/vendors/some/uri?05f327a6-c4d3-43c2-828f-7d6e7e401c99"
+    orgsUuid: "05f327a6-c4d3-43c2-828f-7d6e7e401c99",
+    name:"My Super Vendor"
   },
   items: [
     {
@@ -96,7 +95,7 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
     {
       role: "Content Provider",
       org: {
-        vendorsUuid: "05f327a6-c4d3-43c2-828f-7d6e7e401c97",
+        orgsUuid: "05f327a6-c4d3-43c2-828f-7d6e7e401c97",
         name: "A test content provider org"
       }
     }
@@ -118,9 +117,8 @@ ACTIVE_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
   vendorReference: "AGG_VR_002",
   startDate: "2018-01-01",
   vendor: {
-    vendorsUuid: "05f327a6-c4d3-43c2-828f-7d6e7e401c99",
-    name:"My Super Vendor",
-    sourceURI:"/vendors/some/uri?05f327a6-c4d3-43c2-828f-7d6e7e401c99"
+    orgsUuid: "05f327a6-c4d3-43c2-828f-7d6e7e401c99",
+    name:"My Super Vendor"
   },
   items: [
     {
