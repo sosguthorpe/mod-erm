@@ -1,4 +1,6 @@
-## 1.5.0 Open
+## 1.6.0 Open
+
+## 1.5.0 2019-05-07
 
  * ERM-166 Remove unwanted extra license section
  * ERM-133 Configure Document Categories
