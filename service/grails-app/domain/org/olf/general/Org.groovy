@@ -17,7 +17,7 @@ class Org implements MultiTenant<Org> {
 
 
   static mapping = {
-            id column: 'org_id', generator: 'uuid', length:36
+            id column: 'org_id', generator: 'uuid2', length:36
        version column: 'org_version'
           name column: 'org_name'
    vendorsUuid column: 'org_vendors_uuid'

@@ -26,7 +26,7 @@ public class ContentActivationRecord implements MultiTenant<ContentActivationRec
 
   static mapping = {
            table 'content_activation_record'
-                  id column: 'car_id', generator: 'uuid', length:36
+                  id column: 'car_id', generator: 'uuid2', length:36
              version column: 'car_version'
       dateActivation column: 'car_date_activation'
     dateDeactivation column: 'car_date_deactivation'

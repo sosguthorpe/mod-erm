@@ -149,7 +149,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
   Boolean enabled
 
   static mapping = {
-                   id column: 'ent_id', generator: 'uuid', length:36
+                   id column: 'ent_id', generator: 'uuid2', length:36
               version column: 'ent_version'
                 owner column: 'ent_owner_fk'
              resource column: 'ent_resource_fk'

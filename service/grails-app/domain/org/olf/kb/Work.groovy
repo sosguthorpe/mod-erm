@@ -12,7 +12,7 @@ public class Work implements MultiTenant<Work> {
   String title
 
   static mapping = {
-                   id column:'w_id', generator: 'uuid', length:36
+                   id column:'w_id', generator: 'uuid2', length:36
               version column:'w_version'
                 title column:'w_title'
   }

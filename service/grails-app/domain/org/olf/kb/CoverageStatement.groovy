@@ -47,7 +47,7 @@ public class CoverageStatement extends AbstractCoverageStatement implements Mult
   }
 
   static mapping = {
-                   id column:'cs_id', generator: 'uuid', length:36
+                   id column:'cs_id', generator: 'uuid2', length:36
               version column:'cs_version'
              resource column:'cs_resource_fk'
             startDate column:'cs_start_date'

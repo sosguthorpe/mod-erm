@@ -12,7 +12,7 @@ public class IdentifierNamespace implements MultiTenant<IdentifierNamespace> {
   String value
 
   static mapping = {
-                   id column:'idns_id', generator: 'uuid', length:36
+                   id column:'idns_id', generator: 'uuid2', length:36
               version column:'idns_version'
                 value column:'idns_value'
   }

@@ -13,7 +13,7 @@ public class PlatformLocator implements MultiTenant<PlatformLocator> {
   Platform owner
 
   static mapping = {
-                   id column:'pl_id', generator: 'uuid', length:36
+                   id column:'pl_id', generator: 'uuid2', length:36
               version column:'pl_version'
       domainNameRegex column:'pl_domain_name_regex'
                 owner column:'pl_owner_fk'
