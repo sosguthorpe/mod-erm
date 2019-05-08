@@ -150,7 +150,8 @@
         "module.agreements.enabled",
         "ui-agreements.agreements.view",
         "ui-agreements.agreements.edit"
-      ]
+      ],
+      "visible":true
     },
     {
       "permissionName": "agreements.admin",
@@ -161,7 +162,8 @@
         "module.agreements.enabled",
         "ui-agreements.agreements.view",
         "ui-agreements.agreements.edit"
-      ]
+      ],
+      "visible":true
     },
     {
       "permissionName": "olf-erm.user",
@@ -169,7 +171,8 @@
       "description": "A user of OLF ERM",
       "subPermissions": [
         "module.erm-stripes.enabled"
-      ]
+      ],
+      "visible":true
     },
     {
       "permissionName": "ermusage.vendors",
