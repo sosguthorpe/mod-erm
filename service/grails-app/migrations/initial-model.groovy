@@ -390,15 +390,11 @@ databaseChangeLog = {
                 constraints(nullable: "false")
             }
 
-            column(name: "org_vendors_uuid", type: "VARCHAR(255)")
+            column(name: "org_orgs_uuid", type: "VARCHAR(255)")
 
             column(name: "org_name", type: "VARCHAR(255)") {
                 constraints(nullable: "false")
             }
-
-            column(name: "org_source_uri", type: "VARCHAR(255)")
-
-            column(name: "org_reference", type: "VARCHAR(255)")
         }
     }
 

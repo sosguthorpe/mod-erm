@@ -60,7 +60,7 @@ public class DependentModuleProxyService {
           
           org = new Org(
             name: result.name,
-            vendorsUuid: result.id,
+            orgsUuid: result.id,
             sourceURI: "/vendor/${result.id}"
           ).save( flush:true, failOnError:true )
           break

@@ -8,28 +8,18 @@ class Org implements MultiTenant<Org> {
 
   String id
   String name
-  String vendorsUuid
-  String reference
-
-  // IF this resource is controlled by another service,
-  // what is the URI of the primary resource
-  String sourceURI
-
+  String orgsUuid
 
   static mapping = {
-            id column: 'org_id', generator: 'uuid', length:36
+            id column: 'org_id', generator: 'uuid2', length:36
        version column: 'org_version'
           name column: 'org_name'
-   vendorsUuid column: 'org_vendors_uuid'
-     sourceURI column: 'org_source_uri'
-     reference column: 'org_reference'
+      orgsUuid column: 'org_orgs_uuid'
   }
 
   static constraints = {
-      sourceURI(nullable:true, blank:false)
-    vendorsUuid(nullable:true, blank:false)
-      reference(nullable:true, blank:false)
-
+           name(nullable:true, blank:false)
+       orgsUuid(nullable:true, blank:false)
   }
 
   /**

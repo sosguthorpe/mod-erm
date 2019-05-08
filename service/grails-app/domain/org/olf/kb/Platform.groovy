@@ -12,7 +12,7 @@ public class Platform implements MultiTenant<Platform> {
   String name
 
   static mapping = {
-                   id column:'pt_id', generator: 'uuid', length:36
+                   id column:'pt_id', generator: 'uuid2', length:36
               version column:'pt_version'
                  name column:'pt_name'
   }

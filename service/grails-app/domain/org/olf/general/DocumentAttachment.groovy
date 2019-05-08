@@ -18,7 +18,7 @@ class DocumentAttachment implements MultiTenant<DocumentAttachment> {
   RefdataValue atType
 
   static mapping = {
-             id column: 'da_id', generator: 'uuid', length:36
+             id column: 'da_id', generator: 'uuid2', length:36
         version column: 'da_version'
            name column: 'da_name'
        location column: 'da_location'

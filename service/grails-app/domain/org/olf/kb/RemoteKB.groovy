@@ -42,7 +42,7 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
   Boolean activationEnabled
 
   static mapping = {
-                     id column:'rkb_id', generator: 'uuid', length:36
+                     id column:'rkb_id', generator: 'uuid2', length:36
                 version column:'rkb_version'
                    name column:'rkb_name'
                  cursor column:'rkb_cursor'

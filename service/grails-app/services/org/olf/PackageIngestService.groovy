@@ -72,7 +72,8 @@ public class PackageIngestService {
       def vendor = null
       if ( ( package_data.header?.packageProvider?.name != null ) && ( package_data.header?.packageProvider?.name.trim().length() > 0 ) ) {
         vendor = dependentModuleProxyService.coordinateOrg(package_data.header?.packageProvider?.name)
-        vendor.enrich(['reference':package_data.header?.packageProvider?.reference])
+        // reference has been removed at the request of the UI team
+        // vendor.enrich(['reference':package_data.header?.packageProvider?.reference])
       }
       else {
         log.warn('Package ingest - no provider information present')
