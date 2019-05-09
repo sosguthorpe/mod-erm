@@ -10,7 +10,7 @@ grails:
             events: false
 info:
     app:
-        name: 'olf-erm'
+        name: 'mod-agreements'
         version: '@info.app.version@'
         grailsVersion: '@info.app.grailsVersion@'
 spring:
@@ -128,7 +128,7 @@ dataSource:
     
 okapi:
   schema:
-    appName: 'olf_erm'
+    appName: 'mod-agreements'
   service:
     register: false
     deploy: false

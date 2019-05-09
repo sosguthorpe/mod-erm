@@ -5,7 +5,7 @@
 
 # Work in progress - needs input from steve
 
-echo Call olf-erm through okapi
+echo Call mod-agreements through okapi
 
 curl --header "X-Okapi-Tenant: diku" http://localhost:9130/erm/content -X GET
 

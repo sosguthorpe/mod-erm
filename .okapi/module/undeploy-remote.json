@@ -1,4 +1,0 @@
-{
-  "method": "DELETE",
-  "uri": "/_/discovery/modules/${module.id}/localhost-${module.id}"
-}

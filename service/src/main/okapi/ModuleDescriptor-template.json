@@ -145,7 +145,6 @@
       "permissionName": "agreements.user",
       "displayName": "Agreements App user",
       "description": "Agreements User",
-      "visible": true,
       "subPermissions": [
         "module.agreements.enabled",
         "ui-agreements.agreements.view",
@@ -157,20 +156,10 @@
       "permissionName": "agreements.admin",
       "displayName": "Agreements App Admin",
       "description": "Agreements Administrative User",
-      "visible": true,
       "subPermissions": [
         "module.agreements.enabled",
         "ui-agreements.agreements.view",
         "ui-agreements.agreements.edit"
-      ],
-      "visible":true
-    },
-    {
-      "permissionName": "olf-erm.user",
-      "displayName": "OLF ERM - User",
-      "description": "A user of OLF ERM",
-      "subPermissions": [
-        "module.erm-stripes.enabled"
       ],
       "visible":true
     },
