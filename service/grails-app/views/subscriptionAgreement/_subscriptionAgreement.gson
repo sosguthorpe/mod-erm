@@ -1,7 +1,21 @@
 import groovy.transform.*
 import org.olf.erm.SubscriptionAgreement
+import org.olf.erm.SubscriptionAgreementOrg
 
 @Field SubscriptionAgreement subscriptionAgreement
+
+// We can start the pre-fetching of things we are going to need.
+final String objectProperty = 'orgsUuid_object'
+if ( controllerName == 'subscriptionAgreement' && actionName.toLowerCase() == 'show' ) {
+  // Prefetch the orgs.
+  subscriptionAgreement.orgs?.each { SubscriptionAgreementOrg sao ->
+    if(sao.org?.respondsTo(objectProperty)){
+      // Just invoke. We will deal with the return value later. This will start the fetching now in parallel threads.
+      sao.org.invokeMethod(objectProperty, null)
+    }
+  }
+}
+
 
 final def should_expand = [
   'agreementType',
