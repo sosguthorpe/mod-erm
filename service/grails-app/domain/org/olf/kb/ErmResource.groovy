@@ -34,7 +34,7 @@ public class ErmResource implements MultiTenant<ErmResource> {
     tablePerHierarchy false
                    id generator: 'uuid2', length:36
                  name column:'res_name'
-          description column:'res_description'
+          description column:'res_description', type:'text'
                  type column:'res_type_fk'
           dateCreated column:'res_date_created'
           lastUpdated column:'res_last_updated'

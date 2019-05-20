@@ -5,4 +5,5 @@ databaseChangeLog = {
   include file: 'docs.groovy'
   include file: 'linked-licenses.groovy'
   include file: 'coverage-unification.groovy'
+  include file: 'update-mod-agreements-1-6.groovy'
 }
