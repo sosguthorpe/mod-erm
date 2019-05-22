@@ -43,13 +43,13 @@ BSEC_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../se
 echo Loading APA
 APA_PKG_ID=`curl --header "X-Okapi-Tenant: diku" -X POST -F package_file=@../service/src/integration-test/resources/packages/apa_1062.json http://localhost:8080/erm/admin/loadPackage | jq -r ".packageId" | tr -d '\r'`
 
-STATUS_DRAFT_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreement/agreementStatus | jq -r '.[] | select(.label=="Draft") | .id'`
-STATUS_ACTIVE_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreement/agreementStatus | jq -r '.[] | select(.label=="Active") | .id'`
-ISPERPETUAL_YES_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreement/isPerpetual | jq -r '.[] | select(.label=="Yes") | .id'`
-ISPERPETUAL_NO_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreement/isPerpetual | jq -r '.[] | select(.label=="No") | .id'`
-RENEW_DEFRENEW_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreement/renewalPriority | jq -r '.[] | select(.label=="Definitely Renew") | .id'`
-RENEW_REVIEW_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreement/renewalPriority | jq -r '.[] | select(.label=="For Review") | .id'`
-ROLE_CONTENT_PROVIDER=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" http://localhost:8080/erm/refdataValues/SubscriptionAgreementOrg/role | jq -r '.[] | select(.label=="Content Provider") | .id'`
+STATUS_DRAFT_RDV="Draft"
+STATUS_ACTIVE_RDV="Active"
+ISPERPETUAL_YES_RDV="Yes"
+ISPERPETUAL_NO_RDV="No"
+RENEW_DEFRENEW_RDV="Definitely renew"
+RENEW_REVIEW_RDV="For review"
+ROLE_CONTENT_PROVIDER="Content provider"
 
 # Find the package content item entitle for Clinical Cancer Drugs in K-Int Test Package 001
 CCD_IN_KI_TEST_PKG=`curl --header "X-Okapi-Tenant: diku" "http://localhost:8080/erm/pci?filters=pti.titleInstance.title%3D%3DClinical+Cancer+Drugs&filters=pkg.name%3D%3DK-Int+Test+Package+001" -X GET | jq -r ".[0].id" | tr -d '\r'`
@@ -62,9 +62,9 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
 {
   name: "Trial Agreement LR 001",
   description: "This is a trial agreement",
-  agreementStatus: { id: "'"$STATUS_DRAFT_RDV"'" },
-  isPerpetual: { id: "'"$ISPERPETUAL_YES_RDV"'" },
-  renewalPriority: { id: "'"$RENEW_REVIEW_RDV"'" },
+  agreementStatus: "'"$STATUS_DRAFT_RDV"'",
+  isPerpetual: "'"$ISPERPETUAL_YES_RDV"'",
+  renewalPriority: "'"$RENEW_REVIEW_RDV"'",
   localReference: "TRIAL_ALR_001",
   vendorReference: "TRIAL_AVR_001",
   startDate: "2018-01-01",
@@ -110,9 +110,9 @@ ACTIVE_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 {
   name: "Active Agreement LR 002",
   description: "This is an active agreement",
-  agreementStatus: { id: "'"$STATUS_ACTIVE_RDV"'" },
-  isPerpetual: { id: "'"$ISPERPETUAL_NO_RDV"'" },
-  renewalPriority: { id: "'"$RENEW_DEFRENEW_RDV"'" },
+  agreementStatus: "'"$STATUS_ACTIVE_RDV"'" },
+  isPerpetual: "'"$ISPERPETUAL_NO_RDV"'" },
+  renewalPriority: "'"$RENEW_DEFRENEW_RDV"'",
   localReference: "AGG_LR_002",
   vendorReference: "AGG_VR_002",
   startDate: "2018-01-01",
@@ -132,9 +132,9 @@ ELSEVIER_FC_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type:
 {
   name: "Freedom Collection",
   description: "An agreement that describes all the content that we buy from Elsevier",
-  agreementStatus: { id: "'"$STATUS_ACTIVE_RDV"'" },
-  isPerpetual: { id: "'"$ISPERPETUAL_NO_RDV"'" },
-  renewalPriority: { id: "'"$RENEW_DEFRENEW_RDV"'" },
+  agreementStatus: "'"$STATUS_ACTIVE_RDV"'",
+  isPerpetual: "'"$ISPERPETUAL_NO_RDV"'",
+  renewalPriority: "'"$RENEW_DEFRENEW_RDV"'",
   localReference: "AGG_LR_002",
   vendorReference: "AGG_VR_002",
   startDate: "2018-01-01",
@@ -150,9 +150,9 @@ WILEY_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
 {
   name: "Wiley Test Agreement",
   description: "An agreement that describes all the content that we buy from Wiley",
-  agreementStatus: { id: "'"$STATUS_ACTIVE_RDV"'" },
-  isPerpetual: { id: "'"$ISPERPETUAL_NO_RDV"'" },
-  renewalPriority: { id: "'"$RENEW_DEFRENEW_RDV"'" },
+  agreementStatus: "'"$STATUS_ACTIVE_RDV"'",
+  isPerpetual: "'"$ISPERPETUAL_NO_RDV"'",
+  renewalPriority: "'"$RENEW_DEFRENEW_RDV"'",
   localReference: "AGG_LR_002",
   vendorReference: "AGG_VR_002",
   startDate: "2018-01-01",
@@ -168,9 +168,9 @@ SPRINGER_NATURE_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-T
 {
   name: "Springer Nature",
   description: "An agreement that describes all the content that we access via Springer Nature",
-  agreementStatus: { id: "'"$STATUS_ACTIVE_RDV"'" },
-  isPerpetual: { id: "'"$ISPERPETUAL_NO_RDV"'" },
-  renewalPriority: { id: "'"$RENEW_DEFRENEW_RDV"'" },
+  agreementStatus: "'"$STATUS_ACTIVE_RDV"'",
+  isPerpetual: "'"$ISPERPETUAL_NO_RDV"'",
+  renewalPriority: "'"$RENEW_DEFRENEW_RDV"'",
   localReference: "AGG_LR_002",
   vendorReference: "AGG_VR_002",
   startDate: "2018-01-01",
@@ -186,9 +186,9 @@ BENTHAM_EXTERNAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-
 {
   name: "Bentham Science (External/EKB)",
   description: "This agreement is a test case for where the content an agreement provides access to is defined externally - in this case EKB vendor 301/package 3707.",
-  agreementStatus: { id: "'"$STATUS_ACTIVE_RDV"'" },
-  isPerpetual: { id: "'"$ISPERPETUAL_NO_RDV"'" },
-  renewalPriority: { id: "'"$RENEW_DEFRENEW_RDV"'" },
+  agreementStatus: "'"$STATUS_ACTIVE_RDV"'",
+  isPerpetual: "'"$ISPERPETUAL_NO_RDV"'",
+  renewalPriority: "'"$RENEW_DEFRENEW_RDV"'",
   localReference: "EBSCO_TC1",
   vendorReference: "301:3707",
   startDate: "2018-01-01",
