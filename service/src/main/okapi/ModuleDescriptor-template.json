@@ -101,6 +101,15 @@
         },{
           "methods": ["GET", "POST", "DELETE"],
           "pathPattern": "/erm/refdataValues/{domain}/{property}"
+        },{
+          "methods": ["GET", "DELETE"],
+          "pathPattern": "/erm/files/{id}"
+        },{
+         "methods": ["GET"],
+         "pathPattern": "/erm/files/{id}/*"
+        },{
+         "methods": ["GET", "POST"],
+         "pathPattern": "/erm/files"
         }
       ]
     },{
