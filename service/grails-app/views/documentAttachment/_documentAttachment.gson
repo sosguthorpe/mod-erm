@@ -2,7 +2,4 @@ import groovy.transform.*
 import org.olf.general.DocumentAttachment
 
 @Field DocumentAttachment documentAttachment
-json g.render(documentAttachment, [excludes:['atType'] ]) {
-atType documentAttachment?.atType?.value
-}
-
+json g.render(documentAttachment, [excludes:['atType'] ])
