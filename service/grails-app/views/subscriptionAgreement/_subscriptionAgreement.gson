@@ -27,6 +27,7 @@ final def should_expand = [
   'orgs',
   'externalLicenseDocs',
   'docs',
+  'supplementaryDocs',
   'vendor',
   'tags'
 ]
