@@ -21,7 +21,7 @@ curl -XDELETE "http://localhost:9130/_/proxy/tenants/diku/modules/${SVC_ID}"
 curl -XDELETE "http://localhost:9130/_/discovery/modules/${SVC_ID}/${INS_ID}"
 curl -XDELETE "http://localhost:9130/_/proxy/modules/${SVC_ID}"
 # ./gradlew clean generateDescriptors
-curl -XPOST http://localhost:9130/_/proxy/modules -d @"${DESCRIPTORDIR}/ModuleDescriptor.json"
-curl -XPOST http://localhost:9130/_/discovery/modules -d "$DEP_DESC"
-curl -XPOST http://localhost:9130/_/proxy/tenants/diku/modules -d `echo $DEP_DESC | jq -rc '{id: .srvcId}'`
+curl -XPOST 'http://localhost:9130/_/proxy/modules' -d @"${DESCRIPTORDIR}/ModuleDescriptor.json"
+curl -XPOST 'http://localhost:9130/_/discovery/modules' -d "$DEP_DESC"
+curl -XPOST 'http://localhost:9130/_/proxy/tenants/diku/install?tenantParameters=loadSample%3Dtest,loadReference%3Dother' -d `echo $DEP_DESC | jq -c '[{id: .srvcId, action: "enable"}]'`
 popd
