@@ -1,5 +1,6 @@
 package org.olf
 
+import org.olf.general.FileUpload
 
 class UrlMappings {
 
@@ -85,6 +86,15 @@ class UrlMappings {
       "/entitlementOptions" ( action:'entitlementOptions' )
       "/entitlements" ( action:'entitlements' )
     }
+
+ 
+    get "/erm/files/$id/raw"(controller: "fileUpload", action: "getFileUploadRaw")
+    get "/erm/files/$id"(controller: "fileUpload", action: "getFileUpload")
+    get '/erm/files'(controller: "fileUpload", action: "getFileUploadList")
+    post '/erm/files'(controller: "fileUpload", action: "postFileUploadRaw")
+    delete "/erm/files/$id"(controller: "fileUpload", action: "deleteFileUpload")
+
+
 
   }
 }
