@@ -8,13 +8,14 @@ class FileUpload implements MultiTenant<FileUpload> {
   String fileContentType
   String fileName
   Long fileSize
-
   Date lastModified
+  SingleFileAttachment owner
 
   static constraints = {
     fileContentBytes nullable: true
     fileContentType nullable: true
     lastModified nullable: true
+    owner nullable: true
   }
 
   static mapping = {
@@ -23,5 +24,6 @@ class FileUpload implements MultiTenant<FileUpload> {
             fileName column: 'fu_filename'
             fileSize column: 'fu_filesize'
         lastModified column: 'fu_last_mod' 
+               owner column: 'fu_owner', type: 'string', length: 36
   }
 }
