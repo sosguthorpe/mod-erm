@@ -1,0 +1,12 @@
+import groovy.transform.*
+import org.olf.general.FileUpload
+
+@Field FileUpload fileUpload
+
+json {
+  id fileUpload.id
+  contentType fileUpload.fileContentType
+  size fileUpload.fileSize
+  modified fileUpload.lastModified
+  name fileUpload.fileName
+}

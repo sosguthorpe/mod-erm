@@ -13,6 +13,7 @@ class DocumentAttachment implements MultiTenant<DocumentAttachment> {
   String note
   Date dateCreated
   Date lastUpdated
+  FileUpload fileUpload
 
   @Defaults(['License', 'Misc', 'Consortium negotiation document'])
   RefdataValue atType
@@ -27,6 +28,7 @@ class DocumentAttachment implements MultiTenant<DocumentAttachment> {
          atType column: 'da_type_rdv_fk'
     dateCreated column: 'da_date_created'
     lastUpdated column: 'da_last_updated'
+    fileUpload  column: 'da_file_upload'
   }
 
   static constraints = {
@@ -37,6 +39,7 @@ class DocumentAttachment implements MultiTenant<DocumentAttachment> {
          atType(nullable:true, blank:false)
     dateCreated(nullable:true, blank:false)
     lastUpdated(nullable:true, blank:false)
+     fileUpload(nullable:true, blank:false)
 
   }
 
