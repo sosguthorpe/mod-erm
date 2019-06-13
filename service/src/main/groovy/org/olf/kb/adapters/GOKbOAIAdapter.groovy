@@ -20,6 +20,7 @@ import org.apache.http.entity.mime.content.*
 import org.apache.http.*
 import org.apache.http.protocol.*
 import java.text.SimpleDateFormat
+import java.util.TimeZone;
 import java.nio.charset.Charset
 import static groovy.json.JsonOutput.*
 import java.text.*
@@ -113,6 +114,10 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
   private Map processPage(String cursor, Object oai_page, String source_name, KBCache cache) {
     
     final SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+
+    // Force the formatter to use UCT because we want "Z" as the timezone
+    sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+
     def result = [:]
 
     // If there is no cursor, initialise it to an empty string.
