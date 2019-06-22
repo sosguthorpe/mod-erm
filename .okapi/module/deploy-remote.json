@@ -1,8 +1,0 @@
-{
-  "uri": "/_/discovery/modules",
-  "data": {
-    "srvcId": "${module.id}",
-    "instId": "localhost-${module.id}",
-    "url": "${hostAddress}"
-  }
-}

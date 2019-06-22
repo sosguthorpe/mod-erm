@@ -6,11 +6,11 @@
 # see https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html for info on overriding 
 # spring boot app config on the command line
 
-echo Start olf-erm in external-register mode
+echo Start mod-agreements in external-register mode
 
 # curl --header "X-Okapi-Tenant: diku" http://localhost:9130/content -X GET
 
-the_jar_file=`ls build/libs/olf-erm*.jar | tail -n 1`
+the_jar_file=`ls build/libs/mod-agreements*.jar | tail -n 1`
 
 echo Attempting to start jar $the_jar_file
 

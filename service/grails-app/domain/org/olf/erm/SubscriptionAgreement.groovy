@@ -68,7 +68,8 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
                    orgs: SubscriptionAgreementOrg,
     externalLicenseDocs: DocumentAttachment,
                    docs: DocumentAttachment,
-         linkedLicenses: RemoteLicenseLink
+         linkedLicenses: RemoteLicenseLink,
+      supplementaryDocs: DocumentAttachment
   ]
 
   static mappedBy = [
@@ -80,7 +81,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   ]
 
   static mapping = {
-             description column:'sa_description'
+             description column:'sa_description', type: 'text'
                       id column:'sa_id', generator: 'uuid2', length:36
                  version column:'sa_version'
                     name column:'sa_name'
@@ -99,15 +100,16 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
                  enabled column:'sa_enabled'
                   vendor column:'sa_vendor_fk'
        attachedLicenceId column:'sa_licence_fk'
-	   		     licenseNote column:'sa_license_note'
-                   items cascade: 'all-delete-orphan'
-                contacts cascade: 'all-delete-orphan'
+	   		 licenseNote column:'sa_license_note'
+                  items cascade: 'all-delete-orphan'
+               contacts cascade: 'all-delete-orphan'
             historyLines cascade: 'all-delete-orphan'
                     tags cascade: 'save-update'
                     orgs cascade: 'all-delete-orphan'
                     docs cascade: 'all-delete-orphan'
      externalLicenseDocs cascade: 'all-delete-orphan',  joinTable: [name: 'subscription_agreement_ext_lic_doc', key: 'saeld_sa_fk', column: 'saeld_da_fk']
           linkedLicenses cascade: 'all-delete-orphan'
+	   supplementaryDocs cascade: 'all-delete-orphan', joinTable: [name: 'subscription_agreement_supp_doc', key: 'sasd_sa_fk', column: 'sasd_da_fk']
   }
 
   static constraints = {

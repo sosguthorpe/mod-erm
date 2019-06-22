@@ -101,19 +101,27 @@
         },{
           "methods": ["GET", "POST", "DELETE"],
           "pathPattern": "/erm/refdataValues/{domain}/{property}"
+        },{
+          "methods": ["GET", "DELETE"],
+          "pathPattern": "/erm/files/{id}"
+        },{
+         "methods": ["GET"],
+         "pathPattern": "/erm/files/{id}/*"
+        },{
+         "methods": ["GET", "POST"],
+         "pathPattern": "/erm/files"
         }
       ]
     },{
-      "id": "_tenant",
-      "version": "1.0",
+      "id" : "_tenant",
+      "version" : "1.2",
       "interfaceType" : "system",
-      "handlers": [
-        {
-          "methods": ["GET"],
-          "pathPattern": "/_/tenant"
-        },{
-          "methods": ["DELETE"],
-          "pathPattern": "/_/tenant"
+      "handlers" : [ {
+          "methods" : [ "POST", "DELETE" ],
+          "pathPattern" : "/_/tenant"
+        }, {
+         "methods" : [ "POST" ],
+         "pathPattern" : "/_/tenant/disable"
         }
       ]
     },
@@ -170,7 +178,9 @@
       "displayName": "OLF ERM - User",
       "description": "A user of OLF ERM",
       "subPermissions": [
-        "module.erm-stripes.enabled"
+        "module.agreements.enabled",
+        "ui-agreements.agreements.view",
+        "ui-agreements.agreements.edit"
       ],
       "visible":true
     },

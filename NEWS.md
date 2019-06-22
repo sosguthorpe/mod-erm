@@ -1,4 +1,14 @@
-## 1.6.0 Open
+## 1.7.0 2019-06-11
+ * ERM-259 Set supplementary information for an Agreement
+ * ERM-245 Tenant bootstrap improvements
+   * ERM-249 Create bootstrap data
+   * ERM-247 Change descriptors to reflect new interface version
+
+## 1.6.0 2019-05-21
+ * ERM-220 Support Organizations app as source of Organizations in Agreements
+ * ERM-198 Ensure that mod-agreements used in place of olf-erm
+ * ERM-92  Require UUIDs that are RFC 4122 compliant
+   * ERM-135 Change UUID generator from UUID to UUID-2
 
 ## 1.5.0 2019-05-07
 

@@ -10,7 +10,7 @@ grails:
             events: false
 info:
     app:
-        name: 'olf-erm'
+        name: 'mod-agreements'
         version: '@info.app.version@'
         grailsVersion: '@info.app.grailsVersion@'
 spring:
@@ -62,6 +62,9 @@ grails:
             maxsize: 1000
     controllers:
         defaultScope: singleton
+        upload:
+            maxFileSize: 10485760
+            maxRequestSize: 10485760
     converters:
         encoding: UTF-8
         
@@ -128,7 +131,7 @@ dataSource:
     
 okapi:
   schema:
-    appName: 'olf_erm'
+    appName: 'mod-agreements'
   service:
     register: false
     deploy: false
@@ -147,9 +150,7 @@ environments:
           tenantResolverClass: org.grails.datastore.mapping.multitenancy.resolvers.SystemPropertyTenantResolver # System prop of gorm.tenantId 
       plugin:
         databasemigration:
-          updateOnStart: true
-          updateOnStartFileName: module-tenant-changelog.groovy
-  
+          changelogFileName: module-tenant-changelog.groovy
     gorm:
       tenantId: public # Used by SystemPropertyTenantResolver
 
