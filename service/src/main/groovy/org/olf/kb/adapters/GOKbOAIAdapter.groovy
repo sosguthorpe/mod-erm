@@ -24,6 +24,7 @@ import java.nio.charset.Charset
 import static groovy.json.JsonOutput.*
 import java.text.*
 import groovy.util.logging.Slf4j
+import java.util.TimeZone;
 
 
 /**
@@ -112,9 +113,14 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
 
   private Map processPage(String cursor, Object oai_page, String source_name, KBCache cache) {
     
-    final SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+    final SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+
+    // Force the formatter to use UCT because we want "Z" as the timezone
+    sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+
     def result = [:]
 
+    
     // If there is no cursor, initialise it to an empty string.
     result.new_cursor = (cursor && cursor.trim()) != '' ? cursor : '';
     result.count = 0;
