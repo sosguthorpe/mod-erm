@@ -1,5 +1,7 @@
 package org.olf.erm
 
+import java.time.LocalDate
+
 import com.k_int.web.toolkit.refdata.RefdataValue
 
 import grails.gorm.MultiTenant
@@ -11,7 +13,7 @@ public class SAEventHistory implements MultiTenant<SAEventHistory> {
 
   String id
   RefdataValue eventType
-  Date eventDate
+  LocalDate eventDate
   String summary
   String notes
   String eventData

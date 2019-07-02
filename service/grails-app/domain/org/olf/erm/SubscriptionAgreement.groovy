@@ -1,12 +1,16 @@
 package org.olf.erm
 
-import org.olf.general.Org
+import java.time.LocalDate
+import java.time.LocalDateTime
+
 import org.olf.general.DocumentAttachment
-import com.k_int.web.toolkit.refdata.RefdataValue
+import org.olf.general.Org
+
 import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
-import com.k_int.web.toolkit.databinding.BindImmutably
+import com.k_int.web.toolkit.refdata.RefdataValue
 import com.k_int.web.toolkit.tags.Tag
+
 import grails.gorm.MultiTenant
 
 /**
@@ -20,11 +24,11 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   String vendorReference
   String attachedLicenceId
   String licenseNote
-  Date cancellationDeadline
-  Date startDate
-  Date endDate
-  Date renewalDate
-  Date nextReviewDate
+  LocalDate cancellationDeadline
+  LocalDate startDate
+  LocalDate endDate
+  LocalDate renewalDate
+  LocalDate nextReviewDate
 
   /**
    * By default the RefdataCategory would be generated from the concatenation

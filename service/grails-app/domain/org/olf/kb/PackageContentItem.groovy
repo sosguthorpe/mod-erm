@@ -1,5 +1,7 @@
 package org.olf.kb
 
+import java.time.LocalDate
+
 import grails.gorm.MultiTenant
 
 
@@ -22,8 +24,8 @@ public class PackageContentItem extends ErmResource implements MultiTenant<Packa
   Long lastSeenTimestamp
 
   // The date range on which this content item is live within the package
-  Date accessStart
-  Date accessEnd
+  LocalDate accessStart
+  LocalDate accessEnd
 
   // A field primarily to deposit KBART::CoverageNote type data
   String note
