@@ -94,7 +94,9 @@ class UrlMappings {
     post '/erm/files'(controller: "fileUpload", action: "postFileUploadRaw")
     delete "/erm/files/$id"(controller: "fileUpload", action: "deleteFileUpload")
 
-
+    
+    // export endpoints
+    "/erm/export/$action" (controller:'export')
 
   }
 }
