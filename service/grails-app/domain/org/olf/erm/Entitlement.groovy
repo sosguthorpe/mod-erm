@@ -1,5 +1,6 @@
 package org.olf.erm
 
+import java.time.Instant
 import java.time.LocalDate
 
 import javax.persistence.Transient
@@ -253,7 +254,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
 
   @Transient
   public boolean getHaveAccess() {
-    return haveAccessAsAt(new LocalDate());
+    return haveAccessAsAt(LocalDate.now());
   }
 
   /**
@@ -262,13 +263,13 @@ public class Entitlement implements MultiTenant<Entitlement> {
   public boolean haveAccessAsAt(LocalDate point_in_time) {
     boolean result = false;
     if ( ( activeFrom != null ) && ( activeTo != null ) ) {
-      result = ( ( activeFrom.getTime() <= point_in_time.getTime() ) && ( point_in_time.getTime() <= activeTo.getTime() ) )
+      result = ( ( activeFrom <= point_in_time ) && ( point_in_time <= activeTo ) )
     }
     else if ( activeFrom != null ) {
-      result = ( activeFrom.getTime() <= point_in_time.getTime() )
+      result = ( activeFrom <= point_in_time )
     }
     else if ( activeTo != null ) {
-      result = ( point_in_time.getTime() <= activeTo.getTime() )
+      result = ( point_in_time <= activeTo )
     }
     else {
       // activeFrom and activeTo are both null - we assume this is perpetual then, so true
