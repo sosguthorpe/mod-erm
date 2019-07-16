@@ -1,0 +1,14 @@
+import groovy.transform.*
+import org.olf.erm.UsageDataProvider
+
+@Field UsageDataProvider usageDataProvider
+
+inherits template: "/remoteOkapiLink/remoteOkapiLink"
+
+def should_expand = ['usageDataProviderNote']
+
+if (params.controller == 'usageDataProvider' ) {
+  should_expand << 'owner'
+}
+
+json g.render(usageDataProvider, ['excludes': ['id', 'version'], 'expand':should_expand])

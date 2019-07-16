@@ -73,7 +73,8 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
     externalLicenseDocs: DocumentAttachment,
                    docs: DocumentAttachment,
          linkedLicenses: RemoteLicenseLink,
-      supplementaryDocs: DocumentAttachment
+      supplementaryDocs: DocumentAttachment,
+     usageDataProviders: UsageDataProvider,
   ]
 
   static mappedBy = [
@@ -81,7 +82,8 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
     historyLines: 'owner',
     contacts: 'owner',
     orgs: 'owner',
-    linkedLicenses: 'owner'
+    linkedLicenses: 'owner',
+    usageDataProviders: 'owner',
   ]
 
   static mapping = {
@@ -114,6 +116,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
      externalLicenseDocs cascade: 'all-delete-orphan',  joinTable: [name: 'subscription_agreement_ext_lic_doc', key: 'saeld_sa_fk', column: 'saeld_da_fk']
           linkedLicenses cascade: 'all-delete-orphan'
 	   supplementaryDocs cascade: 'all-delete-orphan', joinTable: [name: 'subscription_agreement_supp_doc', key: 'sasd_sa_fk', column: 'sasd_da_fk']
+	  usageDataProviders cascade: 'all-delete-orphan'
   }
 
   static constraints = {
@@ -134,7 +137,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
              description(nullable:true, blank:false)
                   vendor(nullable:true, blank:false)
        attachedLicenceId(nullable:true, blank:false)
-	   		     licenseNote(nullable:true, blank:false)
+             licenseNote(nullable:true, blank:false)
               
           linkedLicenses(validator: { Collection<RemoteLicenseLink> license_links ->
             

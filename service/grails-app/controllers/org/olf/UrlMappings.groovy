@@ -31,6 +31,19 @@ class UrlMappings {
           method = 'GET'
         }
       }
+	  
+      '/usageDataProviders' {
+		  controller = 'usageDataProvider'
+		  method = 'GET'
+		  filters = { "owner==${params.subscriptionAgreementId}" }
+	  }
+	  
+      collection {
+		  '/usageDataProviders' {
+			  controller = 'usageDataProvider'
+			  method = 'GET'
+		  }
+	  }
     }
 
     '/erm/titles'(resources: 'title') {
