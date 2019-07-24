@@ -1,3 +1,9 @@
+## 1.8.0 2019-07-24
+ * ERM-273 Manage usage data providers on agreements
+   * ERM-291 Add usage data provider to subscription agreement
+ * ERM-262 Agreement start and end date display with a time offset in some environments
+ * ERM-189 Custom coverage dates display with a time offset in some environments 
+
 ## 1.7.0 2019-06-11
  * ERM-259 Set supplementary information for an Agreement
  * ERM-245 Tenant bootstrap improvements
