@@ -1,0 +1,7 @@
+import groovy.transform.Field
+import org.olf.general.jobs.LogEntry
+
+@Field
+LogEntry logEntry
+
+json g.render(logEntry, [include: ['message', 'type']])

@@ -1,10 +1,13 @@
 package org.olf.kb
 
 import javax.persistence.Transient
+
 import org.olf.general.Org
-import grails.gorm.MultiTenant
-import com.k_int.web.toolkit.refdata.RefdataValue
+
 import com.k_int.web.toolkit.refdata.Defaults
+import com.k_int.web.toolkit.refdata.RefdataValue
+
+import grails.gorm.MultiTenant
 
 /**
  * mod-erm representation of a package

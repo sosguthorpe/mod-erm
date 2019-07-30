@@ -44,4 +44,83 @@ databaseChangeLog = {
       }
     }
   }
+  
+  changeSet(author: "sosguthorpe (generated)", id: "1563377308054-1") {
+    createTable(tableName: "log_entry") {
+      column(name: "le_id", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "version", type: "BIGINT") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "le_message", type: "TEXT")
+
+      column(name: "le_origin", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "le_datecreated", type: "TIMESTAMP WITHOUT TIME ZONE")
+
+      column(name: "le_type", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
+    }
+  }
+
+  changeSet(author: "sosguthorpe (generated)", id: "1563377308054-2") {
+    createTable(tableName: "package_ingest_job") {
+      column(name: "id", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
+    }
+  }
+
+  changeSet(author: "sosguthorpe (generated)", id: "1563377308054-3") {
+    createTable(tableName: "persistent_job") {
+      column(name: "id", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "version", type: "BIGINT") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "job_date_created", type: "TIMESTAMP WITHOUT TIME ZONE")
+
+      column(name: "job_name", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "job_ended", type: "TIMESTAMP WITHOUT TIME ZONE")
+
+      column(name: "job_started", type: "TIMESTAMP WITHOUT TIME ZONE")
+
+      column(name: "job_status_fk", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "job_result_fk", type: "VARCHAR(36)")
+    }
+  }
+  
+  changeSet(author: "sosguthorpe (generated)", id: "1563377308054-5") {
+    addPrimaryKey(columnNames: "le_id", constraintName: "log_entryPK", tableName: "log_entry")
+  }
+
+  changeSet(author: "sosguthorpe (generated)", id: "1563377308054-6") {
+    addPrimaryKey(columnNames: "id", constraintName: "package_ingest_jobPK", tableName: "package_ingest_job")
+  }
+
+  changeSet(author: "sosguthorpe (generated)", id: "1563377308054-7") {
+    addPrimaryKey(columnNames: "id", constraintName: "persistent_jobPK", tableName: "persistent_job")
+  }
+
+  changeSet(author: "sosguthorpe (generated)", id: "1563377308054-9") {
+    createIndex(indexName: "origin_idx", tableName: "log_entry") {
+      column(name: "le_origin")
+    }
+  }
+
 }

@@ -1,5 +1,6 @@
 import grails.util.BuildSettings
 import grails.util.Environment
+import org.olf.general.jobs.JobAwareAppender
 import org.springframework.boot.logging.logback.ColorConverter
 import org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter
 
@@ -68,3 +69,9 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
     logger("StackTrace", ERROR, ['FULL_STACKTRACE'], false)
 }
 root(ERROR, ['STDOUT'])
+
+// Add a new appender that logs statements to the database for jobs.
+appender ('JOB', JobAwareAppender)
+
+// Add the appender for classes we wish to expose within the database.
+logger ('org.olf.PackageIngestService', DEBUG, ['JOB'])

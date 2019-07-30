@@ -110,6 +110,12 @@
         },{
          "methods": ["GET", "POST"],
          "pathPattern": "/erm/files"
+        },{
+          "methods": ["GET", "DELETE"],
+          "pathPattern": "/erm/jobs/{id}"
+        },{
+         "methods": ["GET", "POST"],
+         "pathPattern": "/erm/jobs"
         }
       ]
     },{

@@ -1,5 +1,7 @@
 package org.olf
 
+import org.olf.general.jobs.JobRunnerService
+import org.olf.general.jobs.LogEntry
 import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
 import org.olf.kb.Platform
@@ -64,7 +66,7 @@ public class PackageIngestService {
 
       result.updateTime = System.currentTimeMillis()
   
-      log.debug("Package header: ${package_data.header} - update start time is ${result.updateTime}")
+      log.info("Package header: ${package_data.header} - update start time is ${result.updateTime}")
 
       // header.packageSlug contains the package maintainers authoritative identifier for this package.
       pkg = Pkg.findBySourceAndReference(package_data.header.packageSource, package_data.header.packageSlug)
@@ -81,11 +83,11 @@ public class PackageIngestService {
 
       if ( pkg == null ) {
         pkg = new Pkg(
-                              name: package_data.header.packageName,
-                             source: package_data.header.packageSource,
-                          reference: package_data.header.packageSlug,
-                           remoteKb: kb,
-                             vendor: vendor).save(flush:true, failOnError:true)
+              name: package_data.header.packageName,
+             source: package_data.header.packageSource,
+          reference: package_data.header.packageSlug,
+           remoteKb: kb,
+             vendor: vendor).save(flush:true, failOnError:true)
       }
       result.packageId = pkg.id
     }
@@ -142,7 +144,7 @@ public class PackageIngestService {
                 PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null; 
     
                 if ( pci == null ) {
-                  log.debug("[${result.titleCount}] Create new package content item")
+                  log.debug("Record ${result.titleCount} - Create new package content item")
                   pci = new PackageContentItem(
                                                pti:pti, 
                                                pkg:Pkg.get(result.packageId), 
@@ -155,7 +157,7 @@ public class PackageIngestService {
                 }
                 else {
                   // Note that we have seen the package content item now - so we don't delete it at the end.
-                  log.debug("[${result.titleCount}] update package content item (${pci.id}) set last seen to ${result.updateTime}")
+                  log.debug("Record ${result.titleCount} - Update package content item (${pci.id})")
                   pci.lastSeenTimestamp = result.updateTime
                   // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
                 }
@@ -178,20 +180,28 @@ public class PackageIngestService {
                 pci.save(flush:true, failOnError:true)
               }
               else {
-                log.error("[${result.titleCount}] unable to identify platform for package content item :: ${platform_url_to_use}, ${pc.platformName}")
+                String message = "Exception processing record #${result.titleCount}. Unable to identify platform for package content item ${platform_url_to_use}, ${pc.platformName}"
+                log.error(message)
+//                JobRunnerService.addJobError(message)
               }
             }
             catch ( Exception e ) {
-              log.error("[${result.titleCount}] problem",e)
+              String message = "Exception processing record #${result.titleCount}. ${e.message}"
+              log.error(message,e)
+//              JobRunnerService.addJobError(message)
             }
           }
           else {
-            log.error("row ${result.titleCount} Unable to resolve title ${pc.title} ${pc.instanceIdentifiers}")
+            String message = "Exception processing record #${result.titleCount}. Unable to resolve title ${pc.title} ${pc.instanceIdentifiers}"
+            log.error(message)
+//            JobRunnerService.addJobError(message)
           }
         }
       }
       catch ( Exception e ) {
-        log.error("Problem with line ${pc} in package load. Ignoring this row",e)
+        String message = "Error when processing record ${pc} in package load. Ignoring this record."
+//        JobRunnerService.addJobError(message)
+        log.error(message,e)
       }
 
       // {
@@ -221,33 +231,35 @@ public class PackageIngestService {
       result.titleCount++
       result.averageTimePerTitle=(System.currentTimeMillis()-result.startTime)/result.titleCount
       if ( result.titleCount % 100 == 0 ) {
-        log.info("Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}")
+        String message = "Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}"
+        log.info (message)
+//        JobRunnerService.addJobInfo(message)
       }
     }
 
     // At the end - Any PCIs that are currently live (Don't have a removedTimestamp) but whos lastSeenTimestamp is < result.updateTime
     // were not found on this run, and have been removed. We *may* introduce some extra checks here - like 3 times or a time delay, but for now,
     // this is how we detect deletions in the package file.
-    log.debug("end of packageUpsert. Remove any content items that have disappeared since the last upload. ${pkg.name}/${pkg.source}/${pkg.reference}/${result.updateTime}")
+    log.info("end of packageUpsert. Remove any content items that have disappeared since the last upload. ${pkg.name}/${pkg.source}/${pkg.reference}/${result.updateTime}")
     int removal_counter = 0
     
     PackageContentItem.withNewTransaction { status ->
       
-      
-        PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime',
-                                        [pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
-          try {
-            log.debug("Removal candidate: pci.id #${removal_candidate.id} (Last seen ${removal_candidate.lastSeenTimestamp}, thisUpdate ${result.updateTime}) -- Set removed")
-            removal_candidate.removedTimestamp = result.updateTime
-            removal_candidate.save(flush:true, failOnError:true)
-          } catch ( Exception e ) {
-            log.error("Problem with line ${removal_candidate} in package load. Ignoring this row",e)
-          }
-          removal_counter++
+      PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime',
+                                      [pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
+        try {
+          log.debug("Removal candidate: pci.id #${removal_candidate.id} (Last seen ${removal_candidate.lastSeenTimestamp}, thisUpdate ${result.updateTime}) -- Set removed")
+          removal_candidate.removedTimestamp = result.updateTime
+          removal_candidate.save(flush:true, failOnError:true)
+        } catch ( Exception e ) {
+          log.error("Problem removing ${removal_candidate} in package load",e)
         }
-        log.debug("${removal_counter} removed")
+        removal_counter++
+      }
       result.numTitlesRemoved = removal_counter
     }
+    
+    log.info("Removed ${removal_counter} content items successfully")
 
     return result
   }
