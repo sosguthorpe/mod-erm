@@ -53,13 +53,13 @@ public class CoverageService {
     statements
   }
   
-  public Map<String, List<AbstractCoverageStatement>> lookupCoverageOverrides (final Map resultsMap, final String agreementId) {
+  public Map<String, List<AbstractCoverageStatement>> lookupCoverageOverrides (final Map resultsMap, final String agreementId = null) {
     final List<ErmResource> resources = resultsMap?.get('results')
     
     resources ? lookupCoverageOverrides(resources, agreementId) : [:]
   }
   
-  public Map<String, List<AbstractCoverageStatement>> lookupCoverageOverrides (final List<ErmResource> resources, final String agreementId) {
+  public Map<String, List<AbstractCoverageStatement>> lookupCoverageOverrides (final List<ErmResource> resources, final String agreementId = null) {
     
     if (!resources || resources.size() < 1) return [:]
     
@@ -68,8 +68,12 @@ public class CoverageService {
       
       createAlias 'resource', 'ermResource'
       createAlias 'ermResource.contentItems', 'pcis', JoinType.LEFT_OUTER_JOIN
-      eq 'owner.id', agreementId
-      
+      if (agreementId) {
+        eq 'owner.id', agreementId
+      } else {
+        isNotNull 'owner.id'
+      }
+     
       or {
         
         final Set<String> ids = resources.collect{ it.id }

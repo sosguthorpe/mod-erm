@@ -1,0 +1,73 @@
+import groovy.transform.Field
+import org.olf.erm.Entitlement
+import org.olf.kb.ErmResource
+import org.olf.kb.PackageContentItem
+import org.olf.kb.PlatformTitleInstance
+import org.olf.kb.TitleInstance
+import org.olf.kb.Platform
+
+final Object[] tuple = binding.variables.values()[0]
+
+boolean via_package = false
+final ErmResource resource = tuple[0] as ErmResource
+Entitlement ent
+TitleInstance ti
+Platform the_platform
+String the_depth
+String the_note
+String the_url
+
+switch (resource) {
+  case { it instanceof PackageContentItem}:
+    via_package = tuple[1]
+    ent = (via_package ? tuple[1] : tuple[2]) as Entitlement
+    ti = ((PackageContentItem)resource).pti.titleInstance
+    the_platform = ((PackageContentItem)resource).pti.platform
+    the_url = ((PackageContentItem)resource).pti.url
+    
+    the_depth = ((PackageContentItem)resource).depth
+    the_note = ((PackageContentItem)resource).note
+    break
+  case { it instanceof PlatformTitleInstance}:
+    ti = ((PlatformTitleInstance)resource).titleInstance
+    the_platform = ((PlatformTitleInstance)resource).platform
+    the_url = ((PlatformTitleInstance)resource).url
+    
+  case { it instanceof TitleInstance}:
+    ti = resource as TitleInstance
+  
+    // These resources can only be directly associated.
+    via_package = false
+    ent = tuple[2] as Entitlement
+    break
+}
+
+//final Map<String,?> result = ['title': ti, entitlement: ent]
+
+// We probably don't actually want to do this, but this gives us an Idea of what is happening.
+//json g.render(result)
+
+json {
+  if (via_package) {
+    final def pkg = ent.resource
+    
+    "package" {
+       id pkg.id
+       name pkg.name 
+    }
+    
+     
+  }
+  if (the_platform) {
+     platform g.render(the_platform)
+  }
+  if (the_note) {
+     note g.render(the_note)
+  }
+  if (the_url) {
+     url g.render(the_url)
+  } 
+  title g.render(ti, [expand: ['identifiers', 'type', 'subType', 'coverage'], excludes: ['entitlements', 'work', 'platformInstances']])
+  
+   
+}

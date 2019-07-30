@@ -1,0 +1,4 @@
+import groovy.transform.*
+
+final Map theData = binding.variables
+json g.render(template:"exportEntry", collection: theData.values()[0], var:'tuple') 

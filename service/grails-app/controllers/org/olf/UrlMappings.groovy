@@ -18,7 +18,8 @@ class UrlMappings {
 //       "/addToAgreement"(action:'addToAgreement')
       "/resources" (action: 'resources', method: 'GET')
       "/resources2" (action: 'resources2', method: 'GET')
-      
+      "/export/$action?" (controller: 'export', method: 'GET')
+	  
       '/linkedLicenses' {
         controller = 'remoteLicenseLink'
         method = 'GET'
@@ -109,7 +110,7 @@ class UrlMappings {
 
     
     // export endpoints
-    "/erm/export/$action" (controller:'export')
+    "/erm/export/$action?" (controller:'export')
 
   }
 }
