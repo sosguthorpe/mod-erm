@@ -1,8 +1,6 @@
 package org.olf.kb
 
-import grails.gorm.annotation.Entity
 import java.time.LocalDate
-import org.olf.erm.Entitlement
 
 abstract class AbstractCoverageStatement {
 
