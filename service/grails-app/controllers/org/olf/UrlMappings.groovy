@@ -53,7 +53,11 @@ class UrlMappings {
       }
     }
 
-    '/erm/packages'(resources: 'package')
+    '/erm/packages'(resources: 'package') {
+      collection {
+        "import" (action: 'import', method: 'post')
+      }
+    }
 
     "/erm/pci"(resources:'packageContentItem')
     "/erm/entitlements"(resources:'entitlement') {
