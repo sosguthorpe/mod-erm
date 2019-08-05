@@ -55,19 +55,27 @@ json {
        id pkg.id
        name pkg.name 
     }
-    
-     
   }
+  
+
   if (the_platform) {
      platform g.render(the_platform)
   }
   if (the_note) {
-     note g.render(the_note)
+     // note g.render(the_note)
+     note the_note
   }
   if (the_url) {
-     url g.render(the_url)
-  } 
+     // url g.render(the_url)
+     url the_url
+  }
+  if (the_depth) {
+    // depth g.render(the_url)
+    depth the_depth 
+  }
+   
   title g.render(ti, [expand: ['identifiers', 'type', 'subType', 'coverage'], excludes: ['entitlements', 'work', 'platformInstances']])
   
    
 }
+

@@ -82,6 +82,7 @@ dependencies {
   console "org.grails:grails-console"
   compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
   compile 'org.z3950.zing:cql-java:1.13'
+  compile 'com.opencsv:opencsv:4.6'
 
   profile "org.grails.profiles:rest-api"
   runtime "org.glassfish.web:el-impl:2.1.2-b03"
