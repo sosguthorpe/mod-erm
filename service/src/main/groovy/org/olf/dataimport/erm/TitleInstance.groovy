@@ -1,17 +1,17 @@
-package org.olf.dataimport.folio
+package org.olf.dataimport.erm
 
 import com.k_int.web.toolkit.refdata.RefdataValue
 
 import grails.validation.Validateable
 
-class FolioErmTI implements Validateable {
+class TitleInstance implements Validateable {
   String name
-  Set<FolioErmIdentifier> identifiers
+  Set<Identifier> identifiers
   RefdataValue type
   RefdataValue subType
   
   static hasMany = [
-    identifiers: FolioErmIdentifier
+    identifiers: Identifier
   ]
   
   static constraints = {

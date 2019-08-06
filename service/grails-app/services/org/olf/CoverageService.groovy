@@ -1,16 +1,17 @@
 package org.olf
 
-import java.time.LocalDate
 import javax.servlet.http.HttpServletRequest
+
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.hibernate.sql.JoinType
+import org.olf.dataimport.internal.PackageSchema.CoverageStatementSchema
 import org.olf.erm.Entitlement
 import org.olf.kb.AbstractCoverageStatement
 import org.olf.kb.CoverageStatement
 import org.olf.kb.ErmResource
 import org.olf.kb.Pkg
-import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
+
 import grails.gorm.transactions.Transactional
 
 /**
@@ -18,23 +19,7 @@ import grails.gorm.transactions.Transactional
  */
 public class CoverageService {
   
-  private LocalDate ensureLocalDate ( final def dateObject ) {
-    
-    if (dateObject == null) return null
-    if (dateObject instanceof LocalDate) return dateObject 
-    
-    // First we should clean any strings
-    String dateStr = "${dateObject}".trim()
-    
-    // Empty string is Null equivalent
-    if (dateStr == '') return null
-    
-    // Just trim the long dates. Crude but should work for standards
-    if (dateStr.length() > 10) dateStr = dateStr.substring(0, 10)
-    LocalDate.parse(dateStr)
-  }
-  
-  private Map<String, Set<AbstractCoverageStatement>> addToRequestIfPresent (statements) {
+  private Map<String, Set<AbstractCoverageStatement>> addToRequestIfPresent (final Map<String, Set<AbstractCoverageStatement>> statements) {
     
     if (statements) {
       GrailsWebRequest rAtt = (GrailsWebRequest)RequestContextHolder.getRequestAttributes()
@@ -120,15 +105,11 @@ public class CoverageService {
    * @param coverage_statements The array of coverage statements [ [ startDate:YYYY-MM-DD, startVolume:...], [ stateDate:....
    */
   @Transactional
-  public void extend(final ErmResource title, final List<Map> coverage_statements) {
+  public void extend(final ErmResource title, final List<CoverageStatementSchema> coverage_statements) {
     log.debug("Extend coverage statements on ${title}(${title.id}) with ${coverage_statements}")
 
     // Iterate through each of the statements we want to add
-    coverage_statements.each { Map cs ->
-      
-      // First we should convert any string dates
-      cs.startDate = ensureLocalDate (cs.startDate)
-      cs.endDate = ensureLocalDate (cs.endDate)
+    coverage_statements.each { CoverageStatementSchema cs ->
       
       if (cs.startDate != null) {
         final List<CoverageStatement> existing_coverage = CoverageStatement.createCriteria().list {
@@ -239,8 +220,8 @@ public class CoverageService {
     }
   }
 
-  public String nullIfBlank(String value) {
-    return value?.length() > 0 ? value : null
+  public String nullIfBlank(final String value) {
+    return (value?.trim()?.length() ?: 0) > 0 ? value : null
   }
 
   public void coalesceCoverageStatements() {

@@ -1,17 +1,17 @@
-package org.olf.dataimport.folio
+package org.olf.dataimport.erm
 
 import grails.validation.Validateable
 
-class FolioErmPTI implements Validateable {
+class PlatformTitileInstance implements Validateable {
   
   String platform
   String platformUrl
   String url
-  FolioErmTI titleInstance
+  TitleInstance titleInstance
   
   static constraints = {
     platform      nullable:true, blank:false
-    platformUrl   blank:false, validator: { String platformUrl, FolioErmPTI instance ->
+    platformUrl   blank:false, validator: { String platformUrl, PlatformTitileInstance instance ->
       if (!platformUrl && !instance.platform) {
         // If platform is blank then this can't be.
         return ['null.message']

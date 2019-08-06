@@ -1,5 +1,7 @@
 package org.olf
 
+import org.olf.dataimport.internal.PackageSchema.ContentItemSchema
+import org.olf.dataimport.internal.PackageSchema.IdentifierSchema
 import org.olf.kb.Identifier
 import org.olf.kb.IdentifierNamespace
 import org.olf.kb.IdentifierOccurrence
@@ -72,7 +74,7 @@ public class TitleInstanceResolverService {
    *     } ]
    *   }
    */
-  public TitleInstance resolve(Map citation) {
+  public TitleInstance resolve(ContentItemSchema citation) {
     // log.debug("TitleInstanceResolverService::resolve(${citation})");
     TitleInstance result = null;
 
@@ -130,13 +132,13 @@ public class TitleInstanceResolverService {
    * we model the print and electronic as 2 different title instances, linked by a common work. This method looks up/creates any sibling instances
    * by matching the print instance, then looking for a sibling with type "electronic"
    */
-  private List<TitleInstance> siblingMatch(Map citation) {
+  private List<TitleInstance> siblingMatch(ContentItemSchema citation) {
     Map issn_id = citation.siblingInstanceIdentifiers.find { it.namespace == 'issn' } ;
     String issn = issn_id?.value;
     return TitleInstance.executeQuery(SIBLING_MATCH_HQL,[ns:'issn',value:issn,electronic:'electronic']);
   }
 
-  private createOrLinkSiblings(Map citation, work) {
+  private createOrLinkSiblings(ContentItemSchema citation, Work work) {
     List<TitleInstance> candidate_list = []
 
     // Lets try and match based on sibling identifiers. 
@@ -190,9 +192,9 @@ public class TitleInstanceResolverService {
     }
   }
 
-  private TitleInstance createNewTitleInstance(Map citation, Work work = null) {
+  private TitleInstance createNewTitleInstance(final ContentItemSchema citation, Work work = null) {
 
-    TitleInstance result = null;
+    TitleInstance result = null
 
     // With the introduction of fuzzy title matching, we are relaxing this constraint and
     // will expect to enrich titles without identifiers when we next see a record. BUT
@@ -262,14 +264,14 @@ public class TitleInstanceResolverService {
    * an identifier, we will need to add identifiers to that record when we see a record that
    * suggests identifiers for that title match.
    */ 
-  private void checkForEnrichment(TitleInstance title, Map citation) {
-    return;
+  private void checkForEnrichment(TitleInstance title, ContentItemSchema citation) {
+    return
   }
 
   /**
    * Given an identifier in a citation { value:'1234-5678', namespace:'isbn' } lookup or create an identifier in the DB to represent that info
    */
-  private Identifier lookupOrCreateIdentifier(String value, String namespace) {
+  private Identifier lookupOrCreateIdentifier(final String value, final String namespace) {
     Identifier result = null;
     def identifier_lookup = Identifier.executeQuery('select id from Identifier as id where id.value = :value and id.ns.value = :ns',[value:value, ns:namespace]);
     switch(identifier_lookup.size() ) {
@@ -287,12 +289,8 @@ public class TitleInstanceResolverService {
     return result;
   }
 
-  private IdentifierNamespace lookupOrCreateIdentifierNamespace(String ns) {
-    def ns_lookup = IdentifierNamespace.findByValue(ns);
-    if ( ns_lookup == null ) {
-      ns_lookup = new IdentifierNamespace(value:ns).save(flush:true, failOnError:true);
-    }
-    return ns_lookup;
+  private IdentifierNamespace lookupOrCreateIdentifierNamespace(final String ns) {
+    IdentifierNamespace.findOrCreateByValue(ns).save(flush:true, failOnError:true)
   }
 
   /**
@@ -302,7 +300,7 @@ public class TitleInstanceResolverService {
     return titleMatch(title, threshold, 'electronic');
   }
 
-  private List<TitleInstance> titleMatch(String title, float threshold, String subtype) {
+  private List<TitleInstance> titleMatch(final String title, final float threshold, final String subtype) {
 
     List<TitleInstance> result = new ArrayList<TitleInstance>()
     TitleInstance.withSession { session ->
@@ -317,34 +315,28 @@ public class TitleInstanceResolverService {
     return result
   }
 
-  private int countClassOneIDs(List identifiers) {
-    int result = 0;
-    identifiers.each { id ->
-      if ( class_one_namespaces?.contains(id.namespace.toLowerCase()) ) {
-        result++;
-      }
-    }
-    return result;
+  private int countClassOneIDs(final List<IdentifierSchema> identifiers) {
+    identifiers?.findAll( { IdentifierSchema id -> class_one_namespaces?.contains( id.namespace.toLowerCase() ) })?.size() ?: 0
   }
 
   /**
    * Being passed a map of namespace, value pair maps, attempt to locate any title instances with class 1 identifiers (ISSN, ISBN, DOI)
    */
-  private List<TitleInstance> classOneMatch(List identifiers) {
+  private List<TitleInstance> classOneMatch(final List<IdentifierSchema> identifiers) {
     // We want to build a list of all the title instance records in the system that match the identifiers. Hopefully this will return 0 or 1 records.
     // If it returns more than 1 then we are in a sticky situation, and cleverness is needed.
-    List<TitleInstance> result = new ArrayList<TitleInstance>()
+    final List<TitleInstance> result = new ArrayList<TitleInstance>()
 
-    def num_class_one_identifiers = 0;
+    int num_class_one_identifiers = 0;
 
-    identifiers.each { id ->
+    identifiers.each { IdentifierSchema id ->
       if ( class_one_namespaces?.contains(id.namespace.toLowerCase()) ) {
 
         num_class_one_identifiers++;
 
         // Look up each identifier
         // log.debug("${id} - try class one match");
-        def id_matches = Identifier.executeQuery('select id from Identifier as id where id.value = :value and id.ns.value = :ns',[value:id.value, ns:id.namespace], [max:2])
+        final List<Identifier> id_matches = Identifier.executeQuery('select id from Identifier as id where id.value = :value and id.ns.value = :ns',[value:id.value, ns:id.namespace], [max:2])
 
         assert ( id_matches.size() <= 1 )
 

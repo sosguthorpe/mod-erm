@@ -2,6 +2,9 @@ package org.olf.kb.adapters;
 
 import org.olf.kb.KBCacheUpdater;
 import org.olf.kb.RemoteKB;
+import org.springframework.validation.BindingResult
+import org.olf.dataimport.internal.PackageImpl
+import org.olf.dataimport.internal.PackageSchema
 import org.olf.kb.KBCache;
 import groovy.json.JsonSlurper;
 import java.util.Map;
@@ -14,6 +17,10 @@ import static groovyx.net.http.ContentType.*
 import static groovyx.net.http.Method.*
 import static groovyx.net.http.Method.GET
 import static groovyx.net.http.Method.POST
+
+import grails.databinding.SimpleMapDataBindingSource
+import grails.web.databinding.DataBinder
+import grails.web.databinding.DataBindingUtils
 import groovyx.net.http.*
 import org.apache.http.entity.mime.*
 import org.apache.http.entity.mime.content.*
@@ -34,7 +41,7 @@ import java.util.TimeZone;
  */
 
 @Slf4j
-public class GOKbOAIAdapter implements KBCacheUpdater {
+public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
 
 
   public void freshenPackageData(String source_name,
@@ -135,7 +142,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
 
       log.debug("Processing OAI record :: ${result.count} ${record_identifier} ${package_name}");
 
-      def json_package_description = gokbToERM(record);
+      PackageSchema json_package_description = gokbToERM(record);
       if ( json_package_description.header.status == 'deleted' ) {
         // ToDo: Decide what to do about deleted records
       }
@@ -165,7 +172,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
    * the GOKb records look like this
    *   https://gokbt.gbv.de/gokb/oai/index/packages?verb=ListRecords&metadataPrefix=gokb
    */
-  private Map gokbToERM(Object xml_gokb_record) {
+  private PackageImpl gokbToERM(Object xml_gokb_record) {
 
     def package_record = xml_gokb_record?.metadata?.gokb?.package
 
@@ -180,7 +187,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
   
       result = [
         header:[
-          status: xml_gokb_record?.header?.status,
+          status: xml_gokb_record?.header?.status?.text(),
           availability:[
             type: 'general'
           ],
@@ -268,8 +275,14 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
     else {
       throw new RuntimeException("Problem decoding package record: ${package_record}");
     }
+    
+    PackageImpl pkg = new PackageImpl()
+    BindingResult binding = bindData (pkg, new SimpleMapDataBindingSource(result))
+    if (binding?.hasErrors()) {
+      binding.allErrors.each { log.debug "\t${it}" }
+    }
 
-    return result;
+    pkg
   }
 
   public Map importPackage(Map params,

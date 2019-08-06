@@ -1,10 +1,9 @@
-package org.olf.dataimport.folio
-
-import java.time.LocalDate
+package org.olf.dataimport.erm
 
 import grails.validation.Validateable
+import org.olf.dataimport.internal.PackageSchema.PackageProviderSchema
 
-class FolioErmPackageProvider implements Validateable {
+class PackageProvider implements PackageProviderSchema, Validateable {
   
   String name
   String reference

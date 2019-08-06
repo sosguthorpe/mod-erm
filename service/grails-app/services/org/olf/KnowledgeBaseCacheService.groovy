@@ -6,6 +6,7 @@ import org.olf.kb.RemoteKB;
 import org.olf.kb.KBCacheUpdater;
 import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.ContentActivationRecord
+import org.olf.dataimport.internal.PackageSchema
 import org.olf.erm.Entitlement
 import org.springframework.transaction.TransactionDefinition
 
@@ -73,8 +74,7 @@ where ( exists ( select pci.id
    *
    *  @return map containing information about the packageId of the newly loaded or existing updated package
    */
-  public Map onPackageChange(String rkb_name, 
-                              Object package_data) {
+  public Map onPackageChange(String rkb_name, PackageSchema package_data) {
     Map result = null;
     RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
       log.debug("onPackageChange(${rkb_name},...)");

@@ -55,7 +55,7 @@ class UrlMappings {
 
     '/erm/packages'(resources: 'package') {
       collection {
-        "import" (action: 'import', method: 'post')
+        "/import" (controller: 'package', action: 'import', method: 'POST')
       }
     }
 

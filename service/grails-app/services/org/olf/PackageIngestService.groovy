@@ -1,5 +1,7 @@
 package org.olf
 
+import org.olf.dataimport.internal.PackageSchema
+import org.olf.dataimport.internal.PackageSchema.ContentItemSchema
 import org.olf.general.jobs.JobRunnerService
 import org.olf.general.jobs.LogEntry
 import org.olf.kb.PackageContentItem
@@ -34,7 +36,7 @@ public class PackageIngestService {
   // looking up an Org in vendors and stashing the vendor info in the local cache table.
   DependentModuleProxyService dependentModuleProxyService
 
-  public Map upsertPackage(Map package_data) {
+  public Map upsertPackage(PackageSchema package_data) {
     return upsertPackage(package_data,'LOCAL')
   }
 
@@ -47,7 +49,7 @@ public class PackageIngestService {
    * package into the KB.
    * @return id of package upserted
    */
-  public Map upsertPackage(Map package_data, String remotekbname) {
+  public Map upsertPackage(PackageSchema package_data, String remotekbname) {
 
     def result = [:]
     result.startTime = System.currentTimeMillis()
@@ -92,7 +94,7 @@ public class PackageIngestService {
       result.packageId = pkg.id
     }
 
-    package_data.packageContents.each { pc ->
+    package_data.packageContents.each { ContentItemSchema pc ->
 
       // log.debug("Try to resolve ${pc}")
 
