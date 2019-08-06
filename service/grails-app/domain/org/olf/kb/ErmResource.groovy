@@ -4,6 +4,7 @@ import org.olf.erm.Entitlement
 import com.k_int.web.toolkit.refdata.RefdataValue
 
 import grails.gorm.MultiTenant
+import java.time.LocalDate
 
 /**
  * an ErmResource - Superclass

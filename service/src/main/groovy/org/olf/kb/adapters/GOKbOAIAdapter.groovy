@@ -25,6 +25,7 @@ import java.nio.charset.Charset
 import static groovy.json.JsonOutput.*
 import java.text.*
 import groovy.util.logging.Slf4j
+import java.util.TimeZone;
 
 
 /**
@@ -120,6 +121,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
 
     def result = [:]
 
+    
     // If there is no cursor, initialise it to an empty string.
     result.new_cursor = (cursor && cursor.trim()) != '' ? cursor : '';
     result.count = 0;

@@ -1,0 +1,19 @@
+import org.olf.general.jobs.PersistentJob
+import groovy.transform.Field
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
+
+final List logs = ['fullLog', 'errorLog', 'infoLog']
+
+@Field
+PersistentJob persistentJob
+
+json g.render (persistentJob, [expand:['status', 'result']]) {
+  
+  logs.each {final String propName ->
+    final def logList = persistentJob[propName]
+    if (logList) {
+      call(propName, g.render(logList)) 
+    }
+  }
+  'class' GrailsHibernateUtil.unwrapIfProxy(persistentJob).class.name
+}

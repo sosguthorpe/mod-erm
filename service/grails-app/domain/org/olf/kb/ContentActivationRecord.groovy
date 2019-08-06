@@ -1,7 +1,8 @@
 package org.olf.kb
 
+import java.time.LocalDate
+
 import grails.gorm.MultiTenant
-import org.olf.kb.PlatformTitleInstance;
 
 /**
  * A Proxy object that holds information about the Purchase order line in an external acquisitions system
@@ -10,8 +11,8 @@ import org.olf.kb.PlatformTitleInstance;
 public class ContentActivationRecord implements MultiTenant<ContentActivationRecord> {
 
   String id
-  Date dateActivation
-  Date dateDeactivation
+  LocalDate dateActivation
+  LocalDate dateDeactivation
   RemoteKB target
   PlatformTitleInstance pti
 

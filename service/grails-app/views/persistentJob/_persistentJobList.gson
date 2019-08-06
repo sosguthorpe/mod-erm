@@ -1,0 +1,32 @@
+import org.olf.kb.ErmResource
+//getBinding().variables.each { k, v ->
+//  System.out.println "${k} = ${v}"
+//}
+
+// Because of the naming conventions we can not accurately predict the variable name here.
+// If a single Collection of resources is passed it would be named according to the type of the first
+// entry in the collection. As we expect a collection of different types, the variable name can change.
+
+// This file is essentially a groovy script, so we can grab a map of all 'variables' by directly
+// interrogating the binding for the script.
+final Map theData = binding.variables
+
+// If we have exactly 1 parameter we assume that it is a collection as per a regular restful 'get' for a collection.  
+if (theData.size() == 1) {
+  
+  json g.render(template:"persistentJob", collection: theData.values()[0], var:'persistentJob')
+  
+} else {
+  
+  // Multiple... Let's assume that this is the map containing the results and various pieces of metadata. 
+  json {
+    pageSize theData.pageSize
+    page theData.page
+    totalPages theData.totalPages
+    meta theData.meta
+    totalRecords theData.totalRecords
+    total theData.total
+    results g.render(template:"persistentJob", collection: theData.results, var:'persistentJob')
+  }
+  
+}

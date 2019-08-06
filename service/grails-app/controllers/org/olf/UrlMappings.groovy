@@ -18,7 +18,8 @@ class UrlMappings {
 //       "/addToAgreement"(action:'addToAgreement')
       "/resources" (action: 'resources', method: 'GET')
       "/resources2" (action: 'resources2', method: 'GET')
-      
+      "/export/$action?" (controller: 'export', method: 'GET')
+	  
       '/linkedLicenses' {
         controller = 'remoteLicenseLink'
         method = 'GET'
@@ -31,6 +32,19 @@ class UrlMappings {
           method = 'GET'
         }
       }
+	  
+      '/usageDataProviders' {
+		  controller = 'usageDataProvider'
+		  method = 'GET'
+		  filters = { "owner==${params.subscriptionAgreementId}" }
+	  }
+	  
+      collection {
+		  '/usageDataProviders' {
+			  controller = 'usageDataProvider'
+			  method = 'GET'
+		  }
+	  }
     }
 
     '/erm/titles'(resources: 'title') {
@@ -74,6 +88,8 @@ class UrlMappings {
 
     "/erm/knowledgebase" ( controller:'kb', action:'index')
     "/erm/knowledgebase/$action" ( controller:'kb' )
+    
+    "/erm/jobs" ( resources:'persistentJob', excludes: ['update', 'patch', 'save'])
 
 
      // This is the URL path used by the eresources screen.
@@ -94,7 +110,9 @@ class UrlMappings {
     post '/erm/files'(controller: "fileUpload", action: "postFileUploadRaw")
     delete "/erm/files/$id"(controller: "fileUpload", action: "deleteFileUpload")
 
-
+    
+    // export endpoints
+    "/erm/export/$action?" (controller:'export')
 
   }
 }

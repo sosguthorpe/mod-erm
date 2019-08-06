@@ -1,5 +1,6 @@
 package org.olf.general
 import grails.gorm.MultiTenant
+import grails.gorm.multitenancy.Tenants
 
 class FileUpload implements MultiTenant<FileUpload> {
 
@@ -26,4 +27,28 @@ class FileUpload implements MultiTenant<FileUpload> {
         lastModified column: 'fu_last_mod' 
                owner column: 'fu_owner', type: 'string', length: 36
   }
+
+  def afterUpdate() {
+    log.info("afterUpdate() for FileUpload")
+    final Serializable currentTenantId = Tenants.currentId()
+      Tenants.withId(currentTenantId) {
+      try {
+        def deleteList = []
+        def fuList = FileUpload.findAllWhere(owner: null)
+        fuList.each {
+          FileUpload upload = it
+          if(upload.owner == null) {
+            deleteList.add(upload)
+          }
+        }
+        deleteList.each {
+          log.info("Deleting fileUpload with id of ${it.id}")
+          it.delete()
+        }
+      } catch(Exception e) {
+        log.error("Error trying to delete ownerless fileUpload objects: ${e.getMessage()}")
+      }
+    }
+  }
+
 }
