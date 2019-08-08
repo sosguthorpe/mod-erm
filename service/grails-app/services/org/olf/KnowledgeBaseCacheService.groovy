@@ -16,7 +16,7 @@ import org.springframework.transaction.TransactionDefinition
 @Transactional
 public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
 
-  def packageIngestService
+  PackageIngestService packageIngestService
 
   private static final String PLATFORM_TITLES_QUERY = '''select pti, rkb, ent from PlatformTitleInstance as pti, Entitlement as ent, RemoteKB as rkb 
 where ( exists ( select pci.id 

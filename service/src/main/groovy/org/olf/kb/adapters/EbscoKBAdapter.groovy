@@ -1,28 +1,23 @@
 package org.olf.kb.adapters;
 
-import org.olf.kb.KBCacheUpdater;
-import org.olf.kb.RemoteKB;
-import org.olf.kb.KBCache;
-import groovy.json.JsonSlurper;
-import java.util.Map;
-
-import static groovyx.net.http.ContentType.URLENC
-import static groovyx.net.http.ContentType.XML
-import static groovyx.net.http.ContentType.JSON
+import static groovy.json.JsonOutput.*
 import static groovyx.net.http.ContentType.*
 import static groovyx.net.http.Method.*
-import static groovyx.net.http.Method.GET
-import static groovyx.net.http.Method.POST
-import groovyx.net.http.*
+
+import grails.web.databinding.DataBinder
+import java.text.*
+
+import org.apache.http.*
 import org.apache.http.entity.mime.*
 import org.apache.http.entity.mime.content.*
-import org.apache.http.*
 import org.apache.http.protocol.*
-import java.text.SimpleDateFormat
-import java.nio.charset.Charset
-import static groovy.json.JsonOutput.*
-import java.text.*
+import org.olf.dataimport.internal.PackageImpl
+import org.olf.kb.KBCache;
+import org.olf.kb.KBCacheUpdater;
+import org.springframework.validation.BindingResult
+
 import groovy.util.logging.Slf4j
+import groovyx.net.http.*
 
 /**
  * Get and Put KB records from the EBSCO API. Documentation can be found:
@@ -32,7 +27,7 @@ import groovy.util.logging.Slf4j
  */
 
 @Slf4j
-public class EbscoKBAdapter implements KBCacheUpdater {
+public class EbscoKBAdapter implements KBCacheUpdater, DataBinder {
 
 
   public void freshenPackageData(String source_name,
@@ -57,15 +52,15 @@ public class EbscoKBAdapter implements KBCacheUpdater {
    * If the package already exists, implementors MAY update the existing package with the new information.
    */
   public Map importPackage(Map params,
-                            KBCache cache) {
+                           KBCache cache) {
 
-    def erm_package = buildErmPackage(params.vendorid,
+    PackageImpl erm_package = buildErmPackage(params.vendorid,
                                       params.packageid,
                                       params.principal,
                                       params.credentials,
                                       makePackageReference(params))
 
-    return cache.onPackageChange(params.kb, erm_package);
+    return cache.onPackageChange(params.kb, erm_package)
   }
 
   /**
@@ -73,7 +68,7 @@ public class EbscoKBAdapter implements KBCacheUpdater {
    * @param params - A map containing vendorid and packageid
    * @return the canonicalpackage definition.
    */
-  private Map buildErmPackage(String vendorid, String packageid, String principal, String credentials, String package_reference) {
+  private PackageImpl buildErmPackage(final String vendorid, final String packageid, final String principal, final String credentials, final String package_reference) {
 
     log.debug("buildErmPackage(${vendorid},${packageid},${principal},${credentials})");
 
@@ -247,7 +242,13 @@ public class EbscoKBAdapter implements KBCacheUpdater {
       }
     }
 
-    return result;
+    PackageImpl pkg = new PackageImpl()
+    BindingResult binding = bindData (pkg, result)
+    if (binding?.hasErrors()) {
+      binding.allErrors.each { log.debug "\t${it}" }
+    }
+
+    pkg
   }
 
   /**

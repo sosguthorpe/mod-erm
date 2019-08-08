@@ -1,5 +1,6 @@
 package org.olf
 
+import org.olf.dataimport.internal.PackageImpl.PackageContentImpl
 import org.olf.dataimport.internal.PackageSchema.ContentItemSchema
 import org.olf.dataimport.internal.PackageSchema.IdentifierSchema
 import org.olf.kb.Identifier
@@ -9,12 +10,13 @@ import org.olf.kb.TitleInstance
 import org.olf.kb.Work
 
 import grails.gorm.transactions.Transactional
+import grails.web.databinding.DataBinder
 
 /**
  * This service works at the module level, it's often called without a tenant context.
  */
 @Transactional
-public class TitleInstanceResolverService {
+public class TitleInstanceResolverService implements DataBinder{
 
   private static final float MATCH_THRESHOLD = 0.775f
   private static final String TEXT_MATCH_TITLE_HQL = '''
@@ -50,7 +52,7 @@ public class TitleInstanceResolverService {
     'doi'
   ];
   
-  private static final def APPROVED = 'Approved'
+  private static final def APPROVED = 'approved'
 
   /**
    * Given a -valid- title citation with the minimum properties below, attempt to resolve the citation
@@ -109,13 +111,13 @@ public class TitleInstanceResolverService {
       switch ( num_matches ) {
         case(0):
           // log.debug("No title match");
-          result = createNewTitleInstance(citation);
-          createOrLinkSiblings(citation, result.work);
+          result = createNewTitleInstance(citation)
+          createOrLinkSiblings(citation, result.work)
           break;
         case(1):
           // log.debug("Exact match.");
           result = candidate_list.get(0);
-          checkForEnrichment(result, citation);
+          checkForEnrichment(result, citation)
           break;
         default:
           log.warn("title matched ${num_matches} records with a threshold >= ${MATCH_THRESHOLD} . Unable to continue. Matching IDs: ${candidate_list.collect { it.id }}. class one identifier count: ${num_class_one_identifiers}");
@@ -133,7 +135,7 @@ public class TitleInstanceResolverService {
    * by matching the print instance, then looking for a sibling with type "electronic"
    */
   private List<TitleInstance> siblingMatch(ContentItemSchema citation) {
-    Map issn_id = citation.siblingInstanceIdentifiers.find { it.namespace == 'issn' } ;
+    IdentifierSchema issn_id = citation.siblingInstanceIdentifiers.find { it.namespace == 'issn' } ;
     String issn = issn_id?.value;
     return TitleInstance.executeQuery(SIBLING_MATCH_HQL,[ns:'issn',value:issn,electronic:'electronic']);
   }
@@ -150,33 +152,35 @@ public class TitleInstanceResolverService {
     // a title if we know that it is a sibling of a print identifier.
     int num_class_one_identifiers_for_sibling = countClassOneIDs(citation.siblingInstanceIdentifiers)
 
-    Map issn_id = citation.siblingInstanceIdentifiers.find { it.namespace == 'issn' }
+    IdentifierSchema issn_id = citation.siblingInstanceIdentifiers.find { it.namespace == 'issn' }
     String issn = issn_id?.value;
 
     if ( issn ) {
-      Map sibling_citation = [
+      PackageContentImpl sibling_citation = new PackageContentImpl()
+      bindData (sibling_citation, [
         "title": citation.title,
         "instanceMedium": "print",
         "instanceMedia": "journal",
-        "instanceIdentifiers": [ 
+        "instanceIdentifiers": [
           [
             "namespace": "issn",
             "value": issn
-          ] ]
+          ]
         ]
+      ])
 
       candidate_list = classOneMatch(sibling_citation.instanceIdentifiers)
       switch ( candidate_list.size() ) {
         case 0:
-          log.debug("Create sibling print instance for issn ${issn}");
-          createNewTitleInstance(sibling_citation, work);
-          break;
+          log.debug("Create sibling print instance for issn ${issn}")
+          createNewTitleInstance(sibling_citation, work)
+          break
         case 1:
           TitleInstance ti = candidate_list.get(0)
           if ( ti.work == null ) {
-            log.debug("Located exiting print instance for issn ${issn} that was not linked. Linking it to work ${work.id}");
+            log.debug("Located existing print instance for issn ${issn} that was not linked. Linking it to work ${work.id}");
             // Link the located title instance to the work
-            ti.work = work;
+            ti.work = work
             ti.save(flush:true, failOnError:true)
           }
           else {
@@ -344,7 +348,7 @@ public class TitleInstanceResolverService {
         id_matches.each { matched_id ->
           // For each occurrence where the STATUS is APPROVED
           matched_id.occurrences.each { io ->
-            if ( io.status?.label == APPROVED ) {
+            if ( io.status?.value == APPROVED ) {
               if ( result.contains(io.title) ) {
                 // We have already seen this title, so don't add it again
               }

@@ -277,7 +277,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
     }
     
     PackageImpl pkg = new PackageImpl()
-    BindingResult binding = bindData (pkg, new SimpleMapDataBindingSource(result))
+    BindingResult binding = bindData (pkg, result)
     if (binding?.hasErrors()) {
       binding.allErrors.each { log.debug "\t${it}" }
     }

@@ -26,7 +26,7 @@ class AdminController implements DataBinder{
    * submit a form with the sinle file upload parameter "package_file".
    */
   public loadPackage() {
-    def result = null;
+    def result = [:]
     log.debug("AdminController::loadPackage");
     // Single file
     def file = request.getFile("package_file")
@@ -35,7 +35,7 @@ class AdminController implements DataBinder{
       
       def package_data = new PackageImpl()
       BindingResult br = bindData (package_data, jsonSlurper.parse(file.inputStream))
-      if (br.hasErrors()) {
+      if (br?.hasErrors()) {
         br.allErrors.each {
           log.debug "\t${it}"
         }
@@ -46,7 +46,7 @@ class AdminController implements DataBinder{
       result = packageIngestService.upsertPackage(package_data)
     }
     else {
-      log.warn("No file");
+      log.warn("No file")
     }
 
     render result as JSON
@@ -61,7 +61,7 @@ class AdminController implements DataBinder{
   }
 
   public pullPackage() {
-    def result = null;
+    def result = [:]
     RemoteKB rkb = RemoteKB.findByName(params.kb)
 
     if ( rkb ) {
