@@ -145,7 +145,7 @@ class JobRunnerService implements EventPublisher {
             jobContext.remove()
           }
         }
-      }.curry(tenantId, jobId, work)
+      }.curry(tenantId, jobId, currentWork)
       
       // Execute the work asynchronously.
       executorSvc.execute(work)
