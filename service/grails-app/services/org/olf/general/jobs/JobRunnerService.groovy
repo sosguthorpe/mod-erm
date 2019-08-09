@@ -129,21 +129,21 @@ class JobRunnerService implements EventPublisher {
       // as well as setting the job status on execution
       final Runnable currentWork = work
       work = { final String tid, final String jid, final Runnable wrk ->
-        Tenants.CurrentTenant.set(tid)
-        jobContext.set(new JobContext( jobId: jid, tenantId: tid ))
-       
-        try {
-          beginJob()
-          Tenants.withCurrent {
+        
+        Tenants.withId(tid) {
+//          Tenants.CurrentTenant.set(tid)
+          jobContext.set(new JobContext( jobId: jid, tenantId: tid ))
+          try {
+            beginJob()
             wrk()
+            endJob()
+          } catch (Exception e) {
+            failJob()
+            log.error ("Job execution failed", e)
+            notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
+          } finally {
+            jobContext.remove()
           }
-          endJob()
-        } catch (Exception e) {
-          failJob()
-          log.error ("Job execution failed", e)
-          notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
-        } finally {
-          jobContext.remove()
         }
       }.curry(tenantId, jobId, work)
       
@@ -156,31 +156,31 @@ class JobRunnerService implements EventPublisher {
     final Serializable tenantId = jobContext.get()?.tenantId
     if (tenantId) {
       return Tenants.withId(tenantId, code)
+    } else {
+      Tenants.withCurrent (code)
     }
-    
-    code()
   }
   
-  public PersistentJob beginJob() {
+  public PersistentJob beginJob(final String jid = null) {
     handleJobTenant {
       PersistentJob.withNewSession {
-        PersistentJob.get(jobContext.get().jobId).begin()
+        PersistentJob.get(jid ?: jobContext.get().jobId).begin()
       }
     }
   }
   
-  public PersistentJob endJob() {
+  public PersistentJob endJob(final String jid = null) {
     handleJobTenant {
       PersistentJob.withNewSession {
-        PersistentJob.get(jobContext.get().jobId).end()
+        PersistentJob.get(jid ?: jobContext.get().jobId).end()
       }
     }
   }
   
-  public PersistentJob failJob() {
+  public PersistentJob failJob(final String jid = null) {
     handleJobTenant {
       PersistentJob.withNewSession {
-        PersistentJob.get(jobContext.get().jobId).fail()
+        PersistentJob.get(jid ?: jobContext.get().jobId).fail()
       }
     }
   }
