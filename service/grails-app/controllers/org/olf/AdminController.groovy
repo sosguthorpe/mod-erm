@@ -7,7 +7,7 @@ import groovy.util.logging.Slf4j
 import grails.converters.JSON
 import org.olf.kb.RemoteKB
 import org.springframework.validation.BindingResult
-import org.olf.dataimport.internal.PackageImpl
+import org.olf.dataimport.internal.InternalPackageImpl
 import org.olf.kb.KBCacheUpdater
 
 @Slf4j
@@ -33,7 +33,7 @@ class AdminController implements DataBinder{
     if ( file ) {
       def jsonSlurper = new JsonSlurper()
       
-      def package_data = new PackageImpl()
+      def package_data = new InternalPackageImpl()
       BindingResult br = bindData (package_data, jsonSlurper.parse(file.inputStream))
       if (br?.hasErrors()) {
         br.allErrors.each {

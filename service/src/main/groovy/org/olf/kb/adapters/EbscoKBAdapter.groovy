@@ -11,7 +11,7 @@ import org.apache.http.*
 import org.apache.http.entity.mime.*
 import org.apache.http.entity.mime.content.*
 import org.apache.http.protocol.*
-import org.olf.dataimport.internal.PackageImpl
+import org.olf.dataimport.internal.InternalPackageImpl
 import org.olf.kb.KBCache;
 import org.olf.kb.KBCacheUpdater;
 import org.springframework.validation.BindingResult
@@ -54,7 +54,7 @@ public class EbscoKBAdapter implements KBCacheUpdater, DataBinder {
   public Map importPackage(Map params,
                            KBCache cache) {
 
-    PackageImpl erm_package = buildErmPackage(params.vendorid,
+    InternalPackageImpl erm_package = buildErmPackage(params.vendorid,
                                       params.packageid,
                                       params.principal,
                                       params.credentials,
@@ -68,7 +68,7 @@ public class EbscoKBAdapter implements KBCacheUpdater, DataBinder {
    * @param params - A map containing vendorid and packageid
    * @return the canonicalpackage definition.
    */
-  private PackageImpl buildErmPackage(final String vendorid, final String packageid, final String principal, final String credentials, final String package_reference) {
+  private InternalPackageImpl buildErmPackage(final String vendorid, final String packageid, final String principal, final String credentials, final String package_reference) {
 
     log.debug("buildErmPackage(${vendorid},${packageid},${principal},${credentials})");
 
@@ -242,7 +242,7 @@ public class EbscoKBAdapter implements KBCacheUpdater, DataBinder {
       }
     }
 
-    PackageImpl pkg = new PackageImpl()
+    InternalPackageImpl pkg = new InternalPackageImpl()
     BindingResult binding = bindData (pkg, result)
     if (binding?.hasErrors()) {
       binding.allErrors.each { log.debug "\t${it}" }

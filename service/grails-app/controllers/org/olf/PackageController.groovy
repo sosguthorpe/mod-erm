@@ -1,12 +1,11 @@
 package org.olf
 
-import org.olf.dataimport.erm.FolioErmPackageRecord
+import org.olf.dataimport.erm.ErmPackageImpl
 import org.olf.kb.Pkg
 
 import com.k_int.okapi.OkapiTenantAwareController
 
 import grails.gorm.multitenancy.CurrentTenant
-import grails.validation.Validateable
 import groovy.util.logging.Slf4j
 
 @Slf4j
@@ -17,11 +16,13 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
     super(Pkg)
   }
   
+  PackageIngestService packageIngestService
+  
   def 'import' () {
     
     final bindObj = this.getObjectToBind()
     if (bindObj) {
-      FolioErmPackageRecord pkg = new FolioErmPackageRecord()
+      ErmPackageImpl pkg = new ErmPackageImpl()
       bindData(pkg, bindObj)
       log.debug 'Got pkg'
       if (pkg.validate()) {
@@ -30,7 +31,11 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
         pkg.errors.allErrors.each {
           log.debug "\t${it}"
         }
+        return
       }
+      
+      // Else do the ingest.
+      render packageIngestService.upsertPackage(pkg)
     }
     
     return render (status: 200)

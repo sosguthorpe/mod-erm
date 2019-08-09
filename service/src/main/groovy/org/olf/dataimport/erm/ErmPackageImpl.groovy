@@ -9,7 +9,7 @@ import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
 
 @GrailsCompileStatic
-class FolioErmPackageRecord implements PackageHeaderSchema, PackageSchema, Validateable {
+class ErmPackageImpl implements PackageHeaderSchema, PackageSchema, Validateable {
   
   String source
   String reference

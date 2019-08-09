@@ -5,13 +5,15 @@ import java.time.LocalDate
 import org.olf.dataimport.erm.CoverageStatement
 import org.olf.dataimport.erm.Identifier
 import org.olf.dataimport.erm.PackageProvider
-
+import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
 
-class PackageImpl implements PackageSchema, Validateable {
+@GrailsCompileStatic
+class InternalPackageImpl implements PackageSchema, Validateable {
   HeaderImpl header
   List<PackageContentImpl> packageContents = []
   
+  @GrailsCompileStatic
   class HeaderImpl implements PackageHeaderSchema, Validateable {
     PackageProvider packageProvider
     String packageSource
@@ -23,6 +25,7 @@ class PackageImpl implements PackageSchema, Validateable {
     String _intenalId
   }
   
+  @GrailsCompileStatic
   class PackageContentImpl implements ContentItemSchema, Validateable {
     
     List<Identifier> instanceIdentifiers

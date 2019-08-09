@@ -3,7 +3,7 @@ package org.olf.kb.adapters;
 import org.olf.kb.KBCacheUpdater;
 import org.olf.kb.RemoteKB;
 import org.springframework.validation.BindingResult
-import org.olf.dataimport.internal.PackageImpl
+import org.olf.dataimport.internal.InternalPackageImpl
 import org.olf.dataimport.internal.PackageSchema
 import org.olf.kb.KBCache;
 import groovy.json.JsonSlurper;
@@ -172,7 +172,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
    * the GOKb records look like this
    *   https://gokbt.gbv.de/gokb/oai/index/packages?verb=ListRecords&metadataPrefix=gokb
    */
-  private PackageImpl gokbToERM(Object xml_gokb_record) {
+  private InternalPackageImpl gokbToERM(Object xml_gokb_record) {
 
     def package_record = xml_gokb_record?.metadata?.gokb?.package
 
@@ -276,7 +276,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
       throw new RuntimeException("Problem decoding package record: ${package_record}");
     }
     
-    PackageImpl pkg = new PackageImpl()
+    InternalPackageImpl pkg = new InternalPackageImpl()
     BindingResult binding = bindData (pkg, result)
     if (binding?.hasErrors()) {
       binding.allErrors.each { log.debug "\t${it}" }
