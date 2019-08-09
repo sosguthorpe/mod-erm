@@ -1,8 +1,11 @@
 package org.olf.dataimport.erm
 
-import grails.validation.Validateable
 import org.olf.dataimport.internal.PackageSchema.IdentifierSchema
 
+import grails.compiler.GrailsCompileStatic
+import grails.validation.Validateable
+
+@GrailsCompileStatic
 class Identifier implements IdentifierSchema, Validateable {
   
   String value

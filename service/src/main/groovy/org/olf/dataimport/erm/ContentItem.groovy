@@ -2,10 +2,14 @@ package org.olf.dataimport.erm
 
 import java.time.LocalDate
 
-import org.olf.dataimport.internal.PackageSchema.IdentifierSchema
 import org.olf.dataimport.internal.PackageSchema.ContentItemSchema
+import org.olf.dataimport.internal.PackageSchema.IdentifierSchema
+import org.olf.kb.AbstractCoverageStatement
+
+import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
 
+@GrailsCompileStatic
 class ContentItem implements ContentItemSchema, Validateable {
   
   String note
@@ -48,7 +52,7 @@ class ContentItem implements ContentItemSchema, Validateable {
   
   @Override
   public Collection<IdentifierSchema> getInstanceIdentifiers() {
-    platformTitleInstance.titleInstance.identifiers
+    platformTitleInstance.titleInstance.identifiers as Collection<IdentifierSchema>
   }
   
   @Override
@@ -56,6 +60,7 @@ class ContentItem implements ContentItemSchema, Validateable {
     // Returns empty set for this implementation.
     []
   }
+  
   @Override
   public String getEmbargo() {
     // Null for this implementation

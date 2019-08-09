@@ -1,8 +1,11 @@
 package org.olf.dataimport.erm
 
-import grails.validation.Validateable
 import org.olf.dataimport.internal.PackageSchema.PackageProviderSchema
 
+import grails.compiler.GrailsCompileStatic
+import grails.validation.Validateable
+
+@GrailsCompileStatic
 class PackageProvider implements PackageProviderSchema, Validateable {
   
   String name

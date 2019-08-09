@@ -1,11 +1,14 @@
 package org.olf.dataimport.erm
 
 import java.time.LocalDate
+
 import org.olf.dataimport.internal.PackageSchema.CoverageStatementSchema
 import org.olf.kb.AbstractCoverageStatement
 
+import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
 
+@GrailsCompileStatic
 class CoverageStatement extends AbstractCoverageStatement implements CoverageStatementSchema, Validateable {
   LocalDate startDate
   String startVolume

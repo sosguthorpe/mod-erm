@@ -4,9 +4,11 @@ import java.time.LocalDate
 
 import org.olf.dataimport.internal.PackageSchema
 import org.olf.dataimport.internal.PackageSchema.PackageHeaderSchema
-import org.olf.kb.PackageContentItem
+
+import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
 
+@GrailsCompileStatic
 class FolioErmPackageRecord implements PackageHeaderSchema, PackageSchema, Validateable {
   
   String source
