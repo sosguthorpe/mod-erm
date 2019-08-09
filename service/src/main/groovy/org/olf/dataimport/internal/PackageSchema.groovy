@@ -1,11 +1,16 @@
 package org.olf.dataimport.internal
 import java.time.LocalDate
 
-interface PackageSchema {
+import grails.validation.Validateable
+import groovy.transform.CompileStatic
+
+@CompileStatic
+interface PackageSchema extends Validateable {
   
   PackageHeaderSchema getHeader()
   Collection<ContentItemSchema> getPackageContents()
-    
+  
+  @CompileStatic
   public interface PackageHeaderSchema {
     /*
      "availability": {
@@ -32,12 +37,13 @@ interface PackageSchema {
     String get_intenalId()
   }
   
+  @CompileStatic
   public interface PackageProviderSchema {
     String getName()
     String getReference()
   }
   
-  
+  @CompileStatic
   public interface ContentItemSchema {
     /*
      {
@@ -94,6 +100,7 @@ interface PackageSchema {
     String get_platformId()
   }
   
+  @CompileStatic
   public interface IdentifierSchema {
     /*
      {
@@ -105,6 +112,7 @@ interface PackageSchema {
     String getValue()
   }
   
+  @CompileStatic
   public interface CoverageStatementSchema {
     /*
     {
