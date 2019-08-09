@@ -19,7 +19,7 @@ import grails.gorm.transactions.Transactional
  */
 public class CoverageService {
   
-  private Map<String, Set<AbstractCoverageStatement>> addToRequestIfPresent (final Map<String, Set<AbstractCoverageStatement>> statements) {
+  private Map<String, Iterable<AbstractCoverageStatement>> addToRequestIfPresent (final Map<String, Iterable<AbstractCoverageStatement>> statements) {
     
     if (statements) {
       GrailsWebRequest rAtt = (GrailsWebRequest)RequestContextHolder.getRequestAttributes()
@@ -38,13 +38,13 @@ public class CoverageService {
     statements
   }
   
-  public Map<String, List<AbstractCoverageStatement>> lookupCoverageOverrides (final Map resultsMap, final String agreementId = null) {
+  public Map<String, Iterable<AbstractCoverageStatement>> lookupCoverageOverrides (final Map resultsMap, final String agreementId = null) {
     final List<ErmResource> resources = resultsMap?.get('results')
     
     resources ? lookupCoverageOverrides(resources, agreementId) : [:]
   }
   
-  public Map<String, List<AbstractCoverageStatement>> lookupCoverageOverrides (final List<ErmResource> resources, final String agreementId = null) {
+  public Map<String, Iterable<AbstractCoverageStatement>> lookupCoverageOverrides (final Iterable<ErmResource> resources, final String agreementId = null) {
     
     if (!resources || resources.size() < 1) return [:]
     
@@ -105,7 +105,7 @@ public class CoverageService {
    * @param coverage_statements The array of coverage statements [ [ startDate:YYYY-MM-DD, startVolume:...], [ stateDate:....
    */
   @Transactional
-  public void extend(final ErmResource title, final List<CoverageStatementSchema> coverage_statements) {
+  public void extend(final ErmResource title, final Iterable<CoverageStatementSchema> coverage_statements) {
     log.debug("Extend coverage statements on ${title}(${title.id}) with ${coverage_statements}")
 
     // Iterate through each of the statements we want to add

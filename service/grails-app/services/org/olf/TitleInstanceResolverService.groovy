@@ -319,14 +319,14 @@ public class TitleInstanceResolverService implements DataBinder{
     return result
   }
 
-  private int countClassOneIDs(final List<IdentifierSchema> identifiers) {
+  private int countClassOneIDs(final Iterable<IdentifierSchema> identifiers) {
     identifiers?.findAll( { IdentifierSchema id -> class_one_namespaces?.contains( id.namespace.toLowerCase() ) })?.size() ?: 0
   }
 
   /**
    * Being passed a map of namespace, value pair maps, attempt to locate any title instances with class 1 identifiers (ISSN, ISBN, DOI)
    */
-  private List<TitleInstance> classOneMatch(final List<IdentifierSchema> identifiers) {
+  private List<TitleInstance> classOneMatch(final Iterable<IdentifierSchema> identifiers) {
     // We want to build a list of all the title instance records in the system that match the identifiers. Hopefully this will return 0 or 1 records.
     // If it returns more than 1 then we are in a sticky situation, and cleverness is needed.
     final List<TitleInstance> result = new ArrayList<TitleInstance>()

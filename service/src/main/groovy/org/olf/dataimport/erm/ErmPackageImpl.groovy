@@ -17,11 +17,22 @@ class ErmPackageImpl implements PackageHeaderSchema, PackageSchema, Validateable
   PackageProvider packageProvider
   Set<ContentItem> contentItems = []
   
+  // Defaults for internal scheam so we can make them optional in the constraints.
+  final LocalDate startDate = null
+  final LocalDate endDate = null
+  final String _intenalId = null
+  final String status = null
+  
   static hasMany = [
     contentItems: ContentItem
   ]
   
   static constraints = {
+    startDate nullable: true
+    endDate nullable: true
+    _intenalId nullable: true, blank: false
+    status nullable: true, blank: false
+    
     source    nullable: false, blank: false
     reference nullable: false, blank: false
     name      nullable: false, blank: false
@@ -43,18 +54,7 @@ class ErmPackageImpl implements PackageHeaderSchema, PackageSchema, Validateable
   @Override
   public String getPackageName() {
     name
-  }
-  
-  @Override
-  public LocalDate getStartDate() {
-    // Null for this implementation
-    null
-  }
-  @Override
-  public LocalDate getEndDate() {
-    // Null for this implementation
-    null
-  }
+  }  
   
   @Override
   public String getPackageSlug() {
@@ -62,20 +62,8 @@ class ErmPackageImpl implements PackageHeaderSchema, PackageSchema, Validateable
   }
   
   @Override
-  public String get_intenalId() {
-    // Null for this implementation
-    return null;
-  }
-  
-  @Override
   public Collection<ContentItem> getPackageContents() {
     contentItems
-  }
-
-  @Override
-  public String getStatus() {
-    // TODO Auto-generated method stub
-    return null;
   }
   
 }

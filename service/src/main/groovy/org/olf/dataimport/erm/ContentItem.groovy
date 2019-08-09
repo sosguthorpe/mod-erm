@@ -37,22 +37,22 @@ class ContentItem implements ContentItemSchema, Validateable {
 
   @Override
   public String getTitle() {
-    platformTitleInstance.titleInstance.name
+    platformTitleInstance?.titleInstance?.name
   }
   
   @Override
   public String getInstanceMedium() {
-    platformTitleInstance.titleInstance.subType.value
+    platformTitleInstance?.titleInstance?.subType?.value
   }
   
   @Override
   public String getInstanceMedia() {
-    platformTitleInstance.titleInstance.type.value
+    platformTitleInstance?.titleInstance?.type?.value
   }
   
   @Override
   public Collection<IdentifierSchema> getInstanceIdentifiers() {
-    platformTitleInstance.titleInstance.identifiers as Collection<IdentifierSchema>
+    platformTitleInstance?.titleInstance?.identifiers as Collection<IdentifierSchema>
   }
   
   @Override
@@ -79,12 +79,14 @@ class ContentItem implements ContentItemSchema, Validateable {
   
   @Override
   public String getPlatformUrl() {
-    platformTitleInstance.platformUrl
+    platformTitleInstance?.platformUrl
   }
+  
   @Override
   public String getPlatformName() {
-    platformTitleInstance.platform
+    platformTitleInstance?.platform
   }
+  
   @Override
   public String get_platformId() {
     // Null for this implementation

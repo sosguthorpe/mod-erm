@@ -1,6 +1,8 @@
 package org.olf.dataimport.internal
 import java.time.LocalDate
 
+import org.springframework.validation.Errors
+
 import grails.validation.Validateable
 import groovy.transform.CompileStatic
 
@@ -9,9 +11,11 @@ interface PackageSchema extends Validateable {
   
   PackageHeaderSchema getHeader()
   Collection<ContentItemSchema> getPackageContents()
+  Errors getErrors()
+  boolean validate()
   
   @CompileStatic
-  public interface PackageHeaderSchema {
+  public interface PackageHeaderSchema extends Validateable {
     /*
      "availability": {
       "type": "general"
@@ -38,13 +42,13 @@ interface PackageSchema extends Validateable {
   }
   
   @CompileStatic
-  public interface PackageProviderSchema {
+  public interface PackageProviderSchema extends Validateable {
     String getName()
     String getReference()
   }
   
   @CompileStatic
-  public interface ContentItemSchema {
+  public interface ContentItemSchema extends Validateable {
     /*
      {
       "title": "Clinical Cancer Drugs",
@@ -101,7 +105,7 @@ interface PackageSchema extends Validateable {
   }
   
   @CompileStatic
-  public interface IdentifierSchema {
+  public interface IdentifierSchema extends Validateable {
     /*
      {
        "namespace": "issn",
@@ -113,7 +117,7 @@ interface PackageSchema extends Validateable {
   }
   
   @CompileStatic
-  public interface CoverageStatementSchema {
+  public interface CoverageStatementSchema extends Validateable {
     /*
     {
       "startVolume": "1",
