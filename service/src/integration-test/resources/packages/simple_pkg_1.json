@@ -46,7 +46,7 @@
     "embargo": null,
     "coverageDepth": "fulltext",
     "coverageNote": "New for 2014. This record is a test case for split coverage",
-    "platformUrl": "http://benthamscience.com/journal/index.php?journalID=ccand",
+    "url": "http://benthamscience.com/journal/index.php?journalID=ccand",
     "platformName": "Bentham Science",
     "_platformId": 627
   }]
