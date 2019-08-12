@@ -1,5 +1,6 @@
 package org.olf.general.jobs
 import java.time.Instant
+import org.olf.general.SingleFileAttachment
 import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
@@ -11,7 +12,7 @@ import grails.gorm.multitenancy.Tenants
 import grails.util.Holders
 
 @DirtyCheck
-abstract class PersistentJob implements MultiTenant<PersistentJob> {
+abstract class PersistentJob extends SingleFileAttachment implements MultiTenant<PersistentJob> {
   
   static transients = ['work']
     

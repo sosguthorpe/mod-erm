@@ -5,7 +5,7 @@ import grails.gorm.multitenancy.Tenants
 
 class SingleFileAttachment implements MultiTenant<SingleFileAttachment> {
   
-  // Add transient peroperty for flagging file removal. Transients are ignored by the persistence
+  // Add transient property for flagging file removal. Transients are ignored by the persistence
   // layer.
   
   String id

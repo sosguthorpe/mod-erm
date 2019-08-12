@@ -8,6 +8,7 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 import javax.annotation.PostConstruct
+import org.olf.ImportService
 import org.olf.KbHarvestService
 import com.k_int.okapi.OkapiTenantAdminService
 import com.k_int.web.toolkit.refdata.Defaults
@@ -19,6 +20,13 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class JobRunnerService implements EventPublisher {
   
+  // Any aut injected beans here can be accessed within the `work` runnable
+  // of the job itself.
+  
+  OkapiTenantAdminService okapiTenantAdminService
+  KbHarvestService kbHarvestService
+  ImportService importService
+  
   private static final class JobContext {
     Serializable jobId
     Serializable tenantId = Tenants.CurrentTenant.get()
@@ -27,9 +35,6 @@ class JobRunnerService implements EventPublisher {
   
   int globalConcurrentJobs = 3 // We need to be careful to not completely tie up all our resource
   private ExecutorService executorSvc
-  
-  OkapiTenantAdminService okapiTenantAdminService
-  KbHarvestService kbHarvestService
   
   @PostConstruct
   void init() {
