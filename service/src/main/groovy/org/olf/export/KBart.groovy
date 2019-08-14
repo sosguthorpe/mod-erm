@@ -2,7 +2,7 @@ package org.olf.export
 
 import groovy.transform.AutoClone
 import java.lang.reflect.Field
-import groovy.util.logging.Slf4j
+import groovy.util.logging.Slf4j 
 import com.opencsv.bean.CsvBindByPosition
 
 import org.olf.erm.Entitlement
@@ -17,12 +17,18 @@ import org.olf.kb.IdentifierNamespace
 import org.olf.kb.CoverageStatement
 import org.olf.kb.Platform
 
+import org.grails.web.util.WebUtils
+
+@Slf4j
 @AutoClone(excludes = ['date_first_issue_online', 'date_last_issue_online'])
 public class KBart implements Serializable {
 	
   KBart() {
 	//	
   }
+  
+  
+  
   @CsvBindByPosition(position = 0)
   public String title_id = "" // not implemented
   @CsvBindByPosition(position = 1)
@@ -194,6 +200,8 @@ public class KBart implements Serializable {
    * Entitlements and no additional info for kbart export is available
    */
   static List<KBart> transform(final List<Object> objects) {
+	
+	def req = WebUtils.retrieveGrailsWebRequest().getCurrentRequest()
 	 	  
 	List<KBart> kbartList = new ArrayList<KBart>();
 	
@@ -207,6 +215,7 @@ public class KBart implements Serializable {
 	  
 	  if (obj[0] instanceof PackageContentItem) {
 		PackageContentItem pci = (PackageContentItem) obj[0]
+		 
 		PlatformTitleInstance pti = pci.pti
 		TitleInstance ti = pti.titleInstance
 
@@ -233,9 +242,24 @@ public class KBart implements Serializable {
 			}
 		  }
 		}
+		
+		
 		// get coverage statements. if there is more than one we need to clone the kbart object, one for
-		// each coverage statement
-		Set<CoverageStatement> coverages = ti.coverage
+		// each coverage statement 
+		boolean hasCustomCoverage = false
+		Set<CoverageStatement> coverages = null 
+		Map customCoverageMap = req?.getAttribute("export.kbart.customCoverage") as Map
+		// log.debug("DEBUG: customCoverageMap size: "+ customCoverageMap.size())
+		
+		// Check for custom coverage on this resource.
+		List customCoverageList = customCoverageMap?.get("${res.id}")
+		if (customCoverageList) {
+		  hasCustomCoverage = true
+		  log.debug("DEBUG: hasCustomCoverage = true")
+		  coverages =  customCoverageList
+		} else {
+		  coverages = ti.coverage
+		}
 		// log.debug("coverage size: "+ coverages.size())
 		// add one kbart object for each coverage to list
 		coverages.each { coverage ->
@@ -244,25 +268,18 @@ public class KBart implements Serializable {
 		  kbartclone = kbart.clone()
 		  kbartclone.date_first_issue_online = coverage.startDate.toString()
 		  kbartclone.date_last_issue_online = coverage.endDate.toString()
+		  
+		  kbartclone.num_first_issue_online = coverage.startIssue
+		  kbartclone.num_last_issue_online = coverage.endIssue
+		  
+		  kbartclone.num_first_vol_online = coverage.startVolume
+		  kbartclone.num_last_vol_online = coverage.endVolume
 		  kbartList.add(kbartclone)
 		}
 	  }
 	  
-	  // deal with 2nd and 3rd resources in the result.
 	  
-	  /*if (obj[1] instanceof Entitlement) { 
-		Entitlement ent = (Entitlement) obj[1];
-		ErmResource resource = ent.resource 
-	  }*/
-	  
-	  /*
-	  if (obj[2] instanceof Entitlement) {
-		log.debug(resnum +": got entitlement in obj2")
-		Entitlement ent = (Entitlement) obj[2];
-		ErmResource resource = ent.resource
-	  }*/
-	}
-	// log.debug("returning list of kbart objects")
+	} 
 	return kbartList
   }
 }
