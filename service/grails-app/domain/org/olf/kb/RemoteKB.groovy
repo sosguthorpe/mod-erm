@@ -25,6 +25,8 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
   String fullPrefix
   String principal
   String credentials
+  String syncStatus
+  Long lastCheck
   Long rectype  // 1-PACKAGE
 
   public static final Long RECTYPE_PACKAGE = new Long(1);
@@ -57,6 +59,8 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
      supportsHarvesting column:'rkb_supports_harvesting'
       activationEnabled column:'rkb_activation_enabled'
     activationSupported column:'rkb_activation_supported'
+             syncStatus column:'rkb_sync_status'
+              lastCheck column:'rkb_last_check'
   }
 
   static constraints = {
@@ -72,6 +76,8 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
      supportsHarvesting(nullable:true, blank:false)
       activationEnabled(nullable:true, blank:false)
     activationSupported(nullable:true, blank:false)
+             syncStatus(nullable:true, blank:false)
+              lastCheck(nullable:true, blank:false)
   }
 
 
