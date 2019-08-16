@@ -1,7 +1,7 @@
 {
   "header": {
     "dataSchema": {
-      "name": "mod-agreement-package",
+      "name": "mod-agreements-package",
       "version": 1.0
     }
   },
