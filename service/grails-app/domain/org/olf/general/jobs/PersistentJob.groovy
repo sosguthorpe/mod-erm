@@ -16,7 +16,6 @@ abstract class PersistentJob extends SingleFileAttachment implements MultiTenant
   
   static transients = ['work']
     
-  String id
   String name
   
   @CategoryId('PersistentJob.Status') // Workaround for a bug in toolkit creating a category for each extension even when not specified.
@@ -32,8 +31,7 @@ abstract class PersistentJob extends SingleFileAttachment implements MultiTenant
   RefdataValue result
   
   static mapping = {
-    tablePerHierarchy false
-                   id generator: 'uuid2', length:36
+//    tablePerHierarchy false
                  name column:'job_name'
                status column:'job_status_fk'
           dateCreated column:'job_date_created'
@@ -44,7 +42,7 @@ abstract class PersistentJob extends SingleFileAttachment implements MultiTenant
 
   static constraints = {
             name (nullable:false, blank:false)
-          status (nullable:false)
+          status (nullable:false, bindable: false)
      dateCreated (nullable:true)
          started (nullable:true)
            ended (nullable:true)

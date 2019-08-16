@@ -76,7 +76,7 @@ class JobRunnerService implements EventPublisher {
 //  @Subscriber('jobs:job_created')
   void handleNewJob(final String jobId, final String tenantId) {
     // Attempt to append to queue.
-    log.info 'onJobCreated()'
+    log.info "onJobCreated(${jobId}, ${tenantId})"
     enqueueJob(jobId, tenantId)
   }
   
