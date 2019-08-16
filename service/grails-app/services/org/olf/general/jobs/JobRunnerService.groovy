@@ -134,22 +134,24 @@ class JobRunnerService implements EventPublisher {
       // as well as setting the job status on execution
       final Runnable currentWork = work
       work = { final String tid, final String jid, final Runnable wrk ->
-        
-        Tenants.withId(tid) {
-//          Tenants.CurrentTenant.set(tid)
-          jobContext.set(new JobContext( jobId: jid, tenantId: tid ))
           try {
-            beginJob()
-            wrk()
-            endJob()
+            Tenants.withId(tid) {
+              jobContext.set(new JobContext( jobId: jid, tenantId: tid ))
+              beginJob()
+              wrk()
+              endJob()
+            }
           } catch (Exception e) {
-            failJob()
-            log.error ("Job execution failed", e)
-            notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
+            Tenants.withId(tid) {
+              PersistentJob.withNewTransaction {
+                failJob()
+                log.error ("Job execution failed", e)
+                notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
+              }
+            }
           } finally {
             jobContext.remove()
           }
-        }
       }.curry(tenantId, jobId, currentWork)
       
       // Execute the work asynchronously.
