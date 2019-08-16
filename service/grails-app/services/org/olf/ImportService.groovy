@@ -30,12 +30,13 @@ class ImportService implements DataBinder {
       // we can use the dataSchema object to lookup the type.
       switch (dataSchemaName) {
         case 'mod-agreements-package':
-          log.info "ERM schema"
-          importPackageUsingErmSchema (envelope)
+          log.debug "ERM schema"          
+          log.info "Imported ${importPackageUsingErmSchema (envelope)} pacakges successfully"
           break
           
+          // Successfully
         default: 
-          log.info "Unknown dataSchema ${dataSchemaName}, ignoring import."
+          log.error "Unknown dataSchema ${dataSchemaName}, ignoring import."
       }
     } else {
       // No dataSchemaName. Examine the rest of the root properties
