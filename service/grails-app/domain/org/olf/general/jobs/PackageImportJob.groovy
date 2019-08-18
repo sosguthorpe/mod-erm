@@ -28,6 +28,13 @@ class PackageImportJob extends PersistentJob implements MultiTenant<PackageImpor
     theWork
   }
   
+  void beforeValidate() {
+    if (!this.name && this.fileUpload) {
+      // Set the name from the file upload if no name has been set.
+      this.name = "Import package from ${this.fileUpload.fileName}"
+    }
+  }
+  
   static constraints = {
       fileUpload (nullable:false)
   }
