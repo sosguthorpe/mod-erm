@@ -4,15 +4,18 @@ import org.olf.general.SingleFileAttachment
 import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
-
+import grails.async.Promises
 import grails.events.EventPublisher
+import grails.events.annotation.Subscriber
+import grails.events.bus.EventBusAware
 import grails.gorm.MultiTenant
 import grails.gorm.dirty.checking.DirtyCheck
 import grails.gorm.multitenancy.Tenants
 import grails.util.Holders
 
+
 @DirtyCheck
-abstract class PersistentJob extends SingleFileAttachment implements MultiTenant<PersistentJob> {
+abstract class PersistentJob extends SingleFileAttachment implements EventBusAware, MultiTenant<PersistentJob> {
   
   static transients = ['work']
     
@@ -52,8 +55,14 @@ abstract class PersistentJob extends SingleFileAttachment implements MultiTenant
   def afterInsert () {
     // Ugly work around events being raised on multi-tenant GORM entities not finding subscribers
     // from the root context.
-    JobRunnerService jrs = Holders.applicationContext.getBean('jobRunnerService')
-    jrs.handleNewJob(this.id, Tenants.currentId())
+//    JobRunnerService jrs = Holders.applicationContext.getBean('jobRunnerService')
+//    jrs.handleNewJob(this.id, Tenants.currentId())
+    final String jobId = this.id
+    final String tenantId = Tenants.currentId()
+    Promises.task {
+      JobRunnerService jrs = Holders.applicationContext.getBean('jobRunnerService')
+      jrs.handleNewJob(jobId, tenantId)
+    }
   }
   
   List<LogEntry> getErrorLog() {

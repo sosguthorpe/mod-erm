@@ -14,6 +14,7 @@ import com.k_int.okapi.OkapiTenantAdminService
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 import grails.events.EventPublisher
+import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.Tenants
 import groovy.util.logging.Slf4j
 
@@ -73,7 +74,7 @@ class JobRunnerService implements EventPublisher {
 //    }
 //  }
   
-//  @Subscriber('jobs:job_created')
+  @Subscriber('jobs:job_created')
   void handleNewJob(final String jobId, final String tenantId) {
     // Attempt to append to queue.
     log.info "onJobCreated(${jobId}, ${tenantId})"
@@ -143,11 +144,9 @@ class JobRunnerService implements EventPublisher {
             }
           } catch (Exception e) {
             Tenants.withId(tid) {
-              PersistentJob.withNewTransaction {
-                failJob()
-                log.error ("Job execution failed", e)
-                notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
-              }
+              failJob()
+              log.error ("Job execution failed", e)
+              notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
             }
           } finally {
             jobContext.remove()

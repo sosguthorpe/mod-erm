@@ -20,7 +20,6 @@ class PersistentJobController extends OkapiTenantAwareController<PersistentJob> 
     super(PersistentJob, true)
   }
   
-  @Transactional
   def delete() {
     def instance = queryForResource(params.id)
     
@@ -46,7 +45,6 @@ class PersistentJobController extends OkapiTenantAwareController<PersistentJob> 
     render status: HttpStatus.NO_CONTENT
   }
   
-  @Transactional
   def save () {
     final Class type = params.type ? Class.forName("org.olf.general.jobs.${GrailsNameUtils.getClassName(params.type)}Job") : null
     
