@@ -2,7 +2,9 @@ package org.olf.dataimport.erm
 
 import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
+import groovy.transform.ToString
 
+@ToString
 @GrailsCompileStatic
 class PlatformTitileInstance implements Validateable {
   

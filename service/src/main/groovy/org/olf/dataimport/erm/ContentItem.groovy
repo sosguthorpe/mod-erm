@@ -8,7 +8,9 @@ import org.olf.kb.AbstractCoverageStatement
 
 import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
+import groovy.transform.ToString
 
+@ToString
 @GrailsCompileStatic
 class ContentItem implements ContentItemSchema, Validateable {
   

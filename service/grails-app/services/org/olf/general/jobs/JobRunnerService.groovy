@@ -60,20 +60,6 @@ class JobRunnerService implements EventPublisher {
     notify('jobs:job_runner_ready')
   }
   
-//  @Subscriber('gorm:postInsert')
-//  void onPostInsert(PostInsertEvent event) {
-//    log.info 'onPostInsert()'
-//    if (PersistentJob.class.isAssignableFrom(event.entity.javaClass)) {
-//      final def source = event.source
-//      HibernateDatastore k
-//      if (MultiTenantCapableDatastore.class.isAssignableFrom(source.class)) {
-//        MultiTenantCapableDatastore mt_source = source
-//        // Rasie job created event.
-//        notify('jobs:job_created')
-//      }
-//    }
-//  }
-  
   @Subscriber('jobs:job_created')
   void handleNewJob(final String jobId, final String tenantId) {
     // Attempt to append to queue.
@@ -115,6 +101,7 @@ class JobRunnerService implements EventPublisher {
   
   void enqueueJob(final String jobId, final String tenantId) {
     
+    log.debug "Enqueueing job ${jobId} for ${tenantId}"
     // Use me within nested closures to ensure we are talking about this service.
     def me = this
     

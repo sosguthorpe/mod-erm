@@ -8,13 +8,24 @@ class PackageImportJob extends PersistentJob implements MultiTenant<PackageImpor
   
   private final JsonSlurper js = new JsonSlurper()
   
-  final Closure work = {
-    log.info "Running Package Import Job"
-    if (this.fileUpload) {
-      importService.importFromFile(js.parse(this.fileUpload.fileContentBytes))
-    } else {
-      log.error "No file attached to the Job."
-    }
+  final Closure getWork() {
+    
+    Closure theWork = { final String eventId, final String tenantId ->
+    
+      log.info "Running Package Import Job"
+      
+      // We should ensure the job is read into the current session. This closure will probably execute
+      // in a future session and we need to reread the event in.
+      final PersistentJob job = PersistentJob.read(eventId)
+      
+      if (job.fileUpload) {
+        importService.importFromFile(js.parse(job.fileUpload.fileContentBytes))
+      } else {
+        log.error "No file attached to the Job."
+      }
+    }.curry( this.id )
+    
+    theWork
   }
   
   static constraints = {

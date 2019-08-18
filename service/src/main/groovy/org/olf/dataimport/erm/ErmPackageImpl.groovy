@@ -66,4 +66,7 @@ class ErmPackageImpl implements PackageHeaderSchema, PackageSchema, Validateable
     contentItems
   }
   
+  String toString() {
+    "${name} from ${packageProvider}"
+  }
 }

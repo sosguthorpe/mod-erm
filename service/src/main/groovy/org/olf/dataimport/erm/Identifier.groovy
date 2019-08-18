@@ -15,4 +15,8 @@ class Identifier implements IdentifierSchema, Validateable {
     value      nullable: true, blank: false
     namespace  nullable: true, blank: false
   }
+  
+  String toString() {
+    "${namespace}: ${value}"
+  }
 }

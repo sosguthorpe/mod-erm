@@ -7,12 +7,14 @@ import org.olf.dataimport.erm.Identifier
 import org.olf.dataimport.erm.PackageProvider
 import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
+import groovy.transform.ToString
 
 @GrailsCompileStatic
 class InternalPackageImpl implements PackageSchema, Validateable {
   HeaderImpl header
   List<PackageContentImpl> packageContents = []
   
+  @ToString
   @GrailsCompileStatic
   class HeaderImpl implements PackageHeaderSchema, Validateable {
     PackageProvider packageProvider
@@ -25,6 +27,8 @@ class InternalPackageImpl implements PackageSchema, Validateable {
     String _intenalId
   }
   
+  
+  @ToString
   @GrailsCompileStatic
   class PackageContentImpl implements ContentItemSchema, Validateable {
     

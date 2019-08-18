@@ -7,7 +7,9 @@ import org.olf.kb.AbstractCoverageStatement
 
 import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
+import groovy.transform.ToString
 
+@ToString
 @GrailsCompileStatic
 class CoverageStatement extends AbstractCoverageStatement implements CoverageStatementSchema, Validateable {
   LocalDate startDate
