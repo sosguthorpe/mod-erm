@@ -11,5 +11,6 @@ databaseChangeLog = {
   include file: 'add-file-upload.groovy'
   include file: 'update-mod-agreements-1-8.groovy'
   include file: 'usage-data-provider.groovy'
+  include file: 'remote-kb-status.groovy'
   include file: 'update-mod-agreements-1-10.groovy'
 }

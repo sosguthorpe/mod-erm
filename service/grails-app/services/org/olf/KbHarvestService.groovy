@@ -33,6 +33,15 @@ class KbHarvestService {
   OkapiTenantAdminService okapiTenantAdminService
   KnowledgeBaseCacheService knowledgeBaseCacheService
   
+  // All remote KBs not currently syncing and which have not been synced in the last 1 hour
+  private static final PENDING_JOBS_HQL = '''select rkb.id 
+from RemoteKB as rkb 
+where rkb.type is not null 
+  and rkb.active = :true
+  and ( ( rkb.syncStatus is null ) OR ( rkb.syncStatus <> :inprocess ) )
+  and ( ( rkb.lastCheck is null ) OR ( ( :current_time - rkb.lastCheck ) < 1*60*60*1000 ) )
+'''
+
   @Subscriber('okapi:dataload:sample')
   public void onDataloadSample (final String tenantId, final String value, final String existing_tenant, final String upgrading, final String toVersion, final String fromVersion) {
     log.debug "Perform trigger sync for new tenant ${tenantId} via data load event"
@@ -80,9 +89,52 @@ class KbHarvestService {
   @CompileStatic(SKIP)
   public void triggerCacheUpdate() {
     log.debug("KBHarvestService::triggerCacheUpdate()");
-    RemoteKB.executeQuery('select rkb.id from RemoteKB as rkb where rkb.type is not null and rkb.active = :true',['true':true]).each { remotekb_id ->
-      log.debug("Run sync on ${remotekb_id}");
-      knowledgeBaseCacheService.runSync((String)remotekb_id);
+    
+    // List all pending jobs that are eligible for processing - That is everything enabled and not currently in-process and has not been processed in the last hour
+    RemoteKB.executeQuery(PENDING_JOBS_HQL,['true':true,'inprocess':'in-process','current_time':System.currentTimeMillis()],[lock:false]).each { remotekb_id ->
+
+      // We will check each candidate job to see if it has been picked up by some other thread or load balanced
+      // instance of mod-agreements. We assume it has
+      boolean continue_processing = false;
+
+      // Lock the actual RemoteKB record so that nobody else can grab it for processing
+      RemoteKB.withNewTransaction {
+
+        // Get hold of the actual job, lock it, and if it's still not in process, set it's status to in-process
+        RemoteKB rkb = RemoteKB.get(remotekb_id);
+        rkb.lock()
+
+        // Now that we hold the lock, we can checm again to see if it's in-process
+        if ( rkb.syncStatus != 'in-process' ) {
+          // Set it to in-process, and continue
+          rkb.syncStatus = 'in-process';
+          continue_processing = true;
+        }
+     
+        // Save and close the transaction, removing the lock
+        rkb.save(flush:true, failOnError:true);
+      }
+
+      // If we managed to grab a remote kb and update it to in-process, we had better process it
+      if ( continue_processing ) {
+        log.debug("Run sync on ${remotekb_id}");
+        try {
+          knowledgeBaseCacheService.runSync((String)remotekb_id);
+        }
+        catch ( Exception e ) {
+          log.warn("problem processing remote KB link",e);
+        }
+        finally {
+          // Finally, set the state to idle
+          RemoteKB.withNewTransaction {
+            RemoteKB rkb = RemoteKB.get(remotekb_id);
+            rkb.lock()
+            rkb.syncStatus = 'idle'
+            rkb.lastCheck = System.currentTimeMillis();
+            rkb.save(flush:true, failOnError:true)
+          }
+        }
+      }
     }
     log.debug("KbHarvestService::triggerCacheUpdate() completed");
   }

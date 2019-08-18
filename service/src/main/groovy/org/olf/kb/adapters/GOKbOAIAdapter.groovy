@@ -27,6 +27,7 @@ import org.apache.http.entity.mime.content.*
 import org.apache.http.*
 import org.apache.http.protocol.*
 import java.text.SimpleDateFormat
+import java.util.TimeZone;
 import java.nio.charset.Charset
 import static groovy.json.JsonOutput.*
 import java.text.*

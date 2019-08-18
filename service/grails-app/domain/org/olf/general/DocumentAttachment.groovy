@@ -19,7 +19,7 @@ class DocumentAttachment extends SingleFileAttachment implements MultiTenant<Doc
   RefdataValue atType
 
   static mapping = {
-             id column: 'da_id'
+             id column: 'da_id', generator: 'uuid2', length:36
         version column: 'da_version'
            name column: 'da_name'
        location column: 'da_location'
