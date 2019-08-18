@@ -30,23 +30,17 @@ class FileUpload implements MultiTenant<FileUpload> {
 
   def afterUpdate() {
     log.info("afterUpdate() for FileUpload")
-    final Serializable currentTenantId = Tenants.currentId()
+
+    if (this.owner == null) {
+      final String toDelete = this.id
+      final Serializable currentTenantId = Tenants.currentId()
       Tenants.withId(currentTenantId) {
-      try {
-        def deleteList = []
-        def fuList = FileUpload.findAllWhere(owner: null)
-        fuList.each {
-          FileUpload upload = it
-          if(upload.owner == null) {
-            deleteList.add(upload)
-          }
+        try {
+          FileUpload.get(toDelete).delete()
+        } catch(Exception e) {
+          log.error("Error trying to delete ownerless fileUpload objects: ${e.getMessage()}")
         }
-        deleteList.each {
-          log.info("Deleting fileUpload with id of ${it.id}")
-          it.delete()
-        }
-      } catch(Exception e) {
-        log.error("Error trying to delete ownerless fileUpload objects: ${e.getMessage()}")
+
       }
     }
   }
