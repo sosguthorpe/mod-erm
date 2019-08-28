@@ -1,28 +1,20 @@
 package org.olf.kb.adapters;
 
-import org.olf.kb.KBCacheUpdater;
-import org.olf.kb.RemoteKB;
-import org.olf.kb.KBCache;
-import groovy.json.JsonSlurper;
-import java.util.Map;
-
-import static groovyx.net.http.ContentType.URLENC
-import static groovyx.net.http.ContentType.XML
-import static groovyx.net.http.ContentType.JSON
+import static groovy.json.JsonOutput.*
 import static groovyx.net.http.ContentType.*
 import static groovyx.net.http.Method.*
-import static groovyx.net.http.Method.GET
-import static groovyx.net.http.Method.POST
-import groovyx.net.http.*
+
+import java.text.*
+
+import org.apache.http.*
 import org.apache.http.entity.mime.*
 import org.apache.http.entity.mime.content.*
-import org.apache.http.*
 import org.apache.http.protocol.*
-import java.text.SimpleDateFormat
-import java.nio.charset.Charset
-import static groovy.json.JsonOutput.*
-import java.text.*
+import org.olf.kb.KBCache;
+import org.olf.kb.KBCacheUpdater;
+
 import groovy.util.logging.Slf4j
+import groovyx.net.http.*
 
 @Slf4j
 public class GenericRemoteKBAdapter implements KBCacheUpdater {

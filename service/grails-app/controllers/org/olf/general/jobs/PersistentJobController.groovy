@@ -1,24 +1,25 @@
 package org.olf.general.jobs
 
 
-import com.k_int.okapi.OkapiTenantAwareController
+import org.springframework.http.HttpStatus
 
+import com.k_int.okapi.OkapiTenantAwareController
+import com.k_int.web.toolkit.refdata.RefdataValue
 import grails.gorm.multitenancy.CurrentTenant
 import grails.gorm.transactions.Transactional
+import grails.util.GrailsNameUtils
 import groovy.util.logging.Slf4j
-import org.springframework.http.HttpStatus
 
 
 @Slf4j
 @CurrentTenant
 class PersistentJobController extends OkapiTenantAwareController<PersistentJob> {
 
-  // Read only. DOesn't allow posts etc.
+  // Read only. Doesn't allow posts etc by default.
   public PersistentJobController() {
-    super(PersistentJob, false);
+    super(PersistentJob, true)
   }
   
-  @Transactional
   def delete() {
     def instance = queryForResource(params.id)
     
@@ -42,5 +43,25 @@ class PersistentJobController extends OkapiTenantAwareController<PersistentJob> 
     deleteResource instance
 
     render status: HttpStatus.NO_CONTENT
-}
+  }
+  
+  def save () {
+    final Class type = params.type ? Class.forName("org.olf.general.jobs.${GrailsNameUtils.getClassName(params.type)}Job") : null
+    
+    if(!(type && PersistentJob.isAssignableFrom(type))) {
+      return render (status: HttpStatus.NOT_FOUND)
+    }
+    
+    // Lookup the default "queued" value here first as session flushes later are causing issues.
+    final RefdataValue queuedStatus = PersistentJob.lookupStatus('queued')
+    
+    final PersistentJob instance = type.newInstance()
+    
+    bindData instance, getObjectToBind()
+    instance.status = queuedStatus
+
+    instance.save(failOnError: true, flush:true)
+
+    respond instance
+  }
 }

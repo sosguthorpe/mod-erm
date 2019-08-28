@@ -8,16 +8,25 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 import javax.annotation.PostConstruct
+import org.olf.ImportService
 import org.olf.KbHarvestService
 import com.k_int.okapi.OkapiTenantAdminService
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 import grails.events.EventPublisher
+import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.Tenants
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class JobRunnerService implements EventPublisher {
+  
+  // Any aut injected beans here can be accessed within the `work` runnable
+  // of the job itself.
+  
+  OkapiTenantAdminService okapiTenantAdminService
+  KbHarvestService kbHarvestService
+  ImportService importService
   
   private static final class JobContext {
     Serializable jobId
@@ -27,9 +36,6 @@ class JobRunnerService implements EventPublisher {
   
   int globalConcurrentJobs = 3 // We need to be careful to not completely tie up all our resource
   private ExecutorService executorSvc
-  
-  OkapiTenantAdminService okapiTenantAdminService
-  KbHarvestService kbHarvestService
   
   @PostConstruct
   void init() {
@@ -54,24 +60,10 @@ class JobRunnerService implements EventPublisher {
     notify('jobs:job_runner_ready')
   }
   
-//  @Subscriber('gorm:postInsert')
-//  void onPostInsert(PostInsertEvent event) {
-//    log.info 'onPostInsert()'
-//    if (PersistentJob.class.isAssignableFrom(event.entity.javaClass)) {
-//      final def source = event.source
-//      HibernateDatastore k
-//      if (MultiTenantCapableDatastore.class.isAssignableFrom(source.class)) {
-//        MultiTenantCapableDatastore mt_source = source
-//        // Rasie job created event.
-//        notify('jobs:job_created')
-//      }
-//    }
-//  }
-  
-//  @Subscriber('jobs:job_created')
+  @Subscriber('jobs:job_created')
   void handleNewJob(final String jobId, final String tenantId) {
     // Attempt to append to queue.
-    log.info 'onJobCreated()'
+    log.info "onJobCreated(${jobId}, ${tenantId})"
     enqueueJob(jobId, tenantId)
   }
   
@@ -109,6 +101,7 @@ class JobRunnerService implements EventPublisher {
   
   void enqueueJob(final String jobId, final String tenantId) {
     
+    log.debug "Enqueueing job ${jobId} for ${tenantId}"
     // Use me within nested closures to ensure we are talking about this service.
     def me = this
     
@@ -129,23 +122,23 @@ class JobRunnerService implements EventPublisher {
       // as well as setting the job status on execution
       final Runnable currentWork = work
       work = { final String tid, final String jid, final Runnable wrk ->
-        Tenants.CurrentTenant.set(tid)
-        jobContext.set(new JobContext( jobId: jid, tenantId: tid ))
-       
-        try {
-          beginJob()
-          Tenants.withCurrent {
-            wrk()
+          try {
+            Tenants.withId(tid) {
+              jobContext.set(new JobContext( jobId: jid, tenantId: tid ))
+              beginJob()
+              wrk()
+              endJob()
+            }
+          } catch (Exception e) {
+            Tenants.withId(tid) {
+              failJob()
+              log.error ("Job execution failed", e)
+              notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
+            }
+          } finally {
+            jobContext.remove()
           }
-          endJob()
-        } catch (Exception e) {
-          failJob()
-          log.error ("Job execution failed", e)
-          notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
-        } finally {
-          jobContext.remove()
-        }
-      }.curry(tenantId, jobId, work)
+      }.curry(tenantId, jobId, currentWork)
       
       // Execute the work asynchronously.
       executorSvc.execute(work)
@@ -156,31 +149,31 @@ class JobRunnerService implements EventPublisher {
     final Serializable tenantId = jobContext.get()?.tenantId
     if (tenantId) {
       return Tenants.withId(tenantId, code)
+    } else {
+      Tenants.withCurrent (code)
     }
-    
-    code()
   }
   
-  public PersistentJob beginJob() {
+  public PersistentJob beginJob(final String jid = null) {
     handleJobTenant {
       PersistentJob.withNewSession {
-        PersistentJob.get(jobContext.get().jobId).begin()
+        PersistentJob.get(jid ?: jobContext.get().jobId).begin()
       }
     }
   }
   
-  public PersistentJob endJob() {
+  public PersistentJob endJob(final String jid = null) {
     handleJobTenant {
       PersistentJob.withNewSession {
-        PersistentJob.get(jobContext.get().jobId).end()
+        PersistentJob.get(jid ?: jobContext.get().jobId).end()
       }
     }
   }
   
-  public PersistentJob failJob() {
+  public PersistentJob failJob(final String jid = null) {
     handleJobTenant {
       PersistentJob.withNewSession {
-        PersistentJob.get(jobContext.get().jobId).fail()
+        PersistentJob.get(jid ?: jobContext.get().jobId).fail()
       }
     }
   }

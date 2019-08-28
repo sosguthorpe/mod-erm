@@ -5,7 +5,7 @@ import grails.gorm.multitenancy.Tenants
 
 class PackageIngestJob extends PersistentJob implements MultiTenant<PackageIngestJob>{
 
-  Closure work = {
+  final Closure work = {
     log.info "Running Package Ingest Job"
     kbHarvestService.triggerCacheUpdate()
   }

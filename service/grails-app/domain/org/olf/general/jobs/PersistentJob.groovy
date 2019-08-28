@@ -1,21 +1,24 @@
 package org.olf.general.jobs
 import java.time.Instant
+import org.olf.general.SingleFileAttachment
 import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
-
+import grails.async.Promises
 import grails.events.EventPublisher
+import grails.events.annotation.Subscriber
+import grails.events.bus.EventBusAware
 import grails.gorm.MultiTenant
 import grails.gorm.dirty.checking.DirtyCheck
 import grails.gorm.multitenancy.Tenants
 import grails.util.Holders
 
+
 @DirtyCheck
-abstract class PersistentJob implements MultiTenant<PersistentJob> {
+abstract class PersistentJob extends SingleFileAttachment implements EventBusAware, MultiTenant<PersistentJob> {
   
   static transients = ['work']
     
-  String id
   String name
   
   @CategoryId('PersistentJob.Status') // Workaround for a bug in toolkit creating a category for each extension even when not specified.
@@ -31,8 +34,7 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
   RefdataValue result
   
   static mapping = {
-    tablePerHierarchy false
-                   id generator: 'uuid2', length:36
+//    tablePerHierarchy false
                  name column:'job_name'
                status column:'job_status_fk'
           dateCreated column:'job_date_created'
@@ -43,7 +45,7 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
 
   static constraints = {
             name (nullable:false, blank:false)
-          status (nullable:false)
+          status (nullable:false, bindable: false)
      dateCreated (nullable:true)
          started (nullable:true)
            ended (nullable:true)
@@ -53,8 +55,14 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
   def afterInsert () {
     // Ugly work around events being raised on multi-tenant GORM entities not finding subscribers
     // from the root context.
-    JobRunnerService jrs = Holders.applicationContext.getBean('jobRunnerService')
-    jrs.handleNewJob(this.id, Tenants.currentId())
+//    JobRunnerService jrs = Holders.applicationContext.getBean('jobRunnerService')
+//    jrs.handleNewJob(this.id, Tenants.currentId())
+    final String jobId = this.id
+    final String tenantId = Tenants.currentId()
+    Promises.task {
+      JobRunnerService jrs = Holders.applicationContext.getBean('jobRunnerService')
+      jrs.handleNewJob(jobId, tenantId)
+    }
   }
   
   List<LogEntry> getErrorLog() {

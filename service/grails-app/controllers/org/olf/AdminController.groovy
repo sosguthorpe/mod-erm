@@ -1,15 +1,18 @@
 package org.olf
 
 import grails.gorm.multitenancy.CurrentTenant
+import grails.web.databinding.DataBinder
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import grails.converters.JSON
 import org.olf.kb.RemoteKB
+import org.springframework.validation.BindingResult
+import org.olf.dataimport.internal.InternalPackageImpl
 import org.olf.kb.KBCacheUpdater
 
 @Slf4j
 @CurrentTenant
-class AdminController {
+class AdminController implements DataBinder{
 
   def packageIngestService
   def knowledgeBaseCacheService
@@ -23,17 +26,27 @@ class AdminController {
    * submit a form with the sinle file upload parameter "package_file".
    */
   public loadPackage() {
-    def result = null;
+    def result = [:]
     log.debug("AdminController::loadPackage");
     // Single file
     def file = request.getFile("package_file")
     if ( file ) {
       def jsonSlurper = new JsonSlurper()
-      def package_data = jsonSlurper.parse(file.inputStream)
-      result = packageIngestService.upsertPackage(package_data);
+      
+      def package_data = new InternalPackageImpl()
+      BindingResult br = bindData (package_data, jsonSlurper.parse(file.inputStream))
+      if (br?.hasErrors()) {
+        br.allErrors.each {
+          log.debug "\t${it}"
+        }
+        return
+      }
+      
+      // Else do the ingest.
+      result = packageIngestService.upsertPackage(package_data)
     }
     else {
-      log.warn("No file");
+      log.warn("No file")
     }
 
     render result as JSON
@@ -48,7 +61,7 @@ class AdminController {
   }
 
   public pullPackage() {
-    def result = null;
+    def result = [:]
     RemoteKB rkb = RemoteKB.findByName(params.kb)
 
     if ( rkb ) {
