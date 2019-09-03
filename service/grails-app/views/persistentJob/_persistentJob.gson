@@ -7,7 +7,8 @@ final List logs = ['fullLog', 'errorLog', 'infoLog']
 @Field
 PersistentJob persistentJob
 
-json g.render (persistentJob, [expand:['status', 'result']]) {
+json g.render (persistentJob, [includes: ['id', 'name', 'dateCreated', 'status', 'started', 'ended', 'result'], expand:['status', 'result']]) {
+  'class' GrailsHibernateUtil.unwrapIfProxy(persistentJob).class.name
   
   logs.each {final String propName ->
     final def logList = persistentJob[propName]
@@ -15,5 +16,4 @@ json g.render (persistentJob, [expand:['status', 'result']]) {
       call(propName, g.render(logList)) 
     }
   }
-  'class' GrailsHibernateUtil.unwrapIfProxy(persistentJob).class.name
 }

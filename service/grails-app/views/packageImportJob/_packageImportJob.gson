@@ -1,0 +1,9 @@
+import org.olf.general.jobs.PackageImportJob
+
+import groovy.transform.Field
+
+@Field
+PackageImportJob packageImportJob
+
+inherits template: '/persistentJob/persistentJob'
+json g.render (packageImportJob, [include: ['fileUpload'], expand: ['fileUpload']])
