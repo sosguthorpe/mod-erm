@@ -5,5 +5,4 @@ import groovy.transform.Field
 @Field
 PackageImportJob packageImportJob
 
-inherits template: '/persistentJob/persistentJob'
-json g.render (packageImportJob, [include: ['fileUpload'], expand: ['fileUpload']])
+json tmpl."/persistentJob/persistentJob" (persistentJob: packageImportJob)

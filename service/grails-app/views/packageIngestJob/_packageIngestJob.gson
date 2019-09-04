@@ -1,5 +1,6 @@
-import groovy.transform.Field
 import org.olf.general.jobs.PackageIngestJob
+
+import groovy.transform.Field
 
 @Field
 PackageIngestJob packageIngestJob
