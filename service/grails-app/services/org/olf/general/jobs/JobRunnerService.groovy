@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 import org.olf.ImportService
 import org.olf.KbHarvestService
+import org.slf4j.MDC
 import com.k_int.okapi.OkapiTenantAdminService
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
@@ -122,6 +123,7 @@ class JobRunnerService implements EventPublisher {
       // as well as setting the job status on execution
       final Runnable currentWork = work
       work = { final String tid, final String jid, final Runnable wrk ->
+          MDC.setContextMap( jobId: "${jid}", tenantId: "${tid}" )
           try {
             Tenants.withId(tid) {
               jobContext.set(new JobContext( jobId: jid, tenantId: tid ))

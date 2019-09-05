@@ -133,7 +133,7 @@ public class PackageIngestService {
                 // See if we already have a title platform record for the presence of this title on this platform
                 PlatformTitleInstance pti = PlatformTitleInstance.findByTitleInstanceAndPlatform(title, platform)
     
-                if ( pti == null ) 
+                if ( pti == null )
                   pti = new PlatformTitleInstance(titleInstance:title, 
                                                   platform:platform,
                                                   url:pc.url).save(flush:true, failOnError:true)

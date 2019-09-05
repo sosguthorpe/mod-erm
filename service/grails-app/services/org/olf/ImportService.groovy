@@ -9,7 +9,7 @@ import org.olf.dataimport.internal.InternalPackageImpl
 import org.olf.dataimport.internal.PackageSchema
 import org.springframework.context.MessageSource
 import org.springframework.validation.ObjectError
-import org.springframework.context.i18n.LocaleContextHolder as LCH
+import org.springframework.context.i18n.LocaleContextHolder
 
 @CompileStatic
 @Slf4j
@@ -87,13 +87,13 @@ class ImportService implements DataBinder {
       } else {
         // Log the errors.
         pkg.errors.allErrors.each { ObjectError error ->
-          log.error "${ messageSource.getMessage(error, LCH.locale)}"
+          log.error "${ messageSource.getMessage(error, LocaleContextHolder.locale) }"
         }
       }
     } else {
       // Log the errors.
       pkg.errors.allErrors.each { ObjectError error ->
-        log.error "${ messageSource.getMessage(error, LCH.locale)}"
+        log.error "${ messageSource.getMessage(error, LocaleContextHolder.locale) }"
       }
     }
     
