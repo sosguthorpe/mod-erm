@@ -95,7 +95,7 @@ public class PackageIngestService {
       result.packageId = pkg.id
     }
 
-    package_data.packageContents.each { ContentItemSchema pc, int index ->
+    package_data.packageContents.eachWithIndex { ContentItemSchema pc, int index ->
       MDC f
       MDC.put('subDiscriminator', "Content item #${index + 1}")
 

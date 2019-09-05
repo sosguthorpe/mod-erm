@@ -71,7 +71,14 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
 root(ERROR, ['STDOUT'])
 
 // Add a new appender that logs statements to the database for jobs.
-appender ('JOB', JobAwareAppender)
+appender ('JOB', JobAwareAppender) { 
+  encoder(PatternLayoutEncoder) {
+    charset = Charset.forName('UTF-8')
+
+    pattern = "%replace(%X{descriminator} - ){' - ', ''}%replace(%X{subDescriminator} - ){' - ', ''}" + // Add the descriminators
+      '%m%n%' // Message
+  }
+}
 
 // Add the appender for classes we wish to expose within the database.
 logger ('org.olf.PackageIngestService', DEBUG, ['JOB'])
