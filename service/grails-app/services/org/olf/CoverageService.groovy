@@ -10,14 +10,20 @@ import org.olf.kb.AbstractCoverageStatement
 import org.olf.kb.CoverageStatement
 import org.olf.kb.ErmResource
 import org.olf.kb.Pkg
+import org.springframework.context.MessageSource
+import org.springframework.context.i18n.LocaleContextHolder
+import org.springframework.validation.ObjectError
 import org.springframework.web.context.request.RequestContextHolder
 
 import grails.gorm.transactions.Transactional
+import groovy.util.logging.Slf4j
 
 /**
  * This service works at the module level, it's often called without a tenant context.
  */
+@Slf4j
 public class CoverageService {
+  MessageSource messageSource
   
   private Map<String, Iterable<AbstractCoverageStatement>> addToRequestIfPresent (final Map<String, Iterable<AbstractCoverageStatement>> statements) {
     
@@ -111,7 +117,7 @@ public class CoverageService {
     // Iterate through each of the statements we want to add
     coverage_statements.each { CoverageStatementSchema cs ->
       
-      if (cs.startDate != null) {
+      if (cs.validate()) {
         final List<CoverageStatement> existing_coverage = CoverageStatement.createCriteria().list {
           eq 'resource', title
           or {
@@ -134,35 +140,34 @@ public class CoverageService {
             }
           }
         }
-      
 
         if ( existing_coverage.size() > 0 ) {
           log.warn("Located ${existing_coverage.size()} existing coverage statements overlapping with ${cs}, determine extend or create additional")
 
           // All these coverage statements overlap with the statement in question - we should be able to coalesce all of them to the min() and max() values
-          def min_start_date = cs.startDate;
-          def min_start_issue = cs.startIssue;
-          def min_start_volume = cs.startVolume;
-          def max_end_date = cs.endDate;
-          def max_end_issue = cs.endIssue;
-          def max_end_volume = cs.endVolume;
-  
+          def min_start_date = cs.startDate
+          def min_start_issue = cs.startIssue
+          def min_start_volume = cs.startVolume
+          def max_end_date = cs.endDate
+          def max_end_issue = cs.endIssue
+          def max_end_volume = cs.endVolume
+          
           boolean new_coverage_is_already_subsumed = false
           existing_coverage.each { final CoverageStatement existing_cs ->
 
-            log.debug("Checking existing start: ${existing_cs.startDate} end: ${existing_cs.endDate} new start: ${cs.startDate} new end: ${cs.endDate}");
-            log.debug("test ${existing_cs.startDate} < ${min_start_date}");
+            log.debug("Checking existing start: ${existing_cs.startDate} end: ${existing_cs.endDate} new start: ${cs.startDate} new end: ${cs.endDate}")
+            log.debug("test ${existing_cs.startDate} < ${min_start_date}")
 
             // We gather together the extreme ends of all the current coverage statements and the new one (Starting with the new on in the declarations above)
             // For each existing coverage statement, expand out the max and min
 
             // EG: If this coverage statement has a start date, and the min seen is null or less than the current earliest date, then update the min_start_date
-            if ( ( existing_cs.startDate != null ) && ( ( min_start_date == null ) || ( existing_cs.startDate < min_start_date ) ) ) min_start_date = existing_cs.startDate;
-            if ( ( existing_cs.endDate != null ) && ( ( max_end_date == null ) || ( existing_cs.endDate < max_end_date ) ) ) max_end_date = existing_cs.endDate;
-            if ( ( existing_cs.startVolume != null ) && ( ( min_start_volume == null ) || ( existing_cs.startVolume < min_start_volume ) ) ) min_start_volume = existing_cs.startVolume;
-            if ( ( existing_cs.startIssue != null ) && ( ( min_start_issue == null ) || ( existing_cs.startIssue < min_start_issue ) ) ) min_start_issue = existing_cs.startIssue;
-            if ( ( existing_cs.endVolume != null ) && ( ( max_end_volume == null ) || ( existing_cs.endVolume > max_end_volume ) ) ) max_end_volume = existing_cs.endVolume;
-            if ( ( existing_cs.endIssue != null ) && ( ( max_end_issue == null ) || ( existing_cs.endIssue > max_end_issue ) ) ) max_end_issue = existing_cs.endIssue;
+            if ( ( existing_cs.startDate != null ) && ( ( min_start_date == null ) || ( existing_cs.startDate < min_start_date ) ) ) min_start_date = existing_cs.startDate
+            if ( ( existing_cs.endDate != null ) && ( ( max_end_date == null ) || ( existing_cs.endDate < max_end_date ) ) ) max_end_date = existing_cs.endDate
+            if ( ( existing_cs.startVolume != null ) && ( ( min_start_volume == null ) || ( existing_cs.startVolume < min_start_volume ) ) ) min_start_volume = existing_cs.startVolume
+            if ( ( existing_cs.startIssue != null ) && ( ( min_start_issue == null ) || ( existing_cs.startIssue < min_start_issue ) ) ) min_start_issue = existing_cs.startIssue
+            if ( ( existing_cs.endVolume != null ) && ( ( max_end_volume == null ) || ( existing_cs.endVolume > max_end_volume ) ) ) max_end_volume = existing_cs.endVolume
+            if ( ( existing_cs.endIssue != null ) && ( ( max_end_issue == null ) || ( existing_cs.endIssue > max_end_issue ) ) ) max_end_issue = existing_cs.endIssue
 
             // If the new coverage statement starts AFTER the one we are currently considering AND the statement we are currently
             // considering has an open end OR a date < the new statement, then the new coverage statement lies within the range of the first statement.
@@ -197,7 +202,7 @@ public class CoverageService {
             new_cs.endVolume = nullIfBlank(max_end_volume)
             new_cs.endIssue = nullIfBlank(max_end_issue)
 
-            log.debug("   -> Replace with New coverage: ${new_cs}");
+            log.debug("   -> Replace with New coverage: ${new_cs}")
             new_cs.save(flush:true, failOnError:true)
           }
         }
@@ -215,7 +220,11 @@ public class CoverageService {
           new_cs.save(flush:true, failOnError:true)
         }
       } else {
-        log.warn("Coverage entry ${cs} contains no startDate")
+        
+        // Not valid coverage statement
+        cs.errors.allErrors.each { ObjectError error ->
+          log.error (messageSource.getMessage(error, LocaleContextHolder.locale))
+        }
       }
     }
   }
