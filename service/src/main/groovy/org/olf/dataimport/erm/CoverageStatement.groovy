@@ -20,6 +20,8 @@ class CoverageStatement extends AbstractCoverageStatement implements CoverageSta
   String endVolume
   String endIssue
   
+  int version = 0
+  
   static constraints = {
     startDate(nullable:false, validator: STATEMENT_START_VALIDATOR)
     endDate(nullable:true)
