@@ -11,7 +11,7 @@ import org.olf.kb.Platform
 import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.RemoteKB
 import org.olf.kb.TitleInstance
-
+import org.slf4j.MDC
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
@@ -95,7 +95,9 @@ public class PackageIngestService {
       result.packageId = pkg.id
     }
 
-    package_data.packageContents.each { ContentItemSchema pc ->
+    package_data.packageContents.each { ContentItemSchema pc, int index ->
+      MDC f
+      MDC.put('subDiscriminator', "Content item #${index + 1}")
 
       // log.debug("Try to resolve ${pc}")
 
