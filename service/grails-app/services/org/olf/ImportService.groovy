@@ -31,7 +31,7 @@ class ImportService implements DataBinder {
       switch (dataSchemaName) {
         case 'mod-agreements-package':
           log.debug "ERM schema"          
-          log.info "Imported ${importPackageUsingErmSchema (envelope)} pacakges successfully"
+          log.info "${importPackageUsingErmSchema (envelope)} pacakge(s) imported successfully"
           break
           
           // Successfully
@@ -43,7 +43,7 @@ class ImportService implements DataBinder {
       if (header && envelope.packageContents) {
         // Looks like it might be the internal schema.
         
-        log.info "Possibly internal schema"
+        log.debug "Possibly internal schema"
         importPackageUsingInternalSchema (envelope)
       }
     }
