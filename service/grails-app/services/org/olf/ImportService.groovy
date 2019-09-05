@@ -58,6 +58,7 @@ class ImportService implements DataBinder {
     envelope.records?.each { Map record ->
       // Ingest 1 package at a time.
       
+      MDC.put('rowNumber', "${packageCount + 1}")
       MDC.put('discriminator', "Package #${packageCount + 1}")
       if (importPackage (record, ErmPackageImpl)) {
         packageCount ++
@@ -70,6 +71,7 @@ class ImportService implements DataBinder {
   int importPackageUsingInternalSchema (final Map envelope) {
     // The whole envelope is a single package in this format.
     
+    MDC.put('rowNumber', "1")
     MDC.put('discriminator', "Package #1")
     importPackage (envelope, InternalPackageImpl) ? 1 : 0
   }
