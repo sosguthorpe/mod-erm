@@ -12,8 +12,8 @@ class Identifier implements IdentifierSchema, Validateable {
   String namespace
   
   static constraints = {
-    value      nullable: true, blank: false
-    namespace  nullable: true, blank: false
+    value      nullable: false, blank: false
+    namespace  nullable: false, blank: false
   }
   
   String toString() {

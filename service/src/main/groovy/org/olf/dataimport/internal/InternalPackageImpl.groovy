@@ -25,6 +25,12 @@ class InternalPackageImpl implements PackageSchema, Validateable {
     LocalDate endDate
     String packageSlug
     String _intenalId
+    
+    static constraints = {
+      packageSource   nullable: false, blank: false
+      packageSlug     nullable: false, blank: false
+      packageName     nullable: false, blank: false
+    }
   }
   
   
@@ -50,5 +56,13 @@ class InternalPackageImpl implements PackageSchema, Validateable {
   static constraints = {
     header            nullable: false
     packageContents   minSize: 1
+    
+    platformName nullable:true, blank:false
+    platformUrl  blank:false, validator: { String platformUrl, PackageContentImpl instance ->
+      if (!platformUrl && !instance.platformName) {
+        // If platform is blank then this can't be.
+        return ['null.message']
+      }
+    }
   }
 }
