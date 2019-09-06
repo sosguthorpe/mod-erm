@@ -44,12 +44,12 @@ class ContentItem implements ContentItemSchema, Validateable {
   
   @Override
   public String getInstanceMedium() {
-    platformTitleInstance?.titleInstance?.subType?.value
+    platformTitleInstance?.titleInstance?.subType
   }
   
   @Override
   public String getInstanceMedia() {
-    platformTitleInstance?.titleInstance?.type?.value
+    platformTitleInstance?.titleInstance?.type
   }
   
   @Override
