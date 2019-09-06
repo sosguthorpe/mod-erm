@@ -11,6 +11,10 @@ class Identifier implements IdentifierSchema, Validateable {
   String value
   String namespace
   
+  String getNamespace() {
+    namespace.toUpperCase()
+  }
+  
   static constraints = {
     value      nullable: false, blank: false
     namespace  nullable: false, blank: false
