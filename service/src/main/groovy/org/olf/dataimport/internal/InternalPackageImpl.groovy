@@ -14,7 +14,7 @@ class InternalPackageImpl implements PackageSchema, Validateable {
   HeaderImpl header
   List<PackageContentImpl> packageContents = []
   
-  @ToString
+  @ToString(includePackage=false)
   @GrailsCompileStatic
   class HeaderImpl implements PackageHeaderSchema, Validateable {
     PackageProvider packageProvider
@@ -34,7 +34,7 @@ class InternalPackageImpl implements PackageSchema, Validateable {
   }
   
   
-  @ToString
+  @ToString(includePackage=false)
   @GrailsCompileStatic
   class PackageContentImpl implements ContentItemSchema, Validateable {
     

@@ -9,7 +9,7 @@ import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
 import groovy.transform.ToString
 
-@ToString
+@ToString(includePackage=false)
 @GrailsCompileStatic
 class CoverageStatement extends AbstractCoverageStatement implements CoverageStatementSchema, Validateable {
   LocalDate startDate

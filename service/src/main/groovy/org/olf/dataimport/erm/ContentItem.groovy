@@ -10,7 +10,7 @@ import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
 import groovy.transform.ToString
 
-@ToString
+@ToString(includePackage=false)
 @GrailsCompileStatic
 class ContentItem implements ContentItemSchema, Validateable {
   

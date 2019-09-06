@@ -110,13 +110,13 @@ public class TitleInstanceResolverService implements DataBinder{
     if ( candidate_list != null ) {
       switch ( num_matches ) {
         case(0):
-          // log.debug("No title match");
+          log.debug("No title match, create new title")
           result = createNewTitleInstance(citation)
           createOrLinkSiblings(citation, result.work)
           break;
         case(1):
-          // log.debug("Exact match.");
-          result = candidate_list.get(0);
+          log.debug("Exact match. Enrich title.")
+          result = candidate_list.get(0)
           checkForEnrichment(result, citation)
           break;
         default:
@@ -258,8 +258,8 @@ public class TitleInstanceResolverService implements DataBinder{
     }
 
     // Refresh the newly minted title so we have access to all the related objects (eg Identifiers)
-    result.refresh();
-    result;
+    result.refresh()
+    result
   }
 
   /**
