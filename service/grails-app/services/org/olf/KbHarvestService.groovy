@@ -75,7 +75,7 @@ where rkb.type is not null
     }
   }
 
-  @Scheduled(fixedDelay = 10000L, initialDelay = 10000L) // Run task every hour
+  @Scheduled(fixedDelay = 3600000L, initialDelay = 10000L) // Run task every hour
   void triggerSync() {
     log.debug "Running scheduled KB sync for all tenants :{}", Instant.now()
 
