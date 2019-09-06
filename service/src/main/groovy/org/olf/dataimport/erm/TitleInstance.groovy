@@ -14,6 +14,13 @@ class TitleInstance implements Validateable {
   String type = 'journal'
   String subType = 'electronic'
   
+  String getType () {
+    this.type?.toLowerCase()
+  }
+  String getSubType () {
+    this.subType?.toLowerCase()
+  }
+  
   static hasMany = [
     identifiers: Identifier
   ]
