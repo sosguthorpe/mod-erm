@@ -59,9 +59,10 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   }
 
   public String getCodexSummary() {
-    def num_entitlements = 0;
-    def num_current_entitlements = 0;
-    def num_package_appearences = 0;
-    return "${name} (${type?.value}/${subType?.value})";
+    return "${this}";
+  }
+  
+  public String toString() {
+    "${name} (${type?.value}/${subType?.value})"
   }
 }

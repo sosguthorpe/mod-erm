@@ -57,7 +57,7 @@ where rkb.type is not null
 //  }
   
   @CompileStatic(SKIP)
-  private synchronized void triggerUpdateForTenant(final String tenant_schema_id) {
+  private void triggerUpdateForTenant(final String tenant_schema_id) {
     Tenants.withId(tenant_schema_id) {
       
       PackageIngestJob job = PackageIngestJob.findByStatusInList([
@@ -75,7 +75,7 @@ where rkb.type is not null
     }
   }
 
-  @Scheduled(fixedDelay = 3600000L, initialDelay = 1000L) // Run task every hour
+  @Scheduled(fixedDelay = 3600000L, initialDelay = 10000L) // Run task every hour
   void triggerSync() {
     log.debug "Running scheduled KB sync for all tenants :{}", Instant.now()
 

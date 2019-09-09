@@ -15,8 +15,7 @@ import grails.web.databinding.DataBinder
 /**
  * This service works at the module level, it's often called without a tenant context.
  */
-@Transactional
-public class TitleInstanceResolverService implements DataBinder{
+class TitleInstanceResolverService implements DataBinder{
 
   private static final float MATCH_THRESHOLD = 0.775f
   private static final String TEXT_MATCH_TITLE_HQL = '''
@@ -84,7 +83,7 @@ public class TitleInstanceResolverService implements DataBinder{
     int num_class_one_identifiers = countClassOneIDs(citation.instanceIdentifiers);
     int num_matches = candidate_list.size()
     if ( num_matches > 1 ) {
-      log.error("class one match found multiple titles:: ${candidate_list}");
+      log.error("Class one match found multiple titles:: ${candidate_list}");
     }
 
     // We weren't able to match directly on an identifier for this instance - see if we have an identifier
@@ -110,13 +109,13 @@ public class TitleInstanceResolverService implements DataBinder{
     if ( candidate_list != null ) {
       switch ( num_matches ) {
         case(0):
-          // log.debug("No title match");
+          log.debug("No title match, create new title")
           result = createNewTitleInstance(citation)
           createOrLinkSiblings(citation, result.work)
           break;
         case(1):
-          // log.debug("Exact match.");
-          result = candidate_list.get(0);
+          log.debug("Exact match. Enrich title.")
+          result = candidate_list.get(0)
           checkForEnrichment(result, citation)
           break;
         default:
@@ -152,7 +151,7 @@ public class TitleInstanceResolverService implements DataBinder{
     // a title if we know that it is a sibling of a print identifier.
     int num_class_one_identifiers_for_sibling = countClassOneIDs(citation.siblingInstanceIdentifiers)
 
-    IdentifierSchema issn_id = citation.siblingInstanceIdentifiers.find { it.namespace == 'issn' }
+    IdentifierSchema issn_id = citation.siblingInstanceIdentifiers.find { it.namespace.toLowerCase() == 'issn' }
     String issn = issn_id?.value;
 
     if ( issn ) {
@@ -258,8 +257,8 @@ public class TitleInstanceResolverService implements DataBinder{
     }
 
     // Refresh the newly minted title so we have access to all the related objects (eg Identifiers)
-    result.refresh();
-    result;
+    result.refresh()
+    result
   }
 
   /**

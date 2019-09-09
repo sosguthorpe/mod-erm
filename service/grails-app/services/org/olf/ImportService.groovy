@@ -7,9 +7,10 @@ import groovy.util.logging.Slf4j
 import org.olf.dataimport.erm.ErmPackageImpl
 import org.olf.dataimport.internal.InternalPackageImpl
 import org.olf.dataimport.internal.PackageSchema
+import org.slf4j.MDC
 import org.springframework.context.MessageSource
 import org.springframework.validation.ObjectError
-import org.springframework.context.i18n.LocaleContextHolder as LCH
+import org.springframework.context.i18n.LocaleContextHolder
 
 @CompileStatic
 @Slf4j
@@ -31,7 +32,7 @@ class ImportService implements DataBinder {
       switch (dataSchemaName) {
         case 'mod-agreements-package':
           log.debug "ERM schema"          
-          log.info "Imported ${importPackageUsingErmSchema (envelope)} pacakges successfully"
+          log.info "${importPackageUsingErmSchema (envelope)} pacakge(s) imported successfully"
           break
           
           // Successfully
@@ -43,7 +44,7 @@ class ImportService implements DataBinder {
       if (header && envelope.packageContents) {
         // Looks like it might be the internal schema.
         
-        log.info "Possibly internal schema"
+        log.debug "Possibly internal schema"
         importPackageUsingInternalSchema (envelope)
       }
     }
@@ -56,7 +57,9 @@ class ImportService implements DataBinder {
     // Erm schema supports multiple packages per document. We should lazily parse 1 by 1.
     envelope.records?.each { Map record ->
       // Ingest 1 package at a time.
-    
+      
+      MDC.put('rowNumber', "${packageCount + 1}")
+      MDC.put('discriminator', "Package #${packageCount + 1}")
       if (importPackage (record, ErmPackageImpl)) {
         packageCount ++
       }
@@ -67,6 +70,9 @@ class ImportService implements DataBinder {
   
   int importPackageUsingInternalSchema (final Map envelope) {
     // The whole envelope is a single package in this format.
+    
+    MDC.put('rowNumber', "1")
+    MDC.put('discriminator', "Package #1")
     importPackage (envelope, InternalPackageImpl) ? 1 : 0
   }
   
@@ -74,7 +80,6 @@ class ImportService implements DataBinder {
     boolean packageImported = false
     final PackageSchema pkg = schemaClass.newInstance()
     bindData(pkg, record)
-    
     // Check for binding errors.
     if (!pkg.errors.hasErrors()) {
       // Validate the actual values now. And check for constraint violations
@@ -87,13 +92,13 @@ class ImportService implements DataBinder {
       } else {
         // Log the errors.
         pkg.errors.allErrors.each { ObjectError error ->
-          log.error "${ messageSource.getMessage(error, LCH.locale)}"
+          log.error "${ messageSource.getMessage(error, LocaleContextHolder.locale) }"
         }
       }
     } else {
       // Log the errors.
       pkg.errors.allErrors.each { ObjectError error ->
-        log.error "${ messageSource.getMessage(error, LCH.locale)}"
+        log.error "${ messageSource.getMessage(error, LocaleContextHolder.locale) }"
       }
     }
     

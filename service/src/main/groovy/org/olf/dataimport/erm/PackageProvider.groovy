@@ -6,7 +6,7 @@ import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
 import groovy.transform.ToString
 
-@ToString(includes=['name'])
+@ToString(includes=['name'], includePackage=false)
 @GrailsCompileStatic
 class PackageProvider implements PackageProviderSchema, Validateable {
   

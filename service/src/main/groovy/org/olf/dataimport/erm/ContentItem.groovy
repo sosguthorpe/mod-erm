@@ -1,16 +1,17 @@
 package org.olf.dataimport.erm
 
 import java.time.LocalDate
-
+import javax.validation.constraints.NotNull
 import org.olf.dataimport.internal.PackageSchema.ContentItemSchema
 import org.olf.dataimport.internal.PackageSchema.IdentifierSchema
 import org.olf.kb.AbstractCoverageStatement
 
 import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
+import groovy.transform.Memoized
 import groovy.transform.ToString
 
-@ToString
+@ToString(includePackage=false)
 @GrailsCompileStatic
 class ContentItem implements ContentItemSchema, Validateable {
   
@@ -44,23 +45,47 @@ class ContentItem implements ContentItemSchema, Validateable {
   
   @Override
   public String getInstanceMedium() {
-    platformTitleInstance?.titleInstance?.subType?.value
+    platformTitleInstance?.titleInstance?.subType
   }
   
   @Override
   public String getInstanceMedia() {
-    platformTitleInstance?.titleInstance?.type?.value
+    platformTitleInstance?.titleInstance?.type
   }
+  
+  private static final Map<String,List<String>> known_id_types = [
+    electronic : ['EISSN', 'DOI', 'EZB'],
+    print : ['ISSN']
+  ]
+  
+  @Memoized
+  private final Collection<String> siblingNamespacesForSubType (@NotNull final String subType) {
+    final Set<String> all = []
+    known_id_types.each { final String type, final List<String> namespaces ->
+      if (type.trim().toLowerCase() != subType.trim().toLowerCase()) {
+        all.addAll namespaces
+      }
+    }
+    
+    all
+  }  
   
   @Override
   public Collection<IdentifierSchema> getInstanceIdentifiers() {
-    platformTitleInstance?.titleInstance?.identifiers as Collection<IdentifierSchema>
+    Collection<IdentifierSchema> ids = platformTitleInstance?.titleInstance?.identifiers as Collection<IdentifierSchema>
+    
+    def siblings = instanceMedium ? siblingNamespacesForSubType(instanceMedium) : []
+    
+    ids && siblings ? ids.findAll { IdentifierSchema idSch -> !siblings.contains(idSch.namespace.trim().toUpperCase()) } as Collection<IdentifierSchema> : ids
   }
   
   @Override
   public Collection<IdentifierSchema> getSiblingInstanceIdentifiers() {
-    // Returns empty set for this implementation.
-    []
+    Collection<IdentifierSchema> ids = platformTitleInstance?.titleInstance?.identifiers as Collection<IdentifierSchema>
+    
+    def siblings = instanceMedium ? siblingNamespacesForSubType(instanceMedium) : []
+    
+    ids && siblings ? ids.findAll { IdentifierSchema idSch -> siblings.contains(idSch.namespace.trim().toUpperCase()) } as Collection<IdentifierSchema> : ids
   }
   
   @Override

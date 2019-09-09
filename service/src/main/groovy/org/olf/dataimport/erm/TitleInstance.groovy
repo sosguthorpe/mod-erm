@@ -6,13 +6,20 @@ import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
 import groovy.transform.ToString
 
-@ToString
+@ToString(includePackage=false)
 @GrailsCompileStatic
 class TitleInstance implements Validateable {
   String name
   Set<Identifier> identifiers
-  RefdataValue type
-  RefdataValue subType
+  String type = 'journal'
+  String subType = 'electronic'
+  
+  String getType () {
+    this.type?.toLowerCase()
+  }
+  String getSubType () {
+    this.subType?.toLowerCase()
+  }
   
   static hasMany = [
     identifiers: Identifier
@@ -20,8 +27,8 @@ class TitleInstance implements Validateable {
   
   static constraints = {
     name      nullable: true, blank: false
-    type      nullable: true
-    subType   nullable: true
+    type      nullable: true, blank: false
+    subType   nullable: true, blank: false
   }
   
 }

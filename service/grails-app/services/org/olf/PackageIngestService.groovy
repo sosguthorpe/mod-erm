@@ -11,7 +11,7 @@ import org.olf.kb.Platform
 import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.RemoteKB
 import org.olf.kb.TitleInstance
-
+import org.slf4j.MDC
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
@@ -19,8 +19,7 @@ import groovy.util.logging.Slf4j
  * This service works at the module level, it's often called without a tenant context.
  */
 @Slf4j
-@Transactional
-public class PackageIngestService {
+class PackageIngestService {
 
   // This boolean controls the behaviour of the loader when we encounter a title that does not have
   // a platform URL. We can error the row and do nothing, or create a row and point it at a proxy
@@ -95,7 +94,8 @@ public class PackageIngestService {
       result.packageId = pkg.id
     }
 
-    package_data.packageContents.each { ContentItemSchema pc ->
+    package_data.packageContents.eachWithIndex { ContentItemSchema pc, int index ->
+      MDC.put('subDiscriminator', "Content item #${index + 1}")
 
       // log.debug("Try to resolve ${pc}")
 
@@ -112,98 +112,87 @@ public class PackageIngestService {
             // log.debug("platform ${pc.platformUrl} ${pc.platformName} (item URL is ${pc.url})")
   
             // lets try and work out the platform for the item
-            try {
-              def platform_url_to_use = pc.platformUrl
-  
-              if ( ( pc.platformUrl == null ) && ( pc.url != null ) ) {
-                // No platform URL, but a URL for the title. Parse the URL and generate a platform URL
-                def parsed_url = new java.net.URL(pc.url)
-                platform_url_to_use = "${parsed_url.getProtocol()}://${parsed_url.getHost()}"
-              }
-  
-              Platform platform = Platform.resolve(platform_url_to_use, pc.platformName)
-              // log.debug("Platform: ${platform}")
+            def platform_url_to_use = pc.platformUrl
 
-              if ( platform == null && PROXY_MISSING_PLATFORM ) {
-                platform = Platform.resolve('http://localhost.localdomain', 'This platform entry is used for error cases')
-              }
+            if ( ( pc.platformUrl == null ) && ( pc.url != null ) ) {
+              // No platform URL, but a URL for the title. Parse the URL and generate a platform URL
+              def parsed_url = new java.net.URL(pc.url)
+              platform_url_to_use = "${parsed_url.getProtocol()}://${parsed_url.getHost()}"
+            }
 
-              if ( platform != null ) {
-    
-                // See if we already have a title platform record for the presence of this title on this platform
-                PlatformTitleInstance pti = PlatformTitleInstance.findByTitleInstanceAndPlatform(title, platform)
-    
-                if ( pti == null ) 
-                  pti = new PlatformTitleInstance(titleInstance:title, 
-                                                  platform:platform,
-                                                  url:pc.url).save(flush:true, failOnError:true)
-    
-    
-                // Lookup or create a package content item record for this title on this platform in this package
-                // We only check for currently live pci records, as titles can come and go from the package.
-                // N.B. addedTimestamp removedTimestamp lastSeenTimestamp
-                def pci_qr = PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pti = :pti and pci.pkg.id = :pkg and pci.removedTimestamp is null',
-                                                             [pti:pti, pkg:result.packageId])
-                PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null; 
-    
-                if ( pci == null ) {
-                  log.debug("Record ${result.titleCount} - Create new package content item")
-                  pci = new PackageContentItem(
-                                               pti:pti, 
-                                               pkg:Pkg.get(result.packageId), 
-                                               note:(pc.coverageNote) ? pc.coverageNote : null,
-                                               depth:(pc.coverageDepth) ? pc.coverageDepth : null,
-                                               accessStart:null,
-                                               accessEnd:null, 
-                                               addedTimestamp:result.updateTime,
-                                               lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true)
-                }
-                else {
-                  // Note that we have seen the package content item now - so we don't delete it at the end.
-                  log.debug("Record ${result.titleCount} - Update package content item (${pci.id})")
-                  pci.lastSeenTimestamp = result.updateTime
-                  // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
-                }
-    
-                // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
-                // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
-                // We store this generally for the title on the platform, and specifically for this title in this package on this platform.
-                if ( pc.coverage ) {
-    
-                  // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
-                  // to the list of maps that coverageService.extend expects
-                  Iterable<CoverageStatementSchema> cov = pc.coverage instanceof Iterable ? pc.coverage : [ pc.coverage ]
-    
-                  coverageService.extend(pti, cov)
-                  coverageService.extend(pci, cov)
-                  coverageService.extend(title, cov)
-                }
-    
-                // Save needed either way
-                pci.save(flush:true, failOnError:true)
+            Platform platform = Platform.resolve(platform_url_to_use, pc.platformName)
+            // log.debug("Platform: ${platform}")
+
+            if ( platform == null && PROXY_MISSING_PLATFORM ) {
+              platform = Platform.resolve('http://localhost.localdomain', 'This platform entry is used for error cases')
+            }
+
+            if ( platform != null ) {
+
+              // See if we already have a title platform record for the presence of this title on this platform
+              PlatformTitleInstance pti = PlatformTitleInstance.findByTitleInstanceAndPlatform(title, platform)
+
+              if ( pti == null )
+                pti = new PlatformTitleInstance(titleInstance:title,
+                platform:platform,
+                url:pc.url).save(flush:true, failOnError:true)
+
+
+              // Lookup or create a package content item record for this title on this platform in this package
+              // We only check for currently live pci records, as titles can come and go from the package.
+              // N.B. addedTimestamp removedTimestamp lastSeenTimestamp
+              def pci_qr = PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pti = :pti and pci.pkg.id = :pkg and pci.removedTimestamp is null',
+                  [pti:pti, pkg:result.packageId])
+              PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null;
+
+              if ( pci == null ) {
+                log.debug("Record ${result.titleCount} - Create new package content item")
+                pci = new PackageContentItem(
+                    pti:pti,
+                    pkg:Pkg.get(result.packageId),
+                    note:(pc.coverageNote) ? pc.coverageNote : null,
+                    depth:(pc.coverageDepth) ? pc.coverageDepth : null,
+                    accessStart:null,
+                    accessEnd:null,
+                    addedTimestamp:result.updateTime,
+                    lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true)
               }
               else {
-                String message = "Exception processing record #${result.titleCount}. Unable to identify platform for package content item ${platform_url_to_use}, ${pc.platformName}"
-                log.error(message)
-//                JobRunnerService.addJobError(message)
+                // Note that we have seen the package content item now - so we don't delete it at the end.
+                log.debug("Record ${result.titleCount} - Update package content item (${pci.id})")
+                pci.lastSeenTimestamp = result.updateTime
+                // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
               }
+
+              // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
+              // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
+              // We store this generally for the title on the platform, and specifically for this title in this package on this platform.
+              if ( pc.coverage ) {
+
+                // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
+                // to the list of maps that coverageService.extend expects
+                Iterable<CoverageStatementSchema> cov = pc.coverage instanceof Iterable ? pc.coverage : [ pc.coverage ]
+
+                coverageService.extend(pti, cov)
+                coverageService.extend(pci, cov)
+                coverageService.extend(title, cov)
+              }
+  
+              // Save needed either way
+              pci.save(flush:true, failOnError:true)
             }
-            catch ( Exception e ) {
-              String message = "Exception processing record #${result.titleCount}. ${e.message}"
-              log.error(message,e)
-//              JobRunnerService.addJobError(message)
+            else {
+              String message = "Skipping ${pc.title}. Unable to identify platform from ${platform_url_to_use} and ${pc.platformName}"
+              log.error(message)
             }
           }
           else {
-            String message = "Exception processing record #${result.titleCount}. Unable to resolve title ${pc.title} ${pc.instanceIdentifiers}"
+            String message = "Skipping ${pc.title}. Unable to resolve title from ${pc.title} with identifiers ${pc.instanceIdentifiers}"
             log.error(message)
-//            JobRunnerService.addJobError(message)
           }
         }
-      }
-      catch ( Exception e ) {
-        String message = "Error when processing record ${pc} in package load. Ignoring this record."
-//        JobRunnerService.addJobError(message)
+      } catch ( Exception e ) {
+        String message = "Skipping ${pc.title}. System error: ${e.message}"
         log.error(message,e)
       }
 
@@ -234,8 +223,7 @@ public class PackageIngestService {
       result.titleCount++
       result.averageTimePerTitle=(System.currentTimeMillis()-result.startTime)/result.titleCount
       if ( result.titleCount % 100 == 0 ) {
-        String message = "Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}"
-        log.info (message)
+        log.debug ("Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}")
 //        JobRunnerService.addJobInfo(message)
       }
     }
@@ -243,7 +231,7 @@ public class PackageIngestService {
     // At the end - Any PCIs that are currently live (Don't have a removedTimestamp) but whos lastSeenTimestamp is < result.updateTime
     // were not found on this run, and have been removed. We *may* introduce some extra checks here - like 3 times or a time delay, but for now,
     // this is how we detect deletions in the package file.
-    log.info("end of packageUpsert. Remove any content items that have disappeared since the last upload. ${pkg.name}/${pkg.source}/${pkg.reference}/${result.updateTime}")
+    log.debug("Remove any content items that have disappeared since the last upload. ${pkg.name}/${pkg.source}/${pkg.reference}/${result.updateTime}")
     int removal_counter = 0
     
     PackageContentItem.withNewTransaction { status ->
@@ -262,7 +250,11 @@ public class PackageIngestService {
       result.numTitlesRemoved = removal_counter
     }
     
-    log.info("Removed ${removal_counter} content items successfully")
+    if (removal_counter > 0) {
+      log.info("Removed ${removal_counter} items successfully")
+    } else {
+      log.info("Nothing to remove")
+    }
 
     return result
   }

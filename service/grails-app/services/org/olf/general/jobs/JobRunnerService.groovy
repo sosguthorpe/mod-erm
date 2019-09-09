@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 import org.olf.ImportService
 import org.olf.KbHarvestService
+import org.slf4j.MDC
 import com.k_int.okapi.OkapiTenantAdminService
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
@@ -21,7 +22,7 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class JobRunnerService implements EventPublisher {
   
-  // Any aut injected beans here can be accessed within the `work` runnable
+  // Any auto injected beans here can be accessed within the `work` runnable
   // of the job itself.
   
   OkapiTenantAdminService okapiTenantAdminService
@@ -44,14 +45,14 @@ class JobRunnerService implements EventPublisher {
     // SO: This is not ideal. We don't want to limit jobs globally to 1 ideally. It should be 
     // 1 per tenant, but that will involve implementing custom handling for the queue and executor.
     // While we only have 1 tenant, this will suffice.
-//    new ThreadPoolExecutor(
-//      1, // Core pool Idle threads.
-//      1, // Treads max.
-//      1000, // Millisecond wait.
-//      TimeUnit.MILLISECONDS, // Makes the above wait time in 'seconds'
-//      new LinkedBlockingQueue<Runnable>() // Blocking queue
-//    )
-    executorSvc = Executors.newFixedThreadPool(1)
+    executorSvc = new ThreadPoolExecutor(
+      1, // Core pool Idle threads.
+      1, // Treads max.
+      1000, // Millisecond wait.
+      TimeUnit.MILLISECONDS, // Makes the above wait time in 'seconds'
+      new LinkedBlockingQueue<Runnable>() // Blocking queue
+    )
+//    executorSvc = Executors.newFixedThreadPool(1)
     
     // Get the list of jobs from all tenants that were interrupted by app termination and
     // set their states appropriately.
@@ -99,7 +100,7 @@ class JobRunnerService implements EventPublisher {
     }
   }
   
-  void enqueueJob(final String jobId, final String tenantId) {
+  public void enqueueJob(final String jobId, final String tenantId) {
     
     log.debug "Enqueueing job ${jobId} for ${tenantId}"
     // Use me within nested closures to ensure we are talking about this service.
@@ -122,21 +123,22 @@ class JobRunnerService implements EventPublisher {
       // as well as setting the job status on execution
       final Runnable currentWork = work
       work = { final String tid, final String jid, final Runnable wrk ->
-          try {
-            Tenants.withId(tid) {
+          Tenants.withId(tid) {
+            try {
+              MDC.setContextMap( jobId: "${jid}", tenantId: "${tid}" )
               jobContext.set(new JobContext( jobId: jid, tenantId: tid ))
-              beginJob()
+              beginJob(jid)
               wrk()
-              endJob()
-            }
-          } catch (Exception e) {
-            Tenants.withId(tid) {
-              failJob()
+              endJob(jid)
+            } catch (Exception e) {
+              failJob(jid)
               log.error ("Job execution failed", e)
               notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
+            } finally {
+              jobContext.remove()
+              log.debug "Finished task ${wrk} with jobId ${jid} and tenantId ${tid}"
+              MDC.clear()
             }
-          } finally {
-            jobContext.remove()
           }
       }.curry(tenantId, jobId, currentWork)
       
@@ -145,36 +147,18 @@ class JobRunnerService implements EventPublisher {
     }
   }
   
-  public static def handleJobTenant (Closure code) {
-    final Serializable tenantId = jobContext.get()?.tenantId
-    if (tenantId) {
-      return Tenants.withId(tenantId, code)
-    } else {
-      Tenants.withCurrent (code)
-    }
+  public void beginJob(final String jid = null) {
+    PersistentJob pj = PersistentJob.get(jid ?: jobContext.get().jobId)
+    pj.begin()
   }
-  
-  public PersistentJob beginJob(final String jid = null) {
-    handleJobTenant {
-      PersistentJob.withNewSession {
-        PersistentJob.get(jid ?: jobContext.get().jobId).begin()
-      }
-    }
+
+  public void endJob(final String jid = null) {
+    PersistentJob pj = PersistentJob.get(jid ?: jobContext.get().jobId)
+    pj.end()
   }
-  
-  public PersistentJob endJob(final String jid = null) {
-    handleJobTenant {
-      PersistentJob.withNewSession {
-        PersistentJob.get(jid ?: jobContext.get().jobId).end()
-      }
-    }
-  }
-  
-  public PersistentJob failJob(final String jid = null) {
-    handleJobTenant {
-      PersistentJob.withNewSession {
-        PersistentJob.get(jid ?: jobContext.get().jobId).fail()
-      }
-    }
+
+  public void failJob(final String jid = null) {
+    PersistentJob pj = PersistentJob.get(jid ?: jobContext.get().jobId)
+    pj.fail()
   }
 }
