@@ -12,7 +12,11 @@ class Identifier implements IdentifierSchema, Validateable {
   String namespace
   
   String getNamespace() {
-    namespace.toUpperCase()
+    namespace?.trim()?.toLowerCase()
+  }
+  
+  String getValue() {
+    value?.trim()
   }
   
   static constraints = {
