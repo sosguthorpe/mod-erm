@@ -62,7 +62,7 @@ class ContentItem implements ContentItemSchema, Validateable {
   private final Collection<String> siblingNamespacesForSubType (@NotNull final String subType) {
     final Set<String> all = []
     known_id_types.each { final String type, final List<String> namespaces ->
-      if (!type == subType) {
+      if (type.trim().toLowerCase() != subType.trim().toLowerCase()) {
         all.addAll namespaces
       }
     }
@@ -76,7 +76,7 @@ class ContentItem implements ContentItemSchema, Validateable {
     
     def siblings = instanceMedium ? siblingNamespacesForSubType(instanceMedium) : []
     
-    ids && siblings ? ids.findAll { IdentifierSchema idSch -> !siblings.contains(idSch.namespace) } as Collection<IdentifierSchema> : ids
+    ids && siblings ? ids.findAll { IdentifierSchema idSch -> !siblings.contains(idSch.namespace.trim().toUpperCase()) } as Collection<IdentifierSchema> : ids
   }
   
   @Override
@@ -85,7 +85,7 @@ class ContentItem implements ContentItemSchema, Validateable {
     
     def siblings = instanceMedium ? siblingNamespacesForSubType(instanceMedium) : []
     
-    ids && siblings ? ids.findAll { IdentifierSchema idSch -> siblings.contains(idSch.namespace) } as Collection<IdentifierSchema> : ids
+    ids && siblings ? ids.findAll { IdentifierSchema idSch -> siblings.contains(idSch.namespace.trim().toUpperCase()) } as Collection<IdentifierSchema> : ids
   }
   
   @Override

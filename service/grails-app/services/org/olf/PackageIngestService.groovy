@@ -19,8 +19,7 @@ import groovy.util.logging.Slf4j
  * This service works at the module level, it's often called without a tenant context.
  */
 @Slf4j
-@Transactional
-public class PackageIngestService {
+class PackageIngestService {
 
   // This boolean controls the behaviour of the loader when we encounter a title that does not have
   // a platform URL. We can error the row and do nothing, or create a row and point it at a proxy
@@ -96,7 +95,6 @@ public class PackageIngestService {
     }
 
     package_data.packageContents.eachWithIndex { ContentItemSchema pc, int index ->
-      MDC f
       MDC.put('subDiscriminator', "Content item #${index + 1}")
 
       // log.debug("Try to resolve ${pc}")
