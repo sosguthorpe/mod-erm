@@ -32,7 +32,7 @@ class ImportService implements DataBinder {
       switch (dataSchemaName) {
         case 'mod-agreements-package':
           log.debug "ERM schema"          
-          log.info "${importPackageUsingErmSchema (envelope)} pacakge(s) imported successfully"
+          log.info "${importPackageUsingErmSchema (envelope)} package(s) imported successfully"
           break
           
           // Successfully
