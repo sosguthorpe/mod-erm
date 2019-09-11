@@ -1,3 +1,9 @@
+## 1.8.0 2019-09-11
+ * ERM-440 KB Local Admin | Titles not searchable/viewable after file upload
+ * ERM-349 Create New Local KB Import - backend work
+ * ERM-338 Log import/sync errors on package import
+ * ERM-182 On sync with remote KB, keep TIPPs where coverage data is incompatible 
+
 ## 1.8.0 2019-08-12
  * ERM-290 Set up Job Management for Local KB Admin
    * ERM-334 Delete job not in progress
