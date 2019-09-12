@@ -82,7 +82,10 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
 
         response.success = { resp, xml ->
           // println "Success! ${resp.status} ${xml}"
+          log.debug("got page of data from OAI, cursor=${cursor}, ...");
+
           Map page_result = processPage(cursor, xml, source_name, cache)
+
 
           log.debug("processPage returned, processed ${page_result.count} packages, cursor will be ${page_result.new_cursor}");
           // Store the cursor so we know where we are up to
@@ -110,6 +113,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
       }
     }
 
+    log.debug("GOKbOAIAdapter::freshen - exiting URI: ${base_url}");
   }
 
   public void freshenHoldingsData(String cursor,
@@ -158,8 +162,9 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
         long incremented_datestamp = parsed_datestamp.getTime()+1000;
         String new_string_datestamp = sdf.format(new Date(incremented_datestamp));
 
-        log.debug("New cursor value - \"${datestamp}\" > \"${result.new_cursor}\" - updating as ${new_string_datestamp}");
+        log.debug("New cursor value - \"${datestamp}\" > \"${result.new_cursor}\" - updating as \"${new_string_datestamp}\"");
         result.new_cursor = new_string_datestamp;
+        log.debug("result.new_cursor=${result.new_cursor}");
       }
     }
 

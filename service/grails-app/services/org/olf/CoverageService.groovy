@@ -190,6 +190,8 @@ public class CoverageService {
 
             // Delete existing coverage statements
             existing_coverage.each { final CoverageStatement existing_cs ->
+             // We should remove the coverage from the ErmResource so that re-saving does not add it back in
+             title?.coverage?.remove(existing_cs)
              existing_cs.delete(flush:true)
             }
 
