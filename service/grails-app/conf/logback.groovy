@@ -47,16 +47,21 @@ logger ('com.k_int.okapi.remote_resources.RemoteOkapiLinkListener', WARN)
 
 // Uncomment below logging for output of OKAPI client http.
 logger ('com.k_int.okapi.OkapiClient', DEBUG)
-//logger 'groovy.net.http.JavaHttpBuilder', DEBUG
-//logger 'groovy.net.http.JavaHttpBuilder.content', DEBUG
-//logger 'groovy.net.http.JavaHttpBuilder.headers', DEBUG
 
-if (Environment.currentEnvironment == Environment.TEST) {
+if (Environment.isDevelopmentMode() || Environment.currentEnvironment == Environment.TEST) {
+  
+  logger ('com.k_int.web.toolkit.refdata.GrailsDomainRefdataHelpers', DEBUG)
+  logger ('com.k_int.web.toolkit.utils.RequestUtils', DEBUG)
+  logger ('com.k_int.okapi.remote_resources.RemoteOkapiLinkListener', DEBUG)
+  logger ('com.k_int.okapi.OkapiTenantAdminService', TRACE)
+  
+  // Uncomment below logging for output of OKAPI client http.
+  logger ('com.k_int.okapi.OkapiClient', TRACE)
   logger 'groovy.net.http.JavaHttpBuilder', DEBUG
   logger 'groovy.net.http.JavaHttpBuilder.content', DEBUG
   logger 'groovy.net.http.JavaHttpBuilder.headers', DEBUG
 }
-  
+
 def targetDir = BuildSettings.TARGET_DIR
 if (Environment.isDevelopmentMode() && targetDir != null) {
     appender("FULL_STACKTRACE", FileAppender) {

@@ -1,0 +1,5 @@
+import groovy.transform.*
+import org.olf.erm.LicenseAmendmentStatus
+
+@Field LicenseAmendmentStatus licenseAmendmentStatus
+json g.render(licenseAmendmentStatus, [expand: ['status']])

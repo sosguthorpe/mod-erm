@@ -159,7 +159,6 @@
       "permissionName": "agreements.user",
       "displayName": "Agreements App user",
       "description": "Agreements User",
-      "visible": true,
       "subPermissions": [
         "module.agreements.enabled",
         "ui-agreements.agreements.view",
@@ -171,7 +170,6 @@
       "permissionName": "agreements.admin",
       "displayName": "Agreements App Admin",
       "description": "Agreements Administrative User",
-      "visible": true,
       "subPermissions": [
         "module.agreements.enabled",
         "ui-agreements.agreements.view",
@@ -209,8 +207,18 @@
   "launchDescriptor": {
     "dockerImage": "${info.app.name}:${info.app.version}",
     "dockerArgs": {
+      "Memory": 715827883,
       "HostConfig": { "PortBindings": { "8080/tcp":  [{ "HostPort": "%p" }] } }
     },
-    "dockerPull" : false
+    "dockerPull" : false,
+    "env": [
+      { "name": "JAVA_OPTIONS", "value": "-server -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Xms512m -Xmx512m" },
+      { "name": "DB_HOST", "value": "postgres" },
+      { "name": "DB_PORT", "value": "5432" },
+      { "name": "DB_USERNAME", "value": "folio_admin" },
+      { "name": "DB_PASSWORD", "value": "folio_admin" },
+      { "name": "DB_DATABASE", "value": "okapi_modules" },
+      { "name": "DB_MAXPOOLSIZE", "value": "50" }
+    ]
   }
 }

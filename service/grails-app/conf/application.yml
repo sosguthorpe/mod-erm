@@ -165,7 +165,7 @@ environments:
       url: "jdbc:postgresql://${db.host:localhost}:${db.port:5432}/${db.database:olf}"
       properties:
         initialSize: 5
-        maxActive: 50
+        maxActive: ${db.maxpoolsize:50}
         minIdle: 5
         maxIdle: 25
         maxWait: 10000
