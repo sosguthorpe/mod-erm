@@ -35,11 +35,15 @@ public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<Re
   }
   
   private String getApplicableAmendmentParams() {
-    amendments.findResults({it.status.value == 'current' ? 'applyAmendment=' + it.amendmentId : '' }).join('&')
+    amendments?.findResults({it.status.value == 'current' ? 'applyAmendment=' + it.amendmentId : '' })?.join('&')
   }
 
   @Override
   public final def remoteUri() {
-    {->"licenses/licenses/${remoteId}?${applicableAmendmentParams}"}
+    {->
+      def amends = applicableAmendmentParams
+      "licenses/licenses/${remoteId}${amends ? '?' + amends : ''}"
+      
+    }
   }
 }
