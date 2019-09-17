@@ -13,7 +13,9 @@ import org.olf.kb.RemoteKB
 import org.olf.kb.TitleInstance
 import org.slf4j.MDC
 import grails.gorm.transactions.Transactional
+import grails.util.GrailsNameUtils
 import groovy.util.logging.Slf4j
+import java.util.concurrent.TimeUnit
 
 /**
  * This service works at the module level, it's often called without a tenant context.
@@ -39,6 +41,8 @@ class PackageIngestService {
   public Map upsertPackage(PackageSchema package_data) {
     return upsertPackage(package_data,'LOCAL')
   }
+  
+  private static final def countChanges = ['accessStart', 'accessEnd']
 
   /**
    * Load the paackage data (Given in the agreed canonical json package format) into the KB.
@@ -51,10 +55,13 @@ class PackageIngestService {
    */
   public Map upsertPackage(PackageSchema package_data, String remotekbname) {
 
-    def result = [:]
-    result.startTime = System.currentTimeMillis()
-    result.titleCount=0
-    result.averageTimePerTitle=0
+    def result = [
+      startTime: System.currentTimeMillis(),
+      titleCount: 0,
+      newTitles: 0,
+      removedTitles: 0,
+      updatedTitles: 0
+    ]
 
     Pkg pkg = null
 
@@ -145,24 +152,55 @@ class PackageIngestService {
                   [pti:pti, pkg:result.packageId])
               PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null;
 
+              boolean isUpdate = false
               if ( pci == null ) {
                 log.debug("Record ${result.titleCount} - Create new package content item")
                 pci = new PackageContentItem(
-                    pti:pti,
-                    pkg:Pkg.get(result.packageId),
-                    note:(pc.coverageNote) ? pc.coverageNote : null,
-                    depth:(pc.coverageDepth) ? pc.coverageDepth : null,
-                    accessStart:(pc.accessStart) ? pc.accessStart : null,
-                    accessEnd:(pc.accessEnd) ? pc.accessEnd : null,
-                    addedTimestamp:result.updateTime,
-                    lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true)
+                  pti:pti,
+                  pkg:Pkg.get(result.packageId),
+                  addedTimestamp:result.updateTime)
               }
               else {
                 // Note that we have seen the package content item now - so we don't delete it at the end.
                 log.debug("Record ${result.titleCount} - Update package content item (${pci.id})")
-                pci.lastSeenTimestamp = result.updateTime
-                // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
+                isUpdate = true
               }
+              
+              // Add/Update common properties.
+              pci.with {
+                note = pc.coverageNote
+                depth = pc.coverageDepth
+                accessStart = pc.accessStart
+                accessEnd = pc.accessEnd
+                addedTimestamp = result.updateTime
+                lastSeenTimestamp = result.updateTime
+              }
+              
+              if (pci.isDirty()) {
+                if (isUpdate) {
+                  // This means we have changes to an existing PCI and not a new one.
+                  result.updatedTitles++
+                  
+                  // Grab the dirty properties
+                  def modifiedFieldNames = pci.getDirtyPropertyNames()
+                  for (fieldName in modifiedFieldNames) {
+                    if (countChanges.contains(fieldName)) {
+                      def currentValue = pci."$fieldName"
+                      def originalValue = pci.getPersistentValue(fieldName)
+                      if (currentValue != originalValue) {
+                        result["${fieldName}"] = (result["${fieldName}"] ?: 0)++
+                      }
+                    }
+                  }
+                  
+                } else {
+                  // New item.
+                  result.newTitles++
+                }
+              }
+                
+              pci.save(flush: true, failOnError: true)
+            
 
               // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
               // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
@@ -224,9 +262,9 @@ class PackageIngestService {
       result.averageTimePerTitle=(System.currentTimeMillis()-result.startTime)/result.titleCount
       if ( result.titleCount % 100 == 0 ) {
         log.debug ("Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}")
-//        JobRunnerService.addJobInfo(message)
       }
     }
+    def finishedTime = (System.currentTimeMillis()-result.startTime)/1000
 
     // At the end - Any PCIs that are currently live (Don't have a removedTimestamp) but whos lastSeenTimestamp is < result.updateTime
     // were not found on this run, and have been removed. We *may* introduce some extra checks here - like 3 times or a time delay, but for now,
@@ -245,15 +283,32 @@ class PackageIngestService {
         } catch ( Exception e ) {
           log.error("Problem removing ${removal_candidate} in package load",e)
         }
-        removal_counter++
+        result.removedTitles++
       }
-      result.numTitlesRemoved = removal_counter
     }
     
-    if (removal_counter > 0) {
-      log.info("Removed ${removal_counter} items successfully")
+    // Need to pause long enough so that the timestamps are different
+    TimeUnit.MILLISECONDS.sleep(1)
+    if (result.titleCount > 0) {
+      log.info ("Processed ${result.titleCount} titles in ${finishedTime} seconds (${finishedTime/result.titleCount} average)")
+      TimeUnit.MILLISECONDS.sleep(1)
+      log.info ("Added ${result.newTitles} titles")
+      TimeUnit.MILLISECONDS.sleep(1)
+      log.info ("Updated ${result.updatedTitles} titles")
+      TimeUnit.MILLISECONDS.sleep(1)
+      log.info ("Removed ${result.removedTitles} titles")
+      
+      // Log the counts too.
+      for (final String change : countChanges) {
+        if (result[change]) {
+          TimeUnit.MILLISECONDS.sleep(1)
+          log.info ("Changed ${GrailsNameUtils.getNaturalName(change).toLowerCase()} on ${result[change]} titles")
+        }
+      }
     } else {
-      log.info("Nothing to remove")
+      if (result.titleCount > 0) {
+        log.info ("No titles to process")
+      }
     }
 
     return result
