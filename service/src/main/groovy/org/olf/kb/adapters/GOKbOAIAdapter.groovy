@@ -36,7 +36,7 @@ import java.util.TimeZone;
 
 
 /**
- * An adapter to go betweent the GOKb OAI service, for example the one at 
+ * An adapter to go between the GOKb OAI service, for example the one at
  *   https://gokbt.gbv.de/gokb/oai/index/packages?verb=ListRecords&metadataPrefix=gokb
  * and our internal KBCache implementation.
  */
@@ -260,6 +260,9 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
         def tipp_platform_url = tipp_entry.platform?.primaryUrl?.text()
         def tipp_platform_name = tipp_entry.platform?.name?.text()
 
+        String access_start = tipp_entry.access?.@start?.toString()
+        String access_end = tipp_entry.access?.@end?.toString()
+
         // log.debug("consider tipp ${tipp_title}");
 
         result.packageContents.add([
@@ -274,7 +277,9 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
           "coverageNote": tipp_coverage_note,
           "platformUrl": tipp_platform_url,
           "platformName": tipp_platform_name,
-          "url": tipp_url
+          "url": tipp_url,
+          "accessStart": access_start,
+          "accessEnd": access_end
         ])
       }
     }

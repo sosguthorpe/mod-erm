@@ -31,8 +31,20 @@ class ContentItem implements ContentItemSchema, Validateable {
   static constraints = {
     note          nullable: true, blank: false
     depth         nullable: true, blank: false
-    accessStart   nullable: true
-    accessEnd     nullable: true
+    accessStart nullable:true, validator: { LocalDate startDate, ContentItemSchema item ->
+      if (!startDate && item.accessEnd) {
+        return ['null.message']
+      }
+    }
+    
+    accessEnd nullable:true, validator: { LocalDate endDate, ContentItemSchema item ->
+      
+      if (item.accessStart &&
+        endDate &&
+        ( item.accessStart > endDate) ) {
+          return [ 'start.after.end', 'accessStart', item.class.name, item.accessStart, endDate]
+      }
+    }
     
     coverage (validator: AbstractCoverageStatement.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
     platformTitleInstance nullable: false
@@ -113,7 +125,17 @@ class ContentItem implements ContentItemSchema, Validateable {
   public String getPlatformName() {
     platformTitleInstance?.platform
   }
-  
+
+  @Override
+  public LocalDate getAccessStart() {
+    accessStart
+  }
+
+  @Override
+  public LocalDate getAccessEnd() {
+    accessEnd
+  }
+
   @Override
   public String get_platformId() {
     // Null for this implementation

@@ -152,8 +152,8 @@ class PackageIngestService {
                     pkg:Pkg.get(result.packageId),
                     note:(pc.coverageNote) ? pc.coverageNote : null,
                     depth:(pc.coverageDepth) ? pc.coverageDepth : null,
-                    accessStart:null,
-                    accessEnd:null,
+                    accessStart:(pc.accessStart) ? pc.accessStart : null,
+                    accessEnd:(pc.accessEnd) ? pc.accessEnd : null,
                     addedTimestamp:result.updateTime,
                     lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true)
               }

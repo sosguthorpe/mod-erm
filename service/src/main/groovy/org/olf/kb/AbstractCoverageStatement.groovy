@@ -26,7 +26,7 @@ abstract class AbstractCoverageStatement {
         startDate &&
         ( startDate > statement.endDate) ) {
       // Custom validators should return property name, class name, property value, other values
-      println("failed AbstractCoverageStatement::statment_start_validator");
+//      println("failed AbstractCoverageStatement::statment_start_validator");
       // statement.errors.rejectValue('startDate', 'start_after_end_date')
       return [ 'start_after_end_date', 'startDate', statement.class.name, statement.startDate, statement.endDate]
     }

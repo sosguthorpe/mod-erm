@@ -51,6 +51,8 @@ class InternalPackageImpl implements PackageSchema, Validateable {
     String url
     String platformName
     String _platformId
+    LocalDate accessStart
+    LocalDate accessEnd
   }
   
   static constraints = {
@@ -62,6 +64,21 @@ class InternalPackageImpl implements PackageSchema, Validateable {
       if (!platformUrl && !instance.platformName) {
         // If platform is blank then this can't be.
         return ['null.message']
+      }
+    }
+    
+    accessStart nullable:true, validator: { LocalDate startDate, ContentItemSchema item ->      
+      if (!startDate && item.accessEnd) {
+        return ['null.message']
+      }
+    }
+    
+    accessEnd nullable:true, validator: { LocalDate endDate, ContentItemSchema item ->
+      
+      if (item.accessStart && 
+        endDate &&
+        ( item.accessStart > endDate) ) {
+          return [ 'start.after.end', 'accessStart', item.class.name, item.accessStart, endDate]
       }
     }
   }

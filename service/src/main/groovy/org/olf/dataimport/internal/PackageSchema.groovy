@@ -102,6 +102,8 @@ interface PackageSchema extends Validateable {
     String getUrl()
     String getPlatformName()
     String get_platformId()
+    LocalDate getAccessStart()
+    LocalDate getAccessEnd()
   }
   
   @CompileStatic
