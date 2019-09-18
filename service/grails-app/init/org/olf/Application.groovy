@@ -36,6 +36,12 @@ class Application extends GrailsAutoConfiguration {
 
       @Override
       public void customize(Builder builder) {
+        
+        builder.directBuffers = false                   // Force the buffers to be allocated from heap.
+        builder.bufferSize = 512                        // Low buffer size of 512 bytes. This will now be taken from heap so we need to be careful.
+        builder.ioThreads = 2                           // I/O Threads hard set to 2
+        builder.workerThreads = builder.ioThreads * 4   // Workers limited to 4 * IO Threads
+        
         log.info "Runtime memory reported ${Runtime.getRuntime().maxMemory() / 1024 / 1024} mb"
         log.info "Runtime cpus reported ${Runtime.getRuntime().availableProcessors()}"
         log.info "Allocated ${builder.ioThreads} IO Threads"
