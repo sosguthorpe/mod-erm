@@ -207,12 +207,12 @@
   "launchDescriptor": {
     "dockerImage": "${info.app.name}:${info.app.version}",
     "dockerArgs": {
-      "Memory": 715827883,
+      "Memory": 805306368,
       "HostConfig": { "PortBindings": { "8080/tcp":  [{ "HostPort": "%p" }] } }
     },
     "dockerPull" : false,
     "env": [
-      { "name": "JAVA_OPTIONS", "value": "-server -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Xms512m -Xmx512m" },
+      { "name": "JAVA_OPTIONS", "value": "-server -Xmx384M -XX:MaxMetaspaceSize=192M -XX:MaxDirectMemorySize=128M -XX:+PrintFlagsFinal" },
       { "name": "DB_HOST", "value": "postgres" },
       { "name": "DB_PORT", "value": "5432" },
       { "name": "DB_USERNAME", "value": "folio_admin" },

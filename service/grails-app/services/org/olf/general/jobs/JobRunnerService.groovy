@@ -136,7 +136,7 @@ class JobRunnerService implements EventPublisher {
               notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
             } finally {
               jobContext.remove()
-              log.debug "Finished task ${wrk} with jobId ${jid} and tenantId ${tid}"
+              log.debug "Finished task with jobId ${jid} and tenantId ${tid}"
               MDC.clear()
             }
           }

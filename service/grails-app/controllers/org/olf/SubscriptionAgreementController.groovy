@@ -13,6 +13,7 @@ import com.k_int.okapi.OkapiTenantAwareController
 import grails.gorm.multitenancy.CurrentTenant
 import grails.orm.HibernateCriteriaBuilder
 import groovy.util.logging.Slf4j
+import java.time.LocalDate
 import grails.gorm.DetachedCriteria
 
 
@@ -36,17 +37,16 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
     final String subscriptionAgreementId = params.get("subscriptionAgreementId")
     if (subscriptionAgreementId) {
 
-      // Ian: It's now possible for an agreement to have entitlements that do not link to a resource. Need
-      // to talk through with steve about how this should work.
+      // Now
+      final LocalDate today = LocalDate.now()
+        
       final def results = doTheLookup (ErmResource) {
         or {
           
-          // Direct relations...
-          // Use a sub query to avoid multiple entries per item.
-          'in' 'id', new DetachedCriteria(ErmResource).build {
+          // Direct PTIs
+          'in' 'id', new DetachedCriteria(PlatformTitleInstance).build {
             
             createAlias 'entitlements', 'direct_ent'
-              ne 'class', Pkg
               eq 'direct_ent.owner.id', subscriptionAgreementId
             
             projections {
@@ -54,17 +54,38 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
             }
           }
           
+          // Direct PCIs
+          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+            
+            createAlias 'entitlements', 'direct_ent'
+              eq 'direct_ent.owner.id', subscriptionAgreementId
+              
+            projections {
+              property ('id')
+            }
+          }
           
           // Pci linked via package.
           'in' 'id', new DetachedCriteria(PackageContentItem).build {
-        
+            
             'in' 'pkg.id', new DetachedCriteria(Pkg).build {
               createAlias 'entitlements', 'pkg_ent'
                 eq 'pkg_ent.owner.id', subscriptionAgreementId
                 
-                projections {
-                  property ('id')
-                }
+              projections {
+                property ('id')
+              }
+            }
+            
+            and {
+              or {
+                isNull 'accessEnd'
+                gte 'accessEnd', today
+              }
+              or {
+                isNull 'accessStart'
+                lte 'accessStart', today
+              }
             }
             
             projections {
