@@ -47,7 +47,7 @@ public class ExportService {
           (
             pkg_ent.owner.id = :id
           )
-      """, [id: agreementId, 'today': "{today}"], [readOnly: true])
+      """, [id: agreementId, 'today': today], [readOnly: true])
     } else {
       results = ErmResource.executeQuery("""
         SELECT res, pkg_ent, direct_ent
@@ -66,7 +66,7 @@ public class ExportService {
           (
             pkg_ent.owner IS NOT NULL
           )
-      """, ['today': "{today}"], [readOnly: true])
+      """, ['today': today], [readOnly: true])
     }
 	
     // At this point we should have a List of results. But instead of each result being an ErmResource we
