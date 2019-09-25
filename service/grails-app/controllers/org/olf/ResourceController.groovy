@@ -11,9 +11,11 @@ import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.TitleInstance
 
 import com.k_int.okapi.OkapiTenantAwareController
-
+import grails.gorm.DetachedCriteria
 import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
+import java.time.Duration
+import java.time.Instant
 
 @Slf4j
 @CurrentTenant
@@ -50,7 +52,7 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
     
     final TitleInstance ti = resourceId ? TitleInstance.findByIdAndSubType ( resourceId, TitleInstance.lookupOrCreateSubType('electronic') ) : null
     
-    log.debug("Got ti ${ti?.id}");
+    log.debug("Got ti ${ti?.id}")
     
     //For issue ERM-285
     if (!ti) {
@@ -67,43 +69,54 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
         return
       }
     }
-    
     // We have a matching title. We need to work out where we can get the title from. This means finding all
     // resources that can be added to an Entitlement, that lead back to this title
     // Lets build the base query and pass into the simpleLookupService.
     // This will allow the usual parameters to be used to filter the results even further.
-    log.debug("Start query");
+    final Instant start = Instant.now()
+    log.debug("Start query ${start}")
     respond doTheLookup ({
+      readOnly(true)
       
-      // First check in allowed types... This will allow the query to grow with validation.
-      inList ( 'class', Entitlement.ALLOWED_RESOURCES )
-      
-      
-      // Packages
-      createAlias( 'contentItems', 'pcis', JoinType.LEFT_OUTER_JOIN )
-        createAlias( 'pcis.pti', 'pkg_pti', JoinType.LEFT_OUTER_JOIN )
-      
-      // PackageContentItem
-      createAlias( 'pti', 'pci_pti', JoinType.LEFT_OUTER_JOIN )
-      
-      // PlatformTitleInstance (no need to join anything here as this is where the link happens.
-      
-      // Now filter on the various title instances.
       or {
-        // Any orphan PTIs
-        and {
-          eq 'titleInstance', ti
-          isEmpty ('packageOccurences')
+          
+          // PTIs
+          'in' 'id', new DetachedCriteria(PlatformTitleInstance).build {
+            readOnly (true)
+            
+            eq 'titleInstance', ti
+              
+            projections {
+              property ('id')
+            }
+          }
+          
+          // PCIs
+          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+            readOnly (true)
+            
+            createAlias 'pti', 'pci_pti'
+              eq 'pci_pti.titleInstance', ti
+              
+            projections {
+              property ('id')
+            }
+          }
+          
+          // Packages.
+          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+            readOnly (true)
+            
+            createAlias 'pti', 'pci_pti'
+              eq 'pci_pti.titleInstance', ti
+              
+            projections {
+              property ('pkg.id')
+            }
+          }
         }
-        
-        // PTIs from PCIs
-        eq 'pci_pti.titleInstance', ti
-        
-        // PTIs from Pkg
-        eq 'pkg_pti.titleInstance', ti
-      }
     })
-    log.debug("completed");
+    log.debug("completed in ${Duration.between(start, Instant.now()).toSeconds()} seconds")
   }
   
   def entitlements (String resourceId) {
@@ -114,48 +127,80 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
     final ErmResource res = resourceId ? ErmResource.read ( resourceId ) : null
     final Class<? extends ErmResource> resClass = res ? Hibernate.getClass( res ) : null
     
-    // Not title. Just show a 404
+    // Not allowed type Just show a 404.
     if (resClass == null || (!(resClass == TitleInstance || Entitlement.ALLOWED_RESOURCES.contains( resClass )))) {
       response.status = 404
       return
     }
     
     // We have a matching resource. Grab all entitlements that lead to this resource.
+    final Instant start = Instant.now()
+    log.debug("Start query ${start}")
     respond doTheLookup (Entitlement, {
       
-      switch (res.class) {
+      switch (resClass) {
         case TitleInstance:
           or {
-            createAlias( 'resource', 'res')
-              createAlias( 'res.contentItems', 'rcis', JoinType.LEFT_OUTER_JOIN )
-                createAlias( 'rcis.pti', 'rci_ptis', JoinType.LEFT_OUTER_JOIN )
-                  eq 'rci_ptis.titleInstance', res
-                  
-              createAlias( 'res.pti', 'rptis', JoinType.LEFT_OUTER_JOIN )
-                eq 'rptis.titleInstance', res
+            'in' 'resource.id', new DetachedCriteria(PlatformTitleInstance).build {
+              readOnly (true)
               
-              createAlias( 'res.titleInstance', 'rtis', JoinType.LEFT_OUTER_JOIN )
-                eq 'rtis.id', res.id
+              eq 'titleInstance', res
+                
+              projections {
+                property ('id')
+              }
+            }
+            
+            // PCIs
+            'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
+              readOnly (true)
+              
+              createAlias 'pti', 'pci_pti'
+                eq 'pci_pti.titleInstance', res
+                
+              projections {
+                property ('id')
+              }
+            }
+            
+            // Packages.
+            'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
+              readOnly (true)
+              
+              createAlias 'pti', 'pci_pti'
+                eq 'pci_pti.titleInstance', res
+                
+              projections {
+                property ('pkg.id')
+              }
+            }
           }
           break
         case PlatformTitleInstance:
           or {
-            createAlias( 'resource', 'res')
-              createAlias( 'res.contentItems', 'rcis', JoinType.LEFT_OUTER_JOIN )
-              eq 'rcis.pti', res
+            eq 'resource', res
+            
+            // PCIs
+            'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
+              readOnly (true)
+              
+              eq 'pti', res
                 
-            createAlias( 'res.pti', 'rptis', JoinType.LEFT_OUTER_JOIN )
-              eq 'rptis.id', res.id
+              projections {
+                property ('id')
+              }
+            }
+            
+            // Packages.
+            'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
+              readOnly (true)
               
-            eq 'resource', res
-          }
-          break
-        case PackageContentItem:
-          or {
-            createAlias( 'resource.contentItems', 'rcis', JoinType.LEFT_OUTER_JOIN )
-              eq 'rcis.id', res.id
-              
-            eq 'resource', res
+              eq 'pti', res
+                
+              projections {
+                property ('pkg.id')
+              }
+            }
           }
           break
         default :
@@ -163,6 +208,7 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
           break
       }
     })
+    log.debug("completed in ${Duration.between(start, Instant.now()).toSeconds()} seconds")
   }
 }
 
