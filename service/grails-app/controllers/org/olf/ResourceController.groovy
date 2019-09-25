@@ -30,12 +30,12 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
     
     respond doTheLookup ({
       or {
+        eq 'class', Pkg
+        
         and {
           eq 'class', TitleInstance
           eq 'subType', TitleInstance.lookupOrCreateSubType('electronic')
         }
-        
-        eq 'class', Pkg
       }
     })
   }
@@ -81,15 +81,15 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
       or {
           
           // PTIs
-          'in' 'id', new DetachedCriteria(PlatformTitleInstance).build {
-            readOnly (true)
-            
-            eq 'titleInstance', ti
-              
-            projections {
-              property ('id')
-            }
-          }
+//          'in' 'id', new DetachedCriteria(PlatformTitleInstance).build {
+//            readOnly (true)
+//            
+//            eq 'titleInstance', ti
+//              
+//            projections {
+//              property ('id')
+//            }
+//          }
           
           // PCIs
           'in' 'id', new DetachedCriteria(PackageContentItem).build {
