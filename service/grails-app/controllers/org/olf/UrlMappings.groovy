@@ -15,10 +15,15 @@ class UrlMappings {
 
     // Map /sas to SubscriptionAgreementController
     '/erm/sas'(resources: 'subscriptionAgreement') {
-//       "/addToAgreement"(action:'addToAgreement')
-      "/resources" (action: 'resources', method: 'GET')
-      "/resources2" (action: 'resources2', method: 'GET')
-      "/export/$action?" (controller: 'export', method: 'GET')
+      "/resources"            (action: 'resources', method: 'GET')
+      "/resources/current"    (action: 'currentResources', method: 'GET')
+      "/resources/future"     (action: 'futureResources', method: 'GET')
+      "/resources/dropped"    (action: 'droppedResources', method: 'GET')
+
+      "/export/$format?"          (controller: 'export', method: 'GET')
+      "/export/current/$format?"  (controller: 'export', action: 'current', method: 'GET')
+//      "/export/future/$format?"   (controller: 'export', action: 'future', method: 'GET')
+//      "/export/dropped/$format?"  (controller: 'export', action: 'dropped', method: 'GET')
 	  
       '/linkedLicenses' {
         controller = 'remoteLicenseLink'
@@ -34,17 +39,17 @@ class UrlMappings {
       }
 	  
       '/usageDataProviders' {
-		  controller = 'usageDataProvider'
-		  method = 'GET'
-		  filters = { "owner==${params.subscriptionAgreementId}" }
-	  }
+  		  controller = 'usageDataProvider'
+  		  method = 'GET'
+  		  filters = { "owner==${params.subscriptionAgreementId}" }
+  	  }
 	  
       collection {
-		  '/usageDataProviders' {
-			  controller = 'usageDataProvider'
-			  method = 'GET'
-		  }
-	  }
+  		  '/usageDataProviders' {
+  			  controller = 'usageDataProvider'
+  			  method = 'GET'
+  		  }
+  	  }
     }
 
     '/erm/titles'(resources: 'title') {
@@ -58,10 +63,10 @@ class UrlMappings {
         "/import" (controller: 'package', action: 'import', method: 'POST')
       }
         
-      "/content" (controller: 'package', action: 'content', method: 'GET')
+      "/content"         (controller: 'package', action: 'content', method: 'GET')
       "/content/current" (controller: 'package', action: 'currentContent', method: 'GET')
-      "/content/joining" (controller: 'package', action: 'joiningContent', method: 'GET')
-      "/content/leaving" (controller: 'package', action: 'leavingContent', method: 'GET')
+      "/content/future"  (controller: 'package', action: 'futureContent', method: 'GET')
+      "/content/dropped" (controller: 'package', action: 'droppedContent', method: 'GET')
     }
 
     "/erm/pci"(resources:'packageContentItem')
@@ -125,7 +130,10 @@ class UrlMappings {
 
     
     // export endpoints
-    "/erm/export/$action?" (controller:'export')
+    "/export/$format?"          (controller: 'export', method: 'GET')
+    "/export/current/$format?"  (controller: 'export', action: 'current', method: 'GET')
+//    "/export/future/$format?"   (controller: 'export', action: 'future', method: 'GET')
+//    "/export/dropped/$format?"  (controller: 'export', action: 'dropped', method: 'GET')
 
   }
 }

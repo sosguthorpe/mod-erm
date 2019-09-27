@@ -49,19 +49,19 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
     }
   }
   
-  def joiningContent () {
+  def futureContent () {
     final LocalDate today = LocalDate.now()
     respond doTheLookup(PackageContentItem) {
       eq 'pkg.id', params.'packageId'
-      between 'accessStart', today.plusDays(1), today.plusDays(7)
+      gt 'accessStart', today
     }
   }
   
-  def leavingContent () {
+  def droppedContent () {
     final LocalDate today = LocalDate.now()
     respond doTheLookup(PackageContentItem) {
       eq 'pkg.id', params.'packageId'
-      between 'accessEnd', today.plusDays(1), today.plusDays(7)
+      lt 'accessEnd', today
     }
   }
 }

@@ -15,7 +15,7 @@ dataSource:
   properties:
       jmxEnabled: false
       initialSize: 5
-      maxActive: 50
+      maxActive: ${db.maxpoolsize:5}
       minIdle: 5
       maxIdle: 25
       maxWait: 10000
