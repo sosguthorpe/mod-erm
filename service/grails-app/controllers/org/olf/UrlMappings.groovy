@@ -75,12 +75,9 @@ class UrlMappings {
         "/external" ( action: 'external' )
       }
     }
-    '/erm/contacts'(resources: 'internalContact')
+    '/erm/contacts'(resources: 'internalContact', excludes: ['update', 'patch', 'save', 'create', 'edit', 'delete'])
 
-    '/erm/refdataValues'(resources: 'refdata') {
-      // The collection section allows us to create methods that impact the whole set of refdataValues rather than a specific resource.
-      // WIthout this, the url here would be /erm/refdataValues/RDV_ID/lookupOrCreate which is not what we want. Having this here gives us a URL of
-      // /erm/refdataValues/lookupOrCreate which is what we want
+    '/erm/refdata'(resources: 'refdata') {
       collection {
         "/$domain/$property" (controller: 'refdata', action: 'lookup', method: 'GET')
       }
@@ -100,8 +97,8 @@ class UrlMappings {
     "/codex-instances" ( controller:'subscribedContent', action:'codexSearch', stats:'true')
     "/codex-instances/$id" ( controller:'subscribedContent', action:'codexItem')
 
-    "/erm/knowledgebase" ( controller:'kb', action:'index')
-    "/erm/knowledgebase/$action" ( controller:'kb' )
+//    "/erm/knowledgebase" ( controller:'kb', action:'index')
+//    "/erm/knowledgebase/$action" ( controller:'kb' )
     
     "/erm/jobs" ( resources:'persistentJob', excludes: ['update', 'patch', 'save']) {
       collection {
@@ -113,12 +110,12 @@ class UrlMappings {
      // This is the URL path used by the eresources screen.
      // See http://docs.grails.org/latest/guide/theWebLayer.html#embeddedVariables#_dynamically_resolved_variables for information on
      // how we might make this path more dynamic.
-    "/erm/resource" ( resources:'resource', excludes: ['delete', 'update', 'patch', 'save']) {
+    "/erm/resource" ( resources:'resource', excludes: ['delete', 'update', 'patch', 'save', 'edit', 'create']) {
       collection {
-        "/electronic" ( action:'electronic' )
+        "/electronic" ( action:'electronic', method: 'GET')
       }
-      "/entitlementOptions" ( action:'entitlementOptions' )
-      "/entitlements" ( action:'entitlements' )
+      "/entitlementOptions" ( action:'entitlementOptions', method: 'GET')
+      "/entitlements" ( action:'entitlements', method: 'GET' )
     }
 
  

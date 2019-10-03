@@ -29,7 +29,8 @@ final def should_expand = [
   'docs',
   'supplementaryDocs',
   'vendor',
-  'tags'
+  'tags',
+  'periods'
 ]
 if (params.controller != 'remoteLicenseLink' ) {
   should_expand << 'linkedLicenses'
@@ -39,4 +40,9 @@ if (params.controller != 'usageDataProvider' ) {
   should_expand << 'usageDataProviders'
 }
 
-json g.render(subscriptionAgreement, [expand: should_expand])
+json g.render(subscriptionAgreement, [expand: should_expand]) {
+  currentPeriod g.render(subscriptionAgreement.currentPeriod)
+  startDate subscriptionAgreement.startDate
+  endDate subscriptionAgreement.endDate
+  cancellationDeadline subscriptionAgreement.cancellationDeadline
+}

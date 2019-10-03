@@ -13,8 +13,8 @@ public class UsageDataProvider extends RemoteOkapiLink implements MultiTenant<Us
 	static belongsTo = [ owner: SubscriptionAgreement ]
   
 	static mapping = {
-	              owner column: 'udp_owner_fk'
-  usageDataProviderNote column: 'udp_note', type: 'text'
+	                  owner column: 'udp_owner_fk'
+    usageDataProviderNote column: 'udp_note', type: 'text'
                   
 	}
   

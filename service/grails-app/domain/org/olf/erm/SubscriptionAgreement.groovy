@@ -1,22 +1,33 @@
 package org.olf.erm
 
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
+import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.util.WebUtils
 import org.olf.general.DocumentAttachment
 import org.olf.general.Org
-
+import org.springframework.web.context.request.RequestAttributes
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.servlet.support.RequestContextUtils
 import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 import com.k_int.web.toolkit.tags.Tag
 
 import grails.gorm.MultiTenant
+import groovy.util.logging.Slf4j
 
 /**
  * Subscription agreement - object holding details about an SA connecting a resource list (Composed Of packages and platform-titles).
  */
+@Slf4j
 public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement> {
+  
+  static transients = ['cancellationDeadline', 'startDate', 'endDate', 'currentPeriod']
+  
   String description
   String id
   String name
@@ -24,9 +35,6 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   String vendorReference
   String attachedLicenceId
   String licenseNote
-  LocalDate cancellationDeadline
-  LocalDate startDate
-  LocalDate endDate
   LocalDate renewalDate
   LocalDate nextReviewDate
 
@@ -63,7 +71,75 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
 
 //  @BindImmutably
   Set<Entitlement> items
-
+  
+  private Period currentPeriod
+  Period getCurrentPeriod () {
+    log.debug "Get current period"
+    if (!currentPeriod) {
+      LocalDate ld
+      
+      // Use the request if possible
+      RequestAttributes attributes = RequestContextHolder.getRequestAttributes()
+      if(attributes && attributes instanceof GrailsWebRequest) {
+        
+        GrailsWebRequest gwr = attributes as GrailsWebRequest
+        
+        log.debug "Is within a request context"
+        TimeZone tz = RequestContextUtils.getTimeZone(gwr.currentRequest) ?: TimeZone.getDefault()
+        
+        log.debug "Using TZ ${tz}"
+        ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.now(), tz.toZoneId())
+        
+        log.debug "Now in ${tz} is ${zdt}"
+        ld = zdt.toLocalDate()
+        
+        log.debug "LocalDate of ${ld} extracted for query"
+      } else {
+        log.debug "Is not within a request context, using default TZ (${TimeZone.getDefault()})"
+        ld = LocalDate.now()
+      }
+      
+      // Create the query
+      def query = Period.where {
+         (owner.id == "${this.id}") &&
+         (startDate == null || startDate <= ld) && 
+           (endDate == null || endDate >= ld)
+      }
+      
+      // Execute.
+      currentPeriod = query.find()
+    }
+    currentPeriod
+  }
+  
+  LocalDate getCancellationDeadline() {
+    currentPeriod?.cancellationDeadline
+  }
+  
+  LocalDate getStartDate() {
+    if (currentPeriod) {
+      return currentPeriod.startDate
+    }
+    def query = Period.where {
+      (owner.id == "${this.id}") && (startDate == null || startDate == min(startDate).of { owner.id == "${this.id}" })
+    }
+    Period earliest = query.list(sort: 'startDate', max: 1)?.getAt(0)
+    
+    earliest.startDate
+  }
+  
+  LocalDate getEndDate() {
+    if (currentPeriod) {
+      return currentPeriod.endDate
+    }
+    def query = Period.where {
+      (owner.id == "${this.id}") && (endDate == null || endDate == max(endDate).of { owner.id == "${this.id}" })
+    }
+    Period latest = query.list(sort: 'endDate', max: 1)?.getAt(0)
+    
+    latest.endDate
+  }
+  
   static hasMany = [
                   items: Entitlement,
            historyLines: SAEventHistory,
@@ -75,6 +151,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
          linkedLicenses: RemoteLicenseLink,
       supplementaryDocs: DocumentAttachment,
      usageDataProviders: UsageDataProvider,
+                periods: Period
   ]
 
   static mappedBy = [
@@ -84,6 +161,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
     orgs: 'owner',
     linkedLicenses: 'owner',
     usageDataProviders: 'owner',
+    periods: 'owner'
   ]
 
   static mapping = {
@@ -93,9 +171,6 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
                     name column:'sa_name'
           localReference column:'sa_local_reference'
          vendorReference column:'sa_vendor_reference'
-    cancellationDeadline column:'sa_cancellation_deadline'
-               startDate column:'sa_start_date'
-                 endDate column:'sa_end_date'
              renewalDate column:'sa_renewal_date'
           nextReviewDate column:'sa_next_review_date'
            agreementType column:'sa_agreement_type'
@@ -106,26 +181,24 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
                  enabled column:'sa_enabled'
                   vendor column:'sa_vendor_fk'
        attachedLicenceId column:'sa_licence_fk'
-	   		 licenseNote column:'sa_license_note'
-                  items cascade: 'all-delete-orphan'
-               contacts cascade: 'all-delete-orphan'
+	   		     licenseNote column:'sa_license_note'
+                   items cascade: 'all-delete-orphan'
+                contacts cascade: 'all-delete-orphan'
             historyLines cascade: 'all-delete-orphan'
                     tags cascade: 'save-update'
+                 periods cascade: 'all-delete-orphan'
                     orgs cascade: 'all-delete-orphan'
                     docs cascade: 'all-delete-orphan'
      externalLicenseDocs cascade: 'all-delete-orphan',  joinTable: [name: 'subscription_agreement_ext_lic_doc', key: 'saeld_sa_fk', column: 'saeld_da_fk']
           linkedLicenses cascade: 'all-delete-orphan'
-	   supplementaryDocs cascade: 'all-delete-orphan', joinTable: [name: 'subscription_agreement_supp_doc', key: 'sasd_sa_fk', column: 'sasd_da_fk']
-	  usageDataProviders cascade: 'all-delete-orphan'
+       supplementaryDocs cascade: 'all-delete-orphan', joinTable: [name: 'subscription_agreement_supp_doc', key: 'sasd_sa_fk', column: 'sasd_da_fk']
+      usageDataProviders cascade: 'all-delete-orphan'
   }
 
   static constraints = {
                     name(nullable:false, blank:false)
           localReference(nullable:true, blank:false)
          vendorReference(nullable:true, blank:false)
-    cancellationDeadline(nullable:true, blank:false)
-               startDate(nullable:true, blank:false)
-                 endDate(nullable:true, blank:false)
              renewalDate(nullable:true, blank:false)
           nextReviewDate(nullable:true, blank:false)
            agreementType(nullable:true, blank:false)
@@ -138,6 +211,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
                   vendor(nullable:true, blank:false)
        attachedLicenceId(nullable:true, blank:false)
              licenseNote(nullable:true, blank:false)
+                 periods(minSize: 1, validator:Period.PERIOD_COLLECTION_VALIDATOR, sort:'startDate')
               
           linkedLicenses(validator: { Collection<RemoteLicenseLink> license_links ->
             
