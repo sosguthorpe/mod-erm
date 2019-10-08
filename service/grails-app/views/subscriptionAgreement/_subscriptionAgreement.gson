@@ -21,6 +21,7 @@ final def should_expand = [
   'agreementType',
   'renewalPriority',
   'agreementStatus',
+  'reasonForClosure',
   'isPerpetual',
   'contentReviewNeeded',
   'contacts',
