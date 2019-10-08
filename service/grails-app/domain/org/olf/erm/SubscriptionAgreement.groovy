@@ -57,7 +57,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   @Defaults(['Draft', 'Requested', 'In negotiation', 'Active', 'Closed'])
   RefdataValue agreementStatus
 
-  @Defaults(['Cancelled', 'Ceased', 'Superceded', 'Rejected'])
+  @Defaults(['Cancelled', 'Ceased', 'Superseded', 'Rejected'])
   RefdataValue reasonForClosure
 
   @CategoryId('Global.Yes_No')
