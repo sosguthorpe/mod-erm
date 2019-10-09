@@ -64,4 +64,30 @@ class PersistentJobController extends OkapiTenantAwareController<PersistentJob> 
 
     respond instance
   }
+  
+  def fullLog( String persistentJobId ) {
+    respond doTheLookup (LogEntry, {
+      eq 'origin', persistentJobId
+
+      order 'dateCreated', 'asc'
+    })
+  }
+  
+  def infoLog( String persistentJobId ) {
+    respond doTheLookup (LogEntry, {
+      eq 'origin', persistentJobId
+      eq 'type', LogEntry.TYPE_INFO
+
+      order 'dateCreated', 'asc'
+    })
+  }
+  
+  def errorLog( String persistentJobId ) {
+    respond doTheLookup (LogEntry, {
+      eq 'origin', persistentJobId
+      eq 'type', LogEntry.TYPE_ERROR
+
+      order 'dateCreated', 'asc'
+    })
+  }
 }

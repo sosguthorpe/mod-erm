@@ -23,7 +23,6 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j 
 @CompileStatic
-@Transactional
 class KbHarvestService {
 
   // Without this, the service will be lazy initialised, and the tasks won't be scheduled until an external 

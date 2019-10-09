@@ -104,6 +104,10 @@ class UrlMappings {
       collection {
         "/$type" ( action: 'save', method: 'POST' )
       }
+      
+      "/fullLog" ( controller: 'persistentJob', action: 'fullLog', method: 'GET' )
+      "/errorLog" ( controller: 'persistentJob', action: 'errorLog', method: 'GET' )
+      "/infoLog" ( controller: 'persistentJob', action: 'infoLog', method: 'GET' )
     }
 
 
