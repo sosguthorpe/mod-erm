@@ -206,7 +206,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
              renewalDate(nullable:true, blank:false)
           nextReviewDate(nullable:true, blank:false)
            agreementType(nullable:true, blank:false)
-           reasonForClosure(nullable:true, blank:true)
+           reasonForClosure(nullable:true, blank:false)
          renewalPriority(nullable:true, blank:false)
          agreementStatus(nullable:true, blank:false)
              isPerpetual(nullable:true, blank:false)
@@ -224,4 +224,28 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
             ( controlling_count > 1 ? [ 'only.one.controlling.license' ] : true )
           })
   }
+
+  public void setAgreementStatus (RefdataValue statusValue) {
+    if (statusValue != null) {
+      if (statusValue.value != 'closed') {
+        this.reasonForClosure = null
+      }
+    }
+    this.agreementStatus = statusValue
+  }
+
+  public void setReasonForClosure (RefdataValue reasonValue) {
+    if (reasonValue != null) {
+      if (this.agreementStatus?.value != 'closed') {
+        this.reasonForClosure = null
+      }
+      else {
+        this.reasonForClosure = reasonValue
+      }
+    }
+    else {
+      this.reasonForClosure = reasonValue
+    }
+  }
+
 }

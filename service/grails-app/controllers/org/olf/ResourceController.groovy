@@ -52,7 +52,7 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
     
     final TitleInstance ti = resourceId ? TitleInstance.findByIdAndSubType ( resourceId, TitleInstance.lookupOrCreateSubType('electronic') ) : null
     
-    log.debug("Got ti ${ti?.id}")
+    log.debug("Got ti ${ti?.id}");
     
     //For issue ERM-285
     if (!ti) {
