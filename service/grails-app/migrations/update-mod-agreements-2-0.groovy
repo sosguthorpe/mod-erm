@@ -97,5 +97,44 @@ databaseChangeLog = {
     }
   }
 
+  changeSet(author: "sosguthorpe (generated)", id: "1570722398658-1") {
+    createTable(tableName: "agreement_relationship") {
+      column(name: "ar_id", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "version", type: "BIGINT") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "ar_outward_fk", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "ar_inward_fk", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "ar_type", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "ar_note", type: "TEXT")
+    }
+  }
+  changeSet(author: "sosguthorpe (generated)", id: "1570722398658-3") {
+    addPrimaryKey(columnNames: "ar_id", constraintName: "agreement_relationshipPK", tableName: "agreement_relationship")
+  }
+  changeSet(author: "sosguthorpe (generated)", id: "1570722398658-5") {
+    addForeignKeyConstraint(baseColumnNames: "ar_type", baseTableName: "agreement_relationship", constraintName: "FKdt3oyu37yfeoobvwg17xusdcs", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "rdv_id", referencedTableName: "refdata_value")
+  }
+
+  changeSet(author: "sosguthorpe (generated)", id: "1570722398658-7") {
+    addForeignKeyConstraint(baseColumnNames: "ar_inward_fk", baseTableName: "agreement_relationship", constraintName: "FKlb6c626qh1fcgqdwa6wl0jqfj", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "sa_id", referencedTableName: "subscription_agreement")
+  }
+
+  changeSet(author: "sosguthorpe (generated)", id: "1570722398658-8") {
+    addForeignKeyConstraint(baseColumnNames: "ar_outward_fk", baseTableName: "agreement_relationship", constraintName: "FKoqnsbuj52yhq1vqo1qu8xtmr", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "sa_id", referencedTableName: "subscription_agreement")
+  }
 
 }

@@ -11,7 +11,7 @@ class BootStrap {
 
   def init = { servletContext ->
     log.debug("mod-erm::init() ${grailsApplication.config.dataSource}")
-    okapiTenantAdminService.freshenAllTenantSchemas()
+//    okapiTenantAdminService.freshenAllTenantSchemas()
     
     jobRunnerService.populateJobQueue()
   }

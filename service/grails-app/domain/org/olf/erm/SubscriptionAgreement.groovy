@@ -154,7 +154,9 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
          linkedLicenses: RemoteLicenseLink,
       supplementaryDocs: DocumentAttachment,
      usageDataProviders: UsageDataProvider,
-                periods: Period
+                periods: Period,
+    inwardRelationships: AgreementRelationship,
+   outwardRelationships: AgreementRelationship,
   ]
 
   static mappedBy = [
@@ -164,7 +166,9 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
     orgs: 'owner',
     linkedLicenses: 'owner',
     usageDataProviders: 'owner',
-    periods: 'owner'
+    periods: 'owner',
+    inwardRelationships: 'inward',
+    outwardRelationships: 'outward'
   ]
 
   static mapping = {
@@ -197,6 +201,8 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
           linkedLicenses cascade: 'all-delete-orphan'
        supplementaryDocs cascade: 'all-delete-orphan', joinTable: [name: 'subscription_agreement_supp_doc', key: 'sasd_sa_fk', column: 'sasd_da_fk']
       usageDataProviders cascade: 'all-delete-orphan'
+     inwardRelationships cascade: 'all-delete-orphan', lazy: false
+    outwardRelationships cascade: 'all-delete-orphan', lazy: false
   }
 
   static constraints = {

@@ -1,0 +1,10 @@
+import groovy.transform.*
+import org.olf.erm.AgreementRelationship
+
+@Field AgreementRelationship agreementRelationship
+
+// Special template returns shallow copy of both ends.
+json g.render (agreementRelationship, [excludes:['inward', 'outward']]) {
+  outward tmpl.relationshipAgreement (agreementRelationship.outward)
+  inward tmpl.relationshipAgreement (agreementRelationship.inward)
+}

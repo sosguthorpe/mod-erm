@@ -1,0 +1,12 @@
+import org.olf.erm.SubscriptionAgreement
+
+import groovy.transform.*
+
+@Field SubscriptionAgreement subscriptionAgreement
+
+// Special template returns shallow copy of both ends.
+json g.render (subscriptionAgreement, [includes:['id', 'name']]) {
+  // Not properties but getter methods so must be added explicitly
+  startDate subscriptionAgreement.startDate
+  endDate subscriptionAgreement.endDate
+} 
