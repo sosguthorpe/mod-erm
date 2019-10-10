@@ -25,8 +25,8 @@ class LogEntry implements MultiTenant<LogEntry> {
               id column: 'le_id', generator: 'uuid2', length:36
          message column: 'le_message', type: 'text'
      dateCreated column: 'le_datecreated'
-            type column: 'le_type'
-          origin column: 'le_origin', index: 'origin_idx'
+            type column: 'le_type', index: 'le_type_idx'
+          origin column: 'le_origin', index: 'le_origin_idx'
   }
   static constraints = {
          message (nullable:true, blank:false)

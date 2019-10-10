@@ -17,7 +17,7 @@ import grails.util.Holders
 @DirtyCheck
 abstract class PersistentJob extends SingleFileAttachment implements EventBusAware, MultiTenant<PersistentJob> {
   
-  static transients = ['work']
+  static transients = ['work', 'errorLog', 'errorLogCount', 'infoLog', 'infoLogCount', 'fullLog', 'fullLogCount']
     
   String name
   
@@ -65,12 +65,24 @@ abstract class PersistentJob extends SingleFileAttachment implements EventBusAwa
     }
   }
   
+  long getErrorLogCount() {
+    LogEntry.countByOriginAndType (this.id, LogEntry.TYPE_ERROR)
+  }
+  
   List<LogEntry> getErrorLog() {
     LogEntry.findAllByOriginAndType (this.id, LogEntry.TYPE_ERROR, [sort: 'dateCreated', order: "asc"])
   }
   
+  long getInfoLogCount() {
+    LogEntry.countByOriginAndType (this.id, LogEntry.TYPE_INFO)
+  }
+  
   List<LogEntry> getInfoLog() {
     LogEntry.findAllByOriginAndType (this.id, LogEntry.TYPE_INFO, [sort: 'dateCreated', order: "asc"])
+  }
+  
+  long getFullLogCount() {
+    LogEntry.countByOrigin (this.id)
   }
   
   List<LogEntry> getFullLog() {

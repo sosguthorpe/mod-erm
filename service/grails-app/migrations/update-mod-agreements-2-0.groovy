@@ -82,4 +82,20 @@ databaseChangeLog = {
       }
     }
   }
+  
+  changeSet(author: "sosguthorpe (generated)", id: "1570700103581-1") {
+    dropIndex(indexName: "origin_idx", tableName: "log_entry")
+
+    createIndex(indexName: "le_origin_idx", tableName: "log_entry") {
+      column(name: "le_origin")
+    }
+  }
+
+  changeSet(author: "sosguthorpe (generated)", id: "1570700103581-2") {
+    createIndex(indexName: "le_type_idx", tableName: "log_entry") {
+      column(name: "le_type")
+    }
+  }
+
+
 }

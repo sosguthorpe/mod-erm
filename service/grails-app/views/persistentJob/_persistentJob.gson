@@ -2,7 +2,7 @@ import org.olf.general.jobs.PersistentJob
 import groovy.transform.Field
 import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 
-//final List logs = ['fullLog', 'errorLog', 'infoLog']
+final List logs = ['fullLogCount', 'errorLogCount', 'infoLogCount']
 
 @Field
 PersistentJob persistentJob
@@ -10,10 +10,8 @@ PersistentJob persistentJob
 json g.render (persistentJob, [includes: ['id', 'name', 'dateCreated', 'status', 'started', 'ended', 'result', 'fileUpload'], expand:['status', 'result', 'fileUpload']]) {
   'class' GrailsHibernateUtil.unwrapIfProxy(persistentJob).class.name
   
-//  logs.each {final String propName ->
-//    final def logList = persistentJob[propName]
-//    if (logList) {
-//      call(propName, g.render(logList)) 
-//    }
-//  }
+  logs.each {final String propName ->
+    final long logCount = persistentJob[propName] as long
+    call(propName, logCount)
+  }
 }
