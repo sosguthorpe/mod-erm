@@ -153,6 +153,18 @@
           "pathPattern": "/erm/jobs/{id}",
           "permissionsRequired": [ "erm.jobs.item.get" ]
         },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/jobs/{id}/fullLog",
+          "permissionsRequired": [ "erm.jobs.item.get" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/jobs/{id}/errorLog",
+          "permissionsRequired": [ "erm.jobs.item.get" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/jobs/{id}/infoLog",
+          "permissionsRequired": [ "erm.jobs.item.get" ]
+        },{
           "methods": ["POST"],
           "pathPattern": "/erm/jobs/{type}",
           "permissionsRequired": [ "erm.jobs.item.post" ]
