@@ -40,6 +40,9 @@ As of 2019-02-20 the following are defined:
 |Pkg.Type|/erm/refdataValues/Pkg/Type|
 |IdentifierOccurrence.Status|/erm/refdataValues/IdentifierOccurrence/Status|
 
+## ModuleDescriptor
+
+https://github.com/folio-org/mod-agreements/blob/master/service/src/main/okapi/ModuleDescriptor-template.json
 
 # For module developers looking to extend or modify the resources presented by this module
 
