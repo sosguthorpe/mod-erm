@@ -5,8 +5,8 @@ import org.springframework.http.HttpStatus
 
 import com.k_int.okapi.OkapiTenantAwareController
 import com.k_int.web.toolkit.refdata.RefdataValue
+
 import grails.gorm.multitenancy.CurrentTenant
-import grails.gorm.transactions.Transactional
 import grails.util.GrailsNameUtils
 import groovy.util.logging.Slf4j
 
@@ -83,11 +83,26 @@ class PersistentJobController extends OkapiTenantAwareController<PersistentJob> 
   }
   
   def errorLog( String persistentJobId ) {
-    respond doTheLookup (LogEntry, {
+    respond doTheLookup (LogEntry, 1000, {
       eq 'origin', persistentJobId
       eq 'type', LogEntry.TYPE_ERROR
 
       order 'dateCreated', 'asc'
     })
+  }
+  
+  protected def doTheLookup (Class res = this.resource, int pageMax = 100, Closure baseQuery) {
+    final int offset = params.int("offset") ?: 0
+    final int perPage = Math.min(params.int('perPage') ?: params.int('max') ?: 10, pageMax)
+    final int page = params.int("page") ?: (offset ? (offset / perPage) + 1 : 1)
+    final List<String> filters = params.list("filters[]") ?: params.list("filters")
+    final List<String> match_in = params.list("match[]") ?: params.list("match")
+    final List<String> sorts = params.list("sort[]") ?: params.list("sort")
+    
+    if (params.boolean('stats')) {
+      return simpleLookupService.lookupWithStats(res, params.term, perPage, page, filters, match_in, sorts, null, baseQuery)
+    } else {
+      return simpleLookupService.lookup(res, params.term, perPage, page, filters, match_in, sorts, baseQuery)
+    }
   }
 }

@@ -6,6 +6,7 @@ import com.k_int.web.toolkit.refdata.RefdataCategory
 import com.k_int.web.toolkit.refdata.RefdataValue
 import com.k_int.web.toolkit.utils.DomainUtils
 import grails.gorm.multitenancy.CurrentTenant
+import grails.util.GrailsNameUtils
 import groovy.util.logging.Slf4j
 
 @Slf4j
@@ -18,7 +19,7 @@ class RefdataController extends OkapiTenantAwareController<RefdataCategory> {
   
   def lookup (String domain, String property) {
     def c = DomainUtils.resolveDomainClass(domain)?.javaClass
-    def cat = c ? GrailsDomainRefdataHelpers.getCategoryString(c, property) : null
+    def cat = c ? c."get${GrailsNameUtils.getClassName(property)}Category" () : null
     
     // Bail if no cat.
     if (!cat) {
