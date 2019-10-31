@@ -1,11 +1,14 @@
 package org.olf.erm;
 
 import com.k_int.okapi.remote_resources.RemoteOkapiLink
+import com.k_int.web.toolkit.databinding.BindImmutably
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
+import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 
+@GrailsCompileStatic
 public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<RemoteLicenseLink> {
   
   static transients = ['applicableAmendmentParams']
@@ -13,6 +16,9 @@ public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<Re
   @Defaults(['Controlling', 'Future', 'Historical'])
   RefdataValue status
   String note
+  
+  @BindImmutably
+  Set<LicenseAmendmentStatus> amendments = []
   
   static belongsTo = [ owner: SubscriptionAgreement ]
   
