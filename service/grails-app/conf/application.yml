@@ -56,7 +56,8 @@ grails:
             js: text/javascript
             rss: application/rss+xml
             text: text/plain
-            all: '*/*'            
+            all: '*/*'
+            kbart: 'text/tab-separated-value;charset=UTF-8'
     urlmapping:
         cache:
             maxsize: 1000
@@ -118,12 +119,14 @@ grails:
                 dateFormat: "yyyy-MM-dd'T'HH:mm:ssX"
 ---
 hibernate:
-    cache:
-        queries: false
-        use_second_level_cache: false
-        use_query_cache: false
+ # format_sql: true
+  cache:
+    queries: false
+    use_second_level_cache: false
+    use_query_cache: false
 
 dataSource:
+#  logSql: true
   pooled: true
   jmxExport: false
   dbCreate: none

@@ -29,17 +29,12 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
 
   ExportService exportService
 
-  final String csvMimeType = 'text/csv'
-  final String tsvMimeType = 'text/tab-separated-value'
-  final String encoding = "UTF-8"
-
-
   ExportController()  {
     super(TitleInstance, true)
   }
 
   def index() {
-    log.debug("ExportController::index");
+    log.debug("ExportController::index")
     final String subscriptionAgreementId = params.get("subscriptionAgreementId")
     log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
     List<ErmResource> results = exportService.all(subscriptionAgreementId)
@@ -49,7 +44,7 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
   }
   
   def current() {
-    log.debug("ExportController::index");
+    log.debug("ExportController::index")
     final String subscriptionAgreementId = params.get("subscriptionAgreementId")
     log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
     List<ErmResource> results = exportService.current(subscriptionAgreementId)
@@ -62,10 +57,8 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
     
     withFormat {
       'kbart' {
-        response.status = OK.value()
-        response.contentType = "${tsvMimeType};charset=${encoding}";
-        response.setHeader "Content-disposition", "attachment; filename=${filename}"
-    
+        // Set the file disposition.
+        response.setHeader "Content-disposition", "attachment; filename=export.tsv"
     
         def outs = response.outputStream
         OutputStream buffOs = new BufferedOutputStream(outs)
