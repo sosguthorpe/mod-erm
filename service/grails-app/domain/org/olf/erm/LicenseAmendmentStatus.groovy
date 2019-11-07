@@ -28,7 +28,7 @@ public class LicenseAmendmentStatus implements MultiTenant<LicenseAmendmentStatu
   }
   
   static constraints = {
-    amendmentId (nullable:false, balnk:false)
+    amendmentId (nullable:false, blank:false)
           owner (nullable:false)
          status (nullable:false)
            note (nullable:true, blank:false)
