@@ -209,78 +209,88 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
   
       package_record.TIPPs?.TIPP.each { tipp_entry ->
 
-        def tipp_title = tipp_entry?.title?.name?.text()
-        def tipp_medium = tipp_entry?.medium?.text()
-        def tipp_media = null;
-        
-        // It appears that tipp_entry?.title?.type?.value() can be a list
-        String title_type = tipp_entry?.title?.type?.text()
+        def tipp_status = tipp_entry?.status?.text()
+        if ( tipp_status != 'Deleted' ) {
+          def tipp_id = tipp_entry?.@id?.toString()
+          def tipp_title = tipp_entry?.title?.name?.text()
+          def tipp_medium = tipp_entry?.medium?.text()
+          def tipp_media = null;
+          
+          // It appears that tipp_entry?.title?.type?.value() can be a list
+          String title_type = tipp_entry?.title?.type?.text()
 
-        switch ( title_type ) {
-          case 'JournalInstance':
-            tipp_media = 'journal'
-            break;
-          case 'BookInstance':
-            tipp_media = 'book'
-            break;
-          default:
-            tipp_media = 'journal'
-            break;
-        }
-        def tipp_instance_identifiers = [] // [ "namespace": "issn", "value": "0278-7393" ]
-        def tipp_sibling_identifiers = []
-
-        // If we're processing an electronic record then issn is a sibling identifier
-        tipp_entry.title.identifiers.identifier.each { ti_id ->
-          if ( ti_id.@namespace == 'issn' ) {
-            tipp_sibling_identifiers.add(["namespace": "issn", "value": ti_id.@value?.toString() ]);
+          switch ( title_type ) {
+            case 'JournalInstance':
+              tipp_media = 'journal'
+              break;
+            case 'BookInstance':
+              tipp_media = 'book'
+              break;
+            default:
+              tipp_media = 'journal'
+              break;
           }
-          else {
-            tipp_instance_identifiers.add(["namespace": ti_id.@namespace?.toString(), "value": ti_id.@value?.toString() ]);
+          def tipp_instance_identifiers = [] // [ "namespace": "issn", "value": "0278-7393" ]
+          def tipp_sibling_identifiers = []
+
+          // If we're processing an electronic record then issn is a sibling identifier
+          tipp_entry.title.identifiers.identifier.each { ti_id ->
+            if ( ti_id.@namespace == 'issn' ) {
+              tipp_sibling_identifiers.add(["namespace": "issn", "value": ti_id.@value?.toString() ]);
+            }
+            else {
+              tipp_instance_identifiers.add(["namespace": ti_id.@namespace?.toString(), "value": ti_id.@value?.toString() ]);
+            }
           }
+
+          def tipp_coverage = [] // [ "startVolume": "8", "startIssue": "1", "startDate": "1982-01-01", "endVolume": null, "endIssue": null, "endDate": null ],
+
+          // Our domain model does not allow blank startDate or endDate, but they can be null
+          String start_date_string = tipp_entry.coverage?.@startDate?.toString()
+          String end_date_string = tipp_entry.coverage?.@endDate?.toString()
+   
+          tipp_coverage.add(["startVolume": tipp_entry.coverage?.@startVolume?.toString(),
+                             "startIssue": tipp_entry.coverage?.@startIssue?.toString(),
+                             "startDate": start_date_string?.length() > 0 ? start_date_string : null,
+                             "endVolume":tipp_entry.coverage?.@endVolume?.toString(),
+                             "endIssue": tipp_entry.coverage?.@endIssue?.toString(),
+                             "endDate": end_date_string?.length() > 0 ? end_date_string : null])
+
+          def tipp_coverage_depth = tipp_entry.coverage.@coverageDepth?.toString()
+          def tipp_coverage_note = tipp_entry.coverage.@coverageNote?.toString()
+
+          def tipp_url = tipp_entry.url?.text()
+          def tipp_platform_url = tipp_entry.platform?.primaryUrl?.text()
+          def tipp_platform_name = tipp_entry.platform?.name?.text()
+
+          String access_start = tipp_entry.access?.@start?.toString()
+          String access_end = tipp_entry.access?.@end?.toString()
+          
+          //Retired TIPPs are no longer in the package and should have an access_end, if not then make a guess at it
+          if(access_end.length()==0 && tipp_status == "Retired") {
+            access_end = tipp_entry.lastUpdated?.text().toString()
+            log.info( "accessEnd date guessed for retired title: ${tipp_title} in package: ${package_name}. TIPP ID: ${tipp_id}" )
+          }
+
+          // log.debug("consider tipp ${tipp_title}");
+
+          result.packageContents.add([
+            "title": tipp_title,
+            "instanceMedium": tipp_medium,
+            "instanceMedia": tipp_media,
+            "instanceIdentifiers": tipp_instance_identifiers,
+            "siblingInstanceIdentifiers": tipp_sibling_identifiers,
+            "coverage": tipp_coverage,
+            "embargo": null,
+            "coverageDepth": tipp_coverage_depth,
+            "coverageNote": tipp_coverage_note,
+            "platformUrl": tipp_platform_url,
+            "platformName": tipp_platform_name,
+            "url": tipp_url,
+            "accessStart": access_start,
+            "accessEnd": access_end
+          ])
         }
-
-        def tipp_coverage = [] // [ "startVolume": "8", "startIssue": "1", "startDate": "1982-01-01", "endVolume": null, "endIssue": null, "endDate": null ],
-
-        // Our domain model does not allow blank startDate or endDate, but they can be null
-        String start_date_string = tipp_entry.coverage?.@startDate?.toString()
-        String end_date_string = tipp_entry.coverage?.@endDate?.toString()
- 
-        tipp_coverage.add(["startVolume": tipp_entry.coverage?.@startVolume?.toString(),
-                           "startIssue": tipp_entry.coverage?.@startIssue?.toString(),
-                           "startDate": start_date_string?.length() > 0 ? start_date_string : null,
-                           "endVolume":tipp_entry.coverage?.@endVolume?.toString(),
-                           "endIssue": tipp_entry.coverage?.@endIssue?.toString(),
-                           "endDate": end_date_string?.length() > 0 ? end_date_string : null])
-
-        def tipp_coverage_depth = tipp_entry.coverage.@coverageDepth?.toString()
-        def tipp_coverage_note = tipp_entry.coverage.@coverageNote?.toString()
-
-        def tipp_url = tipp_entry.url?.text()
-        def tipp_platform_url = tipp_entry.platform?.primaryUrl?.text()
-        def tipp_platform_name = tipp_entry.platform?.name?.text()
-
-        String access_start = tipp_entry.access?.@start?.toString()
-        String access_end = tipp_entry.access?.@end?.toString()
-
-        // log.debug("consider tipp ${tipp_title}");
-
-        result.packageContents.add([
-          "title": tipp_title,
-          "instanceMedium": tipp_medium,
-          "instanceMedia": tipp_media,
-          "instanceIdentifiers": tipp_instance_identifiers,
-          "siblingInstanceIdentifiers": tipp_sibling_identifiers,
-          "coverage": tipp_coverage,
-          "embargo": null,
-          "coverageDepth": tipp_coverage_depth,
-          "coverageNote": tipp_coverage_note,
-          "platformUrl": tipp_platform_url,
-          "platformName": tipp_platform_name,
-          "url": tipp_url,
-          "accessStart": access_start,
-          "accessEnd": access_end
-        ])
       }
     }
     else {

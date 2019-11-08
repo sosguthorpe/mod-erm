@@ -84,5 +84,6 @@ appender ('JOB', JobAwareAppender)
 
 // Add the appender for classes we wish to expose within the database.
 logger ('org.olf.PackageIngestService', DEBUG, ['JOB'])
+logger ('org.olf.kb.adapters.GOKbOAIAdapter', DEBUG, ['JOB'])
 logger ('org.olf.CoverageService', DEBUG, ['JOB'])
 logger ('org.olf.ImportService', DEBUG, ['JOB'])
