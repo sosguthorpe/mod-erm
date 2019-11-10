@@ -2,58 +2,20 @@ package org.olf
 
 import java.time.LocalDate
 
-import com.k_int.okapi.OkapiHeaders
-import com.k_int.web.toolkit.testing.HttpSpec
-
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpException
 import spock.lang.Shared
 import spock.lang.Stepwise
-import spock.util.concurrent.PollingConditions
 
 @Slf4j
 @Integration
 @Stepwise
-class AgreementRelationshipsSpec extends HttpSpec {
+class AgreementRelationshipsSpec extends BaseSpec {
   
-  @Shared String type_value = ''
-
-  def setupSpec() {
-    httpClientConfig = {
-      client.clientCustomizer { HttpURLConnection conn ->
-        conn.connectTimeout = 2000
-        conn.readTimeout = 10000
-      }
-    }
-    addDefaultHeaders(
-      (OkapiHeaders.TENANT): 'http_tests',
-      (OkapiHeaders.USER_ID): 'http_test_user'
-    )
-  }
-
+  @Shared
+  String type_value = ''
   
-
-  void 'Ensure test tenant' () {
-
-    // Max time to wait is 10 seconds
-    def conditions = new PollingConditions(timeout: 10)
-    when: 'Create the tenant'
-      def resp = doPost('/_/tenant', {
-        parameters ([["key": "loadReference", "value": true]])
-      })
-
-    then: 'Response obtained'
-      resp != null
-
-    and: 'Refdata added'
-
-      List list
-      // Wait for the refdata to be loaded.
-      conditions.eventually {
-        (list = doGet('/erm/refdata')).size() > 0
-      }
-  }
   
   void 'Check relationship types present' () {
     given: 'Get types'
@@ -63,6 +25,7 @@ class AgreementRelationshipsSpec extends HttpSpec {
       assert (httpResult ?: []).size() > 0
       assert (type_value = httpResult[0].value) != null
   }
+  
 
   void 'Test agreements and relationship' () {
     final LocalDate today = LocalDate.now()
@@ -158,10 +121,5 @@ class AgreementRelationshipsSpec extends HttpSpec {
      ex = thrown()
      assert ex.statusCode == 422
      assert ex.fromServer?.message
-  }
-
-
-  def cleanupSpecWithSpring() {
-    Map resp = doDelete('/_/tenant', null)
   }
 }

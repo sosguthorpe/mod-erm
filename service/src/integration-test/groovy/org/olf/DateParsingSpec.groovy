@@ -14,32 +14,7 @@ import spock.lang.Stepwise
 @Slf4j
 @Integration
 @Stepwise
-class DateParsingSpec extends HttpSpec {  
-  
-  def setupSpec() {
-    addDefaultHeaders(
-      (OkapiHeaders.TENANT): 'http_tests',
-      (OkapiHeaders.USER_ID): 'http_test_user'
-    )
-    
-    setHttpClientConfig {
-      client.clientCustomizer { HttpURLConnection conn ->
-        conn.connectTimeout = 10000
-        conn.readTimeout = 5000
-      }
-    }
-  }
-
-  void 'Ensure test tenant' () {
-    given:
-      def resp = doPost('/_/tenant', null)
-      
-      // Nasty... Would like a waitFor on the events. But for now this will do.
-      Thread.sleep(4000)
-
-    expect:
-      resp != null
-  }
+class DateParsingSpec extends BaseSpec {
   
   def 'Test various date(/time) string formats' () {
     
@@ -57,10 +32,6 @@ class DateParsingSpec extends HttpSpec {
       assert resp.cancellationDeadline == '2018-01-01'
       assert resp.startDate == '2019-05-31'
       assert resp.endDate == '2019-06-01'
-  }
-
-  def cleanupSpecWithSpring() {
-    Map resp = doDelete('/_/tenant', null)
   }
 }
 

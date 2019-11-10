@@ -36,6 +36,7 @@ import spock.lang.Unroll
  *                           some package titles,
  *                           some non-package titles
  *   Check that "My subscribed content" lists the appropriate titles
+ * TODO: Refactor this to use HttpSpec or BaseSpec
  */
 @Slf4j
 @Integration

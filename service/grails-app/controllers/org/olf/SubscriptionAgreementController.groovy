@@ -1,7 +1,7 @@
 package org.olf
 
 import java.time.LocalDate
-
+import org.hibernate.sql.JoinType
 import org.olf.erm.SubscriptionAgreement
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
@@ -204,83 +204,64 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       final LocalDate today = LocalDate.now()
         
       final def results = doTheLookup (ErmResource) {
+        createAlias 'entitlements', 'direct_ent', JoinType.LEFT_OUTER_JOIN
+        createAlias 'pkg', 'ind_pci_pkg', JoinType.LEFT_OUTER_JOIN
+          createAlias 'ind_pci_pkg.entitlements', 'pkg_ent'
+          
         or {
+          and {
+            eq 'class', PlatformTitleInstance
+            eq 'direct_ent.owner.id', subscriptionAgreementId
+            lt 'direct_ent.activeTo', today
+          }
           
-          // Direct PTIs
-          'in' 'id', new DetachedCriteria(PlatformTitleInstance).build {
+          and {
+            eq 'class', PackageContentItem
+            eq 'direct_ent.owner.id', subscriptionAgreementId
+        
             
-            createAlias 'entitlements', 'direct_ent'
-              eq 'direct_ent.owner.id', subscriptionAgreementId
+            // Valid access start
+            or {
+              isNull 'accessStart'
+              isNull 'direct_ent.activeTo'
+              ltProperty 'accessStart', 'direct_ent.activeTo'
+            }
+            
+            // Valid access end
+            or {
+              isNull 'accessEnd'
+              isNull 'direct_ent.activeFrom'
+              gtProperty 'accessEnd', 'direct_ent.activeFrom'
+            }
+            
+            // Line or Resource in the past
+            or {
               lt 'direct_ent.activeTo', today
-              
-            projections {
-              property ('id')
+              lt 'accessEnd', today
             }
           }
           
-          // Direct PCIs
-          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+          and {
+            eq 'class', PackageContentItem
+            eq 'pkg_ent.owner.id', subscriptionAgreementId
             
-            createAlias 'entitlements', 'direct_ent'
-              eq 'direct_ent.owner.id', subscriptionAgreementId
-              
-              // Valid resource
-              and {
-                // Valid access start
-                or {
-                  isNull 'accessStart'
-                  isNull 'direct_ent.activeTo'
-                  ltProperty 'accessStart', 'direct_ent.activeTo'
-                }
-                // Valid access end
-                or {
-                  isNull 'accessEnd'
-                  isNull 'direct_ent.activeFrom'
-                  gtProperty 'accessEnd', 'direct_ent.activeFrom'
-                }
-              }
-              
-              // Line or Resource in the past
-              or {
-                lt 'direct_ent.activeTo', today
-                lt 'accessEnd', today
-              }
-              
-            projections {
-              property ('id')
+            // Valid access start
+            or {
+              isNull 'accessStart'
+              isNull 'pkg_ent.activeTo'
+              ltProperty 'accessStart', 'pkg_ent.activeTo'
             }
-          }
-          
-          // Pci linked via package.
-          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+            // Valid access end
+            or {
+              isNull 'accessEnd'
+              isNull 'pkg_ent.activeFrom'
+              gtProperty 'accessEnd', 'pkg_ent.activeFrom'
+            }
             
-            createAlias 'pkg.entitlements', 'pkg_ent'
-              eq 'pkg_ent.owner.id', subscriptionAgreementId
-              
-              // Valid resource
-              and {
-                // Valid access start
-                or {
-                  isNull 'accessStart'
-                  isNull 'pkg_ent.activeTo'
-                  ltProperty 'accessStart', 'pkg_ent.activeTo'
-                }
-                // Valid access end
-                or {
-                  isNull 'accessEnd'
-                  isNull 'pkg_ent.activeFrom'
-                  gtProperty 'accessEnd', 'pkg_ent.activeFrom'
-                }
-              }
-              
-              // Line or Resource in the past
-              or {
-                lt 'pkg_ent.activeTo', today
-                lt 'accessEnd', today
-              }
-            
-            projections {
-              property ('id')
+            // Line or Resource in the past
+            or {
+              lt 'pkg_ent.activeTo', today
+              lt 'accessEnd', today
             }
           }
         }
@@ -305,83 +286,65 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       final LocalDate today = LocalDate.now()
         
       final def results = doTheLookup (ErmResource) {
+        
+        createAlias 'entitlements', 'direct_ent', JoinType.LEFT_OUTER_JOIN
+        createAlias 'pkg', 'ind_pci_pkg', JoinType.LEFT_OUTER_JOIN
+          createAlias 'ind_pci_pkg.entitlements', 'pkg_ent'
+        
         or {
+          and {
+            eq 'class', PlatformTitleInstance
+            eq 'direct_ent.owner.id', subscriptionAgreementId
+            gt 'direct_ent.activeFrom', today
+          }
           
-          // Direct PTIs
-          'in' 'id', new DetachedCriteria(PlatformTitleInstance).build {
+          and {
+            eq 'class', PackageContentItem
+            eq 'direct_ent.owner.id', subscriptionAgreementId
             
-            createAlias 'entitlements', 'direct_ent'
-              eq 'direct_ent.owner.id', subscriptionAgreementId
+            // Valid access start
+            or {
+              isNull 'accessStart'
+              isNull 'direct_ent.activeTo'
+              ltProperty 'accessStart', 'direct_ent.activeTo'
+            }
+            
+            // Valid access end
+            or {
+              isNull 'accessEnd'
+              isNull 'direct_ent.activeFrom'
+              gtProperty 'accessEnd', 'direct_ent.activeFrom'
+            }
+            
+            // Line or Resource in the future
+            or {
               gt 'direct_ent.activeFrom', today
-              
-            projections {
-              property ('id')
+              gt 'accessStart', today
             }
           }
           
-          // Direct PCIs
-          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+          and {
+            eq 'class', PackageContentItem
+            eq 'pkg_ent.owner.id', subscriptionAgreementId
             
-            createAlias 'entitlements', 'direct_ent'
-              eq 'direct_ent.owner.id', subscriptionAgreementId
-              
-              // Valid resource
-              and {
-                // Valid access start
-                or {
-                  isNull 'accessStart'
-                  isNull 'direct_ent.activeTo'
-                  ltProperty 'accessStart', 'direct_ent.activeTo'
-                }
-                // Valid access end
-                or {
-                  isNull 'accessEnd'
-                  isNull 'direct_ent.activeFrom'
-                  gtProperty 'accessEnd', 'direct_ent.activeFrom'
-                }
-              }
-              
-              // Line or Resource in the future
-              or {
-                gt 'direct_ent.activeFrom', today
-                gt 'accessStart', today
-              }
-              
-            projections {
-              property ('id')
+            // Valid access start
+            or {
+              isNull 'accessStart'
+              isNull 'pkg_ent.activeTo'
+              ltProperty 'accessStart', 'pkg_ent.activeTo'
             }
-          }
-          
-          // Pci linked via package.
-          'in' 'id', new DetachedCriteria(PackageContentItem).build {
             
-            createAlias 'pkg.entitlements', 'direct_ent'
-              eq 'direct_ent.owner.id', subscriptionAgreementId
-              
-              // Valid resource
-              and {
-                // Valid access start
-                or {
-                  isNull 'accessStart'
-                  isNull 'direct_ent.activeTo'
-                  ltProperty 'accessStart', 'direct_ent.activeTo'
-                }
-                // Valid access end
-                or {
-                  isNull 'accessEnd'
-                  isNull 'direct_ent.activeFrom'
-                  gtProperty 'accessEnd', 'direct_ent.activeFrom'
-                }
-              }
-              
-              // Line or Resource in the future
-              or {
-                gt 'direct_ent.activeFrom', today
-                gt 'accessStart', today
-              }
+            // Valid access end
+            or {
+              isNull 'accessEnd'
+              isNull 'pkg_ent.activeFrom'
+              gtProperty 'accessEnd', 'pkg_ent.activeFrom'
+            }
             
-            projections {
-              property ('id')
+            // Line or Resource in the future
+            or {
+              gt 'pkg_ent.activeFrom', today
+              gt 'accessStart', today
             }
           }
         }

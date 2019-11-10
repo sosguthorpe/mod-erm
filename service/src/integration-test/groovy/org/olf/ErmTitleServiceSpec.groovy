@@ -13,9 +13,11 @@ import com.k_int.okapi.OkapiHeaders
 import com.k_int.web.toolkit.refdata.RefdataValue
 import spock.lang.Shared
 import groovy.json.JsonSlurper
+import groovy.util.logging.Slf4j
 import grails.gorm.multitenancy.Tenants
 import org.olf.kb.TitleInstance
 
+@Slf4j
 @Integration
 @Stepwise
 class ErmTitleServiceSpec extends GebSpec {
@@ -30,8 +32,6 @@ class ErmTitleServiceSpec extends GebSpec {
     header OkapiHeaders.USER_ID, 'dummy'
     header OkapiHeaders.PERMISSIONS, '[ "erm.admin", "erm.user", "erm.own.read", "erm.any.read"]'
   }
-
-  final static Logger logger = LoggerFactory.getLogger(ErmPackageSpec.class);
 
   def setup() {
   }
