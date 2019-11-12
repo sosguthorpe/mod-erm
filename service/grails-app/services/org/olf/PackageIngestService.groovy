@@ -108,7 +108,7 @@ class PackageIngestService {
 
       try {
 
-       PackageContentItem.withNewTransaction { status ->
+        PackageContentItem.withNewTransaction { status ->
 
           // resolve may return null, used to throw exception which causes the whole package to be rejected. Needs
           // discussion to work out best way to handle.
@@ -141,8 +141,8 @@ class PackageIngestService {
 
               if ( pti == null )
                 pti = new PlatformTitleInstance(titleInstance:title,
-                platform:platform,
-                url:pc.url).save(flush:true, failOnError:true)
+                  platform:platform,
+                  url:pc.url).save(flush:true, failOnError:true)
 
 
               // Lookup or create a package content item record for this title on this platform in this package
@@ -153,12 +153,14 @@ class PackageIngestService {
               PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null;
 
               boolean isUpdate = false
+              boolean isNew = false
               if ( pci == null ) {
                 log.debug("Record ${result.titleCount} - Create new package content item")
                 pci = new PackageContentItem(
                   pti:pti,
                   pkg:Pkg.get(result.packageId),
                   addedTimestamp:result.updateTime)
+                isNew = true
               }
               else {
                 // Note that we have seen the package content item now - so we don't delete it at the end.
@@ -176,8 +178,8 @@ class PackageIngestService {
                 lastSeenTimestamp = result.updateTime
               }
               
-              if (pci.isDirty()) {
-                if (isUpdate) {
+              if (isUpdate) {
+                if (pci.isDirty()) {
                   // This means we have changes to an existing PCI and not a new one.
                   result.updatedTitles++
                   
@@ -192,15 +194,13 @@ class PackageIngestService {
                       }
                     }
                   }
-                  
-                } else {
-                  // New item.
-                  result.newTitles++
                 }
+              } else if (isNew) {
+                // New item.
+                result.newTitles++
               }
-                
+              
               pci.save(flush: true, failOnError: true)
-            
 
               // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
               // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
