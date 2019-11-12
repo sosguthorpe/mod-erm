@@ -1,0 +1,6 @@
+import groovy.transform.*
+import org.olf.erm.OrderLine
+
+@Field OrderLine orderLine
+
+json g.render(orderLine)

@@ -9,35 +9,9 @@ import org.olf.erm.Entitlement
 if (entitlement.type == 'external') {
   json tmpl."externalEntitlement"(entitlement)
 } else {
-  
-  final String objectProperty = 'poLineId'
-  final String objectMethod = "${objectProperty}_object"
-  def remoteObjValue
-  
-  if(entitlement[objectProperty] && actionName.toLowerCase() != 'index' && entitlement.respondsTo(objectMethod)){
-    try {
-      remoteObjValue = entitlement.invokeMethod(objectMethod, null)
-      if (remoteObjValue instanceof Future) {
-        remoteObjValue = (remoteObjValue as Future)?.get()
-      }
-    } catch (ExecutionException e) {
-      
-      if (e.cause instanceof HttpException) {
-        HttpException httpEx = e.cause as HttpException
-        remoteObjValue = [error: httpEx.statusCode, message: httpEx.message ]
-      } else {
-        remoteObjValue = [error: e.class.name, message: e.message]
-      }
-    }
-  }
-  
 
-  json g.render(entitlement, [expand: ['owner', 'resource' ]]) {
+  json g.render(entitlement, [expand: ['poLines', 'owner', 'resource' ]]) {
         
-    if (remoteObjValue) {
-      call( objectMethod, remoteObjValue )
-    }
-    
     if (entitlement.coverage) {
       
       'coverage' g.render (entitlement.coverage)
