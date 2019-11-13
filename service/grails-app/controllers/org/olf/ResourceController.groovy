@@ -98,9 +98,12 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
             createAlias 'pti', 'pci_pti'
               eq 'pci_pti.titleInstance', ti
               
+            isNull 'removedTimestamp'
+
             projections {
               property ('id')
             }
+            
           }
           
           // Packages.
@@ -109,7 +112,9 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
             
             createAlias 'pti', 'pci_pti'
               eq 'pci_pti.titleInstance', ti
-              
+            
+            isNull 'removedTimestamp'
+
             projections {
               property ('pkg.id')
             }
@@ -169,7 +174,9 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
               
               createAlias 'pti', 'pci_pti'
                 eq 'pci_pti.titleInstance', res
-                
+
+              isNull 'removedTimestamp'
+
               projections {
                 property ('pkg.id')
               }
@@ -196,7 +203,9 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
               readOnly (true)
               
               eq 'pti', res
-                
+
+              isNull 'removedTimestamp'
+
               projections {
                 property ('pkg.id')
               }
