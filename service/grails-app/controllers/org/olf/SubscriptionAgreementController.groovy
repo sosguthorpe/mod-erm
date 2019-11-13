@@ -69,13 +69,11 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           
           // Pci linked via package.
           'in' 'id', new DetachedCriteria(PackageContentItem).build {
-            readOnly (true)
+            isNull 'removedTimestamp'
             
             'in' 'pkg.id', new DetachedCriteria(Pkg).build {
               createAlias 'entitlements', 'pkg_ent'
                 eq 'pkg_ent.owner.id', subscriptionAgreementId
-              
-              isNull 'removedTimestamp'
 
               projections {
                 property ('id')
@@ -156,6 +154,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           // Pci linked via package.
           'in' 'id', new DetachedCriteria(PackageContentItem).build {
             
+            isNull 'removedTimestamp'
             'in' 'pkg.id', new DetachedCriteria(Pkg).build {
               createAlias 'entitlements', 'pkg_ent'
                 eq 'pkg_ent.owner.id', subscriptionAgreementId
@@ -168,8 +167,6 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
                   isNull 'pkg_ent.activeTo'
                   ge 'pkg_ent.activeTo', today
                 }
-
-              isNull 'removedTimestamp'
               
               projections {
                 property ('id')
@@ -224,7 +221,6 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           and {
             eq 'class', PackageContentItem
             eq 'direct_ent.owner.id', subscriptionAgreementId
-        
             
             // Valid access start
             or {
@@ -249,6 +245,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           
           and {
             eq 'class', PackageContentItem
+            isNull 'removedTimestamp'
             eq 'pkg_ent.owner.id', subscriptionAgreementId
             
             // Valid access start
@@ -269,7 +266,6 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
               lt 'pkg_ent.activeTo', today
               lt 'accessEnd', today
             }
-            isNull 'removedTimestamp'
           }
         }
         
@@ -332,6 +328,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           
           and {
             eq 'class', PackageContentItem
+            isNull 'removedTimestamp'
             eq 'pkg_ent.owner.id', subscriptionAgreementId
             
             // Valid access start
@@ -353,7 +350,6 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
               gt 'pkg_ent.activeFrom', today
               gt 'accessStart', today
             }
-            isNull 'removedTimestamp'
           }
         }
         
