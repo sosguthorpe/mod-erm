@@ -4,8 +4,10 @@ import com.k_int.okapi.remote_resources.RemoteOkapiLink
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
+import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 
+@GrailsCompileStatic
 public class LicenseAmendmentStatus implements MultiTenant<LicenseAmendmentStatus> {
   
   String id

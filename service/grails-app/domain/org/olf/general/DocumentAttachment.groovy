@@ -2,10 +2,13 @@ package org.olf.general
 
 import grails.gorm.MultiTenant
 import com.k_int.web.toolkit.refdata.RefdataValue
+import com.k_int.web.toolkit.domain.traits.Clonable
 import com.k_int.web.toolkit.refdata.Defaults
+
+import org.olf.erm.SubscriptionAgreement
 import org.olf.general.FileUpload
 
-class DocumentAttachment extends SingleFileAttachment implements MultiTenant<DocumentAttachment> {
+class DocumentAttachment extends SingleFileAttachment implements MultiTenant<DocumentAttachment>, Clonable<DocumentAttachment> {
 
   String id
   String name
@@ -39,5 +42,12 @@ class DocumentAttachment extends SingleFileAttachment implements MultiTenant<Doc
     dateCreated(nullable:true, blank:false)
     lastUpdated(nullable:true, blank:false)
   }
-
+  
+  /**
+   * Need to resolve the conflict manually and add the call to the clonable method here.
+   */
+  @Override
+  public DocumentAttachment clone () {
+    Clonable.super.clone()
+  }
 }

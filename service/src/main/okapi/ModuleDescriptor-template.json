@@ -55,6 +55,10 @@
           "pathPattern": "/erm/sas/{id}",
           "permissionsRequired": [ "erm.agreements.item.put" ]
         },{
+          "methods": ["POST"],
+          "pathPattern": "/erm/sas/{id}/clone",
+          "permissionsRequired": [ "erm.agreements.item.clone" ]
+        },{
           "methods": ["DELETE"],
           "pathPattern": "/erm/sas/{id}",
           "permissionsRequired": [ "erm.agreements.item.delete" ]
@@ -304,7 +308,8 @@
     "subPermissions": [
       "erm.agreements.view",
       "erm.agreements.item.post",
-      "erm.agreements.item.put"
+      "erm.agreements.item.put",
+      "erm.agreements.item.clone"
     ]
   },{
     "permissionName": "erm.agreements.manage",

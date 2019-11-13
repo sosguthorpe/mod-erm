@@ -1,10 +1,14 @@
 package org.olf.erm
+import com.k_int.web.toolkit.domain.traits.Clonable
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
+import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 
-public class InternalContact implements MultiTenant<InternalContact>{
+
+@GrailsCompileStatic
+public class InternalContact implements MultiTenant<InternalContact>, Clonable<InternalContact> {
   
   String id
   String user
@@ -28,5 +32,13 @@ public class InternalContact implements MultiTenant<InternalContact>{
        owner(nullable:false, blank:false);
         user(nullable:true, blank:false);
         role(nullable:true, blank:false);
+  }
+  
+  /**
+   * Need to resolve the conflict manually and add the call to the clonable method here.
+   */
+  @Override
+  public InternalContact clone () {
+    Clonable.super.clone()
   }
 }

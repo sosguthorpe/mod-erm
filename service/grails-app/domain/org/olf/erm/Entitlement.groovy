@@ -1,6 +1,5 @@
 package org.olf.erm
 
-import java.time.Instant
 import java.time.LocalDate
 
 import javax.persistence.Transient
@@ -12,7 +11,7 @@ import org.olf.kb.Pkg
 import org.olf.kb.PlatformTitleInstance
 
 import com.k_int.okapi.remote_resources.OkapiLookup
-
+import com.k_int.web.toolkit.domain.traits.Clonable
 import grails.databinding.BindInitializer
 import grails.gorm.MultiTenant
 import groovy.util.logging.Slf4j
@@ -27,9 +26,19 @@ import groovy.util.logging.Slf4j
  *
  */
 @Slf4j
-public class Entitlement implements MultiTenant<Entitlement> {
+public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitlement> {
   public static final Class<? extends ErmResource>[] ALLOWED_RESOURCES = [Pkg, PackageContentItem, PlatformTitleInstance] as Class[]
-
+  
+  
+  /**
+   * Need to resolve the conflict manually and add the call to the clonable method here.
+   */
+  @Override
+  public Entitlement clone () {
+    Clonable.super.clone()
+  }
+  
+  
   String id
 
   ErmResource resource
@@ -49,6 +58,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
   // These three properties allow us to create an entitlement which is externally defined. An externally defined
   // entitlement does not link to a resource in the tenant database, but instead will use API calls to define its contents
   String authority
+  
   
   @OkapiLookup(
     value = '${obj.authority?.toLowerCase() == "ekb-package" ? "/eholdings/packages" : "/eholdings/resources" }/${obj.reference}',

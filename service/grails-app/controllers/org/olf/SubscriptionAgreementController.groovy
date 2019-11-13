@@ -2,6 +2,7 @@ package org.olf
 
 import java.time.LocalDate
 import org.hibernate.sql.JoinType
+import org.grails.web.json.JSONObject
 import org.olf.erm.SubscriptionAgreement
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
@@ -9,10 +10,12 @@ import org.olf.kb.Pkg
 import org.olf.kb.PlatformTitleInstance
 
 import com.k_int.okapi.OkapiTenantAwareController
-
+import grails.converters.JSON
 import grails.gorm.DetachedCriteria
 import grails.gorm.multitenancy.CurrentTenant
+import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import static org.springframework.http.HttpStatus.*
 
 
 /**
@@ -24,12 +27,12 @@ import groovy.util.logging.Slf4j
 @CurrentTenant
 class SubscriptionAgreementController extends OkapiTenantAwareController<SubscriptionAgreement>  {
   
+  
   CoverageService coverageService
   
   SubscriptionAgreementController() {
     super(SubscriptionAgreement)
   }
-  
   
   def resources () {
     
@@ -358,5 +361,61 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       respond results
       return
     }
+  }
+  
+  
+  private static final Map<String, List<String>> CLONE_GROUPING = [
+    'agreementInfo': ['name', 'description', 'renewalPriority' , 'isPerpetual'],
+    'internalContacts': ['contacts'],
+    'agreementLines': ['items'], // Do not copy poLine. Need to also duplicate coverage
+//    'linkedLicenses': ['linkedLicenses'],
+    'externalLicenses': ['externalLicenseDocs'],
+    'organizations': ['orgs'],
+    'supplementaryInformation': ['supplementaryDocs'],
+    'usageData': ['usageDataProviders'],
+//    'tags': ['tags']
+  ]
+  
+  @Transactional
+  def doClone () {
+    final Set<String> props = []
+    final String subscriptionAgreementId = params.get("subscriptionAgreementId")
+    if (subscriptionAgreementId) {
+      
+      // Grab the JSON body.
+      JSONObject body = request.JSON
+      
+      // Create a set of propertyNames to clone.
+      
+      // Build up a list of properties from the incoming json object.
+      for (Map.Entry<String, Boolean> entry : body.entrySet()) {
+        
+        if (entry.value == true) {
+        
+          final String fieldOrGroup = entry.key
+          if (CLONE_GROUPING.containsKey(fieldOrGroup)) {
+            // Add the group instead.
+            props.addAll( CLONE_GROUPING[fieldOrGroup] )
+          } else {
+            // Assume single field.
+            props << fieldOrGroup
+          }
+        }
+      }
+      
+      log.debug "Attempting to clone agreement ${subscriptionAgreementId} using props ${props}"
+      SubscriptionAgreement instance = queryForResource(subscriptionAgreementId).clone(props)
+      
+      instance.save()
+      if (instance.hasErrors()) {
+        transactionStatus.setRollbackOnly()
+        respond instance.errors, view:'edit' // STATUS CODE 422 automatically when errors rendered.
+        return
+      }
+      respond instance, [status: OK]
+      return
+    }
+    
+    respond ([statusCode: 404])
   }
 }

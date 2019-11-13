@@ -67,8 +67,10 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
   renewalPriority: "'"$RENEW_REVIEW_RDV"'",
   localReference: "TRIAL_ALR_001",
   vendorReference: "TRIAL_AVR_001",
-  startDate: "2018-01-01",
-  endDate: "2019-12-31",
+  periods: [{
+    startDate: "2018-01-01",
+    endDate: "2019-12-31"
+  }],
   renewalDate: "2019-01-01",
   nextReviewDate: "2018-10-01",
   vendor: {
@@ -110,12 +112,14 @@ ACTIVE_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 {
   name: "Active Agreement LR 002",
   description: "This is an active agreement",
-  agreementStatus: "'"$STATUS_ACTIVE_RDV"'" },
-  isPerpetual: "'"$ISPERPETUAL_NO_RDV"'" },
+  agreementStatus: "'"$STATUS_ACTIVE_RDV"'",
+  isPerpetual: "'"$ISPERPETUAL_NO_RDV"'",
   renewalPriority: "'"$RENEW_DEFRENEW_RDV"'",
   localReference: "AGG_LR_002",
   vendorReference: "AGG_VR_002",
-  startDate: "2018-01-01",
+  periods: [{
+    startDate: "2018-01-01"
+  }],
   vendor: {
     orgsUuid: "05f327a6-c4d3-43c2-828f-7d6e7e401c99",
     name:"My Super Vendor"
@@ -137,7 +141,9 @@ ELSEVIER_FC_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type:
   renewalPriority: "'"$RENEW_DEFRENEW_RDV"'",
   localReference: "AGG_LR_002",
   vendorReference: "AGG_VR_002",
-  startDate: "2018-01-01",
+  periods: [{
+    startDate: "2018-01-01"
+  }],
   vendor: {
     name:"Elsevier"
   },
@@ -155,7 +161,9 @@ WILEY_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
   renewalPriority: "'"$RENEW_DEFRENEW_RDV"'",
   localReference: "AGG_LR_002",
   vendorReference: "AGG_VR_002",
-  startDate: "2018-01-01",
+  periods: [{
+    startDate: "2018-01-01"
+  }],
   vendor: {
     name:"Wiley"
   },
@@ -173,7 +181,9 @@ SPRINGER_NATURE_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-T
   renewalPriority: "'"$RENEW_DEFRENEW_RDV"'",
   localReference: "AGG_LR_002",
   vendorReference: "AGG_VR_002",
-  startDate: "2018-01-01",
+  periods: [{
+    startDate: "2018-01-01"
+  }],
   vendor: {
     name:"Springer"
   },
@@ -191,7 +201,9 @@ BENTHAM_EXTERNAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-
   renewalPriority: "'"$RENEW_DEFRENEW_RDV"'",
   localReference: "EBSCO_TC1",
   vendorReference: "301:3707",
-  startDate: "2018-01-01",
+  periods: [{
+    startDate: "2018-01-01"
+  }],
   vendor: {
     name:"Bentham Science"
   },

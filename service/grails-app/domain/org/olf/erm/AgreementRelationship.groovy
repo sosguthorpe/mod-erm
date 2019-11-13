@@ -2,10 +2,13 @@ package org.olf.erm
 
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
+
+import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 import groovy.util.logging.Slf4j
 
 @Slf4j
+@GrailsCompileStatic
 public class AgreementRelationship implements MultiTenant<AgreementRelationship> {
   
   String id

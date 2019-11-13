@@ -4,11 +4,13 @@ import java.time.LocalDate
 
 import com.k_int.web.toolkit.refdata.RefdataValue
 
+import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 
 /**
  * Subscription agreement - object holding details about an SA connecting a resource list (Composed Of packages and platform-titles).
  */
+@GrailsCompileStatic
 public class SAEventHistory implements MultiTenant<SAEventHistory> {
 
   String id

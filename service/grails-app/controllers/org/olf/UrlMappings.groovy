@@ -24,18 +24,13 @@ class UrlMappings {
       "/export/current/$format?"  (controller: 'export', action: 'current', method: 'GET')
 //      "/export/future/$format?"   (controller: 'export', action: 'future', method: 'GET')
 //      "/export/dropped/$format?"  (controller: 'export', action: 'dropped', method: 'GET')
+      
+      '/clone' (controller: 'subscriptionAgreement', action: 'doClone', method: 'POST')
 	  
       '/linkedLicenses' {
         controller = 'remoteLicenseLink'
         method = 'GET'
         filters = { "owner==${params.subscriptionAgreementId}" }
-      }
-      
-      collection {
-        '/linkedLicenses' {
-          controller = 'remoteLicenseLink'
-          method = 'GET'
-        }
       }
 	  
       '/usageDataProviders' {
@@ -43,6 +38,13 @@ class UrlMappings {
   		  method = 'GET'
   		  filters = { "owner==${params.subscriptionAgreementId}" }
   	  }
+      
+      collection {
+        '/linkedLicenses' {
+          controller = 'remoteLicenseLink'
+          method = 'GET'
+        }
+      }
 	  
       collection {
   		  '/usageDataProviders' {

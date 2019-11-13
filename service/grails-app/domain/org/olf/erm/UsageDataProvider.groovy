@@ -1,12 +1,13 @@
 package org.olf.erm;
 
 import com.k_int.okapi.remote_resources.RemoteOkapiLink
-import com.k_int.web.toolkit.refdata.Defaults
-import com.k_int.web.toolkit.refdata.RefdataValue
+import com.k_int.web.toolkit.domain.traits.Clonable
 
+import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 
-public class UsageDataProvider extends RemoteOkapiLink implements MultiTenant<UsageDataProvider> {
+@GrailsCompileStatic
+public class UsageDataProvider extends RemoteOkapiLink implements MultiTenant<UsageDataProvider>, Clonable<UsageDataProvider> {
 
 	String usageDataProviderNote
   
@@ -27,4 +28,12 @@ public class UsageDataProvider extends RemoteOkapiLink implements MultiTenant<Us
 	public String remoteUri() {
 		return 'usage-data-providers';
 	}
+  
+  /**
+   * Need to resolve the conflict manually and add the call to the clonable method here.
+   */
+  @Override
+  public UsageDataProvider clone () {
+    Clonable.super.clone()
+  }
 }

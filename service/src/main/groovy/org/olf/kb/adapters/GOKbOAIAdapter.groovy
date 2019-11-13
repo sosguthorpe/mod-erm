@@ -1,38 +1,16 @@
 package org.olf.kb.adapters;
 
-import org.olf.kb.KBCacheUpdater;
-import org.olf.kb.RemoteKB;
-import org.springframework.validation.BindingResult
+import java.text.*
+
 import org.olf.dataimport.internal.InternalPackageImpl
 import org.olf.dataimport.internal.PackageSchema
-import org.olf.kb.KBCache;
-import groovy.json.JsonSlurper;
-import java.util.Map;
+import org.olf.kb.KBCache
+import org.olf.kb.KBCacheUpdater
+import org.springframework.validation.BindingResult
 
-
-import static groovyx.net.http.ContentType.URLENC
-import static groovyx.net.http.ContentType.XML
-import static groovyx.net.http.ContentType.JSON
-import static groovyx.net.http.ContentType.*
-import static groovyx.net.http.Method.*
-import static groovyx.net.http.Method.GET
-import static groovyx.net.http.Method.POST
-
-import grails.databinding.SimpleMapDataBindingSource
 import grails.web.databinding.DataBinder
-import grails.web.databinding.DataBindingUtils
-import groovyx.net.http.*
-import org.apache.http.entity.mime.*
-import org.apache.http.entity.mime.content.*
-import org.apache.http.*
-import org.apache.http.protocol.*
-import java.text.SimpleDateFormat
-import java.util.TimeZone;
-import java.nio.charset.Charset
-import static groovy.json.JsonOutput.*
-import java.text.*
 import groovy.util.logging.Slf4j
-import java.util.TimeZone;
+import groovyx.net.http.*
 
 
 /**

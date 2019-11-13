@@ -2,16 +2,16 @@ package org.olf.erm
 
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.web.util.WebUtils
 import org.olf.general.DocumentAttachment
 import org.olf.general.Org
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.support.RequestContextUtils
+
+import com.k_int.web.toolkit.domain.traits.Clonable
 import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
@@ -24,9 +24,13 @@ import groovy.util.logging.Slf4j
  * Subscription agreement - object holding details about an SA connecting a resource list (Composed Of packages and platform-titles).
  */
 @Slf4j
-public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement> {
-  
+public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>, Clonable<SubscriptionAgreement> {
+   
   static transients = ['cancellationDeadline', 'startDate', 'endDate', 'currentPeriod']
+  static cloneStaticValues = [
+    periods: { [new Period('owner': delegate, 'startDate': LocalDate.now())] },
+    name: { "Copy of: ${owner.name}" /* Owner is the current object. */ }
+  ]
   
   String description
   String id
@@ -72,7 +76,6 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
 
   Org vendor
 
-//  @BindImmutably
   Set<Entitlement> items
   
   private Period currentPeriod
@@ -102,15 +105,9 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
         ld = LocalDate.now()
       }
       
-      // Create the query
-      def query = Period.where {
-         (owner.id == "${this.id}") &&
-         (startDate == null || startDate <= ld) && 
-           (endDate == null || endDate >= ld)
+      currentPeriod = periods.find { Period p ->
+        startDate <= ld && (endDate == null || endDate >= ld)
       }
-      
-      // Execute.
-      currentPeriod = query.find()
     }
     currentPeriod
   }
@@ -119,28 +116,42 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
     currentPeriod?.cancellationDeadline
   }
   
+  private LocalDate startDate = null
   LocalDate getStartDate() {
-    if (currentPeriod) {
-      return currentPeriod.startDate
-    }
-    def query = Period.where {
-      (owner.id == "${this.id}") && (startDate == null || startDate == min(startDate).of { owner.id == "${this.id}" })
-    }
-    Period earliest = query.list(sort: 'startDate', max: 1)?.getAt(0)
+    if (startDate == null) {
     
-    earliest.startDate
+      if (currentPeriod) {
+        startDate = currentPeriod.startDate
+        return startDate
+      }
+      
+      LocalDate earliest = null
+      periods.each { Period p ->
+        if (p.startDate < earliest) earliest = p.startDate
+      }
+      
+      startDate = earliest
+    }
+    startDate
   }
   
+  private LocalDate endDate = null
   LocalDate getEndDate() {
-    if (currentPeriod) {
-      return currentPeriod.endDate
+    if (endDate == null) {
+      
+      if (currentPeriod) {
+        endDate = currentPeriod.endDate
+        return endDate
+      }
+      
+      LocalDate latest = null
+      periods.each { Period p ->
+        if (p.endDate > latest) latest = p.endDate
+      }
+      
+      endDate = latest
     }
-    def query = Period.where {
-      (owner.id == "${this.id}") && (endDate == null || endDate == max(endDate).of { owner.id == "${this.id}" })
-    }
-    Period latest = query.list(sort: 'endDate', max: 1)?.getAt(0)
-    
-    latest.endDate
+    endDate
   }
   
   static hasMany = [
@@ -214,7 +225,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
            agreementType(nullable:true, blank:false)
            reasonForClosure(nullable:true, blank:false)
          renewalPriority(nullable:true, blank:false)
-         agreementStatus(nullable:true, blank:false)
+         agreementStatus(nullable:false)
              isPerpetual(nullable:true, blank:false)
      contentReviewNeeded(nullable:true, blank:false)
                  enabled(nullable:true, blank:false)
@@ -253,5 +264,12 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
       this.reasonForClosure = reasonValue
     }
   }
-
+  
+  /**
+   * Need to resolve the conflict manually and add the call to the clonable method here. 
+   */
+  @Override
+  public SubscriptionAgreement clone () {
+    Clonable.super.clone()
+  }
 }

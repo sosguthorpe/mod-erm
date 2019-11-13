@@ -2,12 +2,12 @@ package org.olf.erm
 
 import java.time.LocalDate
 
-import com.k_int.web.toolkit.refdata.RefdataValue
-
+import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 import groovy.util.logging.Slf4j
 
 @Slf4j
+@GrailsCompileStatic
 class Period implements MultiTenant<Period>  {
   
   String id
@@ -88,7 +88,7 @@ class Period implements MultiTenant<Period>  {
               (period.endDate == null || compareTo.startDate < period.endDate))
 
           if (overlapping) {
-            log ("failed period.overlap");
+            log.debug ("failed period.overlap");
             return [ 'period.overlap', period, compareTo ]
           }
         }
