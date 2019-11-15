@@ -1,0 +1,1 @@
+json g.render (template: '/public_api/agreement_license_v1', model: (binding.variables))

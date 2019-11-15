@@ -1,0 +1,31 @@
+import java.util.concurrent.Future
+
+import org.olf.erm.RemoteLicenseLink
+import org.olf.erm.SubscriptionAgreement
+
+import com.k_int.okapi.remote_resources.RemoteOkapiLinkListener
+
+import groovy.transform.Field
+
+@Field
+List<SubscriptionAgreement> subscriptionAgreementList
+
+if (subscriptionAgreementList) {
+  Map<String,Future> licenses = [:]
+  
+  // Preload any orgs and licenses...
+  final String licenseProperty = "remoteId${RemoteOkapiLinkListener.FETCHED_PROPERTY_SUFFIX}"
+  for (SubscriptionAgreement sa : subscriptionAgreementList) {
+    // Just access them for now.
+    for (RemoteLicenseLink li : sa.linkedLicenses) {
+      if (li.status.value == 'controlling') {
+        if(li.hasProperty(licenseProperty)){
+          licenses[li.id] = (li?.getAt(licenseProperty) as Future)
+        }
+      }
+    }
+  }
+  json tmpl.subscriptionAgreement_v1 (subscriptionAgreementList, ['licenses': licenses])
+} else {
+  json (Collections.emptySet())
+}

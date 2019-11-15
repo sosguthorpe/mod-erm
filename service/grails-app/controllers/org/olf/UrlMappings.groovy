@@ -24,8 +24,6 @@ class UrlMappings {
       "/export/current/$format?"  (controller: 'export', action: 'current', method: 'GET')
 //      "/export/future/$format?"   (controller: 'export', action: 'future', method: 'GET')
 //      "/export/dropped/$format?"  (controller: 'export', action: 'dropped', method: 'GET')
-      
-      '/clone' (controller: 'subscriptionAgreement', action: 'doClone', method: 'POST')
 	  
       '/linkedLicenses' {
         controller = 'remoteLicenseLink'
@@ -39,19 +37,22 @@ class UrlMappings {
   		  filters = { "owner==${params.subscriptionAgreementId}" }
   	  }
       
+      // Root level extensions
       collection {
+        '/publicLookup' (action: 'publicLookup', method: 'GET') {
+          perPage = { Math.min(params.int('perPage') ?: params.int('max') ?: 5, 5) }
+        }
+        
         '/linkedLicenses' {
           controller = 'remoteLicenseLink'
           method = 'GET'
         }
+        
+        '/usageDataProviders' {
+          controller = 'usageDataProvider'
+          method = 'GET'
+        }
       }
-	  
-      collection {
-  		  '/usageDataProviders' {
-  			  controller = 'usageDataProvider'
-  			  method = 'GET'
-  		  }
-  	  }
     }
 
     '/erm/titles'(resources: 'title') {

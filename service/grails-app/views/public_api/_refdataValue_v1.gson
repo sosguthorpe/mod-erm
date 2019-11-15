@@ -1,0 +1,10 @@
+import com.k_int.web.toolkit.refdata.RefdataValue
+import groovy.transform.Field
+
+@Field
+RefdataValue refdataValue
+
+json {
+  value refdataValue.value
+  label refdataValue.label
+}

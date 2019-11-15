@@ -1,8 +1,8 @@
 package org.olf
 
 import java.time.LocalDate
+import net.sf.json.JSONObject
 import org.hibernate.sql.JoinType
-import org.grails.web.json.JSONObject
 import org.olf.erm.SubscriptionAgreement
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
@@ -10,12 +10,11 @@ import org.olf.kb.Pkg
 import org.olf.kb.PlatformTitleInstance
 
 import com.k_int.okapi.OkapiTenantAwareController
-import grails.converters.JSON
+
 import grails.gorm.DetachedCriteria
 import grails.gorm.multitenancy.CurrentTenant
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import static org.springframework.http.HttpStatus.*
 
 
 /**
@@ -27,18 +26,168 @@ import static org.springframework.http.HttpStatus.*
 @CurrentTenant
 class SubscriptionAgreementController extends OkapiTenantAwareController<SubscriptionAgreement>  {
   
-  
   CoverageService coverageService
   
   SubscriptionAgreementController() {
     super(SubscriptionAgreement)
   }
   
+  
+  def publicLookup () {
+    final List<String> referenceIds = params.list('referenceId')
+    final List<String> resourceIds = params.list('resourceId')
+    final List<String> disjunctiveReferences = []
+    disjunctiveReferences += referenceIds.collect { String id ->
+      String[] parts = id.split(/\-/)
+      if (parts.length == 3) {
+        // assuming progressive ID and we should search for multiples
+        disjunctiveReferences << "${parts[0]}-${parts[1]}"
+      }
+      id
+    }
+    
+    final LocalDate today = LocalDate.now()
+    
+    respond (doTheLookup {
+      // Selectively join here to be more performant if we don't need to join.
+      if (resourceIds || disjunctiveReferences) {
+        createAlias 'items', 'direct_ent', (resourceIds && disjunctiveReferences ? JoinType.LEFT_OUTER_JOIN : JoinType.INNER_JOIN)
+      
+        or {
+          if (disjunctiveReferences) {
+            'in' 'direct_ent.reference', disjunctiveReferences
+          }
+          
+          if (resourceIds) {          
+            or {
+              
+               // Direct PTIs
+              'in' 'direct_ent.resource.id', new DetachedCriteria(PlatformTitleInstance).build {
+                
+                or {
+                  'in' 'id', resourceIds
+                  'in' 'titleInstance.id', resourceIds
+                }
+                
+                createAlias 'entitlements', 'direct_ent'
+                
+                  or {
+                    isNull 'direct_ent.activeFrom'
+                    le 'direct_ent.activeFrom', today
+                  }
+                  or {
+                    isNull 'direct_ent.activeTo'
+                    ge 'direct_ent.activeTo', today
+                  }
+                  
+                projections {
+                  property ('id')
+                }
+              }
+              
+              // Direct PCIs
+              'in' 'direct_ent.resource.id', new DetachedCriteria(PackageContentItem).build {
+                createAlias 'entitlements', 'direct_ent'
+                or {
+                  'in' 'id', resourceIds
+                  'in' 'pti.id', resourceIds
+                  'in' 'pti.id', new DetachedCriteria(PlatformTitleInstance).build {
+                    'in' 'titleInstance.id', resourceIds
+                    projections {
+                      property ('id')
+                    }
+                  }
+                }
+                or {
+                  isNull 'direct_ent.activeFrom'
+                  le 'direct_ent.activeFrom', today
+                }
+                or {
+                  isNull 'direct_ent.activeTo'
+                  ge 'direct_ent.activeTo', today
+                }
+                or {
+                  isNull 'accessStart'
+                  le 'accessStart', today
+                }
+                or {
+                  isNull 'accessEnd'
+                  ge 'accessEnd', today
+                }
+                  
+                projections {
+                  property ('id')
+                }
+              }
+              
+              // Pci linked via package.
+              'in' 'direct_ent.resource.id', new DetachedCriteria(Pkg).build {
+                createAlias 'entitlements', 'pkg_ent'
+                createAlias 'contentItems', 'pcis'
+                
+                or {
+                  'in' 'id', resourceIds
+                  'in' 'pcis.id', new DetachedCriteria(PackageContentItem).build {
+                
+                    or {
+                      'in' 'id', resourceIds
+                      'in' 'pti.id', resourceIds
+                      'in' 'pti.id', new DetachedCriteria(PlatformTitleInstance).build {
+                        'in' 'titleInstance.id', resourceIds
+                        projections {
+                          property ('id')
+                        }
+                      }
+                    }
+                    
+                    createAlias 'entitlements', 'direct_ent'
+                      or {
+                        isNull 'direct_ent.activeFrom'
+                        le 'direct_ent.activeFrom', today
+                      }
+                      or {
+                        isNull 'direct_ent.activeTo'
+                        ge 'direct_ent.activeTo', today
+                      }
+                      or {
+                        isNull 'accessStart'
+                        le 'accessStart', today
+                      }
+                      or {
+                        isNull 'accessEnd'
+                        ge 'accessEnd', today
+                      }
+                      
+                    projections {
+                      property ('id')
+                    }
+                  }
+                }
+                
+                or {
+                  isNull 'pkg_ent.activeFrom'
+                  le 'pkg_ent.activeFrom', today
+                }
+                or {
+                  isNull 'pkg_ent.activeTo'
+                  ge 'pkg_ent.activeTo', today
+                }
+                
+                projections {
+                  property ('id')
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+  } 
+  
   def resources () {
     
     final String subscriptionAgreementId = params.get("subscriptionAgreementId")
     if (subscriptionAgreementId) {
-        
       final def results = doTheLookup (ErmResource) {
         readOnly (true)
         or {
@@ -74,7 +223,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
             'in' 'pkg.id', new DetachedCriteria(Pkg).build {
               createAlias 'entitlements', 'pkg_ent'
                 eq 'pkg_ent.owner.id', subscriptionAgreementId
-
+                
               projections {
                 property ('id')
               }
@@ -92,7 +241,6 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       respond results
       return
     }
-      
   }
   
   def currentResources () {
@@ -181,6 +329,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
               isNull 'accessEnd'
               ge 'accessEnd', today
             }
+            
             projections {
               property ('id')
             }

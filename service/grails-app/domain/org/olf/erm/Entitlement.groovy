@@ -145,7 +145,7 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
     
     if (this.type == 'external') {
       // Clear the coverage.
-      this.coverage = []
+      this.coverage?.clear()
     }
   }
   

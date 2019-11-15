@@ -158,6 +158,15 @@ dataSource:
     defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED
     
 okapi:
+  linkListener:
+    allowedControllerActions:
+      subscriptionAgreement:
+        - show
+        - update
+        - save
+        - create
+        - publicLookup
+      
   schema:
     appName: 'mod-agreements'
   service:

@@ -12,6 +12,9 @@
           "permissionsRequired": [ "erm.agreements.collection.get" ]
         },{
           "methods": ["GET"],
+          "pathPattern": "/erm/sas/publicLookup"
+        },{
+          "methods": ["GET"],
           "pathPattern": "/erm/sas/{id}",
           "permissionsRequired": [ "erm.agreements.item.get" ]
         },{

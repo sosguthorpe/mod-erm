@@ -1,0 +1,15 @@
+import groovy.transform.Field
+import org.olf.erm.SubscriptionAgreement
+
+@Field
+List<SubscriptionAgreement> subscriptionAgreementList
+
+json {
+  header {
+    dataSchema {
+      name 'mod-agreements-license'
+      version 1.0
+    }
+  }
+  records g.render (template: 'subscriptionAgreementList_v1', model: ['subscriptionAgreementList': subscriptionAgreementList])
+}

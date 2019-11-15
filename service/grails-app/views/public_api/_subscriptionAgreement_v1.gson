@@ -1,0 +1,83 @@
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Future
+
+import org.olf.erm.RemoteLicenseLink
+import org.olf.erm.SubscriptionAgreement
+
+import groovy.transform.Field
+import groovyx.net.http.HttpException
+
+@Field
+SubscriptionAgreement subscriptionAgreement
+
+@Field
+Map<String,Future> licenses
+
+json {
+  id subscriptionAgreement.id
+  name subscriptionAgreement.name
+  startDate subscriptionAgreement.startDate
+  endDate subscriptionAgreement.endDate
+  isPerpetual subscriptionAgreement.isPerpetual ? g.render(template: 'refdataValue_v1', model: ['refdataValue': subscriptionAgreement.isPerpetual]) : null
+  agreementStatus subscriptionAgreement.agreementStatus ? g.render(template: 'refdataValue_v1', model: ['refdataValue': subscriptionAgreement.agreementStatus]) : null
+  linkedLicenses (subscriptionAgreement.linkedLicenses.findAll { it.status?.value == 'controlling' } ) { RemoteLicenseLink rll ->
+    
+    try {
+      final Map license = (licenses[rll.id]?.get()) as Map
+      if (license) {
+        status rll.status ? g.render(template: 'refdataValue_v1', model: ['refdataValue': rll.status]) : null
+        remoteId_object {
+          name license.name
+          final Map stat = license.status as Map
+          status stat ? {
+            value stat.value
+            label stat.label
+          } : null
+          description license.description
+          startDate license.startDate
+          endDate license.endDate
+          openEnded license.openEnded
+          
+          final Map<String, Iterable> terms = (license.customProperties as Map<String, Iterable>).collectEntries { final String key, final Iterable<Map> val ->
+            final Collection vals = val.findResults {
+              Map m = it as Map
+              if (m.internal == true) return null
+              
+              if (m.value instanceof Map) {
+                Map mVal = m.value as Map
+                mVal.remove('id')
+              }
+              
+              Map mType = m.type as Map
+              mType.with {
+                remove('type')
+                remove('defaultInternal')
+                remove('id')
+                remove('category')
+              }
+              m
+
+            }
+            if (!vals) return [:]
+            
+            [(key): (vals)]
+          } as Map<String, Iterable>
+          
+          customProperties g.render(terms ?: [:])
+        }
+      }
+      
+    } catch (ExecutionException e) {
+      if (e.cause instanceof HttpException) {
+        HttpException httpEx = e.cause as HttpException
+        error httpEx.statusCode
+        message httpEx.message
+      } else {
+        error e.class.name
+        message e.message
+      }
+    }
+  }
+  
+  
+}
