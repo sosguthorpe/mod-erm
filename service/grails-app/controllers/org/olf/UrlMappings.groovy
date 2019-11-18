@@ -25,6 +25,8 @@ class UrlMappings {
 //      "/export/future/$format?"   (controller: 'export', action: 'future', method: 'GET')
 //      "/export/dropped/$format?"  (controller: 'export', action: 'dropped', method: 'GET')
 	  
+      '/clone' (controller: 'subscriptionAgreement', action: 'doClone', method: 'POST')
+      
       '/linkedLicenses' {
         controller = 'remoteLicenseLink'
         method = 'GET'
