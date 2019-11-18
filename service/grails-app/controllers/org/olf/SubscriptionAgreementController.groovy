@@ -52,6 +52,30 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       // Selectively join here to be more performant if we don't need to join.
       if (resourceIds || disjunctiveReferences) {
         createAlias 'items', 'direct_ent', (resourceIds && disjunctiveReferences ? JoinType.LEFT_OUTER_JOIN : JoinType.INNER_JOIN)
+        
+        createAlias 'periods', 'per'
+        createAlias 'agreementStatus', 'status', JoinType.LEFT_OUTER_JOIN
+        createAlias 'reasonForClosure', 'reason', JoinType.LEFT_OUTER_JOIN
+        createAlias 'isPerpetual', 'perpetual', JoinType.LEFT_OUTER_JOIN
+        // Makes sure we use the dates on the period to only show relevant
+        or {
+          // Agreement Status == (Active OR Cancelled) AND Perpetual Access == Yes
+          and {
+            eq 'status.value', 'closed'
+            eq 'reason.value', 'cancelled'
+            eq 'perpetual.value', 'yes'
+          }
+          
+          // Agreement Status == Active AND agreement start date in the past AND (an end date in the future OR a blank end date)
+          and {
+            eq 'status.value', 'active'
+            le 'per.startDate', today
+            or {
+              isNull 'per.endDate'
+              ge 'per.endDate', today
+            }
+          }
+        }
       
         or {
           if (disjunctiveReferences) {
