@@ -50,6 +50,14 @@
           "pathPattern": "/erm/sas/{id}/resources/*",
           "permissionsRequired": [ "erm.agreements.item.resources.get" ]
         },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/sas/{id}/resources/export",
+          "permissionsRequired": [ "erm.agreements.export" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/sas/{id}/resources/export/*",
+          "permissionsRequired": [ "erm.agreements.export" ]
+        },{
           "methods": ["POST"],
           "pathPattern": "/erm/sas",
           "permissionsRequired": [ "erm.agreements.item.post" ]

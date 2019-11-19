@@ -48,4 +48,8 @@ json g.render(subscriptionAgreement, [expand: should_expand]) {
   startDate subscriptionAgreement.startDate
   endDate subscriptionAgreement.endDate
   cancellationDeadline subscriptionAgreement.cancellationDeadline
+
+  if (actionName.toLowerCase() == 'export' && subscriptionAgreement.respondsTo('getResourceList')) {
+    resources (g.render (template: '/export/results', model: [resources: (subscriptionAgreement.invokeMethod('getResourceList', null) ?: [])]))
+  }
 }

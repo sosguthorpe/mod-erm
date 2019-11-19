@@ -29,6 +29,7 @@ import static org.springframework.http.HttpStatus.*
 class SubscriptionAgreementController extends OkapiTenantAwareController<SubscriptionAgreement>  {
   
   CoverageService coverageService
+  ExportService exportService
   
   SubscriptionAgreementController() {
     super(SubscriptionAgreement)
@@ -592,6 +593,15 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       return
     }
     
+    respond ([statusCode: 404])
+  }
+  
+  def export () {
+    final String subscriptionAgreementId = params.get("subscriptionAgreementId")
+    if (subscriptionAgreementId) {
+      respond exportService.agreement(subscriptionAgreementId, params.boolean("current") ?: false)
+      return
+    }
     respond ([statusCode: 404])
   }
 }

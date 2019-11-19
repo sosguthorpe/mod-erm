@@ -20,10 +20,15 @@ class UrlMappings {
       "/resources/future"     (action: 'futureResources', method: 'GET')
       "/resources/dropped"    (action: 'droppedResources', method: 'GET')
 
-      "/export/$format?"          (controller: 'export', method: 'GET')
-      "/export/current/$format?"  (controller: 'export', action: 'current', method: 'GET')
-//      "/export/future/$format?"   (controller: 'export', action: 'future', method: 'GET')
-//      "/export/dropped/$format?"  (controller: 'export', action: 'dropped', method: 'GET')
+      "/resources/export/$format?"          (controller: 'export', method: 'GET')
+      "/resources/export/current/$format?"  (controller: 'export', action: 'current', method: 'GET')
+//      "/resources/export/future/$format?"   (controller: 'export', action: 'future', method: 'GET')
+//      "/resources/export/dropped/$format?"  (controller: 'export', action: 'dropped', method: 'GET')
+      
+      "/export"          (action: 'export', method: 'GET')
+      "/export/current"  (action: 'export', method: 'GET') {
+        current = true
+      }
 	  
       '/clone' (controller: 'subscriptionAgreement', action: 'doClone', method: 'POST')
       

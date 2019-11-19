@@ -7,22 +7,37 @@ import grails.gorm.DetachedCriteria
 import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
 import java.time.LocalDate
-import grails.gorm.transactions.Transactional 
+import grails.gorm.transactions.Transactional
+import org.grails.datastore.gorm.GormStaticApi
 import org.hibernate.Hibernate
 import org.hibernate.sql.JoinType
 import grails.converters.JSON
-
-
-
+import org.olf.erm.SubscriptionAgreement
 import org.olf.export.KBart
 import org.olf.export.KBartExport
 
 /**
- * 
+ * Service for exporting resources.
  */
-@Transactional
+@Transactional(readOnly=true)
 public class ExportService {
   CoverageService coverageService
+  
+  SubscriptionAgreement agreement (final String agreementId, boolean currentOnly = false) {
+    SubscriptionAgreement agreement = SubscriptionAgreement.read (agreementId)
+    if (agreement) {
+      // Add the extra resources here.
+      if (currentOnly) {
+        agreement.metaClass.getResourceList = { current(agreement.id) }
+        // Only current resources.
+      } else {
+        // all.
+        agreement.metaClass.getResourceList = { all(agreement.id) }
+      }
+    }
+    
+    agreement
+  }
    
   List<ErmResource> all(final String agreementId = null) {
     def results = null
@@ -75,8 +90,8 @@ public class ExportService {
     // The first entitlement will be present if this is a PCI resource and it associated through a 
     // package and the second will be present if this resource was directly associated to an entitlement. 
     // This means that can/will get multiple entries for the same resource if there are multiple 
-    // packages, or if the resources is associated directly and also through a packge to an 
-    // agreement. This behaviour is actually desirable for the export. 
+    // packages, or if the resources is associated directly and also through a package to an 
+    // agreement. This behaviour is actually desirable for the export.
       
     // This method writes to the web request if there is one (which of course there should be as we are in a controller method)
     coverageService.lookupCoverageOverrides(results.collect{it[0]}) 
