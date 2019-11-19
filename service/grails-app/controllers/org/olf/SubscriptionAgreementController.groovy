@@ -16,6 +16,8 @@ import grails.gorm.multitenancy.CurrentTenant
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
+import static org.springframework.http.HttpStatus.*
+
 
 /**
  * Control access to subscription agreements.
