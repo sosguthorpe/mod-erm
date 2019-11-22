@@ -27,7 +27,7 @@ class UrlMappings {
       
       "/export"          (action: 'export', method: 'GET')
       "/export/current"  (action: 'export', method: 'GET') {
-        current = true
+        currentOnly = true
       }
 	  
       '/clone' (controller: 'subscriptionAgreement', action: 'doClone', method: 'POST')
