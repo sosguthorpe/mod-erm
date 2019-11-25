@@ -21,10 +21,20 @@ spring:
             check-template-location: false
 
 # Spring Actuator Endpoints are Disabled by Default
+management:
+  context-path: '/admin'
+
 endpoints:
     enabled: false
     jmx:
-        enabled: true
+      exposure:
+        exclude: "*"
+    web:
+      exposure:
+        include:
+          - health
+    health:
+      enabled: true
 
 ---
 grails:
