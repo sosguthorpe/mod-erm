@@ -18,7 +18,7 @@ RemoteKB gokb_test = RemoteKB.findByName('GOKb_TEST') ?: new RemoteKB(
     active:Boolean.TRUE,
     supportsHarvesting:true,
     activationEnabled:false
-).save(failOnError:true)
+).save(flush:true, failOnError:true)
 
 //RemoteKB ebsco_live = RemoteKB.findByName('EBSCO_LIVE') ?: new RemoteKB(
 //    name:'EBSCO_LIVE',
