@@ -35,7 +35,7 @@ apply plugin:"jacoco"
 
 eclipse {
   classpath {
-    defaultOutputDir = file('bin')
+    defaultOutputDir = file('bin').canonicalFile
   }
 }
 

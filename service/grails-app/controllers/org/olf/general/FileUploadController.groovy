@@ -40,9 +40,11 @@ class FileUploadController extends OkapiTenantAwareController<FileUpload> {
 
     respond fileUpload, [status: CREATED]
   }
-
+  
+  @Transactional(readOnly=true)
   def downloadFile() {
-    FileUpload fileUpload = fileUploadService.get(params.fileUploadId)
+    FileUpload fileUpload = FileUpload.read(params.fileUploadId)
+    
     render file: fileUpload.fileObject.fileContents.binaryStream, contentType: fileUpload.fileContentType
   }
 }
