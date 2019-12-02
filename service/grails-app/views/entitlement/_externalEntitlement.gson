@@ -39,6 +39,12 @@ json {
   'contentUpdated' entitlement.getContentUpdated()
   'haveAccess' entitlement.getHaveAccess()
   
+  'owner' g.render(entitlement.owner)
+  
+  if (entitlement.poLines) {
+    'poLines' g.render (entitlement.poLines)
+  }
+
   if (entitlement.hasProperty('external_customCoverage')) {
     'customCoverage' entitlement.getAt('external_customCoverage')
   }
