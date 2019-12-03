@@ -39,7 +39,7 @@ json {
   'contentUpdated' entitlement.getContentUpdated()
   'haveAccess' entitlement.getHaveAccess()
   
-  'owner' g.render(entitlement.owner)
+  'owner' g.render(entitlement.owner, [includes: ['id']])
   
   if (entitlement.poLines) {
     'poLines' g.render (entitlement.poLines)
