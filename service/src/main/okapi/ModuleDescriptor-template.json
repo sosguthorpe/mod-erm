@@ -12,7 +12,8 @@
           "permissionsRequired": [ "erm.agreements.collection.get" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/sas/publicLookup"
+          "pathPattern": "/erm/sas/publicLookup",
+          "modulePermissions": [ "licenses.licenses.item.get" ]
         },{
           "methods": ["GET"],
           "pathPattern": "/erm/sas/{id}",
@@ -451,7 +452,7 @@
     },
     "dockerPull" : false,
     "env": [
-      { "name": "JAVA_OPTIONS", "value": "-server -Xmx384M -XX:+PrintFlagsFinal" },
+      { "name": "JAVA_OPTIONS", "value": "-server -XX:+UseContainerSupport -XX:MaxRAMPercentage=50.0 -XX:+PrintFlagsFinal" },
       { "name": "DB_HOST", "value": "postgres" },
       { "name": "DB_PORT", "value": "5432" },
       { "name": "DB_USERNAME", "value": "folio_admin" },
