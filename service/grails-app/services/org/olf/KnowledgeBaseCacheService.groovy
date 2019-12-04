@@ -1,20 +1,18 @@
-package org.olf;
+package org.olf
 
-import grails.gorm.multitenancy.Tenants;
-import grails.gorm.transactions.Transactional
-import org.olf.kb.RemoteKB;
-import org.olf.kb.KBCacheUpdater;
-import org.olf.kb.PlatformTitleInstance
-import org.olf.kb.ContentActivationRecord
 import org.olf.dataimport.internal.PackageSchema
 import org.olf.erm.Entitlement
+import org.olf.kb.ContentActivationRecord
+import org.olf.kb.KBCache
+import org.olf.kb.KBCacheUpdater
+import org.olf.kb.PlatformTitleInstance
+import org.olf.kb.RemoteKB
 import org.springframework.transaction.TransactionDefinition
 
 /**
  * This service works at the module level, it's often called without a tenant context.
  */
-@Transactional
-public class KnowledgeBaseCacheService implements org.olf.kb.KBCache {
+public class KnowledgeBaseCacheService implements KBCache {
 
   PackageIngestService packageIngestService
 
@@ -35,29 +33,27 @@ where ( exists ( select pci.id
 
 
   public void triggerCacheUpdate() {
-    log.debug("KnowledgeBaseCacheService::triggerCacheUpdate()");
+    log.debug("KnowledgeBaseCacheService::triggerCacheUpdate()")
 
   }
 
   public void runSync(String remotekb_id) {
-    log.debug("KnowledgeBaseCacheService::runSync(${remotekb_id})");
-    // Even though we just need a read-only connection, we still need to wrap this block
-    // with withNewTransaction because of https://hibernate.atlassian.net/browse/HHH-7421
-    RemoteKB.withNewTransaction {
-      RemoteKB rkb = RemoteKB.read(remotekb_id) 
-      if ( rkb ) {
-        log.debug("Run remote kb sync:: ${rkb.id}/${rkb.name}/${rkb.uri}");
-        Class cls = Class.forName(rkb.type)
-        KBCacheUpdater cache_updater = cls.newInstance();
-        cache_updater.freshenPackageData(rkb.name, rkb.uri, rkb.cursor, this)
-      }
+    log.debug("KnowledgeBaseCacheService::runSync(${remotekb_id})")
+    RemoteKB rkb = RemoteKB.read(remotekb_id) 
+    if ( rkb ) {
+      log.debug("Run remote kb sync:: ${rkb.id}/${rkb.name}/${rkb.uri}")
+      Class cls = Class.forName(rkb.type)
+      KBCacheUpdater cache_updater = cls.newInstance()
+      cache_updater.freshenPackageData(rkb.name, rkb.uri, rkb.cursor, this)
     }
   }
 
   public void updateCursor(String rkb_name, String cursor) {
-    log.debug("KnowledgeBaseCacheService::updateCursor(${rkb_name},${cursor})");
+    log.debug("KnowledgeBaseCacheService::updateCursor(${rkb_name},${cursor})")
     RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
-      RemoteKB.executeUpdate('update RemoteKB rkb set rkb.cursor = :n where rkb.name = :name',[n:cursor, name:rkb_name]);
+      RemoteKB rkb = RemoteKB.findByName(rkb_name)
+      rkb.cursor = cursor
+      rkb.save(failOnError:true, flush: true)
     }
   }
 
@@ -79,14 +75,14 @@ where ( exists ( select pci.id
    *  @return map containing information about the packageId of the newly loaded or existing updated package
    */
   public Map onPackageChange(String rkb_name, PackageSchema package_data) {
-    Map result = null;
+    Map result = null
     RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
-      log.debug("onPackageChange(${rkb_name},...)");
-      result = packageIngestService.upsertPackage(package_data, rkb_name);
+      log.debug("onPackageChange(${rkb_name},...)")
+      result = packageIngestService.upsertPackage(package_data, rkb_name)
     }
-    log.debug("onPackageChange(${rkb_name},...) returning ${result}");
+    log.debug("onPackageChange(${rkb_name},...) returning ${result}")
 
-    return result;
+    return result
   }
 
   /**
@@ -95,7 +91,7 @@ where ( exists ( select pci.id
   public void onPackageRemoved(String rkb_name,
                                String authority,
                                String authority_id_of_package) {
-    log.debug("onPackageRemoved(${rkb_name},${authority}, ${authority_id_of_package})");
+    log.debug("onPackageRemoved(${rkb_name},${authority}, ${authority_id_of_package})")
   }
 
 
@@ -106,30 +102,30 @@ where ( exists ( select pci.id
 
     Map<String, KBCacheUpdater> adapter_cache = [:]
 
-    log.debug("KnowledgeBaseCacheService::triggerActivationUpdate()");
-    int activation_count = 0;
+    log.debug("KnowledgeBaseCacheService::triggerActivationUpdate()")
+    int activation_count = 0
     RemoteKB.executeQuery(PLATFORM_TITLES_QUERY).each { qr ->
-      log.debug("Content Activation: ${qr}");
+      log.debug("Content Activation: ${qr}")
       PlatformTitleInstance pti = qr[0]
       RemoteKB rkb = qr[1]
       Entitlement ent = qr[2]
 
-      def adapter = getAdapter(adapter_cache, rkb);
+      def adapter = getAdapter(adapter_cache, rkb)
       
       if ( adapter.activate([pti:pti, ent:ent], this) ) {
-        log.debug("Activation OK - create CAR");
+        log.debug("Activation OK - create CAR")
         def car = new ContentActivationRecord(dateActivation:new Date(),
                                               dateDeactivation:null,
                                               target: rkb,
-                                              pti: pti).save(flush:true, failOnError:true);
+                                              pti: pti).save(flush:true, failOnError:true)
       }
       else {
-        log.debug("Activation Failed - no CAR");
+        log.debug("Activation Failed - no CAR")
       }
-      activation_count++;
+      activation_count++
     }
 
-    log.debug("triggerActivationUpdate() - ${activation_count} activations");
+    log.debug("triggerActivationUpdate() - ${activation_count} activations")
 
     return
   }
@@ -138,9 +134,9 @@ where ( exists ( select pci.id
     KBCacheUpdater result = m[rkb.type]
     if ( result == null ) {
       Class cls = Class.forName(rkb.type)
-      result = cls.newInstance();
-      m[rkb.type] = result;
+      result = cls.newInstance()
+      m[rkb.type] = result
     }
-    return result;
+    return result
   }
 }

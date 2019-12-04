@@ -216,9 +216,6 @@ environments:
         host: localhost
         port: 9130
 
-        register: true
-        deploy: true
-
 # Set useModVendors to true if you are running in a full FOLIO stack and wish to coordinate
 # Agreement vendors (And anywhere else we link to vendors) with records in mod-vendors
 # useModVendors: false

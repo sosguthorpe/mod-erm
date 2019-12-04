@@ -13,7 +13,6 @@ import com.k_int.okapi.OkapiTenantResolver
 
 import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.Tenants
-import grails.gorm.transactions.Transactional
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 
@@ -48,13 +47,6 @@ where rkb.type is not null
     triggerUpdateForTenant(schemaName)
   }
 
-//  @Subscriber('okapi:tenant_enabled')
-//  public void onTenantEnabled (final String tenant_id) {
-//    log.debug "Perform trigger sync for new tenant ${tenant_id} via new tenant event"
-//    final String schemaName = OkapiTenantResolver.getTenantSchemaName(tenant_id)
-//    triggerUpdateForTenant(schemaName)
-//  }
-
   @CompileStatic(SKIP)
   private void triggerUpdateForTenant(final String tenant_schema_id) {
     Tenants.withId(tenant_schema_id) {
@@ -87,72 +79,55 @@ where rkb.type is not null
 
   @CompileStatic(SKIP)
   public void triggerCacheUpdate() {
-    log.debug("KBHarvestService::triggerCacheUpdate()");
+    log.debug("KBHarvestService::triggerCacheUpdate()")
 
     // List all pending jobs that are eligible for processing - That is everything enabled and not currently in-process and has not been processed in the last hour
     RemoteKB.executeQuery(PENDING_JOBS_HQL,['true':true,'inprocess':'in-process','current_time':System.currentTimeMillis()],[lock:false]).each { remotekb_id ->
 
       // We will check each candidate job to see if it has been picked up by some other thread or load balanced
       // instance of mod-agreements. We assume it has
-      boolean continue_processing = false;
+      boolean continue_processing = false
 
       // Lock the actual RemoteKB record so that nobody else can grab it for processing
-      RemoteKB.withNewTransaction {
+      RemoteKB.withNewSession {
 
         // Get hold of the actual job, lock it, and if it's still not in process, set it's status to in-process
-        RemoteKB rkb = RemoteKB.lock(remotekb_id);
+        RemoteKB rkb = RemoteKB.lock(remotekb_id)
 
         // Now that we hold the lock, we can checm again to see if it's in-process
         if ( rkb.syncStatus != 'in-process' ) {
           // Set it to in-process, and continue
-          rkb.syncStatus = 'in-process';
-          continue_processing = true;
+          rkb.syncStatus = 'in-process'
+          continue_processing = true
         }
 
         // Save and close the transaction, removing the lock
-        rkb.save(flush:true, failOnError:true);
+        rkb.save(flush:true, failOnError:true)
       }
 
       // If we managed to grab a remote kb and update it to in-process, we had better process it
       if ( continue_processing ) {
-        log.debug("Run sync on ${remotekb_id}");
+        log.debug("Run sync on ${remotekb_id}")
         try {
           // Even though we just need a read-only connection, we still need to wrap this block
           // with withNewTransaction because of https://hibernate.atlassian.net/browse/HHH-7421
-          RemoteKB.withNewTransaction {
-            knowledgeBaseCacheService.runSync((String)remotekb_id);
-          }
+          knowledgeBaseCacheService.runSync((String)remotekb_id)
         }
         catch ( Exception e ) {
-          log.warn("problem processing remote KB link",e);
+          log.warn("problem processing remote KB link",e)
         }
         finally {
           // Finally, set the state to idle
-          RemoteKB.withNewTransaction {
-            RemoteKB rkb = RemoteKB.lock(remotekb_id);
+          RemoteKB.withNewSession {
+            RemoteKB rkb = RemoteKB.lock(remotekb_id)
 
             rkb.syncStatus = 'idle'
-            rkb.lastCheck = System.currentTimeMillis();
+            rkb.lastCheck = System.currentTimeMillis()
             rkb.save(flush:true, failOnError:true)
           }
         }
       }
     }
-    log.debug("KbHarvestService::triggerCacheUpdate() completed");
+    log.debug("KbHarvestService::triggerCacheUpdate() completed")
   }
-
-
-
-  // @CompileDynamic
-  // Date startAtDate() {
-  //   Date startAt = new Date()
-  //   use(TimeCategory) {
-  //     startAt = startAt + 1.minute
-  //   }
-  //   startAt
-  // }
-
-  // void scheduleFollowupEmail(String email, String message) {
-    // threadPoolTaskScheduler.schedule(new EmailTask(emailService, email, message), startAtDate())
-  // }
 }
