@@ -1,3 +1,46 @@
+## 2.0.0 2019-12-04
+ * ERM-621 License terms not included in Agreement JSON export
+ * ERM-614 rkb_cursor reset after harvest completed
+ * ERM-583 Use JVM features to manage container memory
+ * ERM-561 GOKb harvest job ends in failure
+ * ERM-552 Clone endpoint clones properties that are omitted/set to false
+ * ERM-546 Interpret <status> element on GOKb TIPP
+ * ERM-538 Support health check endpoint (for example /admin/health provided by RMB)
+ * ERM-536 mod-agreements Re-assess the container Memory allocation in default LaunchDescriptor
+ * ERM-515 Agreements | Handling removed/deleted resources
+ * ERM-508 Support multiple POLs on a single Agreement Line
+ * ERM-505 Move test data so it's only active for the diku tenant only
+ * ERM-500 reasonForClosure Field is not cleared
+ * ERM-498 Modify KB Local admin to improve the retrieval and display of logs
+ * ERM-477 License and agreement APIs are not protected by FOLIO permissions
+   * ERM-479 Add permission definitions and api endpoint config
+ * ERM-465 Close an Agreement
+   * ERM-483 Migrate agreement status "Rejected" to 'Reason for closure'
+ * ERM-462 Agreement | Export resources covered by this agreement gives error
+ * ERM-457 Use Agreement Line active from/active to dates when calculating current/expected/previous content of agreement
+ * ERM-443	Remove "existing coverage statements overlapping" messages from info log
+ * ERM-440 KB Local Admin | Titles not searchable/viewable after file upload
+ * ERM-419 Duplicate refdata entries in folio builds
+ * ERM-418 Duplicate titles in KBART export
+ * ERM-396 Viewing upcoming joiners/leavers for a package
+ * ERM-395 Populate access start and access end dates
+ * ERM-394 Viewing only current content of package in UI
+   * ERM-407 Ensure "E-resources in package" concertina only includes resources currently part of the package
+   * ERM-406 Ensure Agreement resources export only includes resources currently part of the package
+ * ERM-393 Reporting change to the date a resource joined/date left package
+   * ERM-401 Local KB Admin | Add info logging for number of titles where access_start updated
+   * ERM-400 Local KB Admin | Add info logging for number of titles where access_end updated
+ * ERM-392 Reporting change in title count in a package
+ * ERM-377 entitlementOptions endpoint is too slow
+ * ERM-376 Export full Agreement as JSON
+ * ERM-362 Issue with calling install?purge=true option multiple times
+ * ERM-349 Create New Local KB Import - backend work
+ * ERM-338 Log import/sync errors on package import
+ * ERM-315 Linking PO Line to an agreement line for an eHolding resource fails
+ * ERM-297 File attachment over 10MB causes out of memory errors
+ * ERM-285 Entitlement Options endpoint throws a 500 Error
+ * ERM-182 On sync with remote KB, keep TIPPs where coverage data is incompatible 
+
 ## 1.8.0 2019-09-11
  * ERM-440 KB Local Admin | Titles not searchable/viewable after file upload
  * ERM-349 Create New Local KB Import - backend work
