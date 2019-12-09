@@ -43,6 +43,9 @@ json {
               Map m = it as Map
               if (m.internal == true) return null
               
+              // Remove the private note field.
+              m.remove('note')
+              
               if (m.value instanceof Map) {
                 Map mVal = m.value as Map
                 mVal.remove('id')

@@ -11,4 +11,4 @@ if (params.controller == 'usageDataProvider' ) {
   should_expand << 'owner'
 }
 
-json g.render(usageDataProvider, ['excludes': ['id', 'version'], 'expand':should_expand])
+json g.render(usageDataProvider, ['excludes': ['id', 'version', 'remoteId'], 'expand':should_expand])

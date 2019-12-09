@@ -545,7 +545,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
     'agreementInfo': ['name', 'description', 'renewalPriority' , 'isPerpetual'],
     'internalContacts': ['contacts'],
     'agreementLines': ['items'], // Do not copy poLine. Need to also duplicate coverage
-//    'linkedLicenses': ['linkedLicenses'],
+    'linkedLicenses': ['linkedLicenses', 'licenseNote'],
     'externalLicenses': ['externalLicenseDocs'],
     'organizations': ['orgs'],
     'supplementaryInformation': ['supplementaryDocs'],

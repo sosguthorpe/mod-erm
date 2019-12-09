@@ -13,6 +13,7 @@ import grails.gorm.MultiTenant
 public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<RemoteLicenseLink>, Clonable<RemoteLicenseLink> {
   
   static transients = ['applicableAmendmentParams']
+  static copyByCloning = ['amendments']
   
   @Defaults(['Controlling', 'Future', 'Historical'])
   RefdataValue status

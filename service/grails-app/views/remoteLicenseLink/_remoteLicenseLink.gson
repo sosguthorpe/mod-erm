@@ -11,4 +11,4 @@ if (params.controller == 'remoteLicenseLink' ) {
   should_expand << 'owner'
 }
 
-json g.render(remoteLicenseLink, ['excludes': ['id', 'remoteId', 'version'], 'expand':should_expand])
+json g.render(remoteLicenseLink, ['excludes': ['id', 'version', 'remoteId'], 'expand':should_expand])
