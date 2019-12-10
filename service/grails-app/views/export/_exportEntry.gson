@@ -5,11 +5,11 @@ import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.TitleInstance
 import org.olf.kb.Platform
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 
 final Object[] tuple = binding.variables.values()[0]
-
 boolean via_package = false
-final ErmResource resource = tuple[0] as ErmResource
+final ErmResource resource = GrailsHibernateUtil.unwrapIfProxy(tuple[0]) as ErmResource
 Entitlement ent
 TitleInstance ti
 Platform the_platform
@@ -18,9 +18,9 @@ String the_note
 String the_url
 
 switch (resource) {
-  case { it instanceof PackageContentItem}:
+  case { it instanceof PackageContentItem }:
     via_package = tuple[1]
-    ent = (via_package ? tuple[1] : tuple[2]) as Entitlement
+    ent = GrailsHibernateUtil.unwrapIfProxy(via_package ? tuple[1] : tuple[2]) as Entitlement
     ti = ((PackageContentItem)resource).pti.titleInstance
     the_platform = ((PackageContentItem)resource).pti.platform
     the_url = ((PackageContentItem)resource).pti.url
@@ -28,17 +28,18 @@ switch (resource) {
     the_depth = ((PackageContentItem)resource).depth
     the_note = ((PackageContentItem)resource).note
     break
-  case { it instanceof PlatformTitleInstance}:
+  case { it instanceof PlatformTitleInstance }:
     ti = ((PlatformTitleInstance)resource).titleInstance
     the_platform = ((PlatformTitleInstance)resource).platform
     the_url = ((PlatformTitleInstance)resource).url
+    break
     
   case { it instanceof TitleInstance}:
     ti = resource as TitleInstance
   
     // These resources can only be directly associated.
     via_package = false
-    ent = tuple[2] as Entitlement
+    ent = GrailsHibernateUtil.unwrapIfProxy(tuple[2]) as Entitlement
     break
 }
 
