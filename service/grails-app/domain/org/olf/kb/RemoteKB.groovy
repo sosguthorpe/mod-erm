@@ -64,7 +64,7 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
   }
 
   static constraints = {
-                   name(nullable:false, blank:false)
+                   name(nullable:false, blank:false, unique:true)
                  cursor(nullable:true, blank:false)
                     uri(nullable:true, blank:false)
                    type(nullable:true, blank:false)
