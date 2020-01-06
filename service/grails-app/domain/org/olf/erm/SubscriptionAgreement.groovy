@@ -106,7 +106,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
       }
       
       currentPeriod = periods.find { Period p ->
-        startDate <= ld && (endDate == null || endDate >= ld)
+        p.startDate <= ld && (p.endDate == null || p.endDate >= ld)
       }
     }
     currentPeriod
