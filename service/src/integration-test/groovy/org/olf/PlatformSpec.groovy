@@ -1,10 +1,8 @@
 package org.olf
 
 import org.olf.kb.Platform
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
-import com.k_int.okapi.OkapiHeaders
+import com.k_int.okapi.OkapiTenantResolver
 
 import grails.gorm.multitenancy.Tenants
 import grails.testing.mixin.integration.Integration
@@ -14,19 +12,17 @@ import spock.lang.*
 @Stepwise
 class PlatformSpec extends BaseSpec {
 
-  final static Logger log = LoggerFactory.getLogger(PlatformSpec.class)
-
-  void "Test Platform creation" ( final String platformUrl, final String name ) {
-    final String tenantid = currentTenant
-    when:
-      setHeaders((OkapiHeaders.TENANT): tenantid)
+  @Unroll
+  void "Test Platform #name creation" ( final String platformUrl, final String name ) {
+    final String tenantid = currentTenant.toLowerCase()
+    when: 'Resolve platform from url #platformUrl'
     
-      def platform = null;
-      Tenants.withId(tenantid + '_olf_erm') {
+      def platform = null
+      Tenants.withId(OkapiTenantResolver.getTenantSchemaName( tenantid )) {
         platform = Platform.resolve(platformUrl)
       }
 
-    then:
+    then: 'Name is #name'
       platform.name == name
 
     where:

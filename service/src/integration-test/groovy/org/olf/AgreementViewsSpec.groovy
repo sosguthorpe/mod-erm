@@ -1,16 +1,13 @@
 package org.olf
 
 import java.time.LocalDate
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
 import grails.testing.mixin.integration.Integration
 import spock.lang.*
 
-@Integration
 @Stepwise
-class AgreementViews extends BaseSpec {
-
-  Logger log = LoggerFactory.getLogger(AgreementViews)
+@Integration
+class AgreementViewsSpec extends BaseSpec {
   
   @Shared
   String pkg_id
@@ -18,8 +15,11 @@ class AgreementViews extends BaseSpec {
   @Shared
   String agg_id
   
+  @Shared
+  int thisYear = LocalDate.now().year
+  
   def 'Ingest a test package' () {
-    
+      
     when: 'Testing package added'
       doPost('/erm/packages/import') {
         header {
@@ -39,11 +39,11 @@ class AgreementViews extends BaseSpec {
             contentItems ([
               {
                 depth "fulltext"
-                accessStart "2011-01-01"
-                accessEnd "2018-12-31"
+                accessStart "${thisYear - 8}-01-01"
+                accessEnd "${thisYear - 1}-12-31"
                 coverage ([
                   {
-                    startDate "2018-04-01"
+                    startDate "${thisYear - 1}-04-01"
                     startVolume "1"
                     startIssue "1"
                   }
@@ -70,10 +70,10 @@ class AgreementViews extends BaseSpec {
               },
               {
                 depth "fulltext"
-                accessStart "2011-01-01"
+                accessStart "${thisYear - 8}-01-01"
                 coverage ([
                   {
-                    startDate "2017-01-01"
+                    startDate "${thisYear - 2}-01-01"
                     startVolume "1"
                     startIssue "1"
                   }
@@ -100,10 +100,10 @@ class AgreementViews extends BaseSpec {
               },
               {
                 depth "fulltext"
-                accessEnd "2018-12-31"
+                accessEnd "${thisYear - 1}-12-31"
                 coverage ([
                   {
-                    startDate "2000-02-01"
+                    startDate "${thisYear - 9}-02-01"
                     startVolume "27"
                     startIssue "1"
                   }
@@ -130,10 +130,10 @@ class AgreementViews extends BaseSpec {
               },
               {
                 depth "fulltext"
-                accessStart "2025-01-01"
+                accessStart "${thisYear + 6}-01-01"
                 coverage ([
                   {
-                    startDate "2015-01-01"
+                    startDate "${thisYear - 4}-01-01"
                     startVolume "33"
                   }
                 ])
@@ -166,7 +166,7 @@ class AgreementViews extends BaseSpec {
       pkg_id = resp[0].id
       
     then: 'Expect package found'
-      assert (pkg_id = resp.getAt(0)?.id) != null
+      assert pkg_id != null
       assert resp?.getAt(0)?.name == 'access_start_access_end_tests Package'
   }
   
@@ -183,10 +183,11 @@ class AgreementViews extends BaseSpec {
           'resource' pkg_id
         }])
         name 'Test agreement'
+        agreementStatus 'Active'
       }
-      
+      agg_id = httpResult?.id
     then: 'Agreement added'
-      assert (agg_id = httpResult?.id) != null
+      assert agg_id != null
       assert (httpResult?.items?.size() ?: 0) == 1
   }
   
@@ -245,15 +246,15 @@ class AgreementViews extends BaseSpec {
      assert nevers_not_seen.size() == (expected['never']?.size() ?: 0)
     
     where:
-      agreement_line_start | agreement_line_end
-      '2007-01-01'         | '2009-12-31'
-      '2007-01-01'         | '2012-12-31'
-      '2019-01-01'         | '2020-12-31'
-      '2006-01-01'         | '2020-12-31'
-      '2006-01-01'         | '2030-12-31'
-      '2020-01-01'         | '2030-12-31'
-      null                 | '2030-12-31'
-      '2007-01-01'         | null
+      agreement_line_start        | agreement_line_end
+      "${thisYear - 12}-01-01"    | "${thisYear - 10}-12-31"
+      "${thisYear - 12}-01-01"    | "${thisYear - 7}-12-31"
+      "${thisYear}-01-01"         | "${thisYear + 1}-12-31"
+      "${thisYear - 13}-01-01"    | "${thisYear + 1}-12-31"
+      "${thisYear - 13}-01-01"    | "${thisYear + 11}-12-31"
+      "${thisYear + 1}-01-01"     | "${thisYear + 11}-12-31"
+      null                        | "${thisYear + 11}-12-31"
+      "${thisYear - 12}-01-01"    | null
       
       expected << [[
         never: ['Afghanistan', 'Archaeological and Environmental Forensic Science', 'Bethlehem University Journal'],

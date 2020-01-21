@@ -3,12 +3,10 @@ package org.olf
 import java.time.LocalDate
 
 import grails.testing.mixin.integration.Integration
-import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpException
 import spock.lang.Shared
 import spock.lang.Stepwise
 
-@Slf4j
 @Integration
 @Stepwise
 class AgreementRelationshipsSpec extends BaseSpec {
@@ -20,10 +18,11 @@ class AgreementRelationshipsSpec extends BaseSpec {
   void 'Check relationship types present' () {
     given: 'Get types'
       List httpResult = doGet('/erm/refdata/AgreementRelationship/type')
-    
+      type_value = httpResult[0].value
     expect: 'Types returned'
+      
       assert (httpResult ?: []).size() > 0
-      assert (type_value = httpResult[0].value) != null
+      assert type_value != null
   }
   
 
@@ -33,6 +32,7 @@ class AgreementRelationshipsSpec extends BaseSpec {
     
     when: 'Post simple agreement'
       Map httpResult = doPost('/erm/sas') {
+        agreementStatus 'Active'
         periods ([{
           startDate today.toString()
           endDate tomorrow.toString()
@@ -47,6 +47,7 @@ class AgreementRelationshipsSpec extends BaseSpec {
     when: 'Post another simple agreement with outward relationship'
       httpResult = doPost('/erm/sas') {
         name 'Agreement 2'
+        agreementStatus 'Active'
         periods ([{
           startDate today.plusDays(2).toString()
           endDate tomorrow.plusDays(2).toString()

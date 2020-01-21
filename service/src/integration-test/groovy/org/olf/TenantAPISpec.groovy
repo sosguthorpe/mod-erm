@@ -1,7 +1,5 @@
 package org.olf
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import com.k_int.okapi.OkapiHeaders
 import com.k_int.web.toolkit.testing.HttpSpec
 
@@ -14,7 +12,6 @@ import spock.util.concurrent.PollingConditions
 @Stepwise
 class TenantAPISpec extends HttpSpec {
 
-  static final Logger log = LoggerFactory.getLogger(TenantAPISpec.class)
   static final String tenantName = 'tenant_api_tests'
   static final Closure booleanResponder = {
     response.success { FromServer fs, Object body ->
@@ -119,7 +116,5 @@ class TenantAPISpec extends HttpSpec {
         (list = doGet('/erm/refdata')).size() > 0
       }
   }
-  
-  def cleanupSpecWithSpring() {  }
 }
 

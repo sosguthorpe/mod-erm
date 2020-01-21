@@ -70,8 +70,9 @@ class UrlMappings {
       collection {
         "/import" (controller: 'package', action: 'import', method: 'POST')
       }
-        
+      
       "/content"         (controller: 'package', action: 'content', method: 'GET')
+      "/content/all"     (controller: 'package', action: 'content', method: 'GET')
       "/content/current" (controller: 'package', action: 'currentContent', method: 'GET')
       "/content/future"  (controller: 'package', action: 'futureContent', method: 'GET')
       "/content/dropped" (controller: 'package', action: 'droppedContent', method: 'GET')

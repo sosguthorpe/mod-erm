@@ -7,7 +7,7 @@ import spock.lang.*
 
 @Integration
 @Stepwise
-class PackageViews extends BaseSpec {
+class PackageViewsSpec extends BaseSpec {
   
   @Shared
   String pkg_id
