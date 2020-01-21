@@ -127,7 +127,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
       
       LocalDate earliest = null
       periods.each { Period p ->
-        if (p.startDate < earliest) earliest = p.startDate
+        if (earliest == null || p.startDate < earliest) earliest = p.startDate
       }
       
       startDate = earliest
@@ -146,7 +146,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
       
       LocalDate latest = null
       periods.each { Period p ->
-        if (p.endDate > latest) latest = p.endDate
+        if (latest == null || p.endDate > latest) latest = p.endDate
       }
       
       endDate = latest
