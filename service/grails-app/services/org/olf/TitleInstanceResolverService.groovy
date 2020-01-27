@@ -220,10 +220,16 @@ class TitleInstanceResolverService implements DataBinder{
 
       // Journal or Book etc
       def resource_type = citation.instanceMedia?.trim()
-
       result = new TitleInstance(
-         name: citation.title,
-         work: work
+        name: citation.title,
+
+        dateMonographPublished: citation.dateMonographPublished,
+        firstAuthor: citation.firstAuthor,
+        firstEditor: citation.firstEditor,
+        monographEdition: citation.monographEdition,
+        monographVolume: citation.monographVolume,
+
+        work: work
       )
       
       if ((medium?.length() ?: 0) > 0) {

@@ -146,4 +146,29 @@ class ContentItem implements ContentItemSchema, Validateable {
   public String getUrl() {
     platformTitleInstance.url
   }
+
+  @Override
+  public String getDateMonographPublished() {
+    platformTitleInstance?.titleInstance?.dateMonographPublished
+  }
+
+  @Override
+  public String getFirstAuthor() {
+    platformTitleInstance?.titleInstance?.firstAuthor
+  }
+
+  @Override
+  public String getFirstEditor() {
+    platformTitleInstance?.titleInstance?.firstEditor
+  }
+
+  @Override
+  public String getMonographEdition() {
+    platformTitleInstance?.titleInstance?.monographEdition
+  }
+
+  @Override
+  public String getMonographVolume() {
+    platformTitleInstance?.titleInstance?.monographVolume
+  }
 }

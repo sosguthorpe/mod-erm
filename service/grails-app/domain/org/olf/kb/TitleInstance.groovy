@@ -37,6 +37,14 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   @Defaults(['Print', 'Electronic'])
   RefdataValue subType
 
+  String dateMonographPublished
+  
+  String firstAuthor
+  String firstEditor
+
+  String monographEdition
+  String monographVolume
+
   static hasMany = [
     identifiers: IdentifierOccurrence,
     platformInstances: PlatformTitleInstance
@@ -48,14 +56,24 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   ]
 
   static mapping = {
-             work column:'ti_work_fk'
-             type column:'ti_type_fk'
-          subType column:'ti_subtype_fk'
+                          work column:'ti_work_fk'
+                          type column:'ti_type_fk'
+                       subType column:'ti_subtype_fk'
+        dateMonographPublished column: 'ti_date_monograph_published'
+                   firstAuthor column: 'ti_first_author'
+                   firstEditor column: 'ti_first_editor'
+              monographEdition column: 'ti_monograph_edition'
+               monographVolume column: 'ti_monograph_volume'
   }
 
   static constraints = {
             name (nullable:false, blank:false)
             work (nullable:true, blank:false)
+            dateMonographPublished (nullable:true, blank:false, matches: '^\\d{4}(-((0[0-9])|(1[0-2]))(-(([0-2][0-9])|3[0-1]))?)?\$')
+            firstAuthor (nullable:true, blank:false)
+            firstEditor (nullable:true, blank:false)
+            monographEdition (nullable:true, blank:false)
+            monographVolume (nullable:true, blank:false)
   }
 
   public String getCodexSummary() {

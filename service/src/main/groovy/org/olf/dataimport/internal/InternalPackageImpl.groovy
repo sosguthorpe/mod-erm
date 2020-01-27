@@ -48,6 +48,13 @@ class InternalPackageImpl implements PackageSchema, Validateable {
     String coverageDepth
     String coverageNote
     String platformUrl
+
+    String dateMonographPublished
+    String firstAuthor
+    String firstEditor
+    String monographEdition
+    String monographVolume
+    
     String url
     String platformName
     String _platformId
