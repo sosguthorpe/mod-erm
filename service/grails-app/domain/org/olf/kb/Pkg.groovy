@@ -54,10 +54,7 @@ public class Pkg extends ErmResource implements MultiTenant<Pkg> {
 
   @Transient
   public long getResourceCount() {
-    // long num_items = 0;
-    // long num_items = PackageContentItem.executeQuery("select count(pci.id) from PackageContentItem as pci where pci.pkg=:pkg",[pkg:this])[0]
-    def crit = PackageContentItem.createCriteria()
-    long num_items = crit.list { projections { count() } eq ('pkg',this) }[0]
+    long num_items = PackageContentItem.countByPkg (this)
     return num_items;
   }
 

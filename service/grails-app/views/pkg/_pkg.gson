@@ -4,4 +4,6 @@ import org.olf.kb.Pkg
 model {
   Pkg pkg
 }
-json g.render(pkg, [expand: ['remoteKb','vendor', 'type', 'subType'], excludes: ['contentItems']])
+json g.render(pkg, [expand: ['remoteKb','vendor', 'type', 'subType'], excludes: ['contentItems']]) {
+  resourceCount pkg.getResourceCount()
+}
