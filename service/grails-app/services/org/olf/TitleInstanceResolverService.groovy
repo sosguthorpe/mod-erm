@@ -1,6 +1,6 @@
 package org.olf
 
-import org.olf.dataimport.internal.InternalPackageImpl.PackageContentImpl
+import org.olf.dataimport.internal.PackageContentImpl
 import org.olf.dataimport.internal.PackageSchema.ContentItemSchema
 import org.olf.dataimport.internal.PackageSchema.IdentifierSchema
 import org.olf.kb.Identifier

@@ -1,6 +1,8 @@
 package org.olf.general.jobs
 
 import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
@@ -12,6 +14,7 @@ import org.olf.ImportService
 import org.olf.KbHarvestService
 import org.slf4j.MDC
 import com.k_int.okapi.OkapiTenantAdminService
+import com.k_int.okapi.OkapiTenantResolver
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 import grails.events.EventPublisher
@@ -76,28 +79,65 @@ class JobRunnerService implements EventPublisher {
     }
   }
   
-  void populateJobQueue() {
-    log.debug "Populating intial job queue"
-    final Map<Instant, List<String>> queue_order = new TreeMap<Instant, List<String>>()
-        
-    okapiTenantAdminService.getAllTenantSchemaIds().each { tenant_schema_id ->
-      final String tid = tenant_schema_id as String
-      Tenants.withId(tenant_schema_id) {
-        setInterruptedJobsState()
-        
-        // Now load all queued jobs.
-        RefdataValue queued = PersistentJob.lookupStatus('Queued')
-        PersistentJob.findAllByStatus(queued).each { PersistentJob j ->
-          queue_order.put(j.dateCreated, [j.id, tid])
-        }
+  @Subscriber('okapi:tenant_enabled')
+  public void onTenantEnabled(final String tenantId) {
+    log.debug "New tenant (re)registered"
+    
+    // initialize the tenants jobs if these were in the deferred list
+    final String tenantSchema = OkapiTenantResolver.getTenantSchemaName(tenantId)
+    if (deferredTenants.contains(tenantSchema)) {
+      // load...
+      enqueueJobMap (initializeTenantJobs(tenantSchema))
+    }
+  }  
+  
+  private Map<Instant, List<String>> initializeTenantJobs( final String tenant_schema_id ) {
+    
+    log.debug "initializeTenantJobs for ${tenant_schema_id}"
+    final Map<Instant, List<String>> queue_order = new TreeMap<Instant, List<String>>()  
+    Tenants.withId(tenant_schema_id) {
+      setInterruptedJobsState()
+      
+      // Now load all queued jobs.
+      RefdataValue queued = PersistentJob.lookupStatus('Queued')
+      PersistentJob.findAllByStatus(queued).each { PersistentJob j ->
+        queue_order.put(j.dateCreated, [j.id, tenant_schema_id])
       }
     }
+    
+    queue_order
+  }
+  
+  private final CopyOnWriteArrayList<String> deferredTenants = new CopyOnWriteArrayList<String>()
+  
+  private void enqueueJobMap (final Map<Instant, List<String>> queue_order) {
     
     // Enqueue each job.
     (queue_order.keySet() as List).reverse().each { Instant created ->
       def ids = queue_order[created]
       enqueueJob(ids[0], ids[1])
     }
+  }
+  
+  void populateJobQueue() {
+    log.debug "Populating intial job queue"
+    final Map<Instant, List<String>> queue_order = new TreeMap<Instant, List<String>>()
+        
+    okapiTenantAdminService.getAllTenantSchemaIds().each { tenant_schema_id ->
+      
+      try {
+        queue_order.putAll( initializeTenantJobs( tenant_schema_id ) )
+      } catch (Exception e) {
+        // TODO: We should rework how "enabled" tenants are tracked.
+        // We should not fail just because of an exception at startup as this could run before
+        // migrations have completed.
+        log.warn "Unable to fetch jobs for schema ${tenant_schema_id}."
+        // add to a deferred loading list.
+        OkapiTenantResolver f
+        deferredTenants << tenant_schema_id
+      }
+    }
+    enqueueJobMap(queue_order)
   }
   
   public void enqueueJob(final String jobId, final String tenantId) {

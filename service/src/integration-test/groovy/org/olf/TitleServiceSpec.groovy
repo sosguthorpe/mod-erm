@@ -1,6 +1,6 @@
 package org.olf
 
-import org.olf.dataimport.internal.InternalPackageImpl.PackageContentImpl
+import org.olf.dataimport.internal.PackageContentImpl
 import org.olf.kb.TitleInstance
 
 import com.k_int.okapi.OkapiTenantResolver
