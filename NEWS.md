@@ -1,3 +1,6 @@
+## 2.0.1 2020-01-28
+ * ERM-682 Upgrading mod-agreements module from Daisy to Edelweiss fails
+
 ## 2.0.0 2019-12-04
  * ERM-621 License terms not included in Agreement JSON export
  * ERM-614 rkb_cursor reset after harvest completed
