@@ -14,6 +14,7 @@ class UrlMappings {
     // Map /sas to SubscriptionAgreementController
     '/erm/sas'(resources: 'subscriptionAgreement') {
       "/resources"            (action: 'resources', method: 'GET')
+      "/resources/all"        (action: 'resources', method: 'GET')
       "/resources/current"    (action: 'currentResources', method: 'GET')
       "/resources/future"     (action: 'futureResources', method: 'GET')
       "/resources/dropped"    (action: 'droppedResources', method: 'GET')
