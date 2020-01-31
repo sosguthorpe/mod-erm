@@ -33,7 +33,8 @@ final def should_expand = [
   'tags',
   'periods',
   'outwardRelationships',
-  'inwardRelationships'
+  'inwardRelationships',
+  'customProperties'
 ]
 if (params.controller != 'remoteLicenseLink' ) {
   should_expand << 'linkedLicenses'

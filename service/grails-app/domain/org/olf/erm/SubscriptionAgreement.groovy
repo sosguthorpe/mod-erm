@@ -11,6 +11,7 @@ import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.support.RequestContextUtils
 
+import com.k_int.web.toolkit.custprops.CustomProperties
 import com.k_int.web.toolkit.domain.traits.Clonable
 import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
@@ -24,7 +25,7 @@ import groovy.util.logging.Slf4j
  * Subscription agreement - object holding details about an SA connecting a resource list (Composed Of packages and platform-titles).
  */
 @Slf4j
-public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>, Clonable<SubscriptionAgreement> {
+public class SubscriptionAgreement implements CustomProperties,MultiTenant<SubscriptionAgreement>, Clonable<SubscriptionAgreement> {
    
   static transients = ['cancellationDeadline', 'startDate', 'endDate', 'currentPeriod']
   static cloneStaticValues = [
@@ -214,6 +215,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
       usageDataProviders cascade: 'all-delete-orphan'
      inwardRelationships cascade: 'all-delete-orphan', lazy: false
     outwardRelationships cascade: 'all-delete-orphan', lazy: false
+        customProperties cascade: 'all-delete-orphan'
   }
 
   static constraints = {

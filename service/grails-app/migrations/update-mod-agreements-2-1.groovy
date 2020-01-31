@@ -13,4 +13,13 @@ databaseChangeLog = {
       column(name: "ti_first_editor", type: "VARCHAR(36)")
     }
   }
+  
+  changeSet(author: "sosguthorpe (generated)", id: "1580297114943-2") {
+    addColumn(tableName: "subscription_agreement") {
+      column(name: "custom_properties_id", type: "int8") {
+        constraints(nullable: "false")
+      }
+    }
+    addForeignKeyConstraint(baseColumnNames: "custom_properties_id", baseTableName: "subscription_agreement", constraintName: "FKm0a9f7qqi2asb4ify197q2mak", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "custom_property_container")
+  }
 }

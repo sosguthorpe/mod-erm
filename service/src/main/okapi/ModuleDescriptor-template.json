@@ -272,7 +272,30 @@
           "methods": ["GET"],
           "pathPattern": "/erm/titles/{id}",
           "permissionsRequired": [ "erm.titles.item.get" ]
+        },
+  
+        {
+          "methods": ["GET"],
+          "pathPattern": "/erm/custprops",
+          "permissionsRequired": [ "erm.custprops.collection.get" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/custprops/{id}",
+          "permissionsRequired": [ "erm.custprops.item.get" ]
+        },{
+          "methods": ["POST"],
+          "pathPattern": "/erm/custprops",
+          "permissionsRequired": [ "erm.custprops.item.post" ]
+        },{
+          "methods": ["PUT"],
+          "pathPattern": "/erm/custprops/{id}",
+          "permissionsRequired": [ "erm.custprops.item.put" ]
+        },{
+          "methods": ["DELETE"],
+          "pathPattern": "/erm/custprops/{id}",
+          "permissionsRequired": [ "erm.custprops.item.delete" ]
         }
+        
       ]
     },{
       "id" : "_tenant",
@@ -403,7 +426,9 @@
       "erm.refdata.edit",
       "erm.refdata.item.delete"
     ]
-  },{
+  },
+  
+  {
     "permissionName": "erm.kbs.view",
     "subPermissions": [ 
       "erm.kbs.collection.get",
@@ -438,6 +463,25 @@
     "subPermissions": [
       "erm.titles.collection.get",
       "erm.titles.item.get"
+    ]
+  },{
+    "permissionName": "erm.custprops.view",
+    "subPermissions": [ 
+      "erm.custprops.collection.get",
+      "erm.custprops.item.get"
+    ]
+  },{
+    "permissionName": "erm.custprops.edit",
+    "subPermissions": [
+      "erm.custprops.view",
+      "erm.custprops.item.post",
+      "erm.custprops.item.put"
+    ]
+  },{
+    "permissionName": "erm.custprops.manage",
+    "subPermissions": [
+      "erm.custprops.edit",
+      "erm.custprops.item.delete"
     ]
   }],
   "launchDescriptor": {

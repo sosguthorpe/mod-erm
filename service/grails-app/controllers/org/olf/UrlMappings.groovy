@@ -138,7 +138,14 @@ class UrlMappings {
       }
       "/raw" ( controller: "fileUpload", action: "downloadFile", method: 'GET' )
     }
-
+    
+    '/erm/custprops'(resources: 'customPropertyDefinition') {
+      collection {
+        "/" (controller: 'customPropertyDefinition', action: 'index') {
+          perPage = { params.perPage ?: 100 }
+        }
+      }
+    }
     
     // export endpoints
     "/export/$format?"          (controller: 'export', method: 'GET')
