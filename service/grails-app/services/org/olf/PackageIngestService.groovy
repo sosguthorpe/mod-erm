@@ -39,9 +39,9 @@ class PackageIngestService {
   DependentModuleProxyService dependentModuleProxyService
 
   public Map upsertPackage(PackageSchema package_data) {
-    return upsertPackage(package_data,'LOCAL')
+    return upsertPackage(package_data,'LOCAL',true)
   }
-  
+
   private static final def countChanges = ['accessStart', 'accessEnd']
 
   /**
@@ -53,7 +53,7 @@ class PackageIngestService {
    * package into the KB.
    * @return id of package upserted
    */
-  public Map upsertPackage(PackageSchema package_data, String remotekbname) {
+  public Map upsertPackage(PackageSchema package_data, String remotekbname, boolean readOnly=false) {
 
     def result = [
       startTime: System.currentTimeMillis(),
@@ -72,11 +72,12 @@ class PackageIngestService {
       // Look up which remote kb via the name
       RemoteKB kb = RemoteKB.findByName(remotekbname) ?: new RemoteKB( name:remotekbname,
                                                                        rectype: new Long(1),
-                                                                       active:Boolean.TRUE).save(flush:true, failOnError:true)
+                                                                       active:Boolean.TRUE,
+                                                                       readOnly:readOnly).save(flush:true, failOnError:true)
 
 
       result.updateTime = System.currentTimeMillis()
-  
+
       log.info("Package header: ${package_data.header} - update start time is ${result.updateTime}")
 
       // header.packageSlug contains the package maintainers authoritative identifier for this package.
@@ -115,11 +116,11 @@ class PackageIngestService {
           // resolve may return null, used to throw exception which causes the whole package to be rejected. Needs
           // discussion to work out best way to handle.
           TitleInstance title = titleInstanceResolverService.resolve(pc)
-  
+
           if ( title != null ) {
-  
+
             // log.debug("platform ${pc.platformUrl} ${pc.platformName} (item URL is ${pc.url})")
-  
+
             // lets try and work out the platform for the item
             def platform_url_to_use = pc.platformUrl
 
@@ -169,7 +170,7 @@ class PackageIngestService {
                 log.debug("Record ${result.titleCount} - Update package content item (${pci.id})")
                 isUpdate = true
               }
-              
+
               // Add/Update common properties.
               pci.with {
                 note = pc.coverageNote
@@ -192,7 +193,7 @@ class PackageIngestService {
                 if (pci.isDirty()) {
                   // This means we have changes to an existing PCI and not a new one.
                   result.updatedTitles++
-                  
+
                   // Grab the dirty properties
                   def modifiedFieldNames = pci.getDirtyPropertyNames()
                   for (fieldName in modifiedFieldNames) {
@@ -231,7 +232,7 @@ class PackageIngestService {
                 coverageService.extend(pci, cov)
                 coverageService.extend(title, cov)
               }
-  
+
               // Save needed either way
               pci.save(flush:true, failOnError:true)
             }
@@ -287,9 +288,9 @@ class PackageIngestService {
     // this is how we detect deletions in the package file.
     log.debug("Remove any content items that have disappeared since the last upload. ${pkg.name}/${pkg.source}/${pkg.reference}/${result.updateTime}")
     int removal_counter = 0
-    
+
     PackageContentItem.withNewTransaction { status ->
-      
+
       PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime and pci.removedTimestamp is null',
                                       [pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
         try {
@@ -302,7 +303,7 @@ class PackageIngestService {
         result.removedTitles++
       }
     }
-    
+
     // Need to pause long enough so that the timestamps are different
     TimeUnit.MILLISECONDS.sleep(1)
     if (result.titleCount > 0) {
@@ -315,7 +316,7 @@ class PackageIngestService {
       log.info ("Removed ${result.removedTitles} titles")
       log.info ("Updated accessStart on ${result.updatedAccessStart} title(s)")
       log.info ("Updated accessEnd on ${result.updatedAccessEnd} title(s)")
-      
+
       // Log the counts too.
       for (final String change : countChanges) {
         if (result[change]) {

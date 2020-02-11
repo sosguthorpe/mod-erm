@@ -13,7 +13,33 @@ databaseChangeLog = {
       column(name: "ti_first_editor", type: "VARCHAR(36)")
     }
   }
-  
+
+  changeSet(author: "peter (generated)", id: "1579093826683-42") {
+    addColumn(tableName: "remotekb") {
+      column(name: "rkb_readonly", type: "BOOLEAN")
+    }
+
+    grailsChange {
+      change {
+        sql.execute("""
+            UPDATE ${database.defaultSchemaName}.remotekb
+            SET rkb_readonly=TRUE
+            WHERE rkb_name LIKE 'LOCAL'
+            """.toString())
+      }
+    }
+
+    grailsChange {
+      change {
+        sql.execute("""
+              UPDATE ${database.defaultSchemaName}.remotekb
+              SET rkb_readonly=FALSE
+              WHERE rkb_name NOT LIKE 'LOCAL'
+              """.toString())
+      }
+    }
+  }
+
   changeSet(author: "sosguthorpe (generated)", id: "1580297114943-2") {
     addColumn(tableName: "subscription_agreement") {
       column(name: "custom_properties_id", type: "int8") {

@@ -6,7 +6,8 @@ RemoteKB local_kb = RemoteKB.findByName('LOCAL') ?: new RemoteKB(
     rectype: RemoteKB.RECTYPE_PACKAGE,
     active:Boolean.TRUE,
     supportsHarvesting:false,
-    activationEnabled:false
+    activationEnabled:false,
+    readonly:true
 ).save(failOnError:true)
 
 RemoteKB gokb_test = RemoteKB.findByName('GOKb_TEST') ?: new RemoteKB(
