@@ -70,11 +70,14 @@ class PackageIngestService {
     Pkg.withNewTransaction { status ->
       // ERM caches many remote KB sources in it's local package inventory
       // Look up which remote kb via the name
-      RemoteKB kb = RemoteKB.findByName(remotekbname) ?: new RemoteKB( name:remotekbname,
-                                                                       rectype: new Long(1),
-                                                                       active:Boolean.TRUE,
-                                                                       readOnly:readOnly).save(flush:true, failOnError:true)
-
+      RemoteKB kb = RemoteKB.findByName(remotekbname)
+      
+      if (!kb) {
+       kb = new RemoteKB( name:remotekbname,
+                          rectype: new Long(1),
+                          active: Boolean.TRUE,
+                          readonly:readOnly).save(flush:true, failOnError:true)
+      }
 
       result.updateTime = System.currentTimeMillis()
 

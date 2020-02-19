@@ -1,14 +1,21 @@
 import org.olf.kb.RemoteKB
 log.info "Running specific diku tenant data file"
 // A special record for packages which are really defined locally - this is an exceptional situation
-RemoteKB local_kb = RemoteKB.findByName('LOCAL') ?: new RemoteKB(
+RemoteKB local_kb = RemoteKB.findByName('LOCAL')
+
+if (!local_kb ) {
+  local_kb = new RemoteKB(
     name:'LOCAL',
     rectype: RemoteKB.RECTYPE_PACKAGE,
     active:Boolean.TRUE,
     supportsHarvesting:false,
-    activationEnabled:false,
-    readonly:true
-).save(failOnError:true)
+    activationEnabled:false
+  )
+  
+  // Ensure we make this one read only.
+  local_kb.readonly = true
+  local_kb.save(flush:true, failOnError:true)
+}
 
 RemoteKB gokb_test = RemoteKB.findByName('GOKb_TEST') ?: new RemoteKB(
     name:'GOKb_TEST',

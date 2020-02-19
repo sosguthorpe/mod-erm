@@ -138,7 +138,7 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
     poLines: 'owner'
   ]
   
-  // We should 
+  // We should use a beforeValidate handler to set related values.
   def beforeValidate() {
     this.type = this.type?.toLowerCase()
     this.authority = this.authority?.toUpperCase()

@@ -218,5 +218,65 @@ class AgreementLifecycleSpec extends BaseSpec {
       'My first agreement'  | PackageContentItem.class.name       | "Pharmaceutical Nanotechnology"       | "pti.titleInstance.name"
       'My first agreement'  | PlatformTitleInstance.class.name    | "Recent Patents on Corrosion Science" | "titleInstance.name"
   }
+  
+  void "Check closure reason behaviour" () {
+    final LocalDate today = LocalDate.now()
+    final LocalDate tomorrow = today.plusDays(1)
+    
+    when: 'Save new active agreement with a reason for closure'
+      Map resp = doPost("/erm/sas", {
+        'name' 'Closing agreement'
+        'agreementStatus' 'Active'
+        'reasonForClosure' 'Superseded' // This should be null when saved/read back as status is not closed.
+        'periods' ([{
+          'startDate' today.toString()
+          'endDate' tomorrow.toString()
+        }])
+      })
+      final String id = resp.id
+    then: 'Saved with no reason for closure and active'
+      id != null
+      resp.agreementStatus?.value == 'active'
+      resp.reasonForClosure == null
+    when: 'Get issued'
+      resp = doGet("/erm/sas/${id}")
+    then: 'No change to status and reeason'
+      resp.id != null
+      resp.agreementStatus?.value == 'active'
+      resp.reasonForClosure == null
+      
+    when: 'Update agreement to be closed and superseded'
+      resp = doPut("/erm/sas/${id}", {
+        'agreementStatus' 'Closed'
+        'reasonForClosure' 'Superseded'
+      })
+    then: 'Saved closed with reason superseded'
+      resp.id != null
+      resp.agreementStatus?.value == 'closed'
+      resp.reasonForClosure?.value == 'superseded'
+      
+    when: 'Get issued'
+      resp = doGet("/erm/sas/${id}")
+    then: 'No change to status and reeason'
+      resp.id != null
+      resp.agreementStatus?.value == 'closed'
+      resp.reasonForClosure?.value == 'superseded'
+      
+    when: 'Update agreement to be Requested'
+      resp = doPut("/erm/sas/${id}", {
+        'agreementStatus' 'Requested'
+      })
+    then: 'Saved with no reason for closure and active'
+      resp.id != null
+      resp.agreementStatus?.value == 'requested'
+      resp.reasonForClosure == null
+      
+    when: 'Get issued'
+      resp = doGet("/erm/sas/${id}")
+    then: 'No change to status and reeason'
+      resp.id != null
+      resp.agreementStatus?.value == 'requested'
+      resp.reasonForClosure == null
+  }
 }
 

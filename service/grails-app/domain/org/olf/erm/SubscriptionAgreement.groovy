@@ -53,6 +53,7 @@ public class SubscriptionAgreement implements CustomProperties,MultiTenant<Subsc
    *
    * @CategoryId('AgreementType') - Would create a category named 'AgreementType' for values stored here.
    */
+  @Deprecated
   @Defaults(['Draft', 'Trial', 'Current']) // Defaults to create for this property.
   RefdataValue agreementType
 
@@ -244,26 +245,15 @@ public class SubscriptionAgreement implements CustomProperties,MultiTenant<Subsc
           })
   }
 
-  public void setAgreementStatus (RefdataValue statusValue) {
-    if (statusValue != null) {
-      if (statusValue.value != 'closed') {
-        this.reasonForClosure = null
-      }
-    }
-    this.agreementStatus = statusValue
+  def beforeValidate() {
+    checkAgreementStatus()
   }
-
-  public void setReasonForClosure (RefdataValue reasonValue) {
-    if (reasonValue != null) {
-      if (this.agreementStatus?.value != 'closed') {
-        this.reasonForClosure = null
-      }
-      else {
-        this.reasonForClosure = reasonValue
-      }
-    }
-    else {
-      this.reasonForClosure = reasonValue
+  
+  public void checkAgreementStatus () {
+    
+    // Null out the reasonForClosure if agreement status is not closed
+    if (agreementStatus?.value != 'closed') {
+      reasonForClosure = null
     }
   }
   
