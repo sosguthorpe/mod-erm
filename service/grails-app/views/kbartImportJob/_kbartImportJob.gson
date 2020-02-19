@@ -1,0 +1,8 @@
+import org.olf.general.jobs.KbartImportJob
+
+import groovy.transform.Field
+
+@Field
+KbartImportJob kbartImportJob
+
+json tmpl."/persistentJob/persistentJob" (persistentJob: kbartImportJob)

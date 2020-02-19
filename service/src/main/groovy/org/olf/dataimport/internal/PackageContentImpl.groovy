@@ -26,6 +26,7 @@ class PackageContentImpl implements ContentItemSchema, Validateable {
   String platformUrl
 
   String dateMonographPublished
+  String dateMonographPublishedPrint
   String firstAuthor
   String firstEditor
   String monographEdition

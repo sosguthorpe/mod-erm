@@ -85,6 +85,7 @@ class PackageIngestService {
 
       def vendor = null
       if ( ( package_data.header?.packageProvider?.name != null ) && ( package_data.header?.packageProvider?.name.trim().length() > 0 ) ) {
+        log.debug("Package contains provider information: ${package_data.header?.packageProvider?.name} -- trying to match to an existing organisation.")
         vendor = dependentModuleProxyService.coordinateOrg(package_data.header?.packageProvider?.name)
         // reference has been removed at the request of the UI team
         // vendor.enrich(['reference':package_data.header?.packageProvider?.reference])

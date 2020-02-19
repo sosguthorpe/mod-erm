@@ -6,11 +6,21 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.olf.dataimport.erm.ErmPackageImpl
 import org.olf.dataimport.internal.InternalPackageImpl
+import org.olf.dataimport.internal.PackageContentImpl
 import org.olf.dataimport.internal.PackageSchema
+import org.olf.dataimport.erm.PackageProvider
+import org.olf.dataimport.erm.Identifier
 import org.slf4j.MDC
 import org.springframework.context.MessageSource
 import org.springframework.validation.ObjectError
 import org.springframework.context.i18n.LocaleContextHolder
+
+import com.opencsv.CSVReader
+import org.olf.dataimport.erm.CoverageStatement
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.ChronoField
 
 @CompileStatic
 @Slf4j
@@ -103,5 +113,251 @@ class ImportService implements DataBinder {
     }
     
     packageImported
+  }
+
+  boolean importPackageFromKbart (CSVReader file, Map packageInfo) {
+    boolean packageImported = false
+    log.debug("Attempting to import package from KBART file")
+
+    String packageName
+    String packageSource
+    String packageReference
+    String packageProvider
+
+    if ( packageInfo.packageName == null ||
+         packageInfo.packageSource == null ||
+         packageInfo.packageReference == null ) {
+        log.error("Import is missing key package information")
+        return packageImported
+      } else {
+        packageName = packageInfo.packageName
+        packageSource = packageInfo.packageSource
+        packageReference = packageInfo.packageReference
+      }
+
+    if (packageInfo.packageProvider != null) {
+      packageProvider = packageInfo.packageProvider
+    }
+
+    // peek gets line without removing from iterator
+    // readNext gets line and removes it from the csvReader object
+    String headerValue = file.readNext()[0]
+    def header = (headerValue).split("\t")
+
+    // Create an object containing fields we can accept and their mappings in our domain structure, as well as indices in the imported file, with -1 if not found
+    Map acceptedFields = [
+      publication_title: [field: 'title', index: -1],
+      print_identifier: [field: 'siblingInstanceIdentifiers', index: -1],
+      online_identifier: [field: 'instanceIdentifiers', index: -1],
+      date_first_issue_online: [field: 'CoverageStatement.startDate', index: -1],
+      num_first_vol_online: [field: 'CoverageStatement.startVolume', index: -1],
+      num_first_issue_online: [field: 'CoverageStatement.startIssue', index: -1],
+      date_last_issue_online: [field: 'CoverageStatement.endDate', index: -1],
+      num_last_vol_online: [field: 'CoverageStatement.endVolume', index: -1],
+      num_last_issue_online: [field: 'CoverageStatement.endIssue', index: -1],
+      title_url: [field: 'url', index: -1],
+      first_author: [field: 'firstAuthor', index: -1],
+      title_id: [field: null, index: -1],
+      embargo_info: [field: 'embargo', index: -1],
+      coverage_depth: [field: 'coverageDepth', index: -1],
+      notes: [field: 'coverageNote', index: -1],
+      publisher_name: [field: null, index: -1],
+      publication_type: [field: 'instanceMedia', index: -1],
+      date_monograph_published_print: [field: 'dateMonographPublishedPrint', index: -1],
+      date_monograph_published_online: [field: 'dateMonographPublished', index: -1],
+      monograph_volume: [field: 'monographVolume', index: -1],
+      monograph_edition: [field: 'monographEdition', index: -1],
+      first_editor: [field: 'firstEditor', index: -1],
+      parent_publication_title_id: [field: null, index: -1],
+      preceding_publication_title_id: [field: null, index: -1],
+      access_type : [field: null, index: -1]
+    ]
+
+    // Map each key to its location in the header
+    for (int i=0; i<header.length; i++) {
+      final String key = header[i]
+      if (acceptedFields.containsKey(key)) {
+        acceptedFields[key]['index'] = i
+      }
+    }
+
+    // At this point we have a mapping of internal fields to KBART fields and their indexes in the imported file
+    // Mandatory fields' existence should be checked
+    List mandatoryFields = ['title', 'instanceIdentifiers', 'url', 'instanceMedia']
+
+    def missingFields = mandatoryFields.findAll {field ->
+      !shouldExist(acceptedFields, field)[0]
+    }.collect { f ->
+      shouldExist(acceptedFields, f)[1]
+    }
+    if (missingFields.size() != 0) {
+      log.error("The import file is missing the mandatory fields: ${missingFields}")
+      return (false);
+    }
+    
+    final InternalPackageImpl pkg = new InternalPackageImpl()
+    final PackageProvider pkgPrv = new PackageProvider()
+    pkgPrv.name = packageProvider
+
+    pkg.header = [
+      packageName: packageName,
+      packageSource: packageSource,
+      packageSlug: packageReference,
+      packageProvider: pkgPrv
+    ]
+
+    String[] record;
+    while ((record = file.readNext()) != null) {
+      for (String value : record) {
+        def lineAsArray = value.split("\t")
+
+        Identifier siblingInstanceIdentifier = new Identifier()
+        Identifier instanceIdentifier = new Identifier()
+
+        if (
+          getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase() == 'monograph' ||
+          getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase() == 'book'
+        ) {
+            siblingInstanceIdentifier.namespace = 'ISBN'
+            instanceIdentifier.namespace = 'ISBN'
+        } else {          
+            siblingInstanceIdentifier.namespace = 'ISSN'
+            instanceIdentifier.namespace = 'ISSN'
+        }
+
+        siblingInstanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'siblingInstanceIdentifiers')
+        instanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'instanceIdentifiers')
+        
+        PackageContentImpl pkgLine = new PackageContentImpl(
+          title: getFieldFromLine(lineAsArray, acceptedFields, 'title'),
+          siblingInstanceIdentifiers: [
+            siblingInstanceIdentifier
+          ],
+          instanceIdentifiers: [
+            instanceIdentifier
+          ],
+          coverage: buildKBARTCoverage(lineAsArray, acceptedFields),
+          url: getFieldFromLine(lineAsArray, acceptedFields, 'url'),
+          firstAuthor: getFieldFromLine(lineAsArray, acceptedFields, 'firstAuthor'),
+          embargo: getFieldFromLine(lineAsArray, acceptedFields, 'embargo'),
+          coverageDepth: getFieldFromLine(lineAsArray, acceptedFields, 'coverageDepth'),
+          coverageNote: getFieldFromLine(lineAsArray, acceptedFields, 'coverageNote'),
+          instanceMedia: getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia'),
+          instanceMedium: "electronic",
+
+          dateMonographPublished: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublished'),
+          dateMonographPublishedPrint: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublishedPrint'),
+
+          monographVolume: getFieldFromLine(lineAsArray, acceptedFields, 'monographVolume'),
+          monographEdition: getFieldFromLine(lineAsArray, acceptedFields, 'monographEdition'),
+          firstEditor: getFieldFromLine(lineAsArray, acceptedFields, 'firstEditor')
+        )
+
+        // We add this information to our package
+        pkg.packageContents << pkgLine
+      }
+    }
+
+    def result = packageIngestService.upsertPackage(pkg)
+    //TODO Use this information to return true if the package imported successfully or false otherwise
+    packageImported = true
+    
+    return (packageImported)
+  }
+
+  private String getFieldFromLine(String[] lineAsArray, Map acceptedFields, String fieldName) {
+    //ToDo potentially work out how to make this slightly less icky, it worked a lot nicer without @CompileStatic
+    String index = getIndexFromFieldName(acceptedFields, fieldName)
+    if (lineAsArray[index.toInteger()] == '') {
+      return null;
+    }
+  return lineAsArray[index.toInteger()];
+  }
+
+  private String getIndexFromFieldName(Map acceptedFields, String fieldName) {
+    String index = (acceptedFields.values().find { it['field']?.equals(fieldName) })['index']
+    return index;
+  }
+
+  private List shouldExist(Map acceptedFields, String fieldName) {
+    boolean result = false
+    String importField = acceptedFields.find { it.value['field']?.equals(fieldName) }?.key
+
+    if (getIndexFromFieldName(acceptedFields, fieldName) != '-1') {
+      result = true
+    }
+    return [result, importField];
+  }
+
+  private LocalDate parseDate(String date) {
+    // We know that data coming in here matches yyyy, yyyy-mm or yyyy-mm-dd
+    LocalDate outputDate
+
+    DateTimeFormatter yearFormat = new DateTimeFormatterBuilder()
+    .appendPattern("yyyy")
+    .parseDefaulting(ChronoField.MONTH_OF_YEAR, 1)
+    .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
+    .toFormatter();
+
+    DateTimeFormatter monthYearFormat = new DateTimeFormatterBuilder()
+    .appendPattern("yyyy-MM")
+    .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
+    .toFormatter();
+
+    switch(date) {
+      case ~ '^\\d{4}\$':
+        outputDate = LocalDate.parse(date, yearFormat);
+        break;
+      case ~ '^\\d{4}(-(\\d{2}))\$':
+        outputDate = LocalDate.parse(date, monthYearFormat);
+        break;
+      default:
+        outputDate = LocalDate.parse(date);
+        break;
+    }
+    return outputDate;
+  }
+
+  private List buildKBARTCoverage(String[] lineAsArray, Map acceptedFields) {
+    String startDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')
+    String endDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate')
+
+    LocalDate endDateLocalDate
+    if (endDate != null) {
+      endDateLocalDate = parseDate(endDate)
+    } else {
+      endDateLocalDate = null
+    }
+
+    LocalDate startDateLocalDate
+    if (startDate != null) {
+      startDateLocalDate = parseDate(startDate)
+    } else {
+      startDateLocalDate = null
+    }
+
+    String instanceMedia = getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase()
+
+    if (
+      (instanceMedia != 'monograph' ||
+      instanceMedia != 'book') &&
+      startDateLocalDate != null
+    ) {
+      return ([
+        new CoverageStatement(
+          startDate: startDateLocalDate,
+          startVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startVolume'),
+          startIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startIssue'),
+          endDate: endDateLocalDate,
+          endVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endVolume'),
+          endIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endIssue')
+        )
+      ]);
+    } else {
+      if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate') != '') {
+        log.error("Unexpected coverage information for for title: ${getFieldFromLine(lineAsArray, acceptedFields, 'title')} of type: ${instanceMedia}")
+      }
+      return [];
+    } 
   }
 }

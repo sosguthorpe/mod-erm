@@ -48,4 +48,22 @@ databaseChangeLog = {
     }
     addForeignKeyConstraint(baseColumnNames: "custom_properties_id", baseTableName: "subscription_agreement", constraintName: "FKm0a9f7qqi2asb4ify197q2mak", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "custom_property_container")
   }
+
+  changeSet(author: "efreestone (manual)", id: "202002111539-001") {
+    createTable(tableName: "kbart_import_job") {
+      column(name: "id", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
+      column(name: "package_name", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
+      column(name: "package_source", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
+      column(name: "package_reference", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
+      column(name: "package_provider", type: "VARCHAR(255)")
+    }
+  }
 }

@@ -151,46 +151,57 @@ class TitleInstanceResolverService implements DataBinder{
     // a title if we know that it is a sibling of a print identifier.
     int num_class_one_identifiers_for_sibling = countClassOneIDs(citation.siblingInstanceIdentifiers)
 
-    IdentifierSchema issn_id = citation.siblingInstanceIdentifiers.find { it.namespace.toLowerCase() == 'issn' }
-    String issn = issn_id?.value;
+    List<IdentifierSchema> issn_or_isbn_ids = citation.siblingInstanceIdentifiers.findAll { it.namespace.toLowerCase() == 'issn' || it.namespace.toLowerCase() == 'isbn' }
+    log.debug("Found list of sibling identifiers: ${issn_or_isbn_ids}")
 
-    if ( issn ) {
-      PackageContentImpl sibling_citation = new PackageContentImpl()
-      bindData (sibling_citation, [
-        "title": citation.title,
-        "instanceMedium": "print",
-        "instanceMedia": "journal",
-        "instanceIdentifiers": [
-          [
-            "namespace": "issn",
-            "value": issn
+
+    if ( issn_or_isbn_ids.size() != 0 ) {
+      
+      issn_or_isbn_ids.each { id ->
+        PackageContentImpl sibling_citation = new PackageContentImpl()
+        bindData (sibling_citation, [
+          "title": citation.title,
+          "instanceMedium": "print",
+          "instanceMedia": (id.namespace.toLowerCase() == 'issn') ? "journal" : "book",
+          "instanceIdentifiers": [
+            [
+              "namespace": id.namespace.toLowerCase(),
+              "value": id?.value
+            ]
           ]
-        ]
-      ])
+        ])
 
-      candidate_list = classOneMatch(sibling_citation.instanceIdentifiers)
-      switch ( candidate_list.size() ) {
-        case 0:
-          log.debug("Create sibling print instance for issn ${issn}")
-          createNewTitleInstance(sibling_citation, work)
-          break
-        case 1:
-          TitleInstance ti = candidate_list.get(0)
-          if ( ti.work == null ) {
-            log.debug("Located existing print instance for issn ${issn} that was not linked. Linking it to work ${work.id}");
-            // Link the located title instance to the work
-            ti.work = work
-            ti.save(flush:true, failOnError:true)
-          }
-          else {
-            // Validate that the work we detected is the same as the one we have - otherwise there is bad
-            // data flying around.
-          }
-          break;
-        default:
-          // Problem
-          log.warn("Detected multiple records for sibling instance match")
-          break;
+        if (id.namespace.toLowerCase() == 'isbn') {
+          bindData (sibling_citation, [
+            "dateMonographPublished": citation.dateMonographPublishedPrint
+          ])
+        }
+
+        candidate_list = classOneMatch(sibling_citation.instanceIdentifiers)
+        switch ( candidate_list.size() ) {
+          case 0:
+            log.debug("Create sibling print instance for identifier ${id.value}")
+            createNewTitleInstance(sibling_citation, work)
+            break
+          case 1:
+            TitleInstance ti = candidate_list.get(0)
+            if ( ti.work == null ) {
+              log.debug("Located existing print instance for identifier ${id.value} that was not linked. Linking it to work ${work.id}");
+              // Link the located title instance to the work
+              ti.work = work
+              ti.save(flush:true, failOnError:true)
+            }
+            else {
+              log.debug("We found an existing print instance that has a linked work already. Need to check ${ti.work} is equal to ${work}.")
+              // Validate that the work we detected is the same as the one we have - otherwise there is bad
+              // data flying around.
+            }
+            break;
+          default:
+            // Problem
+            log.warn("Detected multiple records for sibling instance match")
+            break;
+        }
       }
     }
   }
