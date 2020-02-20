@@ -57,7 +57,7 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
       log.debug("KBART import failed")
     }
     return render (status: 200)
-    render [:] as JSON;
+    render ([:] as JSON)
   }
 
   def content () {
