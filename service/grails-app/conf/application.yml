@@ -186,6 +186,11 @@ okapi:
     deploy: false
 
 
+webtoolkit:
+  converters:
+    numbers:
+      fixedLocale: true # Can be a boolean for default locale or an IETF BCP 47 language string
+
 environments:
   test:
     dataSource:
