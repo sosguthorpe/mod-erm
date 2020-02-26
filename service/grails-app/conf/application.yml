@@ -130,10 +130,17 @@ grails:
 ---
 hibernate:
  # format_sql: true
+  configClass: com.k_int.hibernate_search.HibernateMappingCfg
   cache:
     queries: false
     use_second_level_cache: false
     use_query_cache: false
+#  tenant_identifier_resolver: com.k_int.hibernate_search.TenantResolver
+  search:
+    default:
+      directory_provider: com.k_int.hibernate_search.TenantAwareFSDirectoryProvider
+#      directory_provider: filesystem
+      indexBase: "./test-index"
 
 dataSource:
 #  logSql: true

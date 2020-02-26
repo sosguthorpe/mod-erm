@@ -1,6 +1,7 @@
 package org.olf.kb
 
 import javax.persistence.Transient
+import org.hibernate.search.annotations.Indexed
 import org.hibernate.sql.JoinType
 import org.olf.erm.Entitlement
 import com.k_int.web.toolkit.refdata.RefdataValue
@@ -11,6 +12,7 @@ import grails.gorm.MultiTenant
 /**
  * mod-erm representation of a BIBFRAME instance
  */
+@Indexed
 public class TitleInstance extends ErmResource implements MultiTenant<TitleInstance> {
   
   static namedQueries = {

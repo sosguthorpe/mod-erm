@@ -133,7 +133,6 @@ class JobRunnerService implements EventPublisher {
         // migrations have completed.
         log.warn "Unable to fetch jobs for schema ${tenant_schema_id}."
         // add to a deferred loading list.
-        OkapiTenantResolver f
         deferredTenants << tenant_schema_id
       }
     }

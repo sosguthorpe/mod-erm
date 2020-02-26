@@ -5,6 +5,7 @@ import java.time.LocalDate
 import java.time.ZonedDateTime
 
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.hibernate.search.annotations.*
 import org.olf.general.DocumentAttachment
 import org.olf.general.Org
 import org.springframework.web.context.request.RequestAttributes
@@ -25,6 +26,7 @@ import groovy.util.logging.Slf4j
  * Subscription agreement - object holding details about an SA connecting a resource list (Composed Of packages and platform-titles).
  */
 @Slf4j
+@Indexed
 public class SubscriptionAgreement implements CustomProperties,MultiTenant<SubscriptionAgreement>, Clonable<SubscriptionAgreement> {
    
   static transients = ['cancellationDeadline', 'startDate', 'endDate', 'currentPeriod']
@@ -34,8 +36,14 @@ public class SubscriptionAgreement implements CustomProperties,MultiTenant<Subsc
   ]
   
   String description
+  
+  @DocumentId
   String id
+
+  @Field(index=Index.YES, analyze=Analyze.YES, store=Store.YES)
   String name
+  
+  
   String localReference
   String vendorReference
   String attachedLicenceId

@@ -1,5 +1,10 @@
 package org.olf.kb
 
+import org.hibernate.search.annotations.Analyze
+import org.hibernate.search.annotations.DocumentId
+import org.hibernate.search.annotations.Field
+import org.hibernate.search.annotations.Index
+import org.hibernate.search.annotations.Store
 import org.olf.erm.Entitlement
 import com.k_int.web.toolkit.refdata.RefdataValue
 
@@ -12,7 +17,10 @@ import java.time.LocalDate
  */
 public class ErmResource implements MultiTenant<ErmResource> {
  
+  @DocumentId
   String id
+  
+  @Field(index=Index.YES, analyze=Analyze.YES, store=Store.YES)
   String name
   String description
   

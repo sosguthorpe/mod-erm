@@ -83,6 +83,9 @@ dependencies {
   
   compile "org.hibernate:hibernate-java8:5.1.17.Final"
   compile "org.hibernate:hibernate-core:5.1.17.Final"
+  
+  compile "org.hibernate:hibernate-search-orm:5.9.3.Final"
+  
   compile "org.grails.plugins:views-json"
   console "org.grails:grails-console"
   compile 'org.z3950.zing:cql-java:1.13'
@@ -117,6 +120,8 @@ dependencies {
   testCompile( 'com.athaydes:spock-reports:1.6.1' ) {
     transitive = false // this avoids affecting your version of Groovy/Spock
   }
+  
+  compile("org.grails.plugins:hibernate-search:2.3.0")
 
 }
 
