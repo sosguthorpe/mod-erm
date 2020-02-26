@@ -151,7 +151,7 @@ class TitleInstanceResolverService implements DataBinder{
     // a title if we know that it is a sibling of a print identifier.
     int num_class_one_identifiers_for_sibling = countClassOneIDs(citation.siblingInstanceIdentifiers)
 
-    List<IdentifierSchema> issn_or_isbn_ids = citation.siblingInstanceIdentifiers.findAll { it.namespace.toLowerCase() == 'issn' || it.namespace.toLowerCase() == 'isbn' }
+    Collection<IdentifierSchema> issn_or_isbn_ids = citation.siblingInstanceIdentifiers.findAll { it.namespace.toLowerCase() == 'issn' || it.namespace.toLowerCase() == 'isbn' }
     log.debug("Found list of sibling identifiers: ${issn_or_isbn_ids}")
 
 
