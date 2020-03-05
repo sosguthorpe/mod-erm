@@ -62,7 +62,7 @@ class PackageIngestService {
       removedTitles: 0,
       updatedTitles: 0,
       updatedAccessStart: 0,
-      updatedAccessEnd: 0
+      updatedAccessEnd: 0,
     ]
 
     Pkg pkg = null

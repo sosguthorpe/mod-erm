@@ -294,8 +294,12 @@
           "methods": ["DELETE"],
           "pathPattern": "/erm/custprops/{id}",
           "permissionsRequired": [ "erm.custprops.item.delete" ]
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/erm/packages/import",
+          "permissionsRequired": [ "erm.packages.collection.import" ]
         }
-        
       ]
     },{
       "id" : "_tenant",
@@ -483,6 +487,8 @@
       "erm.custprops.edit",
       "erm.custprops.item.delete"
     ]
+  }, {
+    "permissionName": "erm.packages.collection.import"
   }],
   "launchDescriptor": {
     "dockerImage": "${info.app.name}:${info.app.version}",

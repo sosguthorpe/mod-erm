@@ -60,22 +60,27 @@ class ImportService implements DataBinder {
     }
   }
   
-  int importPackageUsingErmSchema (final Map envelope) {
+  Map importPackageUsingErmSchema (final Map envelope) {
     
     log.debug "Called importPackageUsingErmSchema with data ${envelope}"
     int packageCount = 0
+    List<String> packageIds = []
     // Erm schema supports multiple packages per document. We should lazily parse 1 by 1.
     envelope.records?.each { Map record ->
       // Ingest 1 package at a time.
-      
       MDC.put('rowNumber', "${packageCount + 1}")
       MDC.put('discriminator', "Package #${packageCount + 1}")
-      if (importPackage (record, ErmPackageImpl)) {
+      Map importResult = importPackage (record, ErmPackageImpl)
+      
+      if (importResult.packageImported) {
         packageCount ++
+        String packageId = importResult.packageId
+        packageIds << packageId
       }
     }
     
-    packageCount
+    Map result = [packageCount: packageCount, packageIds: packageIds]
+    result
   }
   
   int importPackageUsingInternalSchema (final Map envelope) {
@@ -83,11 +88,14 @@ class ImportService implements DataBinder {
     
     MDC.put('rowNumber', "1")
     MDC.put('discriminator', "Package #1")
-    importPackage (envelope, InternalPackageImpl) ? 1 : 0
+    Map result = importPackage (envelope, InternalPackageImpl)
+    result.packageImported ? 1 : 0
   }
   
-  private boolean importPackage (final Map record, final Class<? extends PackageSchema> schemaClass) {
-    boolean packageImported = false
+  private Map importPackage (final Map record, final Class<? extends PackageSchema> schemaClass) {
+    boolean packageImported = true
+    String packageId = ""
+
     final PackageSchema pkg = schemaClass.newInstance()
     bindData(pkg, record)
     // Check for binding errors.
@@ -96,9 +104,11 @@ class ImportService implements DataBinder {
       pkg.validate()
       if (!pkg.errors.hasErrors()) {
         // Ingest the package.
-        packageIngestService.upsertPackage(pkg)
+        Map result = packageIngestService.upsertPackage(pkg)
+        String upsertPackagePackageId = result.packageId
         
         packageImported = true
+        packageId = upsertPackagePackageId
       } else {
         // Log the errors.
         pkg.errors.allErrors.each { ObjectError error ->
@@ -111,8 +121,9 @@ class ImportService implements DataBinder {
         log.error "${ messageSource.getMessage(error, LocaleContextHolder.locale) }"
       }
     }
-    
-    packageImported
+
+    Map results = [packageImported: packageImported, packageId: packageId]
+    results
   }
 
   boolean importPackageFromKbart (CSVReader file, Map packageInfo) {

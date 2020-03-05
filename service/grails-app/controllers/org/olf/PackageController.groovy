@@ -29,9 +29,26 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
 
   def 'import' () {
     final bindObj = this.getObjectToBind()
-    log.debug("bindObj: ${bindObj}")
-    importService.importPackageUsingErmSchema(bindObj as Map)
-    return render (status: 200)
+    log.debug("Importing package: ${bindObj}")
+    def importResult = importService.importPackageUsingErmSchema(bindObj as Map)
+
+    log.debug("Import complete, attempting to find package in ERM")
+    String packageId;
+    switch(importResult.packageIds.size()) {
+      case 0:
+        log.error("Package import failed, no valid id returned");
+        break;
+      case 1:
+        packageId = importResult.packageIds[0]
+        break;
+      default:
+        log.warn("More than one package imported, can't return id")
+        break;
+    }
+    
+    Map result = [packageId: packageId]
+    render (result as JSON)
+    return;
   }
   
   def 'tsvParse' () {
