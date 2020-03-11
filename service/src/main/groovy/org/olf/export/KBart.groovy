@@ -224,6 +224,16 @@ public class KBart implements Serializable {
         if (pci.depth) kbart.coverage_depth = pci.depth
         if (pci.note) kbart.notes = pci.note
         if (pti.url) kbart.title_url = pti.url
+        if (ti.firstAuthor) kbart.first_author = ti.firstAuthor
+        if (ti.firstEditor) kbart.first_editor = ti.firstEditor
+        if (ti.monographEdition) kbart.monograph_edition = ti.monographEdition
+        if (ti.monographVolume) kbart.monograph_volume = ti.monographVolume
+        if (ti.subType.value == "print" && ti.dateMonographPublished) {
+          kbart.date_monograph_published_print = ti.dateMonographPublished
+        }
+        else if (ti.subType.value == "electronic" && ti.dateMonographPublished) {
+          kbart.date_monograph_published_online = ti.dateMonographPublished
+        }
 
         Object identifiers_obj = ti.identifiers
         if (identifiers_obj) {
