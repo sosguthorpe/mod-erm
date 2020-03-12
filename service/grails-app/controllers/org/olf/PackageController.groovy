@@ -13,6 +13,9 @@ import java.time.LocalDate
 import org.springframework.web.multipart.MultipartFile
 import org.apache.commons.io.input.BOMInputStream
 
+import com.opencsv.ICSVParser
+import com.opencsv.CSVParser
+import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReader
 import com.opencsv.CSVReaderBuilder
 
@@ -64,7 +67,12 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
     
     BOMInputStream bis = new BOMInputStream(file.getInputStream());
     Reader fr = new InputStreamReader(bis);
-    CSVReader csvReader = new CSVReaderBuilder(fr).build();
+    CSVParser parser = new CSVParserBuilder().withSeparator('\t' as char)
+        .withQuoteChar(ICSVParser.DEFAULT_QUOTE_CHARACTER)
+        .withEscapeChar(ICSVParser.DEFAULT_ESCAPE_CHARACTER)
+      .build();
+
+    CSVReader csvReader = new CSVReaderBuilder(fr).withCSVParser(parser).build();
 
     def completed = importService.importPackageFromKbart(csvReader, packageInfo)
 
@@ -73,8 +81,7 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
     } else {
       log.debug("KBART import failed")
     }
-    return render (status: 200)
-    render [:] as JSON;
+    return render ([:] as JSON)
   }
 
   def content () {

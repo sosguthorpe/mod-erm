@@ -5,6 +5,9 @@ import grails.gorm.MultiTenant
 import org.springframework.web.multipart.MultipartFile
 import org.apache.commons.io.input.BOMInputStream
 
+import com.opencsv.ICSVParser
+import com.opencsv.CSVParser
+import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReader
 import com.opencsv.CSVReaderBuilder
 
@@ -45,7 +48,12 @@ class KbartImportJob extends PersistentJob implements MultiTenant<KbartImportJob
         if (job.fileUpload && packageInfoValid) {
           BOMInputStream bis = new BOMInputStream(job.fileUpload.fileObject.fileContents.binaryStream);
           Reader fr = new InputStreamReader(bis);
-          CSVReader csvReader = new CSVReaderBuilder(fr).build();
+          CSVParser parser = new CSVParserBuilder().withSeparator('\t' as char)
+            .withQuoteChar(ICSVParser.DEFAULT_QUOTE_CHARACTER)
+            .withEscapeChar(ICSVParser.DEFAULT_ESCAPE_CHARACTER)
+          .build();
+
+          CSVReader csvReader = new CSVReaderBuilder(fr).withCSVParser(parser).build();
           importService.importPackageFromKbart(csvReader, packageInfo)
         } else {
           log.error "No file attached to the Job."
