@@ -330,18 +330,23 @@ class ImportService implements DataBinder {
     .appendPattern("yyyy-MM")
     .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
     .toFormatter();
-
-    switch(date) {
-      case ~ '^\\d{4}\$':
-        outputDate = LocalDate.parse(date, yearFormat);
-        break;
-      case ~ '^\\d{4}(-(\\d{2}))\$':
-        outputDate = LocalDate.parse(date, monthYearFormat);
-        break;
-      default:
-        outputDate = LocalDate.parse(date);
-        break;
+    try {
+      switch(date) {
+        case ~ '^\\d{4}\$':
+          outputDate = LocalDate.parse(date, yearFormat);
+          break;
+        case ~ '^\\d{4}(-(\\d{2}))\$':
+          outputDate = LocalDate.parse(date, monthYearFormat);
+          break;
+        default:
+          outputDate = LocalDate.parse(date);
+          break;
+      }
+    } catch (Exception e) {
+      log.error("Could not parse date ${date}")
+      outputDate = null
     }
+
     return outputDate;
   }
 
