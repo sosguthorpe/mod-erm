@@ -1,3 +1,31 @@
+## 2.2.0 2020-03-13
+ * ERM-747 Custom Properties: Unable to correctly save decimals with german browser locale
+ * ERM-711 POST/PUT on erm/sas/{:id} endpoint appears to not save reasonForClosure
+ * ERM-696 Agreements: Reason for closure is not displayed
+ * ERM-689 Add monograph fields to KBART export
+ * ERM-685 Support import and processing of KBART in Local KB Admin
+   * ERM-687 Create tsv parser
+ * ERM-682 Upgrading mod-agreements module from Daisy to Edelweiss fails
+ * ERM-680 Show spinner in agreement lines when switching between agreements
+ * ERM-676 Support Editor information in Agreements local KB
+ * ERM-655 Sorting limits output in some cases
+ * ERM-649 Display a better message when the ExternalDataSources name isn't unique
+ * ERM-641 License custom property "note" field should not be returned in public API
+ * ERM-587 Agreements : On duplicating an agreement the "General notes about this agreement's license" field should be copied
+ * ERM-571 Ensure remote KB syncs are not left "In Progress" when an error occurs.
+ * ERM-507 Agreement: Agreement Lines: Package item count always equals "1"
+ * ERM-486 Support monograph volume in Agreements local KB
+ * ERM-485 Support e/p monograph publication dates in Agreements local KB
+ * ERM-482 Support Author information in Agreements local KB
+ * ERM-481 Support Edition information in Agreements local KB
+ * ERM-461 Local KB Admin | Log error when accessEnd date before accessStart date
+ * ERM-437 Local KB admin | External data source name should be unique
+   * ERM-643 Add validation clause to ensure that the names data source names are unique
+ * ERM-434 "LOCAL" Remote KB/data source should not be editable or be able to be deleted
+   * ERM-644 Add preUpdate and preDelete listeners
+ * ERM-356 Expose license terms over API
+   * ERM-361 Support API for retrieving license terms based on a resource identifier
+
 ## 2.0.1 2020-01-28
  * ERM-682 Upgrading mod-agreements module from Daisy to Edelweiss fails
 
