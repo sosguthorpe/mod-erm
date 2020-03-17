@@ -238,18 +238,39 @@ public class KBart implements Serializable {
         Object identifiers_obj = ti.identifiers
         if (identifiers_obj) {
           Iterator iter = ti.identifiers.iterator();
+          String identifierValue;
+          String doi, eissn, isbn, issn;
           while (iter.hasNext()) {
             IdentifierOccurrence thisIdent = iter.next()
             Identifier ident =  thisIdent.identifier
-            if (ident) {
-              if (ident.ns.value.equals("eissn")) {
-                kbart.online_identifier = ident.value
-              } else if (ident.ns.value.equals("isbn")) {
-                kbart.print_identifier = ident.value
-              } else if (ident.ns.value.equals("issn")) {
-                kbart.print_identifier = ident.value
+              if (ident?.ns?.value == "eissn") {
+                eissn = ident.value
+              } else if (ident?.ns?.value == "issn") {
+                issn = ident.value
+              } else if (ident?.ns?.value == "isbn") {
+                isbn = ident.value
+              } else if (ident?.ns?.value == "doi") {
+                doi = ident.value
               }
-            }
+          }
+
+          if (eissn) {
+            identifierValue = eissn
+          } else if (issn) {
+            identifierValue = issn
+          } else if (isbn) {
+            identifierValue = isbn
+          } else if (doi) {
+            identifierValue = doi
+          } else {
+            identifierValue = " "
+          }
+
+          if (ti.subType?.value == "print") {
+            kbart.print_identifier = identifierValue
+          }
+          else {
+            kbart.online_identifier = identifierValue
           }
         }
 
