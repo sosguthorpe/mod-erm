@@ -227,52 +227,57 @@ class ImportService implements DataBinder {
 
       // Instance/Sibling instance identifiers AND coverage rely on the media type, monograph vs serial 
       String instanceMedia = getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia')
-      if (
-        instanceMedia.toLowerCase() == 'monograph' ||
-        instanceMedia.toLowerCase() == 'book'
-      ) {
-          siblingInstanceIdentifier.namespace = 'ISBN'
-          instanceIdentifier.namespace = 'ISBN'
-          if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate') != '') {
-            log.error("Unexpected coverage information for for title: ${getFieldFromLine(lineAsArray, acceptedFields, 'title')} of type: ${instanceMedia}")
-          }
-          kbartCoverageList = []
+      if (!instanceMedia) {
+        // Skip the import 
+        log.error "Missing publication_type for title: ${getFieldFromLine(lineAsArray, acceptedFields, 'title')}, skipping line."
+      } else {
+        if (
+          instanceMedia.toLowerCase() == 'monograph' ||
+          instanceMedia.toLowerCase() == 'book'
+        ) {
+            siblingInstanceIdentifier.namespace = 'ISBN'
+            instanceIdentifier.namespace = 'ISBN'
+            if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate') != '') {
+              log.error("Unexpected coverage information for title: ${getFieldFromLine(lineAsArray, acceptedFields, 'title')} of type: ${instanceMedia}")
+            }
+            kbartCoverageList = []
 
-      } else {          
-          siblingInstanceIdentifier.namespace = 'ISSN'
-          instanceIdentifier.namespace = 'ISSN'
-          kbartCoverageList = buildKBARTCoverage(lineAsArray, acceptedFields)
+        } else {          
+            siblingInstanceIdentifier.namespace = 'ISSN'
+            instanceIdentifier.namespace = 'ISSN'
+            kbartCoverageList = buildKBARTCoverage(lineAsArray, acceptedFields)
+        }
+
+        siblingInstanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'siblingInstanceIdentifiers')
+        instanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'instanceIdentifiers')
+
+        // Check that these aren't invalid identifiers, if they are, return an empty list
+        List instanceIdentifiers = identifierValidator(instanceIdentifier)
+        List siblingInstanceIdentifiers = identifierValidator(siblingInstanceIdentifier)
+        
+        PackageContentImpl pkgLine = new PackageContentImpl(
+          title: getFieldFromLine(lineAsArray, acceptedFields, 'title'),
+          siblingInstanceIdentifiers: siblingInstanceIdentifiers,
+          instanceIdentifiers: instanceIdentifiers,
+          coverage: kbartCoverageList,
+          url: getFieldFromLine(lineAsArray, acceptedFields, 'url'),
+          firstAuthor: getFieldFromLine(lineAsArray, acceptedFields, 'firstAuthor'),
+          embargo: getFieldFromLine(lineAsArray, acceptedFields, 'embargo'),
+          coverageDepth: getFieldFromLine(lineAsArray, acceptedFields, 'coverageDepth'),
+          coverageNote: getFieldFromLine(lineAsArray, acceptedFields, 'coverageNote'),
+          instanceMedia: getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia'),
+          instanceMedium: "electronic",
+
+          dateMonographPublished: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublished'),
+          dateMonographPublishedPrint: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublishedPrint'),
+
+          monographVolume: getFieldFromLine(lineAsArray, acceptedFields, 'monographVolume'),
+          monographEdition: getFieldFromLine(lineAsArray, acceptedFields, 'monographEdition'),
+          firstEditor: getFieldFromLine(lineAsArray, acceptedFields, 'firstEditor')
+        )
+
+        pkg.packageContents << pkgLine
       }
-
-      siblingInstanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'siblingInstanceIdentifiers')
-      instanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'instanceIdentifiers')
-
-      // Check that these aren't invalid identifiers, if they are, return an empty list
-      List instanceIdentifiers = identifierValidator(instanceIdentifier)
-      List siblingInstanceIdentifiers = identifierValidator(siblingInstanceIdentifier)
-      
-      PackageContentImpl pkgLine = new PackageContentImpl(
-        title: getFieldFromLine(lineAsArray, acceptedFields, 'title'),
-        siblingInstanceIdentifiers: siblingInstanceIdentifiers,
-        instanceIdentifiers: instanceIdentifiers,
-        coverage: kbartCoverageList,
-        url: getFieldFromLine(lineAsArray, acceptedFields, 'url'),
-        firstAuthor: getFieldFromLine(lineAsArray, acceptedFields, 'firstAuthor'),
-        embargo: getFieldFromLine(lineAsArray, acceptedFields, 'embargo'),
-        coverageDepth: getFieldFromLine(lineAsArray, acceptedFields, 'coverageDepth'),
-        coverageNote: getFieldFromLine(lineAsArray, acceptedFields, 'coverageNote'),
-        instanceMedia: getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia'),
-        instanceMedium: "electronic",
-
-        dateMonographPublished: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublished'),
-        dateMonographPublishedPrint: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublishedPrint'),
-
-        monographVolume: getFieldFromLine(lineAsArray, acceptedFields, 'monographVolume'),
-        monographEdition: getFieldFromLine(lineAsArray, acceptedFields, 'monographEdition'),
-        firstEditor: getFieldFromLine(lineAsArray, acceptedFields, 'firstEditor')
-      )
-
-      pkg.packageContents << pkgLine
     }
 
     if (pkg.packageContents.size() > 0) {
