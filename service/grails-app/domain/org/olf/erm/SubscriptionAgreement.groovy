@@ -60,17 +60,18 @@ public class SubscriptionAgreement implements CustomProperties,MultiTenant<Subsc
   @Defaults(['Definitely renew', 'For review', 'Definitely cancel'])
   RefdataValue renewalPriority
 
+  @CategoryId(defaultInternal=true)
   @Defaults(['Draft', 'Requested', 'In negotiation', 'Active', 'Closed'])
   RefdataValue agreementStatus
 
   @Defaults(['Cancelled', 'Ceased', 'Superseded', 'Rejected'])
   RefdataValue reasonForClosure
 
-  @CategoryId('Global.Yes_No')
+  @CategoryId(value='Global.Yes_No', defaultInternal=true)
   @Defaults(['Yes', 'No'])
   RefdataValue isPerpetual
 
-  @CategoryId('Global.Yes_No')
+  @CategoryId(value='Global.Yes_No', defaultInternal=true)
   @Defaults(['Yes', 'No'])
   RefdataValue contentReviewNeeded
 

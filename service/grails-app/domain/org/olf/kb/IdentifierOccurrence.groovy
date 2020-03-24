@@ -1,5 +1,6 @@
 package org.olf.kb
 
+import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.RefdataValue
 
 import grails.gorm.MultiTenant
@@ -23,6 +24,7 @@ public class IdentifierOccurrence implements MultiTenant<IdentifierOccurrence> {
   String id
   Identifier identifier
   TitleInstance title
+  @CategoryId(defaultInternal=true)
   RefdataValue status
 
 

@@ -1,6 +1,7 @@
 package org.olf.erm
 import org.olf.general.Org
 import com.k_int.web.toolkit.domain.traits.Clonable
+import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
@@ -17,6 +18,7 @@ public class SubscriptionAgreementOrg implements MultiTenant<SubscriptionAgreeme
   String id
   Org org
 
+  @CategoryId(defaultInternal=true)
   @Defaults(['Content Provider', 'Subscription Agent', 'Vendor'])
   RefdataValue role
   

@@ -2,6 +2,7 @@ package org.olf.erm;
 
 import com.k_int.okapi.remote_resources.RemoteOkapiLink
 import com.k_int.web.toolkit.domain.traits.Clonable
+import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
@@ -15,6 +16,7 @@ public class LicenseAmendmentStatus implements MultiTenant<LicenseAmendmentStatu
   
   String amendmentId
   
+  @CategoryId(defaultInternal=true)
   @Defaults(['Current', 'Future', 'Historical', 'Does not apply'])
   RefdataValue status
   String note

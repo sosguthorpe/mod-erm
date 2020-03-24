@@ -3,6 +3,7 @@ package org.olf.kb
 import javax.persistence.Transient
 import org.hibernate.sql.JoinType
 import org.olf.erm.Entitlement
+import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.RefdataValue
 import com.k_int.web.toolkit.refdata.Defaults
 
@@ -30,10 +31,12 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   Work work
   
   // Journal/Book/...
+  @CategoryId(defaultInternal=true)
   @Defaults(['Journal', 'Book'])
   RefdataValue type
 
   // Print/Electronic
+  @CategoryId(defaultInternal=true)
   @Defaults(['Print', 'Electronic'])
   RefdataValue subType
 

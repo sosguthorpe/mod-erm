@@ -16,5 +16,6 @@ databaseChangeLog = {
   include file: 'update-mod-agreements-1-11.groovy'
   include file: 'update-mod-agreements-2-0.groovy'
   include file: 'update-mod-agreements-2-1.groovy'
+  include file: 'update-mod-agreements-2-2.groovy'
   include file: 'update-mod-agreements-2-3.groovy'
 }

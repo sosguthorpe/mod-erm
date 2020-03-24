@@ -1,5 +1,6 @@
 package org.olf.erm
 
+import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
@@ -13,6 +14,7 @@ public class AgreementRelationship implements MultiTenant<AgreementRelationship>
   
   String id
   
+  @CategoryId(defaultInternal=true)
   @Defaults(['Supersedes', 'Provides post-cancellation access for', 'Tracks demand-driven acquisitions for'])
   RefdataValue type
   
