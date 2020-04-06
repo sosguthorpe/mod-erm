@@ -7,6 +7,8 @@ pipeline {
     GRADLEW_OPTS = '--console plain --no-daemon'
     BUILD_DIR = "${env.WORKSPACE}/service"
     MD = "${env.WORKSPACE}/service/build/resources/main/okapi/ModuleDescriptor.json"
+    doKubeDeploy = true
+
   }
 
   options {
@@ -101,6 +103,22 @@ pipeline {
           foliociLib.updateModDescriptor(env.MD) 
         }
         postModuleDescriptor(env.MD)
+      }
+    }
+
+    stage('Kubernetes Deploy'){
+      when {
+        branch 'master'
+        expression { return env.doKubeDeploy }  
+      }
+      steps {
+        echo "Deploying to kubernetes cluster"
+        kubeDeploy('folio-default',
+                  "[{" +
+                    "\"name\" : \"${env.name}\"," +
+                    "\"version\" : \"${env.version}\"," +
+                    "\"deploy\":true" +
+                  "}]")
       }
     }
 
