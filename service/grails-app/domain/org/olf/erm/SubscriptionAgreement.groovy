@@ -80,6 +80,7 @@ public class SubscriptionAgreement implements CustomProperties,MultiTenant<Subsc
   Org vendor
 
   Set<Entitlement> items
+  Set<String> alternateNames
   
   private Period currentPeriod
   Period getCurrentPeriod () {
@@ -158,6 +159,7 @@ public class SubscriptionAgreement implements CustomProperties,MultiTenant<Subsc
   }
   
   static hasMany = [
+         alternateNames: String,
                   items: Entitlement,
            historyLines: SAEventHistory,
                contacts: InternalContact,
