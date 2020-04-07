@@ -32,12 +32,16 @@ public class PackageContentItem extends ErmResource implements MultiTenant<Packa
 
   // A field primarily to deposit KBART::CoverageDepth type data
   String depth
+  
+  // KBART::Embargo data
+  Embargo embargo
 
   static mapping = {
                   pkg column:'pci_pkg_fk'
                   pti column:'pci_pti_fk'
           accessStart column:'pci_access_start'
             accessEnd column:'pci_access_end'
+              embargo column:'pci_embargo_fk'
                  note column:'pci_note'
                 depth column:'pci_depth'
        addedTimestamp column:'pci_added_ts'
@@ -46,15 +50,16 @@ public class PackageContentItem extends ErmResource implements MultiTenant<Packa
   }
 
   static constraints = {
-                  pkg(nullable:false, blank:false)
-                  pti(nullable:false, blank:false)
-          accessStart(nullable:true, blank:false)
-            accessEnd(nullable:true, blank:false)
+                  pkg(nullable:false)
+                  pti(nullable:false)
+          accessStart(nullable:true)
+            accessEnd(nullable:true)
                  note(nullable:true, blank:false)
                 depth(nullable:true, blank:false)
-       addedTimestamp(nullable:true, blank:false)
-     removedTimestamp(nullable:true, blank:false)
-    lastSeenTimestamp(nullable:true, blank:false)
+       addedTimestamp(nullable:true)
+     removedTimestamp(nullable:true)
+    lastSeenTimestamp(nullable:true)
+              embargo(nullable:true)
   }
 
   /**

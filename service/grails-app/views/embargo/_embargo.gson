@@ -1,0 +1,6 @@
+import org.olf.kb.Embargo
+
+import groovy.transform.*
+
+@Field Embargo embargo
+json g.render(embargo, [excludes:['id'], expand: ['movingWallStart', 'movingWallEnd']])

@@ -1,0 +1,19 @@
+import org.olf.kb.EmbargoStatement
+
+import groovy.transform.*
+
+@Field EmbargoStatement embargoStatement
+json g.render(embargoStatement, [excludes:['id', 'unit', 'type']]) {
+  
+  switch (embargoStatement.unit) {
+    case EmbargoStatement.Unit.D:
+      unit "Days"
+      break
+    case EmbargoStatement.Unit.M:
+      unit "Months"
+      break
+    case EmbargoStatement.Unit.Y:
+      unit "Years"
+      break
+  }
+}
