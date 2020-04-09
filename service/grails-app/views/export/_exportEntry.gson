@@ -1,5 +1,6 @@
 import groovy.transform.Field
 import org.olf.erm.Entitlement
+import org.olf.kb.Embargo
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance
@@ -12,6 +13,7 @@ boolean via_package = false
 final ErmResource resource = GrailsHibernateUtil.unwrapIfProxy(tuple[0]) as ErmResource
 Entitlement ent
 TitleInstance ti
+Embargo the_embargo
 Platform the_platform
 String the_depth
 String the_note
@@ -19,19 +21,22 @@ String the_url
 
 switch (resource) {
   case { it instanceof PackageContentItem }:
+    PackageContentItem pci = resource as PackageContentItem
     via_package = tuple[1]
     ent = GrailsHibernateUtil.unwrapIfProxy(via_package ? tuple[1] : tuple[2]) as Entitlement
-    ti = ((PackageContentItem)resource).pti.titleInstance
-    the_platform = ((PackageContentItem)resource).pti.platform
-    the_url = ((PackageContentItem)resource).pti.url
+    ti = pci.pti.titleInstance
+    the_platform = pci.pti.platform
+    the_url = pci.pti.url
+    the_embargo = pci.embargo
+    the_depth = pci.depth
+    the_note = pci.note
     
-    the_depth = ((PackageContentItem)resource).depth
-    the_note = ((PackageContentItem)resource).note
     break
   case { it instanceof PlatformTitleInstance }:
-    ti = ((PlatformTitleInstance)resource).titleInstance
-    the_platform = ((PlatformTitleInstance)resource).platform
-    the_url = ((PlatformTitleInstance)resource).url
+    PlatformTitleInstance pti = resource as PlatformTitleInstance
+    ti = pti.titleInstance
+    the_platform = pti.platform
+    the_url = pti.url
     break
     
   case { it instanceof TitleInstance}:
@@ -63,6 +68,10 @@ json {
   if (the_platform) {
      platform g.render(the_platform)
   }
+  
+  if (the_embargo) {
+    embargo g.render(the_embargo)
+ }
   
   if (the_note) {
      note the_note

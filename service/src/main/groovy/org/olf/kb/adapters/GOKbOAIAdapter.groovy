@@ -237,7 +237,8 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
 
           def tipp_coverage_depth = tipp_entry.coverage.@coverageDepth?.toString()
           def tipp_coverage_note = tipp_entry.coverage.@coverageNote?.toString()
-
+          final String embargo = tipp_entry.coverage?.@embargo?.toString()
+          
           def tipp_url = tipp_entry.url?.text()
           def tipp_platform_url = tipp_entry.platform?.primaryUrl?.text()
           def tipp_platform_name = tipp_entry.platform?.name?.text()
@@ -252,7 +253,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
           }
 
           // log.debug("consider tipp ${tipp_title}")
-
+          
           result.packageContents.add([
             "title": tipp_title,
             "instanceMedium": tipp_medium,
@@ -260,7 +261,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
             "instanceIdentifiers": tipp_instance_identifiers,
             "siblingInstanceIdentifiers": tipp_sibling_identifiers,
             "coverage": tipp_coverage,
-            "embargo": null,
+            "embargo": embargo,
             "coverageDepth": tipp_coverage_depth,
             "coverageNote": tipp_coverage_note,
             "platformUrl": tipp_platform_url,

@@ -19,6 +19,7 @@ class ContentItem implements ContentItemSchema, Validateable {
   String depth
   LocalDate accessStart
   LocalDate accessEnd
+  String embargo
   
   Set<CoverageStatement> coverage
   
@@ -98,12 +99,6 @@ class ContentItem implements ContentItemSchema, Validateable {
     def siblings = instanceMedium ? siblingNamespacesForSubType(instanceMedium) : []
     
     ids && siblings ? ids.findAll { IdentifierSchema idSch -> siblings.contains(idSch.namespace.trim().toUpperCase()) } as Collection<IdentifierSchema> : ids
-  }
-  
-  @Override
-  public String getEmbargo() {
-    // Null for this implementation
-    null
   }
   
   @Override

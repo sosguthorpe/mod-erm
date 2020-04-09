@@ -223,6 +223,7 @@ public class KBart implements Serializable {
         kbart.publication_type = ti.type.value
         if (pci.depth) kbart.coverage_depth = pci.depth
         if (pci.note) kbart.notes = pci.note
+        if (pci.embargo) kbart.embargo_info = "${pci.embargo}"
         if (pti.url) kbart.title_url = pti.url
         if (ti.firstAuthor) kbart.first_author = ti.firstAuthor
         if (ti.firstEditor) kbart.first_editor = ti.firstEditor
