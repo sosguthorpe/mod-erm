@@ -7,17 +7,24 @@ databaseChangeLog = {
         confirm: "Successfully updated the pd_description column."
         )
   }
-  changeSet(author: "claudia (manual)", id: "202004061829-01") {
-    createTable(tableName: "subscription_agreement_alternate_names") {
-      column(name: "subscription_agreement_id", type: "VARCHAR(36)") {
-        constraints(nullable: "false")
-      }
-      column(name: "alternate_names_string", type: "VARCHAR(255)")
-    }
+  changeSet(author: "claudia (manual)", id: "202004091233-01") {
+        createTable(tableName: "alternate_name") {
+            column(name: "an_id", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "an_version", type: "BIGINT") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "an_owner_fk", type: "VARCHAR(36)")
+
+            column(name: "an_name", type: "VARCHAR(255)")
+        }
   }
 
-  changeSet(author: "claudia (manual)", id: "202004061829-02") {
-    addForeignKeyConstraint(baseColumnNames: "subscription_agreement_id", baseTableName: "subscription_agreement_alternate_names", constraintName: "FKbwixs452hfe48k069eip5xgx0", referencedColumnNames: "sa_id", referencedTableName: "subscription_agreement")
+  changeSet(author: "claudia (manual)", id: "202004091233-02") {
+        addForeignKeyConstraint(baseColumnNames: "an_owner_fk", baseTableName: "alternate_name", constraintName: "an_to_sa_fk", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "sa_id", referencedTableName: "subscription_agreement")
   }
 
   changeSet(author: "sosguthorpe (generated)", id: "1586289817497-1") {
@@ -85,4 +92,5 @@ databaseChangeLog = {
   changeSet(author: "sosguthorpe (generated)", id: "1586289817497-8") {
     addForeignKeyConstraint(baseColumnNames: "pci_embargo_fk", baseTableName: "package_content_item", constraintName: "FKm8g6i6blt58ctbfcf8p6faidu", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "emb_id", referencedTableName: "embargo")
   }
+  
 }
