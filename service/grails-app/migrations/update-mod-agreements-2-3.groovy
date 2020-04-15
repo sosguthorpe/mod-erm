@@ -92,5 +92,10 @@ databaseChangeLog = {
   changeSet(author: "sosguthorpe (generated)", id: "1586289817497-8") {
     addForeignKeyConstraint(baseColumnNames: "pci_embargo_fk", baseTableName: "package_content_item", constraintName: "FKm8g6i6blt58ctbfcf8p6faidu", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "emb_id", referencedTableName: "embargo")
   }
-  
+
+  changeSet(author: "doytch (manual)", id: "202004150927-1") {
+    addColumn(tableName: "entitlement") {
+      column(name: "ent_note", type: "text")
+    }
+  }
 }

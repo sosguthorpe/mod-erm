@@ -55,6 +55,8 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
   // Type - must be set to external for externally defined packages, null or local for things defined in the local DB
   String type
 
+  String note
+
   // These three properties allow us to create an entitlement which is externally defined. An externally defined
   // entitlement does not link to a resource in the tenant database, but instead will use API calls to define its contents
   String authority
@@ -165,6 +167,7 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
                 owner column: 'ent_owner_fk'
              resource column: 'ent_resource_fk'
                  type column: 'ent_type'
+                 note column: 'ent_note', type: 'text'
               enabled column: 'ent_enabled'
        contentUpdated column: 'ent_content_updated'
            activeFrom column: 'ent_active_from'
@@ -201,6 +204,7 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
           coverage (validator: HoldingsCoverage.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
 
               type(nullable:true, blank:false)
+              note(nullable:true, blank:false)
            enabled(nullable:true, blank:false)
     contentUpdated(nullable:true, blank:false)
         activeFrom(nullable:true, blank:false)
