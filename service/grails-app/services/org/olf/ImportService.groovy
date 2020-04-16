@@ -105,6 +105,7 @@ class ImportService implements DataBinder {
       pkg.validate()
       if (!pkg.errors.hasErrors()) {
         // Ingest the package.
+
         Map result = packageIngestService.upsertPackage(pkg)
         String upsertPackagePackageId = result.packageId
         
@@ -135,6 +136,7 @@ class ImportService implements DataBinder {
     String packageSource
     String packageReference
     String packageProvider
+    Boolean trustedSourceTI = packageInfo.trustedSourceTI
 
     if ( packageInfo.packageName == null ||
          packageInfo.packageSource == null ||
@@ -214,7 +216,8 @@ class ImportService implements DataBinder {
       packageName: packageName,
       packageSource: packageSource,
       packageSlug: packageReference,
-      packageProvider: pkgPrv
+      packageProvider: pkgPrv,
+      trustedSourceTI: trustedSourceTI
     )
 
     String[] record;
@@ -282,7 +285,6 @@ class ImportService implements DataBinder {
 
     if (pkg.packageContents.size() > 0) {
       def result = packageIngestService.upsertPackage(pkg)
-      //TODO Use this information to return true if the package imported successfully or false otherwise
       packageImported = true
     } else {
       log.error("Package contents empty, skipping package creation")

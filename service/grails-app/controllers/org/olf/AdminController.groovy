@@ -42,7 +42,6 @@ class AdminController implements DataBinder{
         return
       }
       
-      // Else do the ingest.
       result = packageIngestService.upsertPackage(package_data)
     }
     else {

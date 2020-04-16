@@ -62,6 +62,7 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
       packageName: request.getParameter("packageName"),
       packageSource: request.getParameter("packageSource"),
       packageReference: request.getParameter("packageReference"),
+      trustedSourceTI: request.getParameter("trustedSourceTI"),
       packageProvider: request.getParameter("packageProvider")
     ]
     

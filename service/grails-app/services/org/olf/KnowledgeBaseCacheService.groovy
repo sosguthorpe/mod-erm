@@ -44,7 +44,7 @@ where ( exists ( select pci.id
       log.debug("Run remote kb sync:: ${rkb.id}/${rkb.name}/${rkb.uri}")
       Class cls = Class.forName(rkb.type)
       KBCacheUpdater cache_updater = cls.newInstance()
-      cache_updater.freshenPackageData(rkb.name, rkb.uri, rkb.cursor, this)
+      cache_updater.freshenPackageData(rkb.name, rkb.uri, rkb.cursor, this, rkb.trustedSourceTI)
     }
   }
 
@@ -78,7 +78,7 @@ where ( exists ( select pci.id
     Map result = null
     RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
       log.debug("onPackageChange(${rkb_name},...)")
-      result = packageIngestService.upsertPackage(package_data, rkb_name)
+      result = packageIngestService.upsertPackage(package_data, rkb_name, false)
     }
     log.debug("onPackageChange(${rkb_name},...) returning ${result}")
 

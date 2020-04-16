@@ -14,6 +14,7 @@ if (!local_kb ) {
   
   // Ensure we make this one read only.
   local_kb.readonly = true
+  local_kb.trustedSourceTI = true
   local_kb.save(flush:true, failOnError:true)
 }
 

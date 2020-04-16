@@ -12,6 +12,9 @@ import org.olf.kb.Work
 import grails.gorm.transactions.Transactional
 import grails.web.databinding.DataBinder
 
+
+import groovy.json.*
+
 /**
  * This service works at the module level, it's often called without a tenant context.
  */
@@ -75,7 +78,7 @@ class TitleInstanceResolverService implements DataBinder{
    *     } ]
    *   }
    */
-  public TitleInstance resolve(ContentItemSchema citation) {
+  public TitleInstance resolve(ContentItemSchema citation, boolean trustedSourceTI) {
     // log.debug("TitleInstanceResolverService::resolve(${citation})");
     TitleInstance result = null;
 
@@ -116,7 +119,7 @@ class TitleInstanceResolverService implements DataBinder{
         case(1):
           log.debug("Exact match. Enrich title.")
           result = candidate_list.get(0)
-          checkForEnrichment(result, citation)
+          checkForEnrichment(result, citation, trustedSourceTI)
           break;
         default:
           log.warn("title matched ${num_matches} records with a threshold >= ${MATCH_THRESHOLD} . Unable to continue. Matching IDs: ${candidate_list.collect { it.id }}. class one identifier count: ${num_class_one_identifiers}");
@@ -284,8 +287,43 @@ class TitleInstanceResolverService implements DataBinder{
    * an identifier, we will need to add identifiers to that record when we see a record that
    * suggests identifiers for that title match.
    */ 
-  private void checkForEnrichment(TitleInstance title, ContentItemSchema citation) {
-    return
+  private void checkForEnrichment(TitleInstance title, ContentItemSchema citation, boolean trustedSourceTI) {
+    log.debug("Checking for enrichment of Title Instance: ${title} :: trusted: ${trustedSourceTI}")
+    if (trustedSourceTI == true) {
+      log.debug("Trusted source for TI enrichment--enriching")
+
+      if (title.name != citation.title) {
+        title.name = citation.title
+      }
+
+      if (title.dateMonographPublished != citation.dateMonographPublished) {
+        title.dateMonographPublished = citation.dateMonographPublished
+      }
+
+      if (title.firstAuthor != citation.firstAuthor) {
+        title.firstAuthor = citation.firstAuthor
+      }
+      
+      if (title.firstAuthor != citation.firstAuthor) {
+        title.firstAuthor = citation.firstAuthor
+      }
+
+      if (title.firstEditor != citation.firstEditor) {
+        title.firstEditor = citation.firstEditor
+      }
+
+      if (title.monographEdition != citation.monographEdition) {
+        title.monographEdition = citation.monographEdition
+      }
+
+      if (title.monographVolume != citation.monographVolume) {
+        title.monographVolume = citation.monographVolume
+      }
+      title.save(flush: true)
+    } else {
+      log.debug("Not a trusted source for TI enrichment--skipping")
+    }
+    return null;
   }
 
   /**

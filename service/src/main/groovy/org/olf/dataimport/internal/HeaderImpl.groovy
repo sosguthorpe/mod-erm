@@ -15,6 +15,7 @@ class HeaderImpl implements PackageHeaderSchema, Validateable {
   String packageSource
   String status
   String packageName
+  Boolean trustedSourceTI
   LocalDate startDate
   LocalDate endDate
   String packageSlug

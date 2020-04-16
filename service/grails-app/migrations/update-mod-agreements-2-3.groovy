@@ -92,6 +92,37 @@ databaseChangeLog = {
   changeSet(author: "sosguthorpe (generated)", id: "1586289817497-8") {
     addForeignKeyConstraint(baseColumnNames: "pci_embargo_fk", baseTableName: "package_content_item", constraintName: "FKm8g6i6blt58ctbfcf8p6faidu", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "emb_id", referencedTableName: "embargo")
   }
+  changeSet(author: "efreestone (manual)", id: "202003250914-1") {
+    addColumn(tableName: "remotekb") {
+      column(name: "rkb_trusted_source_ti", type: "boolean")
+    }
+  }
+  // Set all external remote KBs to not-trusted
+  changeSet(author: "efreestone (manual)", id: "202003250914-2") {
+    grailsChange {
+      change {
+        sql.execute("UPDATE ${database.defaultSchemaName}.remotekb SET rkb_trusted_source_ti=FALSE WHERE rkb_name NOT LIKE 'LOCAL';".toString())
+      }
+    }
+  }
+  // Set LOCAL to trusted
+  changeSet(author: "efreestone (manual)", id: "202003250914-3") {
+    grailsChange {
+      change {
+        sql.execute("UPDATE ${database.defaultSchemaName}.remotekb SET rkb_trusted_source_ti=TRUE WHERE rkb_name LIKE 'LOCAL';".toString())
+      }
+    }
+  }
+  // Add non-nullable constraint
+  changeSet(author: "efreestone (manual)", id: "202003250914-4") {
+    addNotNullConstraint(tableName: "remotekb", columnName: "rkb_trusted_source_ti", columnDataType: "boolean")
+  }
+
+  changeSet(author: "efreestone (manual)", id: "202004081754-001") {
+    addColumn(tableName: "kbart_import_job") {
+      column(name: "trusted_source_ti", type: "boolean")
+    }
+  }
 
   changeSet(author: "doytch (manual)", id: "202004150927-1") {
     addColumn(tableName: "entitlement") {
@@ -99,3 +130,4 @@ databaseChangeLog = {
     }
   }
 }
+

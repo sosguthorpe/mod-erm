@@ -67,7 +67,7 @@ class PackageIngestService {
     ]
 
     Pkg pkg = null
-
+    Boolean trustedSourceTI = package_data.header?.trustedSourceTI
     Pkg.withNewTransaction { status ->
       // ERM caches many remote KB sources in it's local package inventory
       // Look up which remote kb via the name
@@ -77,7 +77,18 @@ class PackageIngestService {
        kb = new RemoteKB( name:remotekbname,
                           rectype: new Long(1),
                           active: Boolean.TRUE,
-                          readonly:readOnly).save(flush:true, failOnError:true)
+                          readonly:readOnly,
+                          trustedSourceTI:false).save(flush:true, failOnError:true)
+      }
+
+      if (trustedSourceTI == null) {
+        // If we're not explicitly handed trusted information, default to whatever the remote KB setting is
+        trustedSourceTI = kb.trustedSourceTI
+        if (trustedSourceTI == null) {
+          // If it somehow remains unset, default to false, but with warning
+          log.warn("Could not find trustedSourceTI setting for KB, defaulting to false")
+          trustedSourceTI = false
+        }
       }
 
       result.updateTime = System.currentTimeMillis()
@@ -120,7 +131,7 @@ class PackageIngestService {
 
           // resolve may return null, used to throw exception which causes the whole package to be rejected. Needs
           // discussion to work out best way to handle.
-          TitleInstance title = titleInstanceResolverService.resolve(pc)
+          TitleInstance title = titleInstanceResolverService.resolve(pc, trustedSourceTI)
 
           if ( title != null ) {
 
