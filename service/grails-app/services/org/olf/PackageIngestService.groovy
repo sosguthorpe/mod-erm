@@ -68,11 +68,12 @@ class PackageIngestService {
 
     Pkg pkg = null
     Boolean trustedSourceTI = package_data.header?.trustedSourceTI
+    def skipPackage = false
     Pkg.withNewTransaction { status ->
       // ERM caches many remote KB sources in it's local package inventory
       // Look up which remote kb via the name
       RemoteKB kb = RemoteKB.findByName(remotekbname)
-      
+
       if (!kb) {
        kb = new RemoteKB( name:remotekbname,
                           rectype: new Long(1),
@@ -110,226 +111,239 @@ class PackageIngestService {
       }
 
       if ( pkg == null ) {
-        pkg = new Pkg(
-              name: package_data.header.packageName,
-             source: package_data.header.packageSource,
-          reference: package_data.header.packageSlug,
-           remoteKb: kb,
-             vendor: vendor).save(flush:true, failOnError:true)
+        if (package_data.header.status == 'Current' || package_data.header.status == 'Expected') {
+          pkg = new Pkg(
+                name: package_data.header.packageName,
+               source: package_data.header.packageSource,
+            reference: package_data.header.packageSlug,
+             remoteKb: kb,
+               vendor: vendor).save(flush:true, failOnError:true)
+        } else {
+          log.info("Not adding package '${package_data.header.packageName}' because status '${package_data.header.status}' doesn't match 'Current' or 'Expected'")
+          skipPackage = true
+          return
+        }
       }
       result.packageId = pkg.id
     }
 
-    package_data.packageContents.eachWithIndex { ContentItemSchema pc, int index ->
-      MDC.put('subDiscriminator', "Content item #${index + 1}")
+    if (skipPackage) {
+      return
+
 
       // log.debug("Try to resolve ${pc}")
+    } else {
+      package_data.packageContents.eachWithIndex { ContentItemSchema pc, int index ->
+        MDC.put('subDiscriminator', "Content item #${index + 1}")
 
-      try {
+        // log.debug("Try to resolve ${pc}")
 
-        PackageContentItem.withNewTransaction { status ->
+        try {
 
-          // resolve may return null, used to throw exception which causes the whole package to be rejected. Needs
-          // discussion to work out best way to handle.
-          TitleInstance title = titleInstanceResolverService.resolve(pc, trustedSourceTI)
+          PackageContentItem.withNewTransaction { status ->
 
-          if ( title != null ) {
+            // resolve may return null, used to throw exception which causes the whole package to be rejected. Needs
+            // discussion to work out best way to handle.
+            TitleInstance title = titleInstanceResolverService.resolve(pc, trustedSourceTI)
 
-            // log.debug("platform ${pc.platformUrl} ${pc.platformName} (item URL is ${pc.url})")
+            if ( title != null ) {
 
-            // lets try and work out the platform for the item
-            def platform_url_to_use = pc.platformUrl
+              // log.debug("platform ${pc.platformUrl} ${pc.platformName} (item URL is ${pc.url})")
 
-            if ( ( pc.platformUrl == null ) && ( pc.url != null ) ) {
-              // No platform URL, but a URL for the title. Parse the URL and generate a platform URL
-              def parsed_url = new java.net.URL(pc.url)
-              platform_url_to_use = "${parsed_url.getProtocol()}://${parsed_url.getHost()}"
-            }
+              // lets try and work out the platform for the item
+              def platform_url_to_use = pc.platformUrl
 
-            Platform platform = Platform.resolve(platform_url_to_use, pc.platformName)
-            // log.debug("Platform: ${platform}")
-
-            if ( platform == null && PROXY_MISSING_PLATFORM ) {
-              platform = Platform.resolve('http://localhost.localdomain', 'This platform entry is used for error cases')
-            }
-
-            if ( platform != null ) {
-
-              // See if we already have a title platform record for the presence of this title on this platform
-              PlatformTitleInstance pti = PlatformTitleInstance.findByTitleInstanceAndPlatform(title, platform)
-
-              if ( pti == null )
-                pti = new PlatformTitleInstance(titleInstance:title,
-                  platform:platform,
-                  url:pc.url).save(flush:true, failOnError:true)
-
-
-              // Lookup or create a package content item record for this title on this platform in this package
-              // We only check for currently live pci records, as titles can come and go from the package.
-              // N.B. addedTimestamp removedTimestamp lastSeenTimestamp
-              def pci_qr = PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pti = :pti and pci.pkg.id = :pkg and pci.removedTimestamp is null',
-                  [pti:pti, pkg:result.packageId])
-              PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null;
-
-              boolean isUpdate = false
-              boolean isNew = false
-              if ( pci == null ) {
-                log.debug("Record ${result.titleCount} - Create new package content item")
-                pci = new PackageContentItem(
-                  pti:pti,
-                  pkg:Pkg.get(result.packageId),
-                  addedTimestamp:result.updateTime)
-                isNew = true
+              if ( ( pc.platformUrl == null ) && ( pc.url != null ) ) {
+                // No platform URL, but a URL for the title. Parse the URL and generate a platform URL
+                def parsed_url = new java.net.URL(pc.url)
+                platform_url_to_use = "${parsed_url.getProtocol()}://${parsed_url.getHost()}"
               }
-              else {
-                // Note that we have seen the package content item now - so we don't delete it at the end.
-                log.debug("Record ${result.titleCount} - Update package content item (${pci.id})")
-                isUpdate = true
+
+              Platform platform = Platform.resolve(platform_url_to_use, pc.platformName)
+              // log.debug("Platform: ${platform}")
+
+              if ( platform == null && PROXY_MISSING_PLATFORM ) {
+                platform = Platform.resolve('http://localhost.localdomain', 'This platform entry is used for error cases')
               }
-              
-              String embStr = pc.embargo?.trim()
-              
-              // Pre attempt to parse. And log error.
-              Embargo emb = null
-              if (embStr) {
-                emb = Embargo.parse(embStr)
-                if (!emb) {
-                  log.error "Could not parse ${embStr} as Embargo"
+
+              if ( platform != null ) {
+
+                // See if we already have a title platform record for the presence of this title on this platform
+                PlatformTitleInstance pti = PlatformTitleInstance.findByTitleInstanceAndPlatform(title, platform)
+
+                if ( pti == null )
+                  pti = new PlatformTitleInstance(titleInstance:title,
+                    platform:platform,
+                    url:pc.url).save(flush:true, failOnError:true)
+
+
+                // Lookup or create a package content item record for this title on this platform in this package
+                // We only check for currently live pci records, as titles can come and go from the package.
+                // N.B. addedTimestamp removedTimestamp lastSeenTimestamp
+                def pci_qr = PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pti = :pti and pci.pkg.id = :pkg and pci.removedTimestamp is null',
+                    [pti:pti, pkg:result.packageId])
+                PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null;
+
+                boolean isUpdate = false
+                boolean isNew = false
+                if ( pci == null ) {
+                  log.debug("Record ${result.titleCount} - Create new package content item")
+                  pci = new PackageContentItem(
+                    pti:pti,
+                    pkg:Pkg.get(result.packageId),
+                    addedTimestamp:result.updateTime)
+                  isNew = true
                 }
-              }
-
-              // Add/Update common properties.
-              pci.with {
-                note = pc.coverageNote
-                depth = pc.coverageDepth
-                accessStart = pc.accessStart
-                accessEnd = pc.accessEnd
-                addedTimestamp = result.updateTime
-                lastSeenTimestamp = result.updateTime
-                embargo = emb
-              }
-
-              // ensure that accessStart is earlier than accessEnd, otherwise stop processing the current item
-              if (pci.accessStart != null && pci.accessEnd != null) {
-                if (pci.accessStart > pci.accessEnd ) {
-                  log.error("accessStart date cannot be after accessEnd date for title: ${title} in package: ${pkg.name}")
-                  return
+                else {
+                  // Note that we have seen the package content item now - so we don't delete it at the end.
+                  log.debug("Record ${result.titleCount} - Update package content item (${pci.id})")
+                  isUpdate = true
                 }
-              }
 
-              if (isUpdate) {
-                if (pci.isDirty()) {
-                  // This means we have changes to an existing PCI and not a new one.
-                  result.updatedTitles++
+                String embStr = pc.embargo?.trim()
 
-                  // Grab the dirty properties
-                  def modifiedFieldNames = pci.getDirtyPropertyNames()
-                  for (fieldName in modifiedFieldNames) {
-                    if (fieldName == "accessStart") {
-                      result.updatedAccessStart++
-                    }
-                    if (fieldName == "accessEnd") {
-                      result.updatedAccessEnd++
-                    }
-                    if (countChanges.contains(fieldName)) {
-                      def currentValue = pci."$fieldName"
-                      def originalValue = pci.getPersistentValue(fieldName)
-                      if (currentValue != originalValue) {
-                        result["${fieldName}"] = (result["${fieldName}"] ?: 0)++
+                // Pre attempt to parse. And log error.
+                Embargo emb = null
+                if (embStr) {
+                  emb = Embargo.parse(embStr)
+                  if (!emb) {
+                    log.error "Could not parse ${embStr} as Embargo"
+                  }
+                }
+
+                // Add/Update common properties.
+                pci.with {
+                  note = pc.coverageNote
+                  depth = pc.coverageDepth
+                  accessStart = pc.accessStart
+                  accessEnd = pc.accessEnd
+                  addedTimestamp = result.updateTime
+                  lastSeenTimestamp = result.updateTime
+                  embargo = emb
+                }
+
+                // ensure that accessStart is earlier than accessEnd, otherwise stop processing the current item
+                if (pci.accessStart != null && pci.accessEnd != null) {
+                  if (pci.accessStart > pci.accessEnd ) {
+                    log.error("accessStart date cannot be after accessEnd date for title: ${title} in package: ${pkg.name}")
+                    return
+                  }
+                }
+
+                if (isUpdate) {
+                  if (pci.isDirty()) {
+                    // This means we have changes to an existing PCI and not a new one.
+                    result.updatedTitles++
+
+                    // Grab the dirty properties
+                    def modifiedFieldNames = pci.getDirtyPropertyNames()
+                    for (fieldName in modifiedFieldNames) {
+                      if (fieldName == "accessStart") {
+                        result.updatedAccessStart++
+                      }
+                      if (fieldName == "accessEnd") {
+                        result.updatedAccessEnd++
+                      }
+                      if (countChanges.contains(fieldName)) {
+                        def currentValue = pci."$fieldName"
+                        def originalValue = pci.getPersistentValue(fieldName)
+                        if (currentValue != originalValue) {
+                          result["${fieldName}"] = (result["${fieldName}"] ?: 0)++
+                        }
                       }
                     }
                   }
+                } else if (isNew) {
+                  // New item.
+                  result.newTitles++
                 }
-              } else if (isNew) {
-                // New item.
-                result.newTitles++
+
+                pci.save(flush: true, failOnError: true)
+
+                // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
+                // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
+                // We store this generally for the title on the platform, and specifically for this title in this package on this platform.
+                if ( pc.coverage ) {
+
+                  // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
+                  // to the list of maps that coverageService.extend expects
+                  Iterable<CoverageStatementSchema> cov = pc.coverage instanceof Iterable ? pc.coverage : [ pc.coverage ]
+
+                  coverageService.extend(pti, cov)
+                  coverageService.extend(pci, cov)
+                  coverageService.extend(title, cov)
+                }
+
+                // Save needed either way
+                pci.save(flush:true, failOnError:true)
               }
-
-              pci.save(flush: true, failOnError: true)
-
-              // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
-              // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
-              // We store this generally for the title on the platform, and specifically for this title in this package on this platform.
-              if ( pc.coverage ) {
-
-                // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
-                // to the list of maps that coverageService.extend expects
-                Iterable<CoverageStatementSchema> cov = pc.coverage instanceof Iterable ? pc.coverage : [ pc.coverage ]
-
-                coverageService.extend(pti, cov)
-                coverageService.extend(pci, cov)
-                coverageService.extend(title, cov)
+              else {
+                String message = "Skipping ${pc.title}. Unable to identify platform from ${platform_url_to_use} and ${pc.platformName}"
+                log.error(message)
               }
-
-              // Save needed either way
-              pci.save(flush:true, failOnError:true)
             }
             else {
-              String message = "Skipping ${pc.title}. Unable to identify platform from ${platform_url_to_use} and ${pc.platformName}"
+              String message = "Skipping ${pc.title}. Unable to resolve title from ${pc.title} with identifiers ${pc.instanceIdentifiers}"
               log.error(message)
             }
           }
-          else {
-            String message = "Skipping ${pc.title}. Unable to resolve title from ${pc.title} with identifiers ${pc.instanceIdentifiers}"
-            log.error(message)
+        } catch ( Exception e ) {
+          String message = "Skipping ${pc.title}. System error: ${e.message}"
+          log.error(message,e)
+        }
+        result.titleCount++
+        result.averageTimePerTitle=(System.currentTimeMillis()-result.startTime)/result.titleCount
+        if ( result.titleCount % 100 == 0 ) {
+          log.debug ("Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}")
+        }
+      }
+      def finishedTime = (System.currentTimeMillis()-result.startTime)/1000
+
+      // At the end - Any PCIs that are currently live (Don't have a removedTimestamp) but whos lastSeenTimestamp is < result.updateTime
+      // were not found on this run, and have been removed. We *may* introduce some extra checks here - like 3 times or a time delay, but for now,
+      // this is how we detect deletions in the package file.
+      log.debug("Remove any content items that have disappeared since the last upload. ${pkg.name}/${pkg.source}/${pkg.reference}/${result.updateTime}")
+      int removal_counter = 0
+
+      PackageContentItem.withNewTransaction { status ->
+
+        PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime and pci.removedTimestamp is null',
+                                        [pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
+          try {
+            log.debug("Removal candidate: pci.id #${removal_candidate.id} (Last seen ${removal_candidate.lastSeenTimestamp}, thisUpdate ${result.updateTime}) -- Set removed")
+            removal_candidate.removedTimestamp = result.updateTime
+            removal_candidate.save(flush:true, failOnError:true)
+          } catch ( Exception e ) {
+            log.error("Problem removing ${removal_candidate} in package load",e)
+          }
+          result.removedTitles++
+        }
+      }
+
+      // Need to pause long enough so that the timestamps are different
+      TimeUnit.MILLISECONDS.sleep(1)
+      if (result.titleCount > 0) {
+        log.info ("Processed ${result.titleCount} titles in ${finishedTime} seconds (${finishedTime/result.titleCount} average)")
+        TimeUnit.MILLISECONDS.sleep(1)
+        log.info ("Added ${result.newTitles} titles")
+        TimeUnit.MILLISECONDS.sleep(1)
+        log.info ("Updated ${result.updatedTitles} titles")
+        TimeUnit.MILLISECONDS.sleep(1)
+        log.info ("Removed ${result.removedTitles} titles")
+        log.info ("Updated accessStart on ${result.updatedAccessStart} title(s)")
+        log.info ("Updated accessEnd on ${result.updatedAccessEnd} title(s)")
+
+        // Log the counts too.
+        for (final String change : countChanges) {
+          if (result[change]) {
+            TimeUnit.MILLISECONDS.sleep(1)
+            log.info ("Changed ${GrailsNameUtils.getNaturalName(change).toLowerCase()} on ${result[change]} titles")
           }
         }
-      } catch ( Exception e ) {
-        String message = "Skipping ${pc.title}. System error: ${e.message}"
-        log.error(message,e)
-      }
-      result.titleCount++
-      result.averageTimePerTitle=(System.currentTimeMillis()-result.startTime)/result.titleCount
-      if ( result.titleCount % 100 == 0 ) {
-        log.debug ("Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}")
-      }
-    }
-    def finishedTime = (System.currentTimeMillis()-result.startTime)/1000
-
-    // At the end - Any PCIs that are currently live (Don't have a removedTimestamp) but whos lastSeenTimestamp is < result.updateTime
-    // were not found on this run, and have been removed. We *may* introduce some extra checks here - like 3 times or a time delay, but for now,
-    // this is how we detect deletions in the package file.
-    log.debug("Remove any content items that have disappeared since the last upload. ${pkg.name}/${pkg.source}/${pkg.reference}/${result.updateTime}")
-    int removal_counter = 0
-
-    PackageContentItem.withNewTransaction { status ->
-
-      PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pkg = :pkg and pci.lastSeenTimestamp < :updateTime and pci.removedTimestamp is null',
-                                      [pkg:pkg, updateTime:result.updateTime]).each { removal_candidate ->
-        try {
-          log.debug("Removal candidate: pci.id #${removal_candidate.id} (Last seen ${removal_candidate.lastSeenTimestamp}, thisUpdate ${result.updateTime}) -- Set removed")
-          removal_candidate.removedTimestamp = result.updateTime
-          removal_candidate.save(flush:true, failOnError:true)
-        } catch ( Exception e ) {
-          log.error("Problem removing ${removal_candidate} in package load",e)
+      } else {
+        if (result.titleCount > 0) {
+          log.info ("No titles to process")
         }
-        result.removedTitles++
-      }
-    }
-
-    // Need to pause long enough so that the timestamps are different
-    TimeUnit.MILLISECONDS.sleep(1)
-    if (result.titleCount > 0) {
-      log.info ("Processed ${result.titleCount} titles in ${finishedTime} seconds (${finishedTime/result.titleCount} average)")
-      TimeUnit.MILLISECONDS.sleep(1)
-      log.info ("Added ${result.newTitles} titles")
-      TimeUnit.MILLISECONDS.sleep(1)
-      log.info ("Updated ${result.updatedTitles} titles")
-      TimeUnit.MILLISECONDS.sleep(1)
-      log.info ("Removed ${result.removedTitles} titles")
-      log.info ("Updated accessStart on ${result.updatedAccessStart} title(s)")
-      log.info ("Updated accessEnd on ${result.updatedAccessEnd} title(s)")
-
-      // Log the counts too.
-      for (final String change : countChanges) {
-        if (result[change]) {
-          TimeUnit.MILLISECONDS.sleep(1)
-          log.info ("Changed ${GrailsNameUtils.getNaturalName(change).toLowerCase()} on ${result[change]} titles")
-        }
-      }
-    } else {
-      if (result.titleCount > 0) {
-        log.info ("No titles to process")
       }
     }
 

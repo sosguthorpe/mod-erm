@@ -51,7 +51,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
     while ( found_records ) {
 
 
-      log.debug("** GET https://gokbt.gbv.de/gokb/oai/index/packages ${query_params}")
+      log.debug("** GET ${base_url} ${query_params}")
 
       jpf_api.request(Method.GET) { req ->
         // uri.path=''
@@ -124,6 +124,8 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
       def record_identifier = record?.header?.identifier?.text()
       def package_name = record?.metadata?.gokb?.package?.name?.text()
       def datestamp = record?.header?.datestamp?.text()
+      def editStatus = record?.metadata?.gokb?.package?.editStatus?.text()
+      def listStatus = record?.metadata?.gokb?.package?.listStatus?.text()
 
       log.debug("Processing OAI record :: ${result.count} ${record_identifier} ${package_name}")
 
@@ -132,7 +134,14 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
         // ToDo: Decide what to do about deleted records
       }
       else {
-        cache.onPackageChange(source_name, json_package_description)
+        if (editStatus != 'Approved') {
+          cache.onPackageChange(source_name, json_package_description)
+          log.info("Ignoring Package '${package_name}' because editStatus=='${editStatus}' (required: 'Approved')")
+        } else if (listStatus != 'Checked') {
+          log.info("Ignoring Package '${package_name}' because listStatus=='${listStatus}' (required: 'Checked')")
+        } else {
+          cache.onPackageChange(source_name, json_package_description)
+        }
       }
 
       if ( datestamp > result.new_cursor ) {
@@ -169,11 +178,12 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
       def package_name = package_record.name?.text()
       def package_shortcode = package_record.shortcode?.text()
       def nominal_provider = package_record.nominalProvider?.name?.text()
+      def package_status = package_record.status?.text()
 
 
       result = [
         header:[
-          status: xml_gokb_record?.header?.status?.text(),
+          status: package_status,
           availability:[
             type: 'general'
           ],
@@ -240,7 +250,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
           def tipp_coverage_depth = tipp_entry.coverage.@coverageDepth?.toString()
           def tipp_coverage_note = tipp_entry.coverage.@coverageNote?.toString()
           final String embargo = tipp_entry.coverage?.@embargo?.toString()
-          
+
           def tipp_url = tipp_entry.url?.text()
           def tipp_platform_url = tipp_entry.platform?.primaryUrl?.text()
           def tipp_platform_name = tipp_entry.platform?.name?.text()
@@ -255,7 +265,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
           }
 
           // log.debug("consider tipp ${tipp_title}")
-          
+
           result.packageContents.add([
             "title": tipp_title,
             "instanceMedium": tipp_medium,
