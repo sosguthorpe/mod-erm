@@ -1,3 +1,6 @@
+## 2.2.1 2020-04-18
+ * ERM-838 Add custom_properties_id to existing subscription_agreement entries (upgrade)
+
 ## 2.2.0 2020-03-13
  * ERM-747 Custom Properties: Unable to correctly save decimals with german browser locale
  * ERM-711 POST/PUT on erm/sas/{:id} endpoint appears to not save reasonForClosure
