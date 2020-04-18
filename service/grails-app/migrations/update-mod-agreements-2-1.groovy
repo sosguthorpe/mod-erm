@@ -41,12 +41,47 @@ databaseChangeLog = {
   }
 
   changeSet(author: "sosguthorpe (generated)", id: "1580297114943-2") {
+    
+    // Add the table but do not constrain the column yet.
     addColumn(tableName: "subscription_agreement") {
-      column(name: "custom_properties_id", type: "int8") {
-        constraints(nullable: "false")
+      column(name: "custom_properties_id", type: "int8")
+    }
+    
+    // Need to create data for the existing agreements.
+    grailsChange {
+      change {
+                
+        sql.eachRow("SELECT sa_id FROM ${database.defaultSchemaName}.subscription_agreement".toString()) { def row ->
+        
+          // Create custom property.
+          def results = sql.executeInsert("""
+            INSERT INTO ${database.defaultSchemaName}.custom_property (version, internal)
+                VALUES (0, TRUE);
+          """.toString())
+          
+          // Save the ID.
+          def subs = ['prop_id': (results[0][0])]
+          
+          // Also add the same ID as a CP container.
+          sql.execute("""  
+            INSERT INTO ${database.defaultSchemaName}.custom_property_container (id) VALUES(:prop_id);
+          """.toString(), subs)
+          
+          // Update the SA
+          sql.execute (
+            "UPDATE ${database.defaultSchemaName}.subscription_agreement SET custom_properties_id = :prop_id WHERE sa_id = :sa_id".toString(),
+            subs + ['sa_id': row.sa_id]
+          )
+        }
       }
     }
+    
+    // Add the constraints
+    addNotNullConstraint (tableName: "subscription_agreement", columnName: "custom_properties_id")
     addForeignKeyConstraint(baseColumnNames: "custom_properties_id", baseTableName: "subscription_agreement", constraintName: "FKm0a9f7qqi2asb4ify197q2mak", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "custom_property_container")
+    
+    // Previous checksum will be valid and present if the agreements table was empty
+    validCheckSum ('7:8765333e36004aa2e3721c4634320095')
   }
 
   changeSet(author: "efreestone (manual)", id: "202002111539-001") {
