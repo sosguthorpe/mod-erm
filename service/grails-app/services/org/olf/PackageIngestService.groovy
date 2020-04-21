@@ -111,7 +111,8 @@ class PackageIngestService {
       }
 
       if ( pkg == null ) {
-        if (package_data.header.status == 'Current' || package_data.header.status == 'Expected') {
+        final String statusStr = package_data?.header?.status?.toLowerCase()
+        if (statusStr == null || ['current', 'expected'].contains(statusStr)) {
           pkg = new Pkg(
                 name: package_data.header.packageName,
                source: package_data.header.packageSource,
