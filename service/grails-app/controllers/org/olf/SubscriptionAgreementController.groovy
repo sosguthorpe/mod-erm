@@ -604,4 +604,41 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
     }
     respond ([statusCode: 404])
   }
+  
+  @Transactional
+  def delete() {
+    SubscriptionAgreement sa = queryForResource(params.id)
+    
+    // Not found.
+    if (sa == null) {
+      transactionStatus.setRollbackOnly()
+      notFound()
+      return
+    }
+    
+    // Return the relevant status if not allowed to delete.
+    if ((sa.items?.size() ?: 0) > 0) {
+      transactionStatus.setRollbackOnly()
+      render status: METHOD_NOT_ALLOWED, text: "Agreement has agreement lines"
+      return
+    }
+    
+    // Return the relevant status if not allowed to delete.
+    if ((sa.linkedLicenses?.size() ?: 0) > 0) {
+      transactionStatus.setRollbackOnly()
+      render status: METHOD_NOT_ALLOWED, text: "Agreement has license lines"
+      return
+    }
+    
+    // Return the relevant status if not allowed to delete.
+    if ((sa.inwardRelationships?.size() ?: 0) > 0 || (sa.outwardRelationships?.size() ?: 0) > 0) {
+      transactionStatus.setRollbackOnly()
+      render status: METHOD_NOT_ALLOWED, text: "Agreement has related agreements"
+      return
+    }
+    
+    // Finally delete the license if we get this far and respond.
+    deleteResource sa
+    render status: NO_CONTENT
+  }
 }
