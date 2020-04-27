@@ -3,6 +3,7 @@ package org.olf.erm;
 import com.k_int.okapi.remote_resources.RemoteOkapiLink
 import com.k_int.web.toolkit.databinding.BindImmutably
 import com.k_int.web.toolkit.domain.traits.Clonable
+import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
@@ -15,6 +16,7 @@ public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<Re
   static transients = ['applicableAmendmentParams']
   static copyByCloning = ['amendments']
   
+  @CategoryId(defaultInternal=true)
   @Defaults(['Controlling', 'Future', 'Historical'])
   RefdataValue status
   String note

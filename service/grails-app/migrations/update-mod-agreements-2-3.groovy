@@ -129,5 +129,17 @@ databaseChangeLog = {
       column(name: "ent_note", type: "text")
     }
   }
+
+  changeSet(author: "claudia (manual)", id: "202004221850-1") {
+    grailsChange {
+      change {
+        // Change category RemoteLicenseLink.Status to internal  
+        sql.execute("""
+          UPDATE ${database.defaultSchemaName}.refdata_category SET internal = true
+            WHERE rdc_description='RemoteLicenseLink.Status'
+        """.toString())
+      }
+    }
+  }
 }
 
