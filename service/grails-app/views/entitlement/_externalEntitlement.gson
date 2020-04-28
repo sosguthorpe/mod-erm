@@ -38,6 +38,7 @@ json {
   'endDate' entitlement.getActiveTo()
   'contentUpdated' entitlement.getContentUpdated()
   'haveAccess' entitlement.getHaveAccess()
+  'note' entitlement.note
   
   'owner' g.render(entitlement.owner, [includes: ['id']])
   
