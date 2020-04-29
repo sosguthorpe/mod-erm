@@ -101,4 +101,22 @@ databaseChangeLog = {
       column(name: "package_provider", type: "VARCHAR(255)")
     }
   }
+  
+  changeSet(author: "sosguthorpe (generated)", id: "1588162202202-1") {
+    grailsChange {
+      change {
+        def results
+        try {
+          results = sql.rows( "SELECT setval('${database.defaultSchemaName}.custom_property_id_seq', max(id)) FROM ${database.defaultSchemaName}.custom_property;".toString() )
+        } catch ( Exception ex ) { /* Allow to silently fail. */ }
+        
+        try {
+          results = sql.rows( "SELECT setval('${database.defaultSchemaName}.hibernate_sequence', max(id)) FROM ${database.defaultSchemaName}.custom_property;".toString() )          
+        } catch ( Exception ex ) { /* Allow to silently fail. */ }
+        
+        long max = results[0][0]
+        confirm "Updated counter to ${max}"
+      }
+    }
+  }
 }
