@@ -13,6 +13,25 @@ import grails.gorm.MultiTenant
  * mod-erm representation of a BIBFRAME instance
  */
 public class TitleInstance extends ErmResource implements MultiTenant<TitleInstance> {
+
+  String getLongName() {
+    String detailString = ''
+
+    if (this.monographVolume != null) {
+      detailString = " ${this.monographVolume}"
+    }
+
+    if (this.dateMonographPublished != null) {
+      detailString += "${detailString ? ', ' : ''}${dateMonographPublished}"
+    }
+
+    if (this.monographEdition != null) {
+      detailString += " (${this.monographEdition})"
+    }
+    
+    "${name}${ detailString ? '.' + detailString : '' }"
+  }
+
   
   static namedQueries = {
     entitled {

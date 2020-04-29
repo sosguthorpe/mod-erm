@@ -3,4 +3,7 @@ import org.olf.kb.PackageContentItem
 model {
   PackageContentItem packageContentItem
 }
-json g.render(packageContentItem, [expand: ['pkg', 'pti', 'coverage', 'embargo']])
+
+json g.render(packageContentItem, [expand: ['pkg', 'pti', 'coverage', 'embargo']]) {
+  longName packageContentItem.longName
+}

@@ -1,6 +1,7 @@
 package org.olf.kb
 
 import grails.gorm.MultiTenant
+import org.olf.general.StringUtils
 
 
 /**
@@ -13,8 +14,14 @@ public class PlatformTitleInstance extends ErmResource implements MultiTenant<Pl
   String url
   
   String getName() {
+    "'${StringUtils.truncate( titleInstance?.name, 110 )}' on Platform '${StringUtils.truncate( platform?.name, 110 )}'"
+  }
+
+  String getLongName() {
     "'${titleInstance.name}' on Platform '${platform.name}'"
   }
+
+  static transients = ['longName']
   
   static hasMany = [
     packageOccurences: PackageContentItem,

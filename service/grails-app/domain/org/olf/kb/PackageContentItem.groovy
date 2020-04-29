@@ -3,6 +3,7 @@ package org.olf.kb
 import java.time.LocalDate
 
 import grails.gorm.MultiTenant
+import org.olf.general.StringUtils
 
 
 /**
@@ -14,8 +15,14 @@ public class PackageContentItem extends ErmResource implements MultiTenant<Packa
   PlatformTitleInstance pti
   
   String getName() {
-    "${pti.name} in Package ${pkg.name}"
+    "'${ StringUtils.truncate( pti?.titleInstance?.name, 70 ) }' on Platform '${ StringUtils.truncate( pti?.platform?.name, 70 ) }' in Package ${ StringUtils.truncate( pkg.name, 70 ) }"
   }
+
+  String getLongName() {
+    "'${pti.titleInstance.name}' on Platform '${pti.platform.name}' in Package ${pkg.name}"
+  }
+
+  static transients = ['longName']
 
   // Track this package content item - when did we first detect it (added) when did we last
   // see it, and when did we determine it has been removed?
