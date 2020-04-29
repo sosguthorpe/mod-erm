@@ -114,8 +114,8 @@ databaseChangeLog = {
           results = sql.rows( "SELECT setval('${database.defaultSchemaName}.hibernate_sequence', max(id)) FROM ${database.defaultSchemaName}.custom_property;".toString() )          
         } catch ( Exception ex ) { /* Allow to silently fail. */ }
         
-        long max = results[0][0]
-        confirm "Updated counter to ${max}"
+        Long max = results[0][0]
+        if (max != null) confirm "Updated counter to ${max}"
       }
     }
   }
