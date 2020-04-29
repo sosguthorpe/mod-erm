@@ -1,3 +1,6 @@
+## 2.2.2 2020-04-29
+ * ERM-858 Postgres sequences out of sync when existing agreement data is upgraded
+
 ## 2.2.1 2020-04-18
  * ERM-838 Add custom_properties_id to existing subscription_agreement entries (upgrade)
 
