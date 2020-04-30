@@ -6,4 +6,5 @@ model {
 }
 json g.render(pkg, [expand: ['remoteKb','vendor', 'type', 'subType'], excludes: ['contentItems']]) {
   resourceCount pkg.getResourceCount()
+  'class' pkg.class.name
 }

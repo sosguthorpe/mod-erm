@@ -124,6 +124,89 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
     log.debug("completed in ${Duration.between(start, Instant.now()).toSeconds()} seconds")
   }
   
+  private final Closure entitlementCriteria = { final Class<? extends ErmResource> resClass, final ErmResource res ->
+    switch (resClass) {
+      case TitleInstance:
+        or {
+          'in' 'resource.id', new DetachedCriteria(PlatformTitleInstance).build {
+            readOnly (true)
+            
+            eq 'titleInstance', res
+              
+            projections {
+              property ('id')
+            }
+          }
+          
+          // PCIs
+          'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
+            readOnly (true)
+            
+            createAlias 'pti', 'pci_pti'
+              eq 'pci_pti.titleInstance', res
+              
+            projections {
+              property ('id')
+            }
+          }
+          
+          // Packages.
+          'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
+            readOnly (true)
+            
+            createAlias 'pti', 'pci_pti'
+              eq 'pci_pti.titleInstance', res
+
+            isNull 'removedTimestamp'
+
+            projections {
+              property ('pkg.id')
+            }
+          }
+        }
+        break
+      case PlatformTitleInstance:
+        or {
+          eq 'resource', res
+          
+          // PCIs
+          'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
+            readOnly (true)
+            
+            eq 'pti', res
+              
+            projections {
+              property ('id')
+            }
+          }
+          
+          // Packages.
+          'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
+            readOnly (true)
+            
+            eq 'pti', res
+
+            isNull 'removedTimestamp'
+
+            projections {
+              property ('pkg.id')
+            }
+          }
+        }
+        break
+        
+      case PackageContentItem:
+        or {
+          eq 'resource', res
+          eq 'resource', (res as PackageContentItem).pkg
+        }
+        break
+      default :
+        eq 'resource', res
+        break
+    }
+  }
+  
   def entitlements (String resourceId) {
     
     // Easiest way to check that this resource is a title is to read it in as one.
@@ -141,81 +224,56 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
     // We have a matching resource. Grab all entitlements that lead to this resource.
     final Instant start = Instant.now()
     log.debug("Start query ${start}")
+    respond doTheLookup (Entitlement, entitlementCriteria.curry(resClass, res) )
+    log.debug("completed in ${Duration.between(start, Instant.now()).toSeconds()} seconds")
+  }
+  
+  def relatedEntitlements (String resourceId) {
+    // Grab the supplied id and lookup the resource. We can then determine the type.
+    final ErmResource res = resourceId ? ErmResource.read ( resourceId ) : null
+    final Class<? extends ErmResource> resClass = res ? Hibernate.getClass( res ) : null
+    
+    if (resClass == TitleInstance) {
+      return respond ([]) 
+    }
+    
+    // Not allowed type Just show a 404.
+    if (resClass == null) {
+      response.status = 404
+      return
+    }
+    
+    // Grab the title to use as the "related" filter.
+    TitleInstance ti = null
+    switch (resClass) {
+      case PackageContentItem:
+        ti = (res as PackageContentItem).pti.titleInstance
+        break
+        
+      case PlatformTitleInstance:
+        ti = (res as PlatformTitleInstance).titleInstance
+        break
+        
+      default:
+        response.status = 404
+        return
+    }
+    
+    // We have a matching resource. Grab all entitlements that lead to this resource.
+    final Instant start = Instant.now()
+    log.debug("Start query ${start}")
+    
+    // Local reference for detached criteria.
+    final Closure entCrit = entitlementCriteria
+    
     respond doTheLookup (Entitlement, {
-      
-      switch (resClass) {
-        case TitleInstance:
-          or {
-            'in' 'resource.id', new DetachedCriteria(PlatformTitleInstance).build {
-              readOnly (true)
-              
-              eq 'titleInstance', res
-                
-              projections {
-                property ('id')
-              }
-            }
-            
-            // PCIs
-            'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
-              readOnly (true)
-              
-              createAlias 'pti', 'pci_pti'
-                eq 'pci_pti.titleInstance', res
-                
-              projections {
-                property ('id')
-              }
-            }
-            
-            // Packages.
-            'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
-              readOnly (true)
-              
-              createAlias 'pti', 'pci_pti'
-                eq 'pci_pti.titleInstance', res
-
-              isNull 'removedTimestamp'
-
-              projections {
-                property ('pkg.id')
-              }
-            }
-          }
-          break
-        case PlatformTitleInstance:
-          or {
-            eq 'resource', res
-            
-            // PCIs
-            'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
-              readOnly (true)
-              
-              eq 'pti', res
-                
-              projections {
-                property ('id')
-              }
-            }
-            
-            // Packages.
-            'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
-              readOnly (true)
-              
-              eq 'pti', res
-
-              isNull 'removedTimestamp'
-
-              projections {
-                property ('pkg.id')
-              }
-            }
-          }
-          break
-        default :
-          eq 'resource', res
-          break
-      }
+      entCrit.rehydrate(delegate, owner, thisObject)(TitleInstance, ti)
+      notIn 'id', new DetachedCriteria(Entitlement).build ({
+        entCrit.rehydrate(delegate, owner, thisObject)(resClass, res)
+        projections {
+          property ('id')
+        }
+      })
     })
     log.debug("completed in ${Duration.between(start, Instant.now()).toSeconds()} seconds")
   }

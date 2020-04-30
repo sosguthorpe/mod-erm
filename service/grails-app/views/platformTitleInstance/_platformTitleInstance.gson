@@ -4,6 +4,7 @@ import org.olf.kb.PlatformTitleInstance
 @Field PlatformTitleInstance platformTitleInstance
 
 json g.render(platformTitleInstance, [expand: ['titleInstance', 'platform', 'coverage']]) {
+  'class' platformTitleInstance.class.name
   longName platformTitleInstance.longName
 }
 

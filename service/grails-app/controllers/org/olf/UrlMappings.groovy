@@ -80,7 +80,7 @@ class UrlMappings {
       "/content/dropped" (controller: 'package', action: 'droppedContent', method: 'GET')
     }
 
-    "/erm/pci"(resources:'packageContentItem')
+    "/erm/  "(resources:'packageContentItem')
     "/erm/entitlements"(resources:'entitlement') {
       collection {
         "/external" ( action: 'external' )
@@ -131,6 +131,7 @@ class UrlMappings {
       }
       "/entitlementOptions" ( action:'entitlementOptions', method: 'GET')
       "/entitlements" ( action:'entitlements', method: 'GET' )
+      "/entitlements/related" ( action:'relatedEntitlements', method: 'GET' )
     }
 
     "/erm/files" ( resources:'fileUpload', excludes: ['update', 'patch', 'save', 'edit', 'create']) {

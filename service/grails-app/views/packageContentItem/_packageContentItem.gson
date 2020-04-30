@@ -6,4 +6,5 @@ model {
 
 json g.render(packageContentItem, [expand: ['pkg', 'pti', 'coverage', 'embargo']]) {
   longName packageContentItem.longName
+  'class' packageContentItem.class.name
 }

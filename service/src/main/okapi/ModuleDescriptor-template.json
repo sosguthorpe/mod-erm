@@ -256,6 +256,10 @@
           "permissionsRequired": [ "erm.resources.item.entitlement.get" ]
         },{
           "methods": ["GET"],
+          "pathPattern": "/erm/resource/{id}/entitlements/related",
+          "permissionsRequired": [ "erm.resources.item.entitlement.get" ]
+        },{
+          "methods": ["GET"],
           "pathPattern": "/erm/resource/{id}/entitlementOptions",
           "permissionsRequired": [ "erm.resources.item.entitlementOptions.get" ]
         },
@@ -272,6 +276,20 @@
           "methods": ["GET"],
           "pathPattern": "/erm/titles/{id}",
           "permissionsRequired": [ "erm.titles.item.get" ]
+        },
+        
+        {
+          "methods": ["GET"],
+          "pathPattern": "/erm/pci",
+          "permissionsRequired": [ "erm.pci.collection.get" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/pci/{id}",
+          "permissionsRequired": [ "erm.pci.item.get" ]
+        },{
+          "methods": ["PUT"],
+          "pathPattern": "/erm/pci/{id}",
+          "permissionsRequired": [ "erm.pci.item.put" ]
         },
   
         {
@@ -451,7 +469,23 @@
       "erm.kbs.edit",
       "erm.kbs.item.delete"
     ]
+  },
+  
+  {
+    "permissionName": "erm.pci.view",
+    "subPermissions": [ 
+      "erm.pci.collection.get",
+      "erm.pci.item.get"
+    ]
   },{
+    "permissionName": "erm.pci.edit",
+    "subPermissions": [
+      "erm.pci.view",
+      "erm.pci.item.put"
+    ]
+  },
+  
+  {
     "permissionName": "erm.resources.view",
     "subPermissions": [
       "erm.resources.collection.get",
