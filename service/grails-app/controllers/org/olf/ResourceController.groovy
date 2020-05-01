@@ -268,10 +268,89 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
     
     respond doTheLookup (Entitlement, {
       entCrit.rehydrate(delegate, owner, thisObject)(TitleInstance, ti)
-      notIn 'id', new DetachedCriteria(Entitlement).build ({
-        entCrit.rehydrate(delegate, owner, thisObject)(resClass, res)
+      notIn 'id', new DetachedCriteria(Entitlement, 'excludes').build ({
+        switch (resClass) {
+          case TitleInstance:
+            or {
+              'in' 'excludes.resource.id', new DetachedCriteria(PlatformTitleInstance).build {
+                readOnly (true)
+                
+                eq 'titleInstance', res
+                  
+                projections {
+                  property ('id')
+                }
+              }
+              
+              // PCIs
+              'in' 'excludes.resource.id', new DetachedCriteria(PackageContentItem).build {
+                readOnly (true)
+                
+                createAlias 'pti', 'pci_pti'
+                  eq 'pci_pti.titleInstance', res
+                  
+                projections {
+                  property ('id')
+                }
+              }
+              
+              // Packages.
+              'in' 'excludes.resource.id', new DetachedCriteria(PackageContentItem).build {
+                readOnly (true)
+                
+                createAlias 'pti', 'pci_pti'
+                  eq 'pci_pti.titleInstance', res
+    
+                isNull 'removedTimestamp'
+    
+                projections {
+                  property ('pkg.id')
+                }
+              }
+            }
+            break
+          case PlatformTitleInstance:
+            or {
+              eq 'excludes.resource', res
+              
+              // PCIs
+              'in' 'excludes.resource.id', new DetachedCriteria(PackageContentItem).build {
+                readOnly (true)
+                
+                eq 'pti', res
+                  
+                projections {
+                  property ('id')
+                }
+              }
+              
+              // Packages.
+              'in' 'excludes.resource.id', new DetachedCriteria(PackageContentItem).build {
+                readOnly (true)
+                
+                eq 'pti', res
+    
+                isNull 'removedTimestamp'
+    
+                projections {
+                  property ('pkg.id')
+                }
+              }
+            }
+            break
+            
+          case PackageContentItem:
+            or {
+              eq 'excludes.resource', res
+              eq 'excludes.resource', (res as PackageContentItem).pkg
+            }
+            break
+          default :
+            eq 'excludes.resource', res
+            break
+        }
         projections {
-          property ('id')
+          property ('excludes.id')
         }
       })
     })
