@@ -240,7 +240,8 @@ class ImportService implements DataBinder {
         ) {
             siblingInstanceIdentifier.namespace = 'ISBN'
             instanceIdentifier.namespace = 'ISBN'
-            if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate') != '') {
+            String coverageStartDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')?.trim();
+            if (coverageStartDate != null && coverageStartDate != '' ) {
               log.error("Unexpected coverage information for title: ${getFieldFromLine(lineAsArray, acceptedFields, 'title')} of type: ${instanceMedia}")
             }
             kbartCoverageList = []
