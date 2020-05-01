@@ -80,7 +80,7 @@ class UrlMappings {
       "/content/dropped" (controller: 'package', action: 'droppedContent', method: 'GET')
     }
 
-    "/erm/  "(resources:'packageContentItem')
+    "/erm/pci"(resources:'packageContentItem')
     "/erm/entitlements"(resources:'entitlement') {
       collection {
         "/external" ( action: 'external' )
