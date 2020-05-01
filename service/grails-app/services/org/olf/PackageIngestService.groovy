@@ -15,6 +15,7 @@ import org.olf.kb.TitleInstance
 import org.slf4j.MDC
 import grails.gorm.transactions.Transactional
 import grails.util.GrailsNameUtils
+import grails.web.databinding.DataBinder
 import groovy.util.logging.Slf4j
 import java.util.concurrent.TimeUnit
 
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit
  * This service works at the module level, it's often called without a tenant context.
  */
 @Slf4j
-class PackageIngestService {
+class PackageIngestService implements DataBinder {
 
   // This boolean controls the behaviour of the loader when we encounter a title that does not have
   // a platform URL. We can error the row and do nothing, or create a row and point it at a proxy
@@ -220,7 +221,16 @@ class PackageIngestService {
                   accessEnd = pc.accessEnd
                   addedTimestamp = result.updateTime
                   lastSeenTimestamp = result.updateTime
-                  embargo = emb
+                  
+                  if (emb) {
+                    if (embargo) {
+                      // Edit
+                      bindData(embargo, emb.properties, [exclude: ['id']])
+                    } else {
+                      // New
+                      embargo = emb
+                    }
+                  }
                 }
 
                 // ensure that accessStart is earlier than accessEnd, otherwise stop processing the current item
