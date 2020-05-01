@@ -86,7 +86,7 @@ class TitleInstanceResolverService implements DataBinder{
     int num_class_one_identifiers = countClassOneIDs(citation.instanceIdentifiers);
     int num_matches = candidate_list.size()
     if ( num_matches > 1 ) {
-      log.error("Class one match found multiple titles:: ${candidate_list}");
+      log.debug("Class one match found multiple titles:: ${candidate_list}");
     }
 
     // We weren't able to match directly on an identifier for this instance - see if we have an identifier
@@ -96,7 +96,7 @@ class TitleInstanceResolverService implements DataBinder{
       num_matches = candidate_list.size()
       log.debug("siblingMatch for ${citation.title} found ${num_matches} titles");
       if ( num_matches > 1 ) {
-        log.error("Sibling match found multiple titles:: ${candidate_list}");
+        log.debug("Sibling match found multiple titles:: ${candidate_list}");
       }
     }
 
@@ -271,7 +271,7 @@ class TitleInstanceResolverService implements DataBinder{
       }
     }
     else { 
-      log.error("Create title failed validation checks - insufficient data to create a title record");
+      log.debug("Create title failed validation checks - insufficient data to create a title record");
       // We will return null, which means no title
       // throw new RuntimeException("Insufficient detail to create title instance record");
     }
@@ -304,10 +304,6 @@ class TitleInstanceResolverService implements DataBinder{
         title.firstAuthor = citation.firstAuthor
       }
       
-      if (title.firstAuthor != citation.firstAuthor) {
-        title.firstAuthor = citation.firstAuthor
-      }
-
       if (title.firstEditor != citation.firstEditor) {
         title.firstEditor = citation.firstEditor
       }
@@ -319,7 +315,11 @@ class TitleInstanceResolverService implements DataBinder{
       if (title.monographVolume != citation.monographVolume) {
         title.monographVolume = citation.monographVolume
       }
-      title.save(flush: true)
+        if(! title.save(flush: true) ) {
+          title.errors.fieldErrors.each {
+            log.error("Error saving title. Field ${it.field} rejected value: \"${it.rejectedValue}\".")
+          }
+        }
     } else {
       log.debug("Not a trusted source for TI enrichment--skipping")
     }
@@ -366,7 +366,7 @@ class TitleInstanceResolverService implements DataBinder{
         result = TitleInstance.executeQuery(TEXT_MATCH_TITLE_HQL,[qrytitle: (title),threshold: (threshold), subtype:subtype], [max:20])
       }
       catch ( Exception e ) {
-        log.error("Problem attempting to run HQL Query ${TEXT_MATCH_TITLE_HQL} on string ${title} with threshold ${threshold}",e)
+        log.debug("Problem attempting to run HQL Query ${TEXT_MATCH_TITLE_HQL} on string ${title} with threshold ${threshold}",e)
       }
     }
  
