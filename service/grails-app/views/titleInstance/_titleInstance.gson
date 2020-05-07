@@ -8,4 +8,6 @@ TitleInstance titleInstance
 json g.render(titleInstance, [expand: ['identifiers', 'type', 'subType', 'coverage'], excludes: ['entitlements']]) {
   'class' titleInstance.class.name
   longName titleInstance.longName
+  
+  siblingIdentifiers g.render (titleInstance.siblingIdentifiers)
 }
