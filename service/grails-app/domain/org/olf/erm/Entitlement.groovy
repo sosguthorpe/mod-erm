@@ -63,7 +63,7 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
   
   
   @OkapiLookup(
-    value = '${obj.authority?.toLowerCase() == "ekb-package" ? "/eholdings/packages" : "/eholdings/resources" }/${obj.reference}',
+    value = '${obj.authority?.toLowerCase() == "ekb-package" ? "/eholdings/packages" : "/eholdings/resources" }/${obj.reference}${obj.authority?.toLowerCase() == "ekb-package" ? "" : "?include=package" }',
     converter = {
       // delegate, owner and thisObject should be the instance of Entitlement
       final Entitlement outerEntitlement = delegate
@@ -71,17 +71,136 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
       log.debug "Converter called with delegate: ${outerEntitlement} and it: ${it}"
       
       final String theType = it.data?.attributes?.publicationType ?:
-         it.data?.type?.replaceAll(/^\s*([\S])(.*?)s?\s*$/, {match, String firstChar, String nonePlural -> "${firstChar.toUpperCase()}${nonePlural}"})
+        it.data?.type?.replaceAll(/^\s*([\S])(.*?)s?\s*$/, {match, String firstChar, String nonePlural -> "${firstChar.toUpperCase()}${nonePlural}"})
       
       def map = [
         label: it.data?.attributes?.name,
         type: (theType),
         provider: it.data?.attributes?.providerName
       ]
-      
-      def count = it.data?.attributes?.titleCount
-      if (count) {
-        map.titleCount = count
+
+      if (it.data?.type == "packages") {
+        // We're dealing with a package
+
+        def titleCount = it.data?.attributes?.titleCount
+        // Groovy truth evaluates 0 to false
+        if (titleCount != null) {
+          map.titleCount = titleCount
+        }
+
+        def selectedCount = it.data?.attributes?.selectedCount
+        // Groovy truth evaluates 0 to false
+        if (selectedCount != null) {
+          map.selectedCount = selectedCount
+        }
+
+        def contentType = it.data?.attributes?.contentType
+        if (contentType) {
+          map.contentType = contentType
+        }
+      } else {
+        // We're dealing with a title
+        def publicationType = it.data?.attributes?.publicationType
+        if (publicationType) {
+          map.publicationType = publicationType
+        }
+
+        def edition = it.data?.attributes?.edition
+        if (edition) {
+          map.edition = edition
+        }
+
+        def identifiers = it.data?.attributes?.identifiers
+        if (identifiers) {
+          def combinedIdentifiers = [];
+          identifiers.each {
+            def identifier = [id: it.id, type: "${it.type} (${it.subtype})"]
+            combinedIdentifiers << identifier
+          }
+          map.identifiers = combinedIdentifiers
+        }
+
+        def contributors = it.data?.attributes?.contributors
+        if (contributors) {
+          def authors = []
+          def editors = []
+          contributors.each {
+            if (it.type == "author") {
+              authors << it.contributor
+            } else if (it.type == "editor") {
+              editors << it.contributor
+            }
+          }
+          if (authors.size() > 0) {
+            map.authors = authors
+          }
+           if (editors.size() > 0) {
+            map.editors = editors
+          }
+        }
+        
+        Map packageData = [:]
+        def packageId = it.data?.attributes?.packageId
+        def includedPackage = it?.included.find { it.id == packageId && it.type == "packages"  }
+        if (includedPackage) {
+          def name = includedPackage.attributes?.name
+          if (name) {
+            packageData.name = name
+          }
+
+          def titleCount = includedPackage.attributes?.titleCount
+          // Groovy truth evaluates 0 to false
+          if (titleCount != null) {
+            packageData.titleCount = titleCount
+          }
+
+          def selectedCount = includedPackage.attributes?.selectedCount
+          // Groovy truth evaluates 0 to false
+          if (selectedCount != null) {
+            packageData.selectedCount = selectedCount
+          }
+
+          def contentType = includedPackage.attributes?.contentType
+          if (contentType) {
+            packageData.contentType = contentType
+          }
+
+          def providerName = includedPackage.attributes?.providerName
+          if (providerName) {
+            packageData.providerName = providerName
+          }
+
+          def isSelected = includedPackage.attributes?.isSelected
+          if (isSelected) {
+            packageData.isSelected = isSelected
+          }
+        }
+        if (packageData) {
+          map.packageData = packageData
+        }
+      }
+
+      // These need to be added to the map whether the type is resource OR package
+      def providerName = it.data?.attributes?.providerName
+      if (providerName) {
+        map.providerName = providerName
+      }
+
+      def isSelected = it.data?.attributes?.isSelected
+      if (isSelected) {
+        map.isSelected = isSelected
+      }
+
+      def relationshipsAccessTypeDataId = it.data?.relationships?.accessType?.data?.id;
+      def accessStatusType;
+      if (relationshipsAccessTypeDataId) {
+
+        def includesMatchingId = it?.included.find { it.id == relationshipsAccessTypeDataId && it.type == "accessTypes"  }
+        accessStatusType = includesMatchingId?.attributes?.name
+
+        if (accessStatusType) {
+          map.accessStatusType = accessStatusType
+        }
       }
       
       // Merge external coverages.
