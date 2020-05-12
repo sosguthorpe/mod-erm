@@ -106,21 +106,22 @@ pipeline {
       }
     }
 
-    stage('Kubernetes Deploy'){
-      when {
-        branch 'master'
-        expression { return env.doKubeDeploy }  
-      }
-      steps {
-        echo "Deploying to kubernetes cluster"
-        kubeDeploy('folio-default',
-                  "[{" +
-                    "\"name\" : \"${env.name}\"," +
-                    "\"version\" : \"${env.version}\"," +
-                    "\"deploy\":true" +
-                  "}]")
-      }
-    }
+    // disbale kubeDeploy temporarily --ian
+    //stage('Kubernetes Deploy'){
+    //  when {
+    //    branch 'master'
+    //    expression { return env.doKubeDeploy }  
+    //  }
+    //  steps {
+    //    echo "Deploying to kubernetes cluster"
+    //    kubeDeploy('folio-default',
+    //              "[{" +
+    //                "\"name\" : \"${env.name}\"," +
+    //                "\"version\" : \"${env.version}\"," +
+    //                "\"deploy\":true" +
+    //              "}]")
+    //  }
+    //}
 
   } // end stages
 
