@@ -15,7 +15,7 @@ public class AgreementRelationship implements MultiTenant<AgreementRelationship>
   String id
   
   @CategoryId(defaultInternal=true)
-  @Defaults(['Supersedes', 'Provides post-cancellation access for', 'Tracks demand-driven acquisitions for'])
+  @Defaults(['Supersedes', 'Provides post-cancellation access for', 'Tracks demand-driven acquisitions for', 'Related to', 'Has backfile in'])
   RefdataValue type
   
   SubscriptionAgreement inward
