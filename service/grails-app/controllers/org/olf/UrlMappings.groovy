@@ -1,5 +1,7 @@
 package org.olf
 
+import org.olf.erm.SubscriptionAgreement
+
 class UrlMappings {
 
   static mappings = {
@@ -57,6 +59,10 @@ class UrlMappings {
         '/usageDataProviders' {
           controller = 'usageDataProvider'
           method = 'GET'
+        }
+        
+        "/validate/$prop?" (controller: 'validate', method: 'POST') {
+          domain = SubscriptionAgreement.class.name
         }
       }
     }
@@ -155,5 +161,7 @@ class UrlMappings {
 //    "/export/future/$format?"   (controller: 'export', action: 'future', method: 'GET')
 //    "/export/dropped/$format?"  (controller: 'export', action: 'dropped', method: 'GET')
 
+
+    "/erm/validate/$domain/$prop?" (controller: 'validate', method: 'POST')
   }
 }

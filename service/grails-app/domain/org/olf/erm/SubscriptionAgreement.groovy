@@ -225,7 +225,7 @@ public class SubscriptionAgreement implements CustomProperties,MultiTenant<Subsc
   }
 
   static constraints = {
-                    name(nullable:false, blank:false)
+                    name(nullable:false, blank:false, unique: true)
           localReference(nullable:true, blank:false)
          vendorReference(nullable:true, blank:false)
              renewalDate(nullable:true, blank:false)

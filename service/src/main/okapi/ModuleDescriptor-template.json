@@ -75,7 +75,6 @@
           "pathPattern": "/erm/sas/{id}",
           "permissionsRequired": [ "erm.agreements.item.delete" ]
         },
-        
         {
           "methods": ["GET"],
           "pathPattern": "/export",
@@ -317,6 +316,26 @@
           "methods": ["POST"],
           "pathPattern": "/erm/packages/import",
           "permissionsRequired": [ "erm.packages.collection.import" ]
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/erm/validate/subscriptionAgreement",
+          "permissionsRequired": [ "erm.agreements.item.post", "erm.agreements.item.put" ]
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/erm/validate/subscriptionAgreement/*",
+          "permissionsRequired": [ "erm.agreements.item.post", "erm.agreements.item.put" ]
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/erm/validate/remoteKB",
+          "permissionsRequired": [ "erm.kbs.item.post", "erm.kbs.item.put" ]
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/erm/validate/remoteKB/*",
+          "permissionsRequired": [ "erm.kbs.item.post", "erm.kbs.item.put" ]
         }
       ]
     },{

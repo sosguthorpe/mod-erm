@@ -10,33 +10,20 @@ model {
 response.status UNPROCESSABLE_ENTITY
 
 json {
-    Errors errorsObject = (Errors)this.errors
-    def allErrors = errorsObject.allErrors
-    int errorCount = allErrors.size()
-    def resourcePath = g.link(resource:request.uri, absolute:false)
-    def resourceLink = g.link(resource:request.uri, absolute:true)
-    if(errorCount == 1) {
-        def error = allErrors.iterator().next()
-        message messageSource.getMessage(error, locale)
-        path resourcePath
-        _links {
-            self {
-                href resourceLink
-            }
-        }
+  Errors errorsObject = (Errors)this.errors
+  List<ObjectError> allErrors = errorsObject.allErrors
+  int errorCount = allErrors.size()
+  total errorCount
+  errors(allErrors) { ObjectError error ->
+    code error.code
+//    codes error.codes
+    object error.objectName
+    if (error instanceof FieldError) {
+      FieldError fError = error as FieldError
+      i18n_code "${error.objectName}.${fError.field}.${error.code}"
+    } else {
+      i18n_code "${error.objectName}.${error.code}"
     }
-    else {
-        total errorCount
-        _embedded {
-            errors(allErrors) { ObjectError error ->
-                message messageSource.getMessage(error, locale)
-                path resourcePath
-                _links {
-                    self {
-                        href resourceLink
-                    }
-                }
-            }
-        }
-    }
+    message messageSource.getMessage(error, locale)
+  }
 }
