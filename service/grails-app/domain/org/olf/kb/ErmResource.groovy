@@ -21,6 +21,8 @@ public class ErmResource implements MultiTenant<ErmResource> {
 
   Date dateCreated
   Date lastUpdated
+
+  boolean suppressFromDiscovery = false 
   
   static hasMany = [
     coverage: CoverageStatement,
@@ -33,24 +35,26 @@ public class ErmResource implements MultiTenant<ErmResource> {
   ]
   static mapping = {
     tablePerHierarchy false
-                   id generator: 'uuid2', length:36
-                 name column:'res_name'
-          description column:'res_description', type:'text'
-                 type column:'res_type_fk'
-          dateCreated column:'res_date_created'
-          lastUpdated column:'res_last_updated'
-              subType column:'res_sub_type_fk'
-             coverage cascade: 'all-delete-orphan'
+                  id generator: 'uuid2', length:36
+                   name column: 'res_name'
+            description column: 'res_description', type:'text'
+                   type column: 'res_type_fk'
+            dateCreated column: 'res_date_created'
+            lastUpdated column: 'res_last_updated'
+                subType column: 'res_sub_type_fk'
+  suppressFromDiscovery column: 'res_suppress_discovery'
+              coverage cascade: 'all-delete-orphan'
   }
 
   static constraints = {
-            name (nullable:true, blank:false)
-     description (nullable:true, blank:false)
-            type (nullable:true, blank:false)
-         subType (nullable:true, blank:false)
-     dateCreated (nullable:true, blank:false)
-     lastUpdated (nullable:true, blank:false)
-      coverage (validator: CoverageStatement.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
+                   name (nullable:true, blank:false)
+            description (nullable:true, blank:false)
+                   type (nullable:true, blank:false)
+                subType (nullable:true, blank:false)
+            dateCreated (nullable:true, blank:false)
+            lastUpdated (nullable:true, blank:false)
+  suppressFromDiscovery (nullable:false, blank:false)
+               coverage (validator: CoverageStatement.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
   }
   
   String toString() {

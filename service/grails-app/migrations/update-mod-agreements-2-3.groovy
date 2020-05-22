@@ -163,5 +163,48 @@ databaseChangeLog = {
   changeSet(author: "efreestone (manual)", id: "20200519-1626-001") {
     addUniqueConstraint(tableName: "subscription_agreement", constraintName: "UC_SUBSCRIPTION_AGREEMENT_NAME_COL", columnNames: "sa_name")
   }
+
+  changeSet(author: "claudia (manual)", id: "202005201645-1") {
+    addColumn(tableName: "entitlement") {
+      column(name: "ent_suppress_discovery", type: "boolean")
+    }
+  }
+  // Set all existing entitlements to not-suppressed
+  changeSet(author: "claudia (manual)", id: "202005201645-2") {
+    grailsChange {
+      change {
+	      sql.execute("""
+	        UPDATE ${database.defaultSchemaName}.entitlement SET ent_suppress_discovery = FALSE
+            WHERE ent_suppress_discovery is null
+	      """.toString())
+      }
+    }
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005201645-3") {
+    addNotNullConstraint(tableName: "entitlement", columnName: "ent_suppress_discovery", columnDataType: "boolean")
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005221345-1") {
+    addColumn(tableName: "erm_resource") {
+      column(name: "res_suppress_discovery", type: "boolean")
+    }
+  }
+  // Set all existing resources to not-suppressed
+  changeSet(author: "claudia (manual)", id: "202005221345-2") {
+    grailsChange {
+      change {
+	      sql.execute("""
+	        UPDATE ${database.defaultSchemaName}.erm_resource SET res_suppress_discovery = FALSE
+            WHERE res_suppress_discovery is null
+	      """.toString())
+      }
+    }
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005221345-3") {
+    addNotNullConstraint(tableName: "erm_resource", columnName: "res_suppress_discovery", columnDataType: "boolean")
+  }
+
 }
 

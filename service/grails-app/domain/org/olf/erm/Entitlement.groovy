@@ -60,7 +60,8 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
   // These three properties allow us to create an entitlement which is externally defined. An externally defined
   // entitlement does not link to a resource in the tenant database, but instead will use API calls to define its contents
   String authority
-  
+
+  boolean suppressFromDiscovery = false 
   
   @OkapiLookup(
     value = '${obj.authority?.toLowerCase() == "ekb-package" ? "/eholdings/packages" : "/eholdings/resources" }/${obj.reference}${obj.authority?.toLowerCase() == "ekb-package" ? "" : "?include=package" }',
@@ -288,6 +289,7 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
                  type column: 'ent_type'
                  note column: 'ent_note', type: 'text'
               enabled column: 'ent_enabled'
+suppressFromDiscovery column: 'ent_suppress_discovery'
        contentUpdated column: 'ent_content_updated'
            activeFrom column: 'ent_active_from'
              activeTo column: 'ent_active_to'
@@ -322,12 +324,13 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
           
           coverage (validator: HoldingsCoverage.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
 
-              type(nullable:true, blank:false)
-              note(nullable:true, blank:false)
-           enabled(nullable:true, blank:false)
-    contentUpdated(nullable:true, blank:false)
-        activeFrom(nullable:true, blank:false)
-          activeTo(nullable:true, blank:false)
+                     type(nullable:true, blank:false)
+                     note(nullable:true, blank:false)
+                  enabled(nullable:true, blank:false)
+    suppressFromDiscovery(nullable:false, blank:false)
+           contentUpdated(nullable:true, blank:false)
+               activeFrom(nullable:true, blank:false)
+                 activeTo(nullable:true, blank:false)
           
          authority(nullable:true, blank:false, validator: { val, inst ->
             
