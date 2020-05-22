@@ -5,13 +5,14 @@ import java.time.LocalDate
 import org.hibernate.Hibernate
 
 import grails.gorm.MultiTenant
+import grails.validation.Validateable
 
 
 /**
  * A coverage statement - can apply to a PackageContentItem OR a TitlePlatform OR a title
  * but that should be an exclusive link
  */
-public class CoverageStatement extends AbstractCoverageStatement implements MultiTenant<CoverageStatement> {
+public class CoverageStatement extends AbstractCoverageStatement implements Validateable, MultiTenant<CoverageStatement> {
   public static final Class<? extends ErmResource>[] ALLOWED_RESOURCES = [PackageContentItem, PlatformTitleInstance, TitleInstance] as Class[]
 
   String id

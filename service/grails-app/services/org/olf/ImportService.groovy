@@ -1,27 +1,28 @@
 package org.olf
 
-import grails.gorm.transactions.Transactional
-import grails.web.databinding.DataBinder
-import groovy.transform.CompileStatic
-import groovy.util.logging.Slf4j
-import org.olf.dataimport.erm.ErmPackageImpl
-import org.olf.dataimport.internal.InternalPackageImpl
-import org.olf.dataimport.internal.PackageContentImpl
-import org.olf.dataimport.internal.HeaderImpl
-import org.olf.dataimport.internal.PackageSchema
-import org.olf.dataimport.erm.PackageProvider
-import org.olf.dataimport.erm.Identifier
-import org.slf4j.MDC
-import org.springframework.context.MessageSource
-import org.springframework.validation.ObjectError
-import org.springframework.context.i18n.LocaleContextHolder
-
-import com.opencsv.CSVReader
-import org.olf.dataimport.erm.CoverageStatement
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.ChronoField
+
+import org.olf.dataimport.erm.CoverageStatement
+import org.olf.dataimport.erm.ErmPackageImpl
+import org.olf.dataimport.erm.Identifier
+import org.olf.dataimport.erm.PackageProvider
+import org.olf.dataimport.internal.HeaderImpl
+import org.olf.dataimport.internal.InternalPackageImpl
+import org.olf.dataimport.internal.PackageContentImpl
+import org.olf.dataimport.internal.PackageSchema
+import org.slf4j.MDC
+import org.springframework.context.MessageSource
+import org.springframework.context.i18n.LocaleContextHolder
+import org.springframework.validation.ObjectError
+
+import com.opencsv.CSVReader
+
+import grails.web.databinding.DataBinder
+import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 
 @CompileStatic
 @Slf4j
@@ -158,7 +159,7 @@ class ImportService implements DataBinder {
     String[] header = file.readNext()
 
     // Create an object containing fields we can accept and their mappings in our domain structure, as well as indices in the imported file, with -1 if not found
-    Map acceptedFields = [
+    Map<String, ? extends Map> acceptedFields = [
       publication_title: [field: 'title', index: -1],
       print_identifier: [field: 'siblingInstanceIdentifiers', index: -1],
       online_identifier: [field: 'instanceIdentifiers', index: -1],
@@ -220,19 +221,19 @@ class ImportService implements DataBinder {
       trustedSourceTI: trustedSourceTI
     )
 
-    String[] record;
-    while ((record = file.readNext()) != null) {
-      def lineAsArray = record
+    String[] record = file.readNext()
+    
+    while (record != null) {
 
       Identifier siblingInstanceIdentifier = new Identifier()
       Identifier instanceIdentifier = new Identifier()
-      List kbartCoverageList
 
       // Instance/Sibling instance identifiers AND coverage rely on the media type, monograph vs serial 
-      String instanceMedia = getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia')
+      String instanceMedia = getFieldFromLine(record, acceptedFields, 'instanceMedia')
+      boolean addCoverage = true
       if (!instanceMedia) {
         // Skip the import 
-        log.error "Missing publication_type for title: ${getFieldFromLine(lineAsArray, acceptedFields, 'title')}, skipping line."
+        log.error "Missing publication_type for title: ${getFieldFromLine(record, acceptedFields, 'title')}, skipping line."
       } else {
         if (
           instanceMedia.toLowerCase() == 'monograph' ||
@@ -240,44 +241,59 @@ class ImportService implements DataBinder {
         ) {
             siblingInstanceIdentifier.namespace = 'ISBN'
             instanceIdentifier.namespace = 'ISBN'
-            String coverageStartDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')?.trim();
+            String coverageStartDate = getFieldFromLine(record, acceptedFields, 'CoverageStatement.startDate')?.trim();
             if (coverageStartDate != null && coverageStartDate != '' ) {
-              log.error("Unexpected coverage information for title: ${getFieldFromLine(lineAsArray, acceptedFields, 'title')} of type: ${instanceMedia}")
+              log.error("Unexpected coverage information for title: ${getFieldFromLine(record, acceptedFields, 'title')} of type: ${instanceMedia}")
             }
-            kbartCoverageList = []
-
+            addCoverage = false
         } else {          
             siblingInstanceIdentifier.namespace = 'ISSN'
             instanceIdentifier.namespace = 'ISSN'
-            kbartCoverageList = buildKBARTCoverage(lineAsArray, acceptedFields)
         }
 
-        siblingInstanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'siblingInstanceIdentifiers')
-        instanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'instanceIdentifiers')
+        siblingInstanceIdentifier.value = getFieldFromLine(record, acceptedFields, 'siblingInstanceIdentifiers')
+        instanceIdentifier.value = getFieldFromLine(record, acceptedFields, 'instanceIdentifiers')
 
         // Check that these aren't invalid identifiers, if they are, return an empty list
         List instanceIdentifiers = identifierValidator(instanceIdentifier)
         List siblingInstanceIdentifiers = identifierValidator(siblingInstanceIdentifier)
         
+        // Examine the next record to see if it's a repeat. If so we should just add the extra coverage.
+        final String[] currentRecord = record
+        final List<CoverageStatement> coverage = []
+        if (addCoverage) {
+          while (addCoverage) {
+            CoverageStatement cs = buildKBARTCoverage(record, acceptedFields)
+            if (cs) { 
+              coverage << cs 
+            }
+            record = file.readNext()
+            addCoverage = record && sameTitle(acceptedFields, currentRecord, record)
+          }
+        } else {
+          // Just read next...
+          record = file.readNext()
+        }
+        
         PackageContentImpl pkgLine = new PackageContentImpl(
-          title: getFieldFromLine(lineAsArray, acceptedFields, 'title'),
+          title: getFieldFromLine(currentRecord, acceptedFields, 'title'),
           siblingInstanceIdentifiers: siblingInstanceIdentifiers,
           instanceIdentifiers: instanceIdentifiers,
-          coverage: kbartCoverageList,
-          url: getFieldFromLine(lineAsArray, acceptedFields, 'url'),
-          firstAuthor: getFieldFromLine(lineAsArray, acceptedFields, 'firstAuthor'),
-          embargo: getFieldFromLine(lineAsArray, acceptedFields, 'embargo'),
-          coverageDepth: getFieldFromLine(lineAsArray, acceptedFields, 'coverageDepth'),
-          coverageNote: getFieldFromLine(lineAsArray, acceptedFields, 'coverageNote'),
-          instanceMedia: getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia'),
+          coverage: (coverage),
+          url: getFieldFromLine(currentRecord, acceptedFields, 'url'),
+          firstAuthor: getFieldFromLine(currentRecord, acceptedFields, 'firstAuthor'),
+          embargo: getFieldFromLine(currentRecord, acceptedFields, 'embargo'),
+          coverageDepth: getFieldFromLine(currentRecord, acceptedFields, 'coverageDepth'),
+          coverageNote: getFieldFromLine(currentRecord, acceptedFields, 'coverageNote'),
+          instanceMedia: getFieldFromLine(currentRecord, acceptedFields, 'instanceMedia'),
           instanceMedium: "electronic",
 
-          dateMonographPublished: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublished'),
-          dateMonographPublishedPrint: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublishedPrint'),
+          dateMonographPublished: getFieldFromLine(currentRecord, acceptedFields, 'dateMonographPublished'),
+          dateMonographPublishedPrint: getFieldFromLine(currentRecord, acceptedFields, 'dateMonographPublishedPrint'),
 
-          monographVolume: getFieldFromLine(lineAsArray, acceptedFields, 'monographVolume'),
-          monographEdition: getFieldFromLine(lineAsArray, acceptedFields, 'monographEdition'),
-          firstEditor: getFieldFromLine(lineAsArray, acceptedFields, 'firstEditor')
+          monographVolume: getFieldFromLine(currentRecord, acceptedFields, 'monographVolume'),
+          monographEdition: getFieldFromLine(currentRecord, acceptedFields, 'monographEdition'),
+          firstEditor: getFieldFromLine(currentRecord, acceptedFields, 'firstEditor')
         )
 
         pkg.packageContents << pkgLine
@@ -293,16 +309,31 @@ class ImportService implements DataBinder {
     
     return (packageImported)
   }
+  
+  private String getRawColumnvalue(Map<String, ? extends Map> acceptedFields, final String[] strArray, final String colName) {
+    final int idx = (acceptedFields[colName]?.get('index') ?: -1) as int
+    (idx >= 0 ? strArray[idx] : null)
+  }
+  
+  private boolean sameTitle(final Map<String, ? extends Map> acceptedFields, final String[] currentRecord, final String[] record) {
+    /* Ensure the following are equal.
+    
+      publication_title 
+      print_identifier
+      online_identifier
+      title_url
+      title_id
+     */
+    ['publication_title','print_identifier','online_identifier','title_url','title_id'].every { final String col ->
+      getRawColumnvalue(acceptedFields, currentRecord, col) == getRawColumnvalue(acceptedFields, record, col)
+    }
+  }
 
   private String getFieldFromLine(String[] lineAsArray, Map acceptedFields, String fieldName) {
     //ToDo potentially work out how to make this slightly less icky, it worked a lot nicer without @CompileStatic
-    String index = getIndexFromFieldName(acceptedFields, fieldName)
-    // Remember to discount any instances where the default '-1' still exists, don't want to grab the last index by mistake,
-    // We also don't want to return an empty string or whitespace, we'd rather null
-    if (index.toInteger() == -1 || lineAsArray[index.toInteger()].trim() == '') {
-      return null;
-    }
-  return lineAsArray[index.toInteger()];
+    final int idx = getIndexFromFieldName(acceptedFields, fieldName).toInteger()
+    final value = (idx >= 0 ? lineAsArray[idx]?.trim() : null)
+    value ? value : null // Emtpy strings are nulled.
   }
 
   private String getIndexFromFieldName(Map acceptedFields, String fieldName) {
@@ -358,16 +389,14 @@ class ImportService implements DataBinder {
     return outputDate;
   }
 
-  private List buildKBARTCoverage(String[] lineAsArray, Map acceptedFields) {
-    String startDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')
-    String endDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate')
+  private CoverageStatement buildKBARTCoverage(String[] lineAsArray, Map acceptedFields) {
+    final String startDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')
+    final String endDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate')
     
-    LocalDate startDateLocalDate = parseDate(startDate)
-    LocalDate endDateLocalDate = parseDate(endDate)
-    
-    String instanceMedia = getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase()
+    final LocalDate startDateLocalDate = parseDate(startDate)
+    final LocalDate endDateLocalDate = parseDate(endDate)
 
-    CoverageStatement cs = new CoverageStatement(
+    final CoverageStatement cs = new CoverageStatement(
       startDate: startDateLocalDate,
       startVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startVolume'),
       startIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startIssue'),
@@ -375,17 +404,16 @@ class ImportService implements DataBinder {
       endVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endVolume'),
       endIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endIssue')
     )
-
-    cs.validate()
     
-    if (!cs.hasErrors()) {
-      return ([cs]);
-    } else {
+    if (!cs.validate()) {
       cs.errors.allErrors.each { ObjectError error ->
         log.error "${ messageSource.getMessage(error, LocaleContextHolder.locale) }"
       }
-      return [];
+      // Return null
+      return null
     }
+    
+    cs
   }
 
   private List identifierValidator(Identifier identifier) {

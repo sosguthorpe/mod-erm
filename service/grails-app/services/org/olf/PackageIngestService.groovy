@@ -1,10 +1,10 @@
 package org.olf
 
+import java.util.concurrent.TimeUnit
+
 import org.olf.dataimport.internal.PackageSchema
 import org.olf.dataimport.internal.PackageSchema.ContentItemSchema
 import org.olf.dataimport.internal.PackageSchema.CoverageStatementSchema
-import org.olf.general.jobs.JobRunnerService
-import org.olf.general.jobs.LogEntry
 import org.olf.kb.Embargo
 import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
@@ -13,11 +13,10 @@ import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.RemoteKB
 import org.olf.kb.TitleInstance
 import org.slf4j.MDC
-import grails.gorm.transactions.Transactional
+
 import grails.util.GrailsNameUtils
 import grails.web.databinding.DataBinder
 import groovy.util.logging.Slf4j
-import java.util.concurrent.TimeUnit
 
 /**
  * This service works at the module level, it's often called without a tenant context.
@@ -228,6 +227,7 @@ class PackageIngestService implements DataBinder {
                       bindData(embargo, emb.properties, [exclude: ['id']])
                     } else {
                       // New
+                      emb.save()
                       embargo = emb
                     }
                   }
@@ -279,14 +279,8 @@ class PackageIngestService implements DataBinder {
                   // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
                   // to the list of maps that coverageService.extend expects
                   Iterable<CoverageStatementSchema> cov = pc.coverage instanceof Iterable ? pc.coverage : [ pc.coverage ]
-
-                  coverageService.extend(pti, cov)
-                  coverageService.extend(pci, cov)
-                  coverageService.extend(title, cov)
+                  coverageService.setCoverageFromSchema (pci, cov)
                 }
-
-                // Save needed either way
-                pci.save(flush:true, failOnError:true)
               }
               else {
                 String message = "Skipping ${pc.title}. Unable to identify platform from ${platform_url_to_use} and ${pc.platformName}"
