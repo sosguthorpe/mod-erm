@@ -206,5 +206,40 @@ databaseChangeLog = {
     addNotNullConstraint(tableName: "erm_resource", columnName: "res_suppress_discovery", columnDataType: "boolean")
   }
 
+  changeSet(author: "claudia (manual)", id: "202005251415-1") {
+        createTable(tableName: "entitlement_tag") {
+            column(name: "entitlement_tags_id", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "tag_id", type: "BIGINT")
+        }
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005251415-2") {
+        addForeignKeyConstraint(baseColumnNames: "entitlement_tags_id", baseTableName: "entitlement_tag", constraintName: "ent_tag_to_ent", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "ent_id", referencedTableName: "entitlement")
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005251415-3") {
+        addForeignKeyConstraint(baseColumnNames: "tag_id", baseTableName: "entitlement_tag", constraintName: "ent_tag_to_tag", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "tag")
+  }
+
+  changeSet(author: "claudia (manual)", id: "2020052515-4") {
+        createTable(tableName: "erm_resource_tag") {
+            column(name: "erm_resource_tags_id", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "tag_id", type: "BIGINT")
+        }
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005251415-5") {
+        addForeignKeyConstraint(baseColumnNames: "erm_resource_tags_id", baseTableName: "erm_resource_tag", constraintName: "er_tag_to_er", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "erm_resource")
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005251415-6") {
+        addForeignKeyConstraint(baseColumnNames: "tag_id", baseTableName: "erm_resource_tag", constraintName: "er_tag_to_tag", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "tag")
+  }
 }
 

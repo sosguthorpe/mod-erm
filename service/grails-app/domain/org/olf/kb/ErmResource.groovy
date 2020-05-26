@@ -3,6 +3,7 @@ package org.olf.kb
 import org.olf.CoverageService
 import org.olf.erm.Entitlement
 import com.k_int.web.toolkit.refdata.RefdataValue
+import com.k_int.web.toolkit.tags.Tag
 import grails.async.Promises
 import grails.gorm.MultiTenant
 import grails.gorm.multitenancy.Tenants
@@ -28,7 +29,8 @@ public class ErmResource implements MultiTenant<ErmResource> {
   
   static hasMany = [
     coverage: CoverageStatement,
-    entitlements: Entitlement
+    entitlements: Entitlement,
+    tags: Tag,
   ]
 
   static mappedBy = [
@@ -46,6 +48,7 @@ public class ErmResource implements MultiTenant<ErmResource> {
                 subType column: 'res_sub_type_fk'
   suppressFromDiscovery column: 'res_suppress_discovery'
               coverage cascade: 'all-delete-orphan'
+                  tags cascade: 'save-update'
   }
 
   static constraints = {

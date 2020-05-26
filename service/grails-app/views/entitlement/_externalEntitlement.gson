@@ -40,6 +40,7 @@ json {
   'haveAccess' entitlement.getHaveAccess()
   'suppressFromDiscovery' entitlement.suppressFromDiscovery
   'note' entitlement.note
+  'tags' entitlement.tags
   
   'owner' g.render(entitlement.owner, [includes: ['id']])
   

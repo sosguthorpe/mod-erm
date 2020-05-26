@@ -10,7 +10,7 @@ if (entitlement.type == 'external') {
   json tmpl."externalEntitlement"(entitlement)
 } else {
 
-  json g.render(entitlement, [expand: ['poLines', 'owner', 'resource' ]]) {
+  json g.render(entitlement, [expand: ['poLines', 'owner', 'resource', 'tags' ]]) {
         
     if (entitlement.coverage) {
       

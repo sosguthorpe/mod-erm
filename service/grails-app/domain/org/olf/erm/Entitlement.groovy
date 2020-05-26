@@ -12,6 +12,7 @@ import org.olf.kb.PlatformTitleInstance
 
 import com.k_int.okapi.remote_resources.OkapiLookup
 import com.k_int.web.toolkit.domain.traits.Clonable
+import com.k_int.web.toolkit.tags.Tag
 import grails.databinding.BindInitializer
 import grails.gorm.MultiTenant
 import groovy.util.logging.Slf4j
@@ -251,6 +252,7 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
   static hasMany = [
     coverage: HoldingsCoverage,
      poLines: OrderLine,
+        tags: Tag,
   ]
 
   Set<HoldingsCoverage> coverage = []
@@ -296,7 +298,8 @@ suppressFromDiscovery column: 'ent_suppress_discovery'
             authority column: 'ent_authority'
             reference column: 'ent_reference'
              poLines cascade: 'all-delete-orphan'
-             coverage cascade: 'all-delete-orphan'
+            coverage cascade: 'all-delete-orphan'
+                tags cascade: 'save-update'
   }
 
   static constraints = {

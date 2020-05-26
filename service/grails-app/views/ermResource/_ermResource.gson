@@ -16,6 +16,7 @@ json {
   'class' GrailsHibernateUtil.unwrapIfProxy(ermResource).class.name
   'name' ermResource.name
   'suppressFromDiscovery' ermResource.suppressFromDiscovery
+  'tags' ermResource.tags
   
   if (ermResource.type) {
     'type' g.render (ermResource.type)
