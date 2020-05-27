@@ -147,10 +147,10 @@ databaseChangeLog = {
      grailsChange {
       change {
         // Return the list of names that have duplicates
-        List nonUniqueNames = sql.rows("SELECT sa.sa_name FROM ${database.defaultSchemaName}.subscription_agreement as sa GROUP BY sa.sa_name HAVING COUNT(*) > 1")
+        List nonUniqueNames = sql.rows("SELECT sa.sa_name FROM ${database.defaultSchemaName}.subscription_agreement as sa GROUP BY sa.sa_name HAVING COUNT(*) > 1".toString())
         nonUniqueNames.each{
           // For each of those names, return a list of the agreement ids that have that name
-          List rowsWithGivenName = sql.rows("SELECT sa_id FROM ${database.defaultSchemaName}.subscription_agreement as sa WHERE sa.sa_name = :name", [name: it.sa_name])
+          List rowsWithGivenName = sql.rows("SELECT sa_id FROM ${database.defaultSchemaName}.subscription_agreement as sa WHERE sa.sa_name = :name".toString(), [name: it.sa_name])
           rowsWithGivenName.eachWithIndex {agreement, i ->
             // For each of those ids, add an increment, so ["A", "A", "A"] becomes ["A_1", "A_2", "A_3"]
             sql.execute("UPDATE ${database.defaultSchemaName}.subscription_agreement SET sa_name = CONCAT(sa_name, CONCAT('_', :index)) WHERE sa_id = :id", [id: agreement.sa_id, index: i + 1])
