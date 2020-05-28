@@ -32,7 +32,7 @@ class JobLoggingService {
     le.save(failOnError: true, flush: true)
   }
   
-  static void handleLogEvent ( final String tenantId, final String jobId, final String message, final String type, final Instant timestamp = Instant.now()) {
+  static void handleLogEvent ( final String tenantId, final String jobId, final String message, final String type, final Instant timestamp = Instant.now(), final Map<String, String> contextVals = null) {
     Promise p = task {
       final Map<String, ?> jobProperties = [
         'type': type,
