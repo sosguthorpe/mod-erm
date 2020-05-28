@@ -379,7 +379,11 @@ public class CoverageService {
     res instanceof TitleInstance ? res : null
   }
   
-  public static void changeListener(Serializable resId) {
+  public static void changeListener(Serializable resId, int preWait = 300) {
+    
+    // This is totally gross. We need to rewrite the whole process to model transactions in the desired way.
+    // The issue we are having is that we can not see the current vlaues as the session has not been thoroughly flushed.
+    (preWait > 0) && sleep(preWait)
     
     // Inserts currently aren't in the database when we try and re-read it back...
     // I don't like this, but we keep checking for a couple of seconds.
