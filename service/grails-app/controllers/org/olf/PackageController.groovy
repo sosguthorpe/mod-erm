@@ -55,7 +55,6 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
   }
   
   def 'tsvParse' () {
-    //TODO Potentially work out how to get PackageProvider information into here
     MultipartFile file = request.getFile('upload')
 
     Map packageInfo = [

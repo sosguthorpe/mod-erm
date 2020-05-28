@@ -39,7 +39,6 @@ class KbartImportJob extends PersistentJob implements MultiTenant<KbartImportJob
         ]
 
         boolean packageInfoValid = true
-        //TODO Actual validation here
         if ( packageInfo.packageName == null ||
              packageInfo.packageSource == null ||
              packageInfo.packageReference == null ) {

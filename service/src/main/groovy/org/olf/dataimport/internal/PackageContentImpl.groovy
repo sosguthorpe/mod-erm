@@ -20,6 +20,7 @@ class PackageContentImpl implements ContentItemSchema, Validateable {
   String title
   String instanceMedium
   String instanceMedia
+  String sourceIdentifier
   String embargo
   String coverageDepth
   String coverageNote

@@ -68,4 +68,14 @@ public interface KBCacheUpdater {
    */
   public boolean activate(Map params, KBCache cache);
 
+  /**
+   * Ask the remote service to get more information about a specific titleInstance
+   */
+  public Map getTitleInstance(String source_name,
+                              String base_url,
+                              String identifier,
+                              String type,
+                              String subType);
+  
+  public boolean requiresSecondaryEnrichmentCall();
 }

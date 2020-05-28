@@ -52,6 +52,18 @@ public class GenericRemoteKBAdapter implements KBCacheUpdater {
     return true;
   }
 
+  public boolean requiresSecondaryEnrichmentCall() {
+    false
+  }
+
+  public Map getTitleInstance(String source_name,
+                              String base_url,
+                              String identifier,
+                              String type,
+                              String subType) {
+    throw new RuntimeException("Not supported by this KB provider");
+  }
+
 }
 
 

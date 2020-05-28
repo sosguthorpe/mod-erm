@@ -31,6 +31,7 @@ class PackageIngestService implements DataBinder {
   private boolean PROXY_MISSING_PLATFORM = true
 
   TitleInstanceResolverService titleInstanceResolverService
+  TitleEnricherService titleEnricherService
   CoverageService coverageService
 
   // dependentModuleProxyService is a service which hides the fact that we might be dependent upon other
@@ -69,11 +70,12 @@ class PackageIngestService implements DataBinder {
     Pkg pkg = null
     Boolean trustedSourceTI = package_data.header?.trustedSourceTI
     def skipPackage = false
-    Pkg.withNewTransaction { status ->
-      // ERM caches many remote KB sources in it's local package inventory
-      // Look up which remote kb via the name
-      RemoteKB kb = RemoteKB.findByName(remotekbname)
 
+    // ERM caches many remote KB sources in it's local package inventory
+    // Look up which remote kb via the name
+    RemoteKB kb = RemoteKB.findByName(remotekbname)
+    Pkg.withNewTransaction { status ->
+      
       if (!kb) {
        kb = new RemoteKB( name:remotekbname,
                           rectype: new Long(1),
@@ -148,6 +150,10 @@ class PackageIngestService implements DataBinder {
             TitleInstance title = titleInstanceResolverService.resolve(pc, trustedSourceTI)
 
             if ( title != null ) {
+              // Now we have a saved title in the system, we can check whether or not we want to go and grab extra data.
+
+              String sourceIdentifier = pc.sourceIdentifier
+              titleEnricherService.secondaryEnrichment(kb, sourceIdentifier, title.id);
 
               // log.debug("platform ${pc.platformUrl} ${pc.platformName} (item URL is ${pc.url})")
 

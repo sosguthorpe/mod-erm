@@ -241,5 +241,19 @@ databaseChangeLog = {
   changeSet(author: "claudia (manual)", id: "202005251415-6") {
         addForeignKeyConstraint(baseColumnNames: "tag_id", baseTableName: "erm_resource_tag", constraintName: "er_tag_to_tag", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "tag")
   }
+
+  // Migration to remove "packages" from existing GoKBAdapter sources
+  changeSet(author: "efreestone (manual)", id: "20200527-1554-001") {
+     grailsChange {
+      change {
+        // Return the list of remoteKBs of type GOKbOAIAdapter
+        List goKbRemoteKbs = sql.rows("SELECT * FROM ${database.defaultSchemaName}.remotekb WHERE rkb_type='org.olf.kb.adapters.GOKbOAIAdapter'".toString())
+        goKbRemoteKbs.each{
+          String newUri = it.rkb_uri.replace("/packages", "")
+          sql.execute("UPDATE ${database.defaultSchemaName}.remotekb SET rkb_uri = :uri", [uri: newUri])
+        }
+      }
+    }
+  }
 }
 

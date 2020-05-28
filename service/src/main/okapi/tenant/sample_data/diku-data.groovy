@@ -21,7 +21,7 @@ if (!local_kb ) {
 RemoteKB gokb_test = RemoteKB.findByName('GOKb_TEST') ?: new RemoteKB(
     name:'GOKb_TEST',
     type:'org.olf.kb.adapters.GOKbOAIAdapter',
-    uri:'http://gokbt.gbv.de/gokb/oai/index/packages',
+    uri:'http://gokbt.gbv.de/gokb/oai/index',
     fullPrefix:'gokb',
     rectype: RemoteKB.RECTYPE_PACKAGE,
     active:Boolean.TRUE,
