@@ -152,7 +152,7 @@ class PackageIngestService implements DataBinder {
             if ( title != null ) {
               // Now we have a saved title in the system, we can check whether or not we want to go and grab extra data.
 
-              String sourceIdentifier = pc.sourceIdentifier
+              String sourceIdentifier = pc?.sourceIdentifier
               titleEnricherService.secondaryEnrichment(kb, sourceIdentifier, title.id);
 
               // log.debug("platform ${pc.platformUrl} ${pc.platformName} (item URL is ${pc.url})")
