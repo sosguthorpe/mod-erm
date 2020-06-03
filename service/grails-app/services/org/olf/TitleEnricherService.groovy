@@ -36,14 +36,17 @@ class TitleEnricherService {
             if (!enrichedIdSet.contains(ti.id)) {
               // Only perform the enrichment if we've not already stored the id of this TI
               Map titleInstanceEnrichmentValues = cache_updater.getTitleInstance(kb.name, kb.uri, sourceIdentifier, ti?.type?.value, ti?.subType?.value)
-              if (!saveEnrichmentValues(titleInstanceEnrichmentValues, ti)) {
-                log.info("Secondary enrichment call made for ti with id ${ermIdentifier}, but no updates were made")
+              
+              // If no enrichment values were returned then break out
+              if (titleInstanceEnrichmentValues) {
+                if (!saveEnrichmentValues(titleInstanceEnrichmentValues, ti)) {
+                  log.info("Secondary enrichment call made for ti with id ${ermIdentifier}, but no updates were made")
+                }
+                // Store the id of this TI so that it won't run the enrichment call twice for a single TI
+                enrichedIdSet.add(ti.id)
+                enrichedIds.set(enrichedIdSet)
               }
-              // Store the id of this TI so that it won't run the enrichment call twice for a single TI
-              enrichedIdSet.add(ti.id)
-              enrichedIds.set(enrichedIdSet)
             }
-            
           } else {
             log.error("Could not find ti with id: ${ermIdentifier}, skipping secondary enrichment call.")
           }
