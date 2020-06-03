@@ -10,14 +10,11 @@ json g.render(titleInstance, [expand: ['identifiers', 'type', 'subType', 'covera
   'class' titleInstance.class.name
   longName titleInstance.longName
   
-  siblingIdentifiers (titleInstance.siblingIdentifiers) { IdentifierOccurrence identifierOccurrence ->
-    g.inline(identifierOccurrence, [expand: ['identifier', 'status'], excludes: ['id', 'title']]) {
+  relatedTitles (titleInstance.relatedTitles) { TitleInstance relation ->
     
-      // Also render a minimal title instance for the relation
-      TitleInstance relation = identifierOccurrence.title
-      title g.render (relation, [includes: ['name', 'type', 'subType'], expand: ['type', 'subType']]) {
-        longName titleInstance.longName
-      }
+    // Also render a minimal title instance for the relation
+    g.inline (relation, [includes: ['id', 'name', 'type', 'subType', 'identifiers'], expand: ['type', 'subType', 'identifiers']]) {
+      longName titleInstance.longName
     }
   }
 }

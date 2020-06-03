@@ -99,27 +99,23 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
             monographVolume (nullable:true, blank:false)
   }
   
-  static transients = ['siblingIdentifiers']
+  static transients = ['relatedTitles']
   
-  private Set<IdentifierOccurrence> theSiblingIdentifiers = null
-  public Set<IdentifierOccurrence> getSiblingIdentifiers() {
-    if (theSiblingIdentifiers == null) {
-      theSiblingIdentifiers = []
+  private Set<TitleInstance> relatedTitles = null
+  public Set<TitleInstance> getRelatedTitles() {
+    if (relatedTitles == null) {
+      relatedTitles = []
       final String theWork = this.work?.id
       final String me = this.id
       if (me && theWork) {
         
-        IdentifierOccurrence.createCriteria().list {
-          createAlias ('title', 'the_title')
-            createAlias ('the_title.work', 'the_work')
-            
-          eq ('the_work.id', theWork)
-          ne ('the_title.id', me)
-        }?.each { IdentifierOccurrence ido -> this.theSiblingIdentifiers << ido }
+        relatedTitles.addAll( TitleInstance.createCriteria().list {            
+          eq ('work.id', theWork)
+          ne ('id', me)
+        })
       }
     }
-    
-    theSiblingIdentifiers
+    relatedTitles
   }
 
   public String getCodexSummary() {
