@@ -29,7 +29,7 @@ public class CoverageStatement extends AbstractCoverageStatement implements Vali
   String endIssue
   
   static constraints = {
-    startDate(nullable:false, validator: STATEMENT_START_VALIDATOR)
+    startDate(nullable:false, validator: AbstractCoverageStatement.STATEMENT_START_VALIDATOR)
     endDate(nullable:true)
     startVolume(nullable:true, blank:false)
     startIssue(nullable:true, blank:false)
