@@ -37,7 +37,6 @@ from RemoteKB as rkb
 where rkb.type is not null
   and rkb.active = :true
   and ( ( rkb.syncStatus is null ) OR ( rkb.syncStatus <> :inprocess ) )
-  and ( ( rkb.lastCheck is null ) OR ( ( :current_time - rkb.lastCheck ) < 1*60*60*1000 ) )
 '''
 
   @Subscriber('okapi:dataload:sample')
@@ -82,7 +81,7 @@ where rkb.type is not null
     log.debug("KBHarvestService::triggerCacheUpdate()")
 
     // List all pending jobs that are eligible for processing - That is everything enabled and not currently in-process and has not been processed in the last hour
-    RemoteKB.executeQuery(PENDING_JOBS_HQL,['true':true,'inprocess':'in-process','current_time':System.currentTimeMillis()],[lock:false]).each { remotekb_id ->
+    RemoteKB.executeQuery(PENDING_JOBS_HQL,['true':true,'inprocess':'in-process'],[lock:false]).each { remotekb_id ->
 
       try {
         // We will check each candidate job to see if it has been picked up by some other thread or load balanced

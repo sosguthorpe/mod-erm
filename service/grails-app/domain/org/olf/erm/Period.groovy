@@ -33,7 +33,7 @@ class Period implements MultiTenant<Period>  {
                     owner(nullable:false)
                      note(nullable:true, blank:false)
      cancellationDeadline(nullable:true)
-                startDate(nullable:false, validator: PERIOD_START_VALIDATOR)
+                startDate(nullable:false, validator: Period.PERIOD_START_VALIDATOR)
                   endDate(nullable:true)
   }
   

@@ -1,13 +1,20 @@
 import org.olf.kb.TitleInstance
+import org.olf.kb.IdentifierOccurrence
 
 import groovy.transform.*
 
 @Field
 TitleInstance titleInstance
 
-json g.render(titleInstance, [expand: ['identifiers', 'type', 'subType', 'coverage'], excludes: ['entitlements']]) {
+json g.render(titleInstance, [expand: ['identifiers', 'type', 'subType', 'coverage', 'tags'], excludes: ['entitlements']]) {
   'class' titleInstance.class.name
   longName titleInstance.longName
   
-  siblingIdentifiers g.render (titleInstance.siblingIdentifiers)
+  relatedTitles (titleInstance.relatedTitles) { TitleInstance relation ->
+    
+    // Also render a minimal title instance for the relation
+    g.inline (relation, [includes: ['id', 'name', 'type', 'subType', 'identifiers'], expand: ['type', 'subType', 'identifiers']]) {
+      longName titleInstance.longName
+    }
+  }
 }

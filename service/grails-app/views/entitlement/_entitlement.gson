@@ -27,8 +27,10 @@ if (entitlement.type == 'external') {
     }
     
     'explanation' entitlement.getExplanation()
-    'startDate' entitlement.getActiveFrom()
-    'endDate' entitlement.getActiveTo()
+    'startDate' entitlement.activeFrom
+    'endDate' entitlement.activeTo
+    'activeFrom' entitlement.activeFrom
+    'activeTo' entitlement.activeTo
     'contentUpdated' entitlement.getContentUpdated()
     'haveAccess' entitlement.getHaveAccess()
     'suppressFromDiscovery' entitlement.suppressFromDiscovery

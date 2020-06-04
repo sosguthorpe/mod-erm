@@ -67,11 +67,13 @@ class UrlMappings {
       }
     }
 
-    '/erm/titles'(resources: 'title') {
+    '/erm/titles'(resources: 'title', excludes: ['patch', 'save', 'create', 'edit', 'delete']) {
       collection {
         "/entitled" (action: 'entitled')
       }
     }
+    
+    '/erm/pti' (resources: 'platformTitleInstance', excludes: ['patch', 'save', 'create', 'edit', 'delete'])
 
     '/erm/packages'(resources: 'package') {
       collection {
@@ -87,7 +89,7 @@ class UrlMappings {
     }
 
     "/erm/pci"(resources:'packageContentItem')
-    "/erm/entitlements"(resources:'entitlement') {
+    "/erm/entitlements"(resources:'entitlement', excludes: ['patch', 'save', 'create', 'edit', 'delete']) {
       collection {
         "/external" ( action: 'external' )
       }

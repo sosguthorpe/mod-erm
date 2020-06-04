@@ -16,6 +16,7 @@ import groovy.transform.ToString
 class ContentItem implements ContentItemSchema, Validateable {
   
   String note
+  String sourceIdentifier
   String depth
   LocalDate accessStart
   LocalDate accessEnd
@@ -109,6 +110,11 @@ class ContentItem implements ContentItemSchema, Validateable {
   @Override
   public String getCoverageNote() {
     note
+  }
+
+  @Override
+  public String getSourceIdentifier() {
+    sourceIdentifier
   }
   
   @Override
