@@ -133,7 +133,7 @@ databaseChangeLog = {
   changeSet(author: "claudia (manual)", id: "202004221850-1") {
     grailsChange {
       change {
-        // Change category RemoteLicenseLink.Status to internal  
+        // Change category RemoteLicenseLink.Status to internal
         sql.execute("""
           UPDATE ${database.defaultSchemaName}.refdata_category SET internal = true
             WHERE rdc_description='RemoteLicenseLink.Status'
@@ -252,6 +252,23 @@ databaseChangeLog = {
           String newUri = it.rkb_uri.replace("/packages", "")
           sql.execute("UPDATE ${database.defaultSchemaName}.remotekb SET rkb_uri = :uri", [uri: newUri])
         }
+      }
+    }
+  }
+
+  // Migration to store additional MDC log infos
+  changeSet(author: "peter (generated)", id: "1591284037945-34") {
+    createTable(tableName: "log_entry_additionalinfo") {
+      column(name: "le_additionalinfo", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "additionalinfo_object", type: "VARCHAR(255)")
+
+      column(name: "additionalinfo_idx", type: "VARCHAR(255)")
+
+      column(name: "additionalinfo_elt", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
       }
     }
   }
