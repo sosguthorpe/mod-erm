@@ -39,7 +39,7 @@ public class ExportService {
     agreement
   }
    
-  List<ErmResource> all(final String agreementId = null) {
+  List<List> all(final String agreementId = null) {
     def results = null
     if (agreementId) {
       results = ErmResource.executeQuery("""
@@ -99,7 +99,7 @@ public class ExportService {
     return results  
   }
   
-  List<ErmResource> current (final String agreementId = null) {
+  List<List> current (final String agreementId = null) {
     final LocalDate today = LocalDate.now()
     
     def results = null

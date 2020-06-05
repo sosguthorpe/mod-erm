@@ -34,6 +34,7 @@ switch (resource) {
     break
   case { it instanceof PlatformTitleInstance }:
     PlatformTitleInstance pti = resource as PlatformTitleInstance
+    ent = GrailsHibernateUtil.unwrapIfProxy(tuple[2]) as Entitlement
     ti = pti.titleInstance
     the_platform = pti.platform
     the_url = pti.url
@@ -55,6 +56,9 @@ Map customCoverageMap = request?.getAttribute("${controllerName}.${actionName}.c
 List customCoverageList = customCoverageMap?.get("${resource.id}") 
 
 json {
+
+  tags g.render(resource.tags)
+
   if (via_package) {
     final def pkg = ent.resource
     
@@ -64,6 +68,9 @@ json {
     }
   }
   
+  "agreementLine" g.render(ent, [includes:["id", "suppressFromDiscovery"]]) {
+    tags g.render(ent.tags)
+  }
 
   if (the_platform) {
      platform g.render(the_platform)
@@ -100,7 +107,7 @@ json {
     'customCoverage' false
   }
   
-  title g.render(ti, [expand: ['identifiers', 'type', 'subType'], excludes: ['entitlements', 'coverage', 'work', 'platformInstances']])
+  title g.render(ti, [expand: ['identifiers', 'type', 'subType', 'tags'], excludes: ['entitlements', 'coverage', 'work', 'platformInstances']])
 
 }
 
