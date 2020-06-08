@@ -20,7 +20,7 @@ class LogEntry implements MultiTenant<LogEntry> {
   String message
   Instant dateCreated = Instant.now()
   String origin
-  Map additionalinfo  // for MDC
+  Map additionalinfo = [:]  // for MDC
 
   static mapping = {
               id column: 'le_id', generator: 'uuid2', length:36
@@ -35,6 +35,7 @@ class LogEntry implements MultiTenant<LogEntry> {
      dateCreated (nullable:true, blank:false)
           origin (nullable:false, blank:false)
             type (nullable:false, blank:false)
+  additionalinfo (nullable:false, blank:false)
   }
 }
 
