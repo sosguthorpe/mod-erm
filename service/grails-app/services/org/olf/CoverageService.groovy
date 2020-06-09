@@ -125,9 +125,9 @@ public class CoverageService {
       
       // Clear the existing coverage, or initialize to empty set.
       if (resource.coverage) {
-        statements.addAll( resource.coverage )
-        resource.coverage.collect().each { resource.removeFromCoverage(it) }
-        resource.save(failOnError: true, flush:true) // Necessary to remove the orphans.
+        statements.addAll( resource.coverage.collect() )
+        resource.coverage.clear()
+        resource.save(failOnError: true) // Necessary to remove the orphans.
       }
       
       for ( CoverageStatementSchema cs : coverage_statements ) {
@@ -169,7 +169,9 @@ public class CoverageService {
     if (!changed) {
       // Revert the coverage set.
       if (!resource.coverage) resource.coverage = []
-      resource.coverage.addAll( statements )
+      statements.each {
+        resource.addToCoverage( it )
+      }
     }
     
     resource.save(failOnError: true, flush:true) // Save.
@@ -185,7 +187,7 @@ public class CoverageService {
     
     // Use a sub query to select all the coverage statements linked to PCIs,
     // linked to this pti
-    List<CoverageStatement> allCoverage = CoverageStatement.createCriteria().list {
+    List<org.olf.dataimport.erm.CoverageStatement> allCoverage = CoverageStatement.createCriteria().list {
       'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
         readOnly (true)
         
@@ -196,6 +198,15 @@ public class CoverageService {
           property ('id')
         }
       }
+    }.collect{ CoverageStatement cs -> 
+      new org.olf.dataimport.erm.CoverageStatement([
+        'startDate': cs.startDate,
+        'startIssue': cs.startIssue,
+        'startVolume': cs.startVolume,
+        'endDate': cs.endDate,
+        'endIssue': cs.endIssue,
+        'endVolume': cs.endVolume
+      ])
     }
         
     allCoverage = collateCoverageStatements(allCoverage)
@@ -213,7 +224,7 @@ public class CoverageService {
     
     // Use a sub query to select all the coverage statements linked to PTIs,
     // linked to this TI
-    List<CoverageStatement> allCoverage = CoverageStatement.createCriteria().list {
+    List<org.olf.dataimport.erm.CoverageStatement> allCoverage = CoverageStatement.createCriteria().list {
       'in' 'resource.id', new DetachedCriteria(PlatformTitleInstance).build {
         readOnly (true)
         
@@ -224,6 +235,15 @@ public class CoverageService {
           property ('id')
         }
       }
+    }.collect{ CoverageStatement cs -> 
+      new org.olf.dataimport.erm.CoverageStatement([
+        'startDate': cs.startDate,
+        'startIssue': cs.startIssue,
+        'startVolume': cs.startVolume,
+        'endDate': cs.endDate,
+        'endIssue': cs.endIssue,
+        'endVolume': cs.endVolume
+      ])
     }
     
     allCoverage = collateCoverageStatements(allCoverage)
@@ -379,29 +399,7 @@ public class CoverageService {
     res instanceof TitleInstance ? res : null
   }
   
-  public static void changeListener(Serializable resId, int preWait = 300) {
-    
-    // This is totally gross. We need to rewrite the whole process to model transactions in the desired way.
-    // The issue we are having is that we can not see the current vlaues as the session has not been thoroughly flushed.
-    (preWait > 0) && sleep(preWait)
-    
-    // Inserts currently aren't in the database when we try and re-read it back...
-    // I don't like this, but we keep checking for a couple of seconds.
-    final long totalTimeToWait = 1000 * 3 // 3 seconds.
-    final int increment = 200 // 200 milliseconds
-    long timeWaited = 0
-    
-    ErmResource res = ErmResource.get(resId)
-    while (res == null && timeWaited < totalTimeToWait) {
-      log.debug "Wait for the resource ${resId}"
-      sleep(increment)
-      timeWaited += increment
-      res = ErmResource.get(resId)
-    }
-    
-    if (res == null) {
-      log.error "Could not read resource with ID ${resId}"
-    }
+  public static void changeListener(ErmResource res) {
     
     final PackageContentItem pci = asPCI(res)
     if ( pci ) {

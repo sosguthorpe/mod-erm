@@ -1,10 +1,8 @@
 package org.olf.kb
 
-import grails.validation.Validateable
 import java.time.LocalDate
-import org.olf.dataimport.internal.PackageSchema.CoverageStatementSchema
 
-abstract class AbstractCoverageStatement implements CoverageStatementSchema, Validateable{
+abstract class AbstractCoverageStatement {
 
   abstract LocalDate getStartDate()
   abstract LocalDate getEndDate()
