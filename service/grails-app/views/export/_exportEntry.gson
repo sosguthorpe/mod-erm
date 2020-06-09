@@ -18,6 +18,7 @@ Platform the_platform
 String the_depth
 String the_note
 String the_url
+boolean the_suppress_from_discovery
 
 switch (resource) {
   case { it instanceof PackageContentItem }:
@@ -30,6 +31,7 @@ switch (resource) {
     the_embargo = pci.embargo
     the_depth = pci.depth
     the_note = pci.note
+    the_suppress_from_discovery = pci.suppressFromDiscovery
     
     break
   case { it instanceof PlatformTitleInstance }:
@@ -38,6 +40,7 @@ switch (resource) {
     ti = pti.titleInstance
     the_platform = pti.platform
     the_url = pti.url
+    the_suppress_from_discovery = pti.suppressFromDiscovery
     break
     
   case { it instanceof TitleInstance}:
@@ -75,10 +78,14 @@ json {
   if (the_platform) {
      platform g.render(the_platform)
   }
+
+  if (the_suppress_from_discovery) {
+     suppressFromDiscovery the_suppress_from_discovery
+  }
   
   if (the_embargo) {
     embargo g.render(the_embargo)
- }
+  }
   
   if (the_note) {
      note the_note
@@ -107,7 +114,7 @@ json {
     'customCoverage' false
   }
   
-  title g.render(ti, [expand: ['identifiers', 'type', 'subType', 'tags'], excludes: ['entitlements', 'coverage', 'work', 'platformInstances']])
+  title g.render(ti, [expand: ['identifiers', 'type', 'subType', 'tags'], excludes: ['entitlements', 'coverage', 'work', 'platformInstances', 'suppressFromDiscovery']])
 
 }
 
