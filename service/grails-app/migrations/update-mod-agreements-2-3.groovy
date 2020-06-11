@@ -255,5 +255,15 @@ databaseChangeLog = {
       }
     }
   }
+  
+  // New job type
+  changeSet(author: "sosguthorpe (generated)", id: "1591801195388-1") {
+    createTable(tableName: "coverage_regeneration_job") {
+      column(name: "id", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+    }
+    addPrimaryKey(columnNames: "id", constraintName: "coverage_regeneration_jobPK", tableName: "coverage_regeneration_job")
+  }
 }
 

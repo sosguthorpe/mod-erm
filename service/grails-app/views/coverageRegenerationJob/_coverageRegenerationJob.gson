@@ -1,0 +1,8 @@
+import org.olf.general.jobs.CoverageRegenerationJob
+
+import groovy.transform.Field
+
+@Field
+CoverageRegenerationJob coverageRegenerationJob
+
+json tmpl."/persistentJob/persistentJob" (persistentJob: coverageRegenerationJob)

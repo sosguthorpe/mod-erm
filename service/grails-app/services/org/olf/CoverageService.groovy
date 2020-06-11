@@ -1,5 +1,6 @@
 package org.olf
 
+import java.time.Instant
 import java.time.LocalDate
 
 import javax.servlet.http.HttpServletRequest
@@ -9,6 +10,7 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.hibernate.sql.JoinType
 import org.olf.dataimport.internal.PackageSchema.CoverageStatementSchema
 import org.olf.erm.Entitlement
+import org.olf.general.jobs.CoverageRegenerationJob
 import org.olf.kb.AbstractCoverageStatement
 import org.olf.kb.CoverageStatement
 import org.olf.kb.ErmResource
@@ -21,7 +23,13 @@ import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.validation.ObjectError
 import org.springframework.web.context.request.RequestContextHolder
 
+import com.github.zafarkhaja.semver.ParseException
+import com.github.zafarkhaja.semver.Version
+import com.k_int.okapi.OkapiTenantResolver
+
+import grails.events.annotation.Subscriber
 import grails.gorm.DetachedCriteria
+import grails.gorm.multitenancy.Tenants
 import grails.util.Holders
 import groovy.util.logging.Slf4j
 
@@ -163,7 +171,7 @@ public class CoverageService {
       log.debug("New coverage saved")
       changed = true
     } catch (ValidationException e) {
-      log.error("Coverage changes to Resource ${resource.id} not saved", e)
+      log.error("Coverage changes to Resource ${resource.id} not saved")
     }
     
     if (!changed) {
@@ -201,11 +209,7 @@ public class CoverageService {
     }.collect{ CoverageStatement cs -> 
       new org.olf.dataimport.erm.CoverageStatement([
         'startDate': cs.startDate,
-        'startIssue': cs.startIssue,
-        'startVolume': cs.startVolume,
-        'endDate': cs.endDate,
-        'endIssue': cs.endIssue,
-        'endVolume': cs.endVolume
+        'endDate': cs.endDate
       ])
     }
         
@@ -238,11 +242,7 @@ public class CoverageService {
     }.collect{ CoverageStatement cs -> 
       new org.olf.dataimport.erm.CoverageStatement([
         'startDate': cs.startDate,
-        'startIssue': cs.startIssue,
-        'startVolume': cs.startVolume,
-        'endDate': cs.endDate,
-        'endIssue': cs.endIssue,
-        'endVolume': cs.endVolume
+        'endDate': cs.endDate
       ])
     }
     
@@ -258,12 +258,13 @@ public class CoverageService {
     if (date == null) return defaultValue
     
     if (cs.startDate == null && cs.endDate == null) return 0
-        
-    if (date <= cs.endDate) {
+    if (date == null) return ( cs.startDate ? -1 : (cs.endDate ? 1 : 0) )
+    
+    if (cs.endDate == null || date <= cs.endDate) {
       return ( cs.startDate == null || date >= cs.startDate ? 0 : -1 )
     }
     
-    if (date >= cs.startDate) {
+    if (cs.startDate == null || date >= cs.startDate) {
       return ( cs.endDate == null || date <= cs.endDate ? 0 : 1 )
     }
 
@@ -423,44 +424,75 @@ public class CoverageService {
     }
   }
   
+  private static final Version COVERAGE_IMPROVEMENTS_VERSION = Version.forIntegers(2,3) // Version trigger.
   
-  // SO: Gorm doesn't throw an event for a new tenant datastore.
-  // This means tenants created programatically don't quite work yet.
-  // TODO: Implement properly in grails okapi and toolkit.
-//  private void changeListener(AbstractPersistenceEvent event) {
-//    PackageContentItem pci = asPCI(event)
-//    if ( pci ) {
-//      log.debug 'PCI updated'
-//      if (pci.isDirty('coverage')) {
-//        log.debug "PCI coverage changed. Regenerate PTI's coverage"
-//        calculateCoverage( pci.pti )
-//      }
-//    }
-//    
-//    PlatformTitleInstance pti = asPTI(event)
-//    if ( pci ) {
-//      log.debug 'PTI updated'
-//      if (pci.isDirty('coverage')) {
-//        log.debug "PTI coverage changed. Regenerate PTI's coverage"
-//        calculateCoverage( pti.titleInstance )
-//      }
-//    }
-//    
-//    TitleInstance ti = asTI(event)
-//    if ( pci ) {
-//      log.debug 'TI updated'
-//    }
-//  }
-//  
-//  @CurrentTenant
-//  @Listener([PackageContentItem, PlatformTitleInstance, TitleInstance])
-//  void afterUpdate(PostUpdateEvent event) {
-//    changeListener(event)
-//  }
-//  
-//  @CurrentTenant
-//  @Listener([PackageContentItem, PlatformTitleInstance, TitleInstance])
-//  void afterInsert(PostInsertEvent event) {
-//    changeListener(event)
-//  }
+  @Subscriber('okapi:tenant_enabled')
+  public void onTenantEnabled (final String tenantId, final boolean existing_tenant, final boolean upgrading, final String toVersion, final String fromVersion) {
+    if (upgrading && fromVersion) {
+      try {
+        if (Version.valueOf(fromVersion).compareTo(COVERAGE_IMPROVEMENTS_VERSION) < 0) {
+          // We are upgrading from a version prior to when the coverage changes were introduced,
+          // lets schedule a job to retrospectively alter the coverage statements
+          log.debug "Regenerate coverage based on tenant upgrade prior to improvements being present"
+          triggerRegenrationForTenant(tenantId)
+        }
+      } catch(ParseException pex) {
+        // From version couldn't be parsed as semver we should ignore.
+        log.debug "${fromVersion} could not be parsed as semver not running Coverage Regeneration."
+      }
+    }
+  }
+  
+  @Subscriber('okapi:tenant_regen_coverage')
+  public void onTenantRegenCoverage(final String tenantId, final String value, final String existing_tenant, final String upgrading, final String toVersion, final String fromVersion) {
+    log.debug "Regenerate coverage based on explicit request during tenant activation"
+    triggerRegenrationForTenant(tenantId)
+  }
+  
+  private void triggerRegenrationForTenant(final String tenantId) {
+    final String tenant_schema_id = OkapiTenantResolver.getTenantSchemaName(tenantId)
+    Tenants.withId(tenant_schema_id) {
+
+      CoverageRegenerationJob job = CoverageRegenerationJob.findByStatusInList([
+        CoverageRegenerationJob.lookupStatus('Queued'),
+        CoverageRegenerationJob.lookupStatus('In progress')
+      ])
+
+      if (!job) {
+        job = new CoverageRegenerationJob(name: "Coverage Regeneration ${Instant.now()}")
+        job.setStatusFromString('Queued')
+        job.save(failOnError: true, flush: true)
+      } else {
+        log.debug('Regeneration job already running or scheduled. Ignore.')
+      }
+    }
+  }  
+  
+  public void triggerRegenration () {
+    // Select all PTIs and regenerate coverage for them.
+    final int batchSize = 100
+    
+    int count = 0
+    List<PlatformTitleInstance> ptis = PlatformTitleInstance.createCriteria().list ([max: batchSize, offset: batchSize * count]) { 
+//      eq 'titleInstance.id', '632bc9df-8e01-4d7b-8e91-3107dbc3b43c'
+      order 'id'
+    }
+    while (ptis && ptis.size() > 0) {
+      count ++
+      ptis.each { final PlatformTitleInstance pti ->
+        
+        PlatformTitleInstance.withNewTransaction {
+          log.info "Recalculating coverage for PTI ${pti.id}"
+          calculateCoverage( pti )
+        }
+      }
+      
+      // Next page...
+      ptis = PlatformTitleInstance.createCriteria().list ([max: batchSize, offset: batchSize * count]) { 
+        order 'id'
+      }
+//      ptis = null
+    }
+  }
+  
 }
