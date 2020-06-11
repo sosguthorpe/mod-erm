@@ -79,7 +79,7 @@ json {
      platform g.render(the_platform)
   }
 
-  if (the_suppress_from_discovery) {
+  if (the_suppress_from_discovery != null) {
      suppressFromDiscovery the_suppress_from_discovery
   }
   
