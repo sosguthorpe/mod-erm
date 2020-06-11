@@ -251,10 +251,14 @@ public class CoverageService {
     setCoverageFromSchema(ti, allCoverage)
   }
   
-  private static int dateWithinCoverage(CoverageStatementSchema cs, LocalDate date) {    
-    if (cs.startDate == null && cs.endDate == null) return 0
-    if (date == null) return ( cs.startDate ? -1 : (cs.endDate ? 1 : 0) )
+  private static int dateWithinCoverage(CoverageStatementSchema cs, LocalDate date, int defaultValue) {
     
+    // This is ambiguous. Null date could be open start or open end. Let the calling method sort it out
+    // We'll respond with null.
+    if (date == null) return defaultValue
+    
+    if (cs.startDate == null && cs.endDate == null) return 0
+        
     if (date <= cs.endDate) {
       return ( cs.startDate == null || date >= cs.startDate ? 0 : -1 )
     }
@@ -291,10 +295,10 @@ public class CoverageService {
     while (!absorbed && iterator.hasNext()) {
       CoverageStatementSchema current = iterator.next()
       
-      int comparison = dateWithinCoverage(current, statement.startDate)
+      int comparison = dateWithinCoverage(current, statement.startDate, -1)
       if (comparison == 0) {
         // Starts within current item, check end.
-        comparison = dateWithinCoverage(current, statement.endDate)
+        comparison = dateWithinCoverage(current, statement.endDate, 1)
         if (comparison == 0) {
           // Also within. This item is already dealt with.
           // No action needed.
@@ -310,7 +314,7 @@ public class CoverageService {
             iterator.previous()
             
             // There is overlap
-            if (dateWithinCoverage(next, statement.endDate) >= 0) {
+            if (dateWithinCoverage(next, statement.endDate, 1) >= 0) {
               // Then we should remove this item and deal with it as part of the next item.
               iterator.remove()
               absorbed = subsume(iterator, statement)
@@ -328,7 +332,7 @@ public class CoverageService {
         
       } else if (comparison < 0) {
         // Starts before current item, check end.
-        comparison = dateWithinCoverage(current, statement.endDate)
+        comparison = dateWithinCoverage(current, statement.endDate, 1)
         
         if (comparison < 0) {
           
@@ -354,7 +358,7 @@ public class CoverageService {
             iterator.previous()
             
             // There is overlap
-            if (dateWithinCoverage(next, statement.endDate) >= 0) {
+            if (dateWithinCoverage(next, statement.endDate, 1) >= 0) {
               // Then we should remove this item and deal with it as part of the next item.
               iterator.remove()
               absorbed = subsume(iterator, statement)
