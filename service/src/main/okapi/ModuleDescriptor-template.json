@@ -13,7 +13,8 @@
         },{
           "methods": ["GET"],
           "pathPattern": "/erm/sas/publicLookup",
-          "modulePermissions": [ "licenses.licenses.item.get" ]
+          "modulePermissions": [ "licenses.licenses.item.get" ],
+          "permissionsRequired": []
         },{
           "methods": ["GET"],
           "pathPattern": "/erm/sas/{id}",
