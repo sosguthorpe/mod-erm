@@ -79,7 +79,7 @@ public class SubscriptionAgreement implements CustomProperties,MultiTenant<Subsc
 
   Org vendor
   
-  HashSet<Period> periods = []
+  Set<Period> periods = []
 
   Set<Entitlement> items
   Set<AlternateName> alternateNames
