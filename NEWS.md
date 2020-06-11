@@ -1,3 +1,40 @@
+## 2.3.0 2020-06-11
+ * ERM-941 remove time check from remotekb harvest
+ * ERM-931 Add Agreement Line "suppress from discovery" field to agreement resource JSON export
+ * ERM-930 Add PCI "suppress from discovery" field to Agreement resource JSON export
+ * ERM-929 Add Agreement Line tags to agreement resource JSON export
+ * ERM-925 Add PCI and TI tags to resources JSON export
+ * ERM-910 Loading titles to local KB as JSON or KBART fails
+ * ERM-903 Migration scripts has hardcoded diku tenant
+ * ERM-897 Add support for tags to agreement lines
+ * ERM-896 Add support for tags to eresources
+ * ERM-895 Add "Suppress from discovery" property to Agreement lines
+ * ERM-894 Add "Suppress from discovery" property to e-resources
+ * ERM-891 Require Agreement Names to be unique (Backend Validation)
+ * ERM-889 Add new agreement-agreement relationships
+ * ERM-866 Import of KBART incorrectly generates errors for monograph coverage
+ * ERM-864 Updates of selected fields fail silently
+ * ERM-837 Agreement line note does not save and/or retrieve for Agreement lines from eHoldings
+ * ERM-834 PCI not created when title is too long
+ * ERM-827 Add support for "Alternative name" for agreements
+ * ERM-826 RemoteLicenseLink.Status refdata category should be "internal"
+ * ERM-807 Add Embargo to PCI in Agreement exports
+ * ERM-800 Add "Embargo" to local KB data model and imports
+ * ERM-793 Support controlled updating of title instances in agreements local KB
+ * ERM-786 Agreement supplementary property descriptions are limited to 255 characters
+ * ERM-775 Use information from siblingInstances in KBART export
+ * ERM-773 Import service | Missing instanceMedia on import should skip line and continue
+ * ERM-772 KBART export should use subtype to classify identifier as print_identifier or online_identifier
+ * ERM-769 Error loading KBART file
+ * ERM-767 Monograph resources are not exported in KBART format
+ * ERM-735 Separate refdata categories into "internal" and "user" lists
+ * ERM-689 Add monograph fields to KBART export
+ * ERM-685 Support import and processing of KBART in Local KB Admin
+ * ERM-681 Fetch enhanced metadata for books from GOKb after harvesting
+ * ERM-547 Interpret GOKb Package Status, Edit Status and List Status
+ * ERM-427 No way of fetching agreement entitlements sorted by name
+ * ERM-193 Deleting a License (and possibly Agreement) with a Tag isn't possible 
+
 ## 2.2.2 2020-04-29
  * ERM-858 Postgres sequences out of sync when existing agreement data is upgraded
 
