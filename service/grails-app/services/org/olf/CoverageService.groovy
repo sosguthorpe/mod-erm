@@ -1,5 +1,6 @@
 package org.olf
 
+import java.time.Instant
 import java.time.LocalDate
 
 import javax.servlet.http.HttpServletRequest
@@ -9,6 +10,7 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.hibernate.sql.JoinType
 import org.olf.dataimport.internal.PackageSchema.CoverageStatementSchema
 import org.olf.erm.Entitlement
+import org.olf.general.jobs.CoverageRegenerationJob
 import org.olf.kb.AbstractCoverageStatement
 import org.olf.kb.CoverageStatement
 import org.olf.kb.ErmResource
@@ -21,7 +23,13 @@ import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.validation.ObjectError
 import org.springframework.web.context.request.RequestContextHolder
 
+import com.github.zafarkhaja.semver.ParseException
+import com.github.zafarkhaja.semver.Version
+import com.k_int.okapi.OkapiTenantResolver
+
+import grails.events.annotation.Subscriber
 import grails.gorm.DetachedCriteria
+import grails.gorm.multitenancy.Tenants
 import grails.util.Holders
 import groovy.util.logging.Slf4j
 
@@ -125,9 +133,9 @@ public class CoverageService {
       
       // Clear the existing coverage, or initialize to empty set.
       if (resource.coverage) {
-        statements.addAll( resource.coverage )
-        resource.coverage.collect().each { resource.removeFromCoverage(it) }
-        resource.save(failOnError: true, flush:true) // Necessary to remove the orphans.
+        statements.addAll( resource.coverage.collect() )
+        resource.coverage.clear()
+        resource.save(failOnError: true) // Necessary to remove the orphans.
       }
       
       for ( CoverageStatementSchema cs : coverage_statements ) {
@@ -163,13 +171,15 @@ public class CoverageService {
       log.debug("New coverage saved")
       changed = true
     } catch (ValidationException e) {
-      log.error("Coverage changes to Resource ${resource.id} not saved", e)
+      log.error("Coverage changes to Resource ${resource.id} not saved")
     }
     
     if (!changed) {
       // Revert the coverage set.
       if (!resource.coverage) resource.coverage = []
-      resource.coverage.addAll( statements )
+      statements.each {
+        resource.addToCoverage( it )
+      }
     }
     
     resource.save(failOnError: true, flush:true) // Save.
@@ -185,7 +195,7 @@ public class CoverageService {
     
     // Use a sub query to select all the coverage statements linked to PCIs,
     // linked to this pti
-    List<CoverageStatement> allCoverage = CoverageStatement.createCriteria().list {
+    List<org.olf.dataimport.erm.CoverageStatement> allCoverage = CoverageStatement.createCriteria().list {
       'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
         readOnly (true)
         
@@ -196,6 +206,11 @@ public class CoverageService {
           property ('id')
         }
       }
+    }.collect{ CoverageStatement cs -> 
+      new org.olf.dataimport.erm.CoverageStatement([
+        'startDate': cs.startDate,
+        'endDate': cs.endDate
+      ])
     }
         
     allCoverage = collateCoverageStatements(allCoverage)
@@ -213,7 +228,7 @@ public class CoverageService {
     
     // Use a sub query to select all the coverage statements linked to PTIs,
     // linked to this TI
-    List<CoverageStatement> allCoverage = CoverageStatement.createCriteria().list {
+    List<org.olf.dataimport.erm.CoverageStatement> allCoverage = CoverageStatement.createCriteria().list {
       'in' 'resource.id', new DetachedCriteria(PlatformTitleInstance).build {
         readOnly (true)
         
@@ -224,6 +239,11 @@ public class CoverageService {
           property ('id')
         }
       }
+    }.collect{ CoverageStatement cs -> 
+      new org.olf.dataimport.erm.CoverageStatement([
+        'startDate': cs.startDate,
+        'endDate': cs.endDate
+      ])
     }
     
     allCoverage = collateCoverageStatements(allCoverage)
@@ -231,15 +251,20 @@ public class CoverageService {
     setCoverageFromSchema(ti, allCoverage)
   }
   
-  private static int dateWithinCoverage(CoverageStatementSchema cs, LocalDate date) {    
+  private static int dateWithinCoverage(CoverageStatementSchema cs, LocalDate date, int defaultValue) {
+    
+    // This is ambiguous. Null date could be open start or open end. Let the calling method sort it out
+    // We'll respond with null.
+    if (date == null) return defaultValue
+    
     if (cs.startDate == null && cs.endDate == null) return 0
     if (date == null) return ( cs.startDate ? -1 : (cs.endDate ? 1 : 0) )
     
-    if (date <= cs.endDate) {
+    if (cs.endDate == null || date <= cs.endDate) {
       return ( cs.startDate == null || date >= cs.startDate ? 0 : -1 )
     }
     
-    if (date >= cs.startDate) {
+    if (cs.startDate == null || date >= cs.startDate) {
       return ( cs.endDate == null || date <= cs.endDate ? 0 : 1 )
     }
 
@@ -271,10 +296,10 @@ public class CoverageService {
     while (!absorbed && iterator.hasNext()) {
       CoverageStatementSchema current = iterator.next()
       
-      int comparison = dateWithinCoverage(current, statement.startDate)
+      int comparison = dateWithinCoverage(current, statement.startDate, -1)
       if (comparison == 0) {
         // Starts within current item, check end.
-        comparison = dateWithinCoverage(current, statement.endDate)
+        comparison = dateWithinCoverage(current, statement.endDate, 1)
         if (comparison == 0) {
           // Also within. This item is already dealt with.
           // No action needed.
@@ -290,7 +315,7 @@ public class CoverageService {
             iterator.previous()
             
             // There is overlap
-            if (dateWithinCoverage(next, statement.endDate) >= 0) {
+            if (dateWithinCoverage(next, statement.endDate, 1) >= 0) {
               // Then we should remove this item and deal with it as part of the next item.
               iterator.remove()
               absorbed = subsume(iterator, statement)
@@ -308,7 +333,7 @@ public class CoverageService {
         
       } else if (comparison < 0) {
         // Starts before current item, check end.
-        comparison = dateWithinCoverage(current, statement.endDate)
+        comparison = dateWithinCoverage(current, statement.endDate, 1)
         
         if (comparison < 0) {
           
@@ -334,7 +359,7 @@ public class CoverageService {
             iterator.previous()
             
             // There is overlap
-            if (dateWithinCoverage(next, statement.endDate) >= 0) {
+            if (dateWithinCoverage(next, statement.endDate, 1) >= 0) {
               // Then we should remove this item and deal with it as part of the next item.
               iterator.remove()
               absorbed = subsume(iterator, statement)
@@ -379,29 +404,7 @@ public class CoverageService {
     res instanceof TitleInstance ? res : null
   }
   
-  public static void changeListener(Serializable resId, int preWait = 300) {
-    
-    // This is totally gross. We need to rewrite the whole process to model transactions in the desired way.
-    // The issue we are having is that we can not see the current vlaues as the session has not been thoroughly flushed.
-    (preWait > 0) && sleep(preWait)
-    
-    // Inserts currently aren't in the database when we try and re-read it back...
-    // I don't like this, but we keep checking for a couple of seconds.
-    final long totalTimeToWait = 1000 * 3 // 3 seconds.
-    final int increment = 200 // 200 milliseconds
-    long timeWaited = 0
-    
-    ErmResource res = ErmResource.get(resId)
-    while (res == null && timeWaited < totalTimeToWait) {
-      log.debug "Wait for the resource ${resId}"
-      sleep(increment)
-      timeWaited += increment
-      res = ErmResource.get(resId)
-    }
-    
-    if (res == null) {
-      log.error "Could not read resource with ID ${resId}"
-    }
+  public static void changeListener(ErmResource res) {
     
     final PackageContentItem pci = asPCI(res)
     if ( pci ) {
@@ -421,44 +424,75 @@ public class CoverageService {
     }
   }
   
+  private static final Version COVERAGE_IMPROVEMENTS_VERSION = Version.forIntegers(2,3) // Version trigger.
   
-  // SO: Gorm doesn't throw an event for a new tenant datastore.
-  // This means tenants created programatically don't quite work yet.
-  // TODO: Implement properly in grails okapi and toolkit.
-//  private void changeListener(AbstractPersistenceEvent event) {
-//    PackageContentItem pci = asPCI(event)
-//    if ( pci ) {
-//      log.debug 'PCI updated'
-//      if (pci.isDirty('coverage')) {
-//        log.debug "PCI coverage changed. Regenerate PTI's coverage"
-//        calculateCoverage( pci.pti )
-//      }
-//    }
-//    
-//    PlatformTitleInstance pti = asPTI(event)
-//    if ( pci ) {
-//      log.debug 'PTI updated'
-//      if (pci.isDirty('coverage')) {
-//        log.debug "PTI coverage changed. Regenerate PTI's coverage"
-//        calculateCoverage( pti.titleInstance )
-//      }
-//    }
-//    
-//    TitleInstance ti = asTI(event)
-//    if ( pci ) {
-//      log.debug 'TI updated'
-//    }
-//  }
-//  
-//  @CurrentTenant
-//  @Listener([PackageContentItem, PlatformTitleInstance, TitleInstance])
-//  void afterUpdate(PostUpdateEvent event) {
-//    changeListener(event)
-//  }
-//  
-//  @CurrentTenant
-//  @Listener([PackageContentItem, PlatformTitleInstance, TitleInstance])
-//  void afterInsert(PostInsertEvent event) {
-//    changeListener(event)
-//  }
+  @Subscriber('okapi:tenant_enabled')
+  public void onTenantEnabled (final String tenantId, final boolean existing_tenant, final boolean upgrading, final String toVersion, final String fromVersion) {
+    if (upgrading && fromVersion) {
+      try {
+        if (Version.valueOf(fromVersion).compareTo(COVERAGE_IMPROVEMENTS_VERSION) < 0) {
+          // We are upgrading from a version prior to when the coverage changes were introduced,
+          // lets schedule a job to retrospectively alter the coverage statements
+          log.debug "Regenerate coverage based on tenant upgrade prior to improvements being present"
+          triggerRegenrationForTenant(tenantId)
+        }
+      } catch(ParseException pex) {
+        // From version couldn't be parsed as semver we should ignore.
+        log.debug "${fromVersion} could not be parsed as semver not running Coverage Regeneration."
+      }
+    }
+  }
+  
+  @Subscriber('okapi:tenant_regen_coverage')
+  public void onTenantRegenCoverage(final String tenantId, final String value, final String existing_tenant, final String upgrading, final String toVersion, final String fromVersion) {
+    log.debug "Regenerate coverage based on explicit request during tenant activation"
+    triggerRegenrationForTenant(tenantId)
+  }
+  
+  private void triggerRegenrationForTenant(final String tenantId) {
+    final String tenant_schema_id = OkapiTenantResolver.getTenantSchemaName(tenantId)
+    Tenants.withId(tenant_schema_id) {
+
+      CoverageRegenerationJob job = CoverageRegenerationJob.findByStatusInList([
+        CoverageRegenerationJob.lookupStatus('Queued'),
+        CoverageRegenerationJob.lookupStatus('In progress')
+      ])
+
+      if (!job) {
+        job = new CoverageRegenerationJob(name: "Coverage Regeneration ${Instant.now()}")
+        job.setStatusFromString('Queued')
+        job.save(failOnError: true, flush: true)
+      } else {
+        log.debug('Regeneration job already running or scheduled. Ignore.')
+      }
+    }
+  }  
+  
+  public void triggerRegenration () {
+    // Select all PTIs and regenerate coverage for them.
+    final int batchSize = 100
+    
+    int count = 0
+    List<PlatformTitleInstance> ptis = PlatformTitleInstance.createCriteria().list ([max: batchSize, offset: batchSize * count]) { 
+//      eq 'titleInstance.id', '632bc9df-8e01-4d7b-8e91-3107dbc3b43c'
+      order 'id'
+    }
+    while (ptis && ptis.size() > 0) {
+      count ++
+      ptis.each { final PlatformTitleInstance pti ->
+        
+        PlatformTitleInstance.withNewTransaction {
+          log.info "Recalculating coverage for PTI ${pti.id}"
+          calculateCoverage( pti )
+        }
+      }
+      
+      // Next page...
+      ptis = PlatformTitleInstance.createCriteria().list ([max: batchSize, offset: batchSize * count]) { 
+        order 'id'
+      }
+//      ptis = null
+    }
+  }
+  
 }

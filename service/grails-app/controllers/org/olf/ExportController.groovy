@@ -37,7 +37,7 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
     log.debug("ExportController::index")
     final String subscriptionAgreementId = params.get("subscriptionAgreementId")
     log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
-    List<ErmResource> results = exportService.all(subscriptionAgreementId)
+    List<List> results = exportService.all(subscriptionAgreementId)
     log.debug("found this many resources: "+ results.size())
     
     respondWithResults ( results )
@@ -47,13 +47,13 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
     log.debug("ExportController::index")
     final String subscriptionAgreementId = params.get("subscriptionAgreementId")
     log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
-    List<ErmResource> results = exportService.current(subscriptionAgreementId)
+    List<List> results = exportService.current(subscriptionAgreementId)
     log.debug("found this many resources: "+ results.size())
     
     respondWithResults ( results )
   }
   
-  private respondWithResults (List<ErmResource> results) {
+  private respondWithResults (List<List> results) {
     
     withFormat {
       'kbart' {
