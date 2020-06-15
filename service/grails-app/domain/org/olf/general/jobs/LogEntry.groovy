@@ -21,6 +21,19 @@ class LogEntry implements MultiTenant<LogEntry> {
   Instant dateCreated = Instant.now()
   String origin
   Map additionalinfo = [:]  // for MDC
+  
+  public void setAdditionalinfo (Map vals) {
+    // Ensure the values are strings
+    vals.each { key, val ->
+      boolean shouldAdd = (key instanceof String || key instanceof GString) &&
+        (val instanceof String || val instanceof GString)
+       
+      // Add if String or GString 
+      if (shouldAdd) {
+        additionalinfo.put("${key}".toString(), "${val}".toString())
+      }
+    }
+  }
 
   static mapping = {
               id column: 'le_id', generator: 'uuid2', length:36
