@@ -62,22 +62,13 @@ public class ErmResource implements MultiTenant<ErmResource> {
                coverage (validator: CoverageStatement.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
   }
   
-  protected void checkCoverage() {
-    final Serializable tenantId = Tenants.currentId()
-    final Serializable me = this.id
-    Promises.task ({ final Serializable tid, final Serializable resId ->
-      Tenants.withId(tid) {
-        CoverageService.changeListener(resId)
-      }
-    }.curry(tenantId, me))
-  }
-  
-  def afterInsert() {
-    checkCoverage()
-  }
-  
-  def afterUpdate() {
-    checkCoverage()
+  private validating = false  
+  def beforeValidate() {
+    if (!validating) {
+      validating = true
+      CoverageService.changeListener(this)
+      validating = false
+    }
   }
   
   String toString() {
