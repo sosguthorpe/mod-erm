@@ -21,14 +21,15 @@ class LogEntry implements MultiTenant<LogEntry> {
   Instant dateCreated = Instant.now()
   String origin
   Map additionalinfo = [:]  // for MDC
-  
+
   public void setAdditionalinfo (Map vals) {
+    println(vals)
     // Ensure the values are strings
     vals.each { key, val ->
       boolean shouldAdd = (key instanceof String || key instanceof GString) &&
         (val instanceof String || val instanceof GString)
-       
-      // Add if String or GString 
+
+      // Add if String or GString
       if (shouldAdd) {
         additionalinfo.put("${key}".toString(), "${val}".toString())
       }
