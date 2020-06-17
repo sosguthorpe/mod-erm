@@ -44,7 +44,7 @@ json {
   'note' entitlement.note
   'tags' entitlement.tags
   
-  'owner' g.render(entitlement.owner, [includes: ['id']])
+  'owner' g.render(entitlement.owner, [includes: ['id', 'name']])
   
   if (entitlement.poLines) {
     'poLines' g.render (entitlement.poLines)

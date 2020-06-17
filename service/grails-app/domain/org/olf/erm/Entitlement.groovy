@@ -115,8 +115,14 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
         def identifiers = it.data?.attributes?.identifiers
         if (identifiers) {
           def combinedIdentifiers = [];
+          
           identifiers.each {
-            def identifier = [id: it.id, type: "${it.type} (${it.subtype})"]
+            if (it.subtype.toLowerCase() == 'online') {
+              it.type = 'e' + it.type
+            } else if (it.subtype.toLowerCase() == 'print') {
+              it.type = 'p' + it.type
+            }
+            def identifier = [identifier: [value: it.id, ns: [value: it.type.toLowerCase()], subType: it.subtype.toLowerCase()]]
             combinedIdentifiers << identifier
           }
           map.identifiers = combinedIdentifiers
@@ -142,7 +148,13 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
         }
         
         Map packageData = [:]
+
+        packageData.authority = "EKB-PACKAGE"
         def packageId = it.data?.attributes?.packageId
+        if (packageId) {
+          packageData.reference = packageId
+        }
+        
         def includedPackage = it?.included.find { it.id == packageId && it.type == "packages"  }
         if (includedPackage) {
           def name = includedPackage.attributes?.name
