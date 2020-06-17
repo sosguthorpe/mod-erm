@@ -118,12 +118,15 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
           
           identifiers.each {
             def typeString = it.type.toLowerCase();
-            if (it.subtype.toLowerCase() == 'online') {
-              typeString = 'e' + typeString
-            } else if (it.subtype.toLowerCase() == 'print') {
-              typeString = 'p' + typeString
+            def subtypeString = it.subtype.toLowerCase();
+            if (typeString.matches("isbn|issn")) {
+              if (subtypeString == 'online') {
+                typeString = 'e' + typeString
+              } else if (subtypeString == 'print') {
+                typeString = 'p' + typeString
+              }
             }
-            def identifier = [identifier: [value: it.id, ns: [value: typeString], subType: it.subtype.toLowerCase()]]
+            def identifier = [identifier: [value: it.id, ns: [value: typeString]]]
             combinedIdentifiers << identifier
           }
           map.identifiers = combinedIdentifiers
