@@ -29,6 +29,7 @@ class JobLoggingService {
 
   private final static Closure addLogEntry = { final Map<String, ?> logProperties, final Serializable jobId ->
     LogEntry le = new LogEntry(logProperties)
+    println(logProperties)
     le.save(failOnError: true, flush: true)
   }
 
