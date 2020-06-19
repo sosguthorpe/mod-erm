@@ -112,6 +112,11 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
           map.edition = edition
         }
 
+        def url = it.data?.attributes?.url
+        if (url) {
+          map.url = url
+        }
+
         def identifiers = it.data?.attributes?.identifiers
         if (identifiers) {
           def combinedIdentifiers = [];
