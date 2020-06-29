@@ -21,6 +21,7 @@ public class SubscriptionAgreementOrg implements MultiTenant<SubscriptionAgreeme
   @CategoryId(defaultInternal=true)
   @Defaults(['Content Provider', 'Subscription Agent', 'Vendor'])
   RefdataValue role
+  String note
   
   static belongsTo = [
     owner: SubscriptionAgreement
@@ -32,12 +33,14 @@ public class SubscriptionAgreementOrg implements MultiTenant<SubscriptionAgreeme
                 owner column: 'sao_owner_fk'
                   org column: 'sao_org_fk'
                  role column: 'sao_role'
+                 note column: 'sao_note', type: 'text'
   }
 
   static constraints = {
     owner(nullable:false, blank:false);
     org(nullable:true, blank:false);
     role(nullable:true, blank:false);
+    note(nullable:true, blank:false);
   }
   
   /**
