@@ -255,7 +255,7 @@ databaseChangeLog = {
       }
     }
   }
-  
+
   // New job type
   changeSet(author: "sosguthorpe (generated)", id: "1591801195388-1") {
     createTable(tableName: "coverage_regeneration_job") {
@@ -268,16 +268,16 @@ databaseChangeLog = {
 
   // Migration to store additional MDC log infos
   changeSet(author: "peter (generated)", id: "1591284037945-34") {
-    createTable(tableName: "log_entry_additionalinfo") {
+    createTable(tableName: "log_entry_additional_info") {
       column(name: "le_additionalinfo", type: "VARCHAR(255)") {
         constraints(nullable: "false")
       }
 
       column(name: "additionalinfo_object", type: "VARCHAR(255)")
 
-      column(name: "additionalinfo_idx", type: "VARCHAR(255)")
+      column(name: "additional_info_idx", type: "VARCHAR(255)")
 
-      column(name: "additionalinfo_elt", type: "VARCHAR(255)") {
+      column(name: "additional_info_elt", type: "VARCHAR(255)") {
         constraints(nullable: "false")
       }
     }

@@ -20,10 +20,10 @@ class LogEntry implements MultiTenant<LogEntry> {
   String message
   Instant dateCreated = Instant.now()
   String origin
-  Map additionalinfo = [:]  // for MDC
+  Map additionalInfo = [:]  // for MDC
 
   public void setAdditionalinfo (Map vals) {
-    println(vals)
+//    println(vals)
     // Ensure the values are strings
     vals.each { key, val ->
       boolean shouldAdd = (key instanceof String || key instanceof GString) &&
@@ -31,7 +31,7 @@ class LogEntry implements MultiTenant<LogEntry> {
 
       // Add if String or GString
       if (shouldAdd) {
-        additionalinfo.put("${key}".toString(), "${val}".toString())
+        additionalInfo.put("${key}".toString(), "${val}".toString())
       }
     }
   }
@@ -42,14 +42,14 @@ class LogEntry implements MultiTenant<LogEntry> {
      dateCreated column: 'le_datecreated'
             type column: 'le_type', index: 'le_type_idx'
           origin column: 'le_origin', index: 'le_origin_idx'
-  additionalinfo column: 'le_additionalinfo'
+  additionalInfo column: 'le_additionalinfo'
   }
   static constraints = {
          message (nullable:true, blank:false)
      dateCreated (nullable:true, blank:false)
           origin (nullable:false, blank:false)
             type (nullable:false, blank:false)
-  additionalinfo (nullable:false, blank:false)
+  additionalInfo (nullable:false, blank:false)
   }
 }
 

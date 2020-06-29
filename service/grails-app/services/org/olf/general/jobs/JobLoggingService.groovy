@@ -34,18 +34,18 @@ class JobLoggingService {
   }
 
   static void handleLogEvent ( final String tenantId, final String jobId, final String message, final String type, final Instant timestamp = Instant.now(), final Map<String, String> contextVals = [:]) {
-    
+
     // First copy the additional info map.
     final Map<String, String> additionalInfo = [:]
     additionalInfo.putAll( contextVals )
-    
+
     Promise p = task {
       final Map<String, ?> jobProperties = [
         'type': type,
         'origin': jobId,
         'message': message,
         'dateCreated': timestamp,
-        'additionalinfo': additionalInfo
+        'additionalInfo': additionalInfo
       ]
 
       if ( jobId ) {
