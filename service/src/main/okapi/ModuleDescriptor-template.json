@@ -185,6 +185,10 @@
           "pathPattern": "/erm/jobs/{id}/infoLog",
           "permissionsRequired": [ "erm.jobs.item.get" ]
         },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/jobs/{id}/downloadFileObject",
+          "permissionsRequired": [ "erm.jobs.item.get" ]
+        },{
           "methods": ["POST"],
           "pathPattern": "/erm/jobs/{type}",
           "permissionsRequired": [ "erm.jobs.item.post" ]
@@ -192,6 +196,10 @@
           "methods": ["DELETE"],
           "pathPattern": "/erm/jobs/{id}",
           "permissionsRequired": [ "erm.jobs.item.delete" ]
+        },{
+          "methods": ["DELETE"],
+          "pathPattern": "/erm/jobs/type/{type}",
+          "permissionsRequired": [ "erm.jobs.collection.get" ]
         },
         
         {

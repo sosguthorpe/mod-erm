@@ -1,0 +1,18 @@
+import org.olf.general.jobs.ComparisonJob
+
+import groovy.transform.Field
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
+
+@Field
+ComparisonJob comparisonJob
+
+final List logs = ['fullLogCount', 'errorLogCount', 'infoLogCount']
+
+json g.render (comparisonJob, [excludes: logs + ['fileContents'], expand:['status', 'result', 'fileUpload', 'comparisonPoints']]) {
+  'class' GrailsHibernateUtil.unwrapIfProxy(comparisonJob).class.name
+  
+  logs.each {final String propName ->
+    final long logCount = comparisonJob[propName] as long
+    call(propName, logCount)
+  }
+}

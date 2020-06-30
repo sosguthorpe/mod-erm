@@ -13,9 +13,8 @@ import java.time.LocalDate
  * an ErmResource - Superclass
  * Represents a selectable resource - a package, a title in a package, a title on a platform, etc
  */
-public class ErmResource implements MultiTenant<ErmResource> {
+public class ErmResource extends ErmTitleList implements MultiTenant<ErmResource> {
  
-  String id
   String name
   String description
   
@@ -38,8 +37,7 @@ public class ErmResource implements MultiTenant<ErmResource> {
     entitlements: 'resource'
   ]
   static mapping = {
-    tablePerHierarchy false
-                  id generator: 'uuid2', length:36
+              tablePerHierarchy false
                    name column: 'res_name'
             description column: 'res_description', type:'text'
                    type column: 'res_type_fk'

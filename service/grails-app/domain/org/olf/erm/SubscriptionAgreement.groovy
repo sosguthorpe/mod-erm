@@ -7,6 +7,7 @@ import java.time.ZonedDateTime
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.olf.general.DocumentAttachment
 import org.olf.general.Org
+import org.olf.kb.ErmTitleList
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.support.RequestContextUtils
@@ -25,7 +26,7 @@ import groovy.util.logging.Slf4j
  * Subscription agreement - object holding details about an SA connecting a resource list (Composed Of packages and platform-titles).
  */
 @Slf4j
-public class SubscriptionAgreement implements CustomProperties,MultiTenant<SubscriptionAgreement>, Clonable<SubscriptionAgreement> {
+public class SubscriptionAgreement extends ErmTitleList implements CustomProperties,MultiTenant<SubscriptionAgreement>, Clonable<SubscriptionAgreement> {
    
   static transients = ['cancellationDeadline', 'startDate', 'endDate', 'currentPeriod']
   static cloneStaticValues = [
