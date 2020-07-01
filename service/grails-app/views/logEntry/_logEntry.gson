@@ -4,6 +4,4 @@ import org.olf.general.jobs.LogEntry
 @Field
 LogEntry logEntry
 
-json g.render(logEntry, [include: ['message', 'type', 'additionalInfo']]){
-  additionalinfo g.render(logEntry.additionalInfo)
-}
+json g.render(logEntry, [include: ['message', 'type', 'additionalInfo']])
