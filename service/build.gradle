@@ -7,8 +7,9 @@ configurations.all {
 buildscript {
   repositories {
     mavenLocal()
+    jcenter()
+    mavenCentral()
     maven { url "https://repo.grails.org/grails/core" }
-    maven { url "http://maven.k-int.com/content/repositories/snapshots" }
   }
   dependencies {
     classpath "org.grails:grails-gradle-plugin:$grailsVersion"
@@ -54,10 +55,11 @@ jacocoTestReport {
 
 repositories {
   mavenLocal()
-  maven { url 'https://repo.grails.org/grails/core' }
   maven { url 'http://maven.k-int.com/content/repositories/releases' }
+  jcenter()
+  mavenCentral()
+  maven { url "https://repo.grails.org/grails/core" }
   maven { url 'http://maven.indexdata.com/' }
-
 }
 
 dependencies {

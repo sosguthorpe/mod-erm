@@ -197,7 +197,7 @@
           "pathPattern": "/erm/jobs/{id}",
           "permissionsRequired": [ "erm.jobs.item.delete" ]
         },{
-          "methods": ["DELETE"],
+          "methods": ["GET"],
           "pathPattern": "/erm/jobs/type/{type}",
           "permissionsRequired": [ "erm.jobs.collection.get" ]
         },
