@@ -71,11 +71,11 @@ final mergeIntoObject = { final ComparisonPoint cp, final int totalSources, fina
     if (emb) {
       coverageEntry['embargo'] = [:]
       coverageEntry['embargo']['movingWallStart'] = [:]
-      coverageEntry['embargo']['movingWallStart']['length'] = "${emb.movingWallStart?.length}"
-      coverageEntry['embargo']['movingWallStart']['unit'] = "${emb.movingWallStart?.unit}"
+      coverageEntry['embargo']['movingWallStart']['length'] = emb.movingWallStart ? "${emb.movingWallStart.length}" : null
+      coverageEntry['embargo']['movingWallStart']['unit'] = emb.movingWallStart ? "${emb.movingWallStart.unit}" : null
       coverageEntry['embargo']['movingWallEnd'] = [:]
-      coverageEntry['embargo']['movingWallEnd']['length'] = "${emb.movingWallEnd?.length}"
-      coverageEntry['embargo']['movingWallEnd']['unit'] = "${emb.movingWallEnd?.unit}"
+      coverageEntry['embargo']['movingWallEnd']['length'] = emb.movingWallEnd ? "${emb.movingWallEnd.length}" : null
+      coverageEntry['embargo']['movingWallEnd']['unit'] = emb.movingWallEnd ? "${emb.movingWallEnd.unit}" : null
     }
     
     coverageEntries[coverageContainerId] = coverageEntry
