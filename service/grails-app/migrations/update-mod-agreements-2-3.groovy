@@ -133,7 +133,7 @@ databaseChangeLog = {
   changeSet(author: "claudia (manual)", id: "202004221850-1") {
     grailsChange {
       change {
-        // Change category RemoteLicenseLink.Status to internal  
+        // Change category RemoteLicenseLink.Status to internal
         sql.execute("""
           UPDATE ${database.defaultSchemaName}.refdata_category SET internal = true
             WHERE rdc_description='RemoteLicenseLink.Status'
@@ -255,7 +255,7 @@ databaseChangeLog = {
       }
     }
   }
-  
+
   // New job type
   changeSet(author: "sosguthorpe (generated)", id: "1591801195388-1") {
     createTable(tableName: "coverage_regeneration_job") {
@@ -264,6 +264,23 @@ databaseChangeLog = {
       }
     }
     addPrimaryKey(columnNames: "id", constraintName: "coverage_regeneration_jobPK", tableName: "coverage_regeneration_job")
+  }
+
+  // Migration to store additional MDC log infos
+  changeSet(author: "peter (generated)", id: "1591284037945-34") {
+    createTable(tableName: "log_entry_additional_info") {
+      column(name: "le_additionalinfo", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "additionalinfo_object", type: "VARCHAR(255)")
+
+      column(name: "additional_info_idx", type: "VARCHAR(255)")
+
+      column(name: "additional_info_elt", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
+    }
   }
 }
 
