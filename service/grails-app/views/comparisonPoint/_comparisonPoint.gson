@@ -1,0 +1,13 @@
+import org.olf.erm.ComparisonPoint
+
+import groovy.transform.Field
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
+
+@Field
+ComparisonPoint comparisonPoint
+
+json g.render (comparisonPoint, [excludes: ['titleList']]) {
+  titleList g.render(GrailsHibernateUtil.unwrapIfProxy(comparisonPoint.titleList), [includes: ['id', 'name']]) {
+    'class' it.class.name
+  }
+}
