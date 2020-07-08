@@ -32,6 +32,7 @@ final mergeIntoObject = { final ComparisonPoint cp, final int totalSources, fina
   }
   
   availEntry['platform'] = pti.platform.name
+  availEntry['url'] = pti.url
   
   // Add the active coverage.
   Set<AbstractCoverageStatement> coverage = []
@@ -81,15 +82,15 @@ final mergeIntoObject = { final ComparisonPoint cp, final int totalSources, fina
     coverageEntries[coverageContainerId] = coverageEntry
   }
   
-  Map<String, Boolean> occurences = coverageEntry['occurences'] as Map<String, Boolean>
-  if (!occurences) {
-    occurences = [:]
-    coverageEntry['occurences'] = occurences
+  Map<String, Boolean> occurrences = coverageEntry['occurrences'] as Map<String, Boolean>
+  if (!occurrences) {
+    occurrences = [:]
+    coverageEntry['occurrences'] = occurrences
   }
   
-  occurences[(cp.id ?: "${cp.titleList.id}---${cp.date}").toString()] = true
+  occurrences[(cp.id ?: "${cp.titleList.id}---${cp.date}").toString()] = true
   
-  final int occSize = occurences.size()
+  final int occSize = occurrences.size()
   if (totalSources == occSize) {
     obj['overlap'] = 'full'
   } else if (occSize > 1 || coverageEntries.size() > 1 || availability.size() > 1) {
@@ -167,6 +168,7 @@ if (sources) {
             // Keep merging the values.
             currentObject['name'] = currentLowestValue
             currentObject['id'] = ti.id
+            currentObject['longName'] = ti.longName
             // More to come...
             mergeIntoObject(points[i], sourceCount, currentObject, GrailsHibernateUtil.unwrapIfProxy(currentRow[0]) as PackageContentItem,
                 GrailsHibernateUtil.unwrapIfProxy(currentRow[1]) as PlatformTitleInstance, ti,
