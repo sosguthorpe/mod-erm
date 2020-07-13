@@ -19,6 +19,10 @@ final defaultObject = {
 
 final mergeIntoObject = { final ComparisonPoint cp, final int totalSources, final Map<String, ?> obj, final PackageContentItem pci,
                              final PlatformTitleInstance pti, final TitleInstance ti, final Entitlement ent = null ->
+  obj['longName'] = ti.longName
+  obj['type'] = ti.type
+  obj['subType'] = ti.subType
+  obj['identifiers'] = ti.identifiers
   final String availabilityKey = pti.id
   final Map <String,?> availability = obj['availability'] as Map<String,?>
   
@@ -168,7 +172,6 @@ if (sources) {
             // Keep merging the values.
             currentObject['name'] = currentLowestValue
             currentObject['id'] = ti.id
-            currentObject['longName'] = ti.longName
             // More to come...
             mergeIntoObject(points[i], sourceCount, currentObject, GrailsHibernateUtil.unwrapIfProxy(currentRow[0]) as PackageContentItem,
                 GrailsHibernateUtil.unwrapIfProxy(currentRow[1]) as PlatformTitleInstance, ti,
@@ -194,7 +197,7 @@ if (sources) {
     
     // render the single row.
     if (!first) out << ','
-    out << g.render(currentObject, [deep: true])
+    out << g.render(currentObject)
     
     // grab the next from the queue if there is one.
     currentObject = objectQueue.poll()
