@@ -129,11 +129,11 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
       def datestamp = record?.header?.datestamp?.text()
       def editStatus = record?.metadata?.gokb?.package?.editStatus?.text()
       def listStatus = record?.metadata?.gokb?.package?.listStatus?.text()
+      def packageStatus = record?.metadata?.gokb?.package?.status?.text()
 
       log.debug("Processing OAI record :: ${result.count} ${record_identifier} ${package_name}")
 
-      PackageSchema json_package_description = gokbToERM(record, trustedSourceTI)
-      if ( json_package_description.header.status == 'deleted' ) {
+      if ( packageStatus == 'deleted' ) {
         // ToDo: Decide what to do about deleted records
       }
       else {
@@ -142,10 +142,11 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
         } else if (listStatus.toLowerCase() != 'checked') {
           log.info("Ignoring Package '${package_name}' because listStatus=='${listStatus}' (required: 'checked')")
         } else {
+          PackageSchema json_package_description = gokbToERM(record, trustedSourceTI)
           cache.onPackageChange(source_name, json_package_description)
         }
       }
-
+      
       if ( datestamp > result.new_cursor ) {
         log.debug("Datestamp from record \"${datestamp}\" larger than current cursor (\"${result.new_cursor}\") - update it")
         // Because OAI uses >= we want to nudge up the cursor timestamp by 1s (2019-02-06T11:19:20Z)
