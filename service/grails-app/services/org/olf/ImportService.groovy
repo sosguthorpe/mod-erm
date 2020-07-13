@@ -234,6 +234,7 @@ class ImportService implements DataBinder {
       if (!instanceMedia) {
         // Skip the import 
         log.error "Missing publication_type for title: ${getFieldFromLine(record, acceptedFields, 'title')}, skipping line."
+        record = file.readNext()
       } else {
         if (
           instanceMedia.toLowerCase() == 'monograph' ||
