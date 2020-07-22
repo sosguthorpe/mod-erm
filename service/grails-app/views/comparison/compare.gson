@@ -37,6 +37,8 @@ final mergeIntoObject = { final ComparisonPoint cp, final int totalSources, fina
   
   availEntry['platform'] = pti.platform.name
   availEntry['url'] = pti.url
+  availEntry['name'] = pti.getName()
+  availEntry['longName'] = pti.getLongName()
   
   // Add the active coverage.
   Set<AbstractCoverageStatement> coverage = []
@@ -72,15 +74,30 @@ final mergeIntoObject = { final ComparisonPoint cp, final int totalSources, fina
     coverageEntry['statements'] = (coverage.collect { AbstractCoverageStatement cs ->
       propertiesToCopy.collectEntries { [(it): (cs[it])] }
     })
-    
+
     if (emb) {
+      Closure embargoUnit = { unit -> 
+        switch (unit) {
+          case EmbargoStatement.Unit.D:
+            return "days"
+            break
+          case EmbargoStatement.Unit.M:
+            return "months"
+            break
+          case EmbargoStatement.Unit.Y:
+            return "years"
+            break
+        }
+        return unit
+      }
+
       coverageEntry['embargo'] = [:]
       coverageEntry['embargo']['movingWallStart'] = [:]
       coverageEntry['embargo']['movingWallStart']['length'] = emb.movingWallStart ? "${emb.movingWallStart.length}" : null
-      coverageEntry['embargo']['movingWallStart']['unit'] = emb.movingWallStart ? "${emb.movingWallStart.unit}" : null
+      coverageEntry['embargo']['movingWallStart']['unit'] = emb.movingWallStart ? "${embargoUnit(emb.movingWallStart.unit)}" : null
       coverageEntry['embargo']['movingWallEnd'] = [:]
       coverageEntry['embargo']['movingWallEnd']['length'] = emb.movingWallEnd ? "${emb.movingWallEnd.length}" : null
-      coverageEntry['embargo']['movingWallEnd']['unit'] = emb.movingWallEnd ? "${emb.movingWallEnd.unit}" : null
+      coverageEntry['embargo']['movingWallEnd']['unit'] = emb.movingWallEnd ? "${embargoUnit(emb.movingWallEnd.unit)}" : null
     }
     
     coverageEntries[coverageContainerId] = coverageEntry
