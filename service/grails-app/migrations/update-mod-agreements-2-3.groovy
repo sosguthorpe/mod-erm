@@ -287,7 +287,7 @@ databaseChangeLog = {
   changeSet(author: "peter (generated)", id: "1595514338503-23") {
 	addColumn(tableName: "entitlement") {
 	  column(name: "ent_description", type: "VARCHAR(255)")
-	}
+    }
   }
 }
 
