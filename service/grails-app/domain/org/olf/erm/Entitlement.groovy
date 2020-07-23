@@ -355,7 +355,7 @@ suppressFromDiscovery column: 'ent_suppress_discovery'
                      note(nullable:true, blank:false)
                   enabled(nullable:true, blank:false)
     suppressFromDiscovery(nullable:false, blank:false)
-	          description(nullable:true, blank:false)
+              description(nullable:true, blank:false)
            contentUpdated(nullable:true, blank:false)
                activeFrom(nullable:true, blank:false)
                  activeTo(nullable:true, blank:false)
