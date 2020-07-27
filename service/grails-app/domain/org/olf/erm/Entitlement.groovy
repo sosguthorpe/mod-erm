@@ -64,6 +64,8 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
 
   boolean suppressFromDiscovery = false 
   
+  String description
+  
   @OkapiLookup(
     value = '${obj.authority?.toLowerCase() == "ekb-package" ? "/eholdings/packages" : "/eholdings/resources" }/${obj.reference}${obj.authority?.toLowerCase() == "ekb-package" ? "" : "?include=package" }',
     converter = {
@@ -318,6 +320,7 @@ suppressFromDiscovery column: 'ent_suppress_discovery'
              activeTo column: 'ent_active_to'
             authority column: 'ent_authority'
             reference column: 'ent_reference'
+          description column: 'ent_description'
              poLines cascade: 'all-delete-orphan'
             coverage cascade: 'all-delete-orphan'
                 tags cascade: 'save-update'
@@ -352,6 +355,7 @@ suppressFromDiscovery column: 'ent_suppress_discovery'
                      note(nullable:true, blank:false)
                   enabled(nullable:true, blank:false)
     suppressFromDiscovery(nullable:false, blank:false)
+              description(nullable:true, blank:false)
            contentUpdated(nullable:true, blank:false)
                activeFrom(nullable:true, blank:false)
                  activeTo(nullable:true, blank:false)
