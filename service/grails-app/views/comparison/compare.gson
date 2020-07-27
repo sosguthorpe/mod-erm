@@ -139,7 +139,7 @@ if (sources) {
   PriorityQueue<Map<String,?>> objectQueue = new PriorityQueue<Map<String,?>>(new Comparator<Map<String,?>>() {
     @Override
     public int compare(Map<String, ?> o1, Map<String, ?> o2) {
-      o1.name.toString().compareTo(o2.name.toString())
+      (o1.name.toString() + o1.id.toString()).compareTo((o2.name.toString() + o2.id.toString()))
     }
   })
     
@@ -172,11 +172,13 @@ if (sources) {
       // Default current lowestVlaue if not set.
       if (currentRow != null) {
         TitleInstance ti = GrailsHibernateUtil.unwrapIfProxy(currentRow[2]) as TitleInstance
-        if (currentObject?.name == null || ti.name.toString() <= currentObject.name.toString()) {
+
+        // CurrentObject name will be an amalgam of ti name and id, so no need to combine that with id again
+        if (currentObject?.name == null || ti.name.toString() + ti.id.toString() <= currentObject.name.toString()) {
         
           // if we have a current object then we need to shelve it for now.
           if (currentObject != null) {
-            if (currentObject.name.toString() != ti.name.toString()) {
+            if (currentObject.name.toString() != ti.name.toString() + ti.id.toString()) {
               objectQueue.add(currentObject)
               currentObject = defaultObject()
             }
@@ -184,8 +186,8 @@ if (sources) {
             currentObject = defaultObject()
           }
           
-          currentLowestValue = ti.name
-          while (currentRow != null && currentLowestValue == ti.name) {
+          currentLowestValue = (ti.name + ti.id)
+          while (currentRow != null && currentLowestValue == (ti.name + ti.id)) {
             // Keep merging the values.
             currentObject['name'] = currentLowestValue
             currentObject['id'] = ti.id
