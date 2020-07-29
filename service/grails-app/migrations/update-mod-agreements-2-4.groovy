@@ -99,4 +99,80 @@ databaseChangeLog = {
     changeSet(author: "sosguthorpe (generated)", id: "1593002234734-7") {
       addPrimaryKey(columnNames: "id", constraintName: "kbart_import_jobPK", tableName: "kbart_import_job")
     }
+
+    /** add publicationType, move existing refdata values of TitleInstance.Type to TitleInstance.PublicationType **/
+    changeSet(author: "claudia (manual)", id: "202007271150-01") {
+      addColumn(tableName: "erm_resource") {
+        column(name: "res_publication_type_fk", type: "VARCHAR(36)")
+      }
+    }
+
+    changeSet(author: "claudia (manual)", id: "202007271150-02") {
+      addForeignKeyConstraint(baseColumnNames: "res_publication_type_fk", baseTableName: "erm_resource", constraintName: "pub_type_to_erm", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "rdv_id", referencedTableName: "refdata_value")
+    }
+
+    // set res_publication_type_fk to the value of res_type_fk for values 'book', 'journal', 'serial'
+    changeSet(author: "claudia (manual)", id: "202007271150-03") {
+      grailsChange {
+        change {
+          sql.execute("UPDATE ${database.defaultSchemaName}.erm_resource SET res_publication_type_fk = (SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='TitleInstance.PublicationType' AND rdv_value='book') WHERE res_type_fk=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='TitleInstance.Type' AND rdv_value='book')".toString())
+        }
+      }  
+    }
+
+    changeSet(author: "claudia (manual)", id: "202007271150-04") {
+      grailsChange {
+        change {
+          sql.execute("UPDATE ${database.defaultSchemaName}.erm_resource SET res_publication_type_fk = (SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='TitleInstance.PublicationType' AND rdv_value='journal') WHERE res_type_fk=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='TitleInstance.Type' AND rdv_value='journal')".toString())
+        }
+      }  
+    }
+
+    changeSet(author: "claudia (manual)", id: "202007271150-05") {
+      grailsChange {
+        change {
+          sql.execute("UPDATE ${database.defaultSchemaName}.erm_resource SET res_publication_type_fk = (SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='TitleInstance.PublicationType' AND rdv_value='serial') WHERE res_publication_type_fk is null AND res_type_fk=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='TitleInstance.Type' AND rdv_value='serial')".toString())
+        }
+      }  
+    }
+
+    // set res_type_fk 'book' to 'monograph'
+    changeSet(author: "claudia (manual)", id: "202007271150-06") {
+      grailsChange {
+        change {
+          sql.execute("UPDATE ${database.defaultSchemaName}.erm_resource SET res_type_fk = (SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='TitleInstance.Type' AND rdv_value='monograph') WHERE res_type_fk=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='TitleInstance.Type' AND rdv_value='book')".toString())
+        }
+      }  
+    }
+
+    // set res_type_fk 'journal' to 'serial'
+    changeSet(author: "claudia (manual)", id: "202007271150-07") {
+      grailsChange {
+        change {
+          sql.execute("UPDATE ${database.defaultSchemaName}.erm_resource SET res_type_fk = (SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='TitleInstance.Type' AND rdv_value='serial') WHERE res_type_fk=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='TitleInstance.Type' AND rdv_value='journal')".toString())
+        }
+      }  
+    }
+
+    // delete refdata values 'book' and 'journal' for TitleInstance.Type
+    changeSet(author: "claudia (manual)", id: "202007271150-08") {
+      grailsChange {
+        change {
+          sql.execute("""
+            DELETE from ${database.defaultSchemaName}.refdata_value where rdv_value in ('book', 'journal') and rdv_owner=(select rdc_id from ${database.defaultSchemaName}.refdata_category where rdc_description = 'TitleInstance.Type')
+          """.toString())
+        }
+      }  
+    }
+
+    // fix typo for rdv_label capitalization
+    changeSet(author: "claudia (manual)", id: "202007271150-09") {
+      grailsChange {
+        change {
+          sql.execute("""
+            UPDATE ${database.defaultSchemaName}.refdata_value SET rdv_label = 'Serial' WHERE rdv_label = 'serial';
+          """.toString())
+        }
+      }
+    }
 }

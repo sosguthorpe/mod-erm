@@ -234,6 +234,7 @@ class TitleInstanceResolverService implements DataBinder{
 
       // Journal or Book etc
       def resource_type = citation.instanceMedia?.trim()
+      def resource_coverage = citation?.coverage
       result = new TitleInstance(
         name: citation.title,
 
@@ -251,7 +252,31 @@ class TitleInstanceResolverService implements DataBinder{
       }
       
       if ((resource_type?.length() ?: 0) > 0) {
-        result.typeFromString = resource_type
+        result.publicationTypeFromString = resource_type
+        switch(resource_type) {
+          case 'book':
+            result.typeFromString = 'monograph'
+            break
+          case 'journal':
+            result.typeFromString = 'serial'
+            break
+          case 'monograph':
+            result.typeFromString = 'monograph'
+            break
+          case 'serial':
+            result.typeFromString = 'serial'
+            break
+          default:
+            /**
+            ERM-987: ... check for the existence of a coverage statement.
+            If a coverage statement exists then type == "serial", otherwise "monograph"
+            **/
+            if ( resource_coverage ) {
+              result.typeFromString = 'serial'
+            } else {
+              result.typeFromString = 'monograph'
+            }
+        }
       }
 
       result.save(flush:true, failOnError:true)

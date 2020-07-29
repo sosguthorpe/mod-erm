@@ -220,6 +220,12 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
             case 'BookInstance':
               tipp_media = 'book'
               break
+            case 'DatabaseInstance':
+              tipp_media = 'database'
+              break
+            case 'OtherInstance':
+              tipp_media = 'other'
+              break
             default:
               tipp_media = 'journal'
               break
@@ -314,9 +320,9 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
     return false
   }
 
-  public Map getTitleInstance(String source_name, String base_url, String goKbIdentifier, String type, String subType) {
+  public Map getTitleInstance(String source_name, String base_url, String goKbIdentifier, String type, String publicationType, String subType) {
 
-    if (type.toLowerCase() == "book" || type.toLowerCase() == "monograph") {
+    if (type.toLowerCase() == "monograph") {
       log.debug("Making secondary enrichment call for book/monograph title with GOKb identifier: ${goKbIdentifier}")
       Map ti = [:];
 
@@ -347,7 +353,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
       }
       return ti;
     } else {
-      log.debug("No secondary enrichment call needed for type: ${type}")
+      log.debug("No secondary enrichment call needed for publicationType: ${publicationType}")
     }
   }
 

@@ -60,6 +60,7 @@ public class GenericRemoteKBAdapter implements KBCacheUpdater {
                               String base_url,
                               String identifier,
                               String type,
+                              String publicationType,
                               String subType) {
     throw new RuntimeException("Not supported by this KB provider");
   }

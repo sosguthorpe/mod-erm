@@ -51,8 +51,13 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   Work work
   
   // Journal/Book/...
+  @CategoryId(defaultInternal=false)
+  @Defaults(['Book', 'Journal', 'Monograph', 'Serial'])
+  RefdataValue publicationType
+
+  // serial / monograph system
   @CategoryId(defaultInternal=true)
-  @Defaults(['Journal', 'Book'])
+  @Defaults(['Monograph', 'Serial'])
   RefdataValue type
 
   // Print/Electronic
@@ -79,9 +84,10 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   ]
 
   static mapping = {
-                          work column:'ti_work_fk'
-                          type column:'ti_type_fk'
-                       subType column:'ti_subtype_fk'
+                          work column: 'ti_work_fk'
+                          type column: 'ti_type_fk'
+                       subType column: 'ti_subtype_fk'
+               publicationType column: 'ti_publication_type_fk'
         dateMonographPublished column: 'ti_date_monograph_published'
                    firstAuthor column: 'ti_first_author'
                    firstEditor column: 'ti_first_editor'
