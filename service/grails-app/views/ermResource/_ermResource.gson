@@ -22,6 +22,10 @@ json {
     'type' g.render (ermResource.type)
   }
   
+  if (ermResource.publicationType) {
+    'publicationType' g.render (ermResource.publicationType)
+  }
+
   if (ermResource.subType) {
     'subType' g.render (ermResource.subType)
   }

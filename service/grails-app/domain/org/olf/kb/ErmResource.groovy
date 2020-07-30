@@ -19,6 +19,7 @@ public class ErmResource extends ErmTitleList implements MultiTenant<ErmResource
   String description
   
   RefdataValue type
+  RefdataValue publicationType
   RefdataValue subType
 
   Date dateCreated
@@ -41,6 +42,7 @@ public class ErmResource extends ErmTitleList implements MultiTenant<ErmResource
                    name column: 'res_name'
             description column: 'res_description', type:'text'
                    type column: 'res_type_fk'
+        publicationType column: 'res_publication_type_fk'
             dateCreated column: 'res_date_created'
             lastUpdated column: 'res_last_updated'
                 subType column: 'res_sub_type_fk'
@@ -53,6 +55,7 @@ public class ErmResource extends ErmTitleList implements MultiTenant<ErmResource
                    name (nullable:true, blank:false)
             description (nullable:true, blank:false)
                    type (nullable:true, blank:false)
+        publicationType (nullable:true, blank:false)
                 subType (nullable:true, blank:false)
             dateCreated (nullable:true, blank:false)
             lastUpdated (nullable:true, blank:false)

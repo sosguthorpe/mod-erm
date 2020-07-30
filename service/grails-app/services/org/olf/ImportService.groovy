@@ -235,11 +235,9 @@ class ImportService implements DataBinder {
         // Skip the import 
         log.error "Missing publication_type for title: ${getFieldFromLine(record, acceptedFields, 'title')}, skipping line."
         record = file.readNext()
+        continue
       } else {
-        if (
-          instanceMedia.toLowerCase() == 'monograph' ||
-          instanceMedia.toLowerCase() == 'book'
-        ) {
+        if ( instanceMedia.toLowerCase() == 'monograph' ) {
             siblingInstanceIdentifier.namespace = 'ISBN'
             instanceIdentifier.namespace = 'ISBN'
             String coverageStartDate = getFieldFromLine(record, acceptedFields, 'CoverageStatement.startDate')?.trim();
@@ -247,9 +245,13 @@ class ImportService implements DataBinder {
               log.error("Unexpected coverage information for title: ${getFieldFromLine(record, acceptedFields, 'title')} of type: ${instanceMedia}")
             }
             addCoverage = false
-        } else {          
+        } else if ( instanceMedia.toLowerCase() == 'serial' ) {
             siblingInstanceIdentifier.namespace = 'ISSN'
             instanceIdentifier.namespace = 'ISSN'
+        } else { // only serial or monograph publication_type allowed for kbart import
+            log.error "Invalid publication_type \"${instanceMedia}\" for title: ${getFieldFromLine(record, acceptedFields, 'title')}, skipping line."
+            record = file.readNext()
+            continue
         }
 
         siblingInstanceIdentifier.value = getFieldFromLine(record, acceptedFields, 'siblingInstanceIdentifiers')

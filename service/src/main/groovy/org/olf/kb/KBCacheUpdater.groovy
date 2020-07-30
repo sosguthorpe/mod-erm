@@ -75,6 +75,7 @@ public interface KBCacheUpdater {
                               String base_url,
                               String identifier,
                               String type,
+                              String publicationType,
                               String subType);
   
   public boolean requiresSecondaryEnrichmentCall();
