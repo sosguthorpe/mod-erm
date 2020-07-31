@@ -385,7 +385,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       final def results = doTheLookup (ErmResource) {
         createAlias 'entitlements', 'direct_ent', JoinType.LEFT_OUTER_JOIN
         createAlias 'pkg', 'ind_pci_pkg', JoinType.LEFT_OUTER_JOIN
-          createAlias 'ind_pci_pkg.entitlements', 'pkg_ent'
+        createAlias 'ind_pci_pkg.entitlements', 'pkg_ent', JoinType.LEFT_OUTER_JOIN
           
         or {
           and {
@@ -468,7 +468,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
         
         createAlias 'entitlements', 'direct_ent', JoinType.LEFT_OUTER_JOIN
         createAlias 'pkg', 'ind_pci_pkg', JoinType.LEFT_OUTER_JOIN
-          createAlias 'ind_pci_pkg.entitlements', 'pkg_ent'
+        createAlias 'ind_pci_pkg.entitlements', 'pkg_ent', JoinType.LEFT_OUTER_JOIN
         
         or {
           and {
