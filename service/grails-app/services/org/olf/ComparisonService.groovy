@@ -68,7 +68,7 @@ class ComparisonService {
 
         OR ( (pci.accessStart IS NULL OR pci.accessStart <= :onDate) AND pci.accessEnd >= :onDate )
         OR ( (pci.accessEnd IS NULL OR pci.accessEnd >= :onDate) AND pci.accessStart <= :onDate )
-      ORDER BY ti.name, pci.id, pti.id
+      ORDER BY ti.name, ti.id, pci.id, pti.id
     """, ['onDate': onDate, 'pkgId': pkgId], [readOnly: true])
   }
   
@@ -122,7 +122,7 @@ class ComparisonService {
             )
           )
         )
-      ORDER BY pkg_pci_pti_ti.name, pci_pti_ti.name, pti_ti.name, pkg_pci.id, pkg_pci_pti.id, pci_pti.id, link.id, pkg_pci_pti.id, pci_pti.id
+      ORDER BY pkg_pci_pti_ti.name, pkg_pci_pti_ti.id, pci_pti_ti.name, pci_pti_ti.id, pti_ti.name, pti_ti.id, pkg_pci.id, pkg_pci_pti.id, pci_pti.id, link.id, pkg_pci_pti.id, pci_pti.id
     """, ['onDate': onDate, 'agreementId': agreementId], [readOnly: true])
   }
 }
