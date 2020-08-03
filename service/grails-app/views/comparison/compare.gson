@@ -93,10 +93,10 @@ final mergeIntoObject = { final ComparisonPoint cp, final int totalSources, fina
 
       coverageEntry['embargo'] = [:]
       coverageEntry['embargo']['movingWallStart'] = [:]
-      coverageEntry['embargo']['movingWallStart']['length'] = emb.movingWallStart ? "${emb.movingWallStart.length}" : null
+      coverageEntry['embargo']['movingWallStart']['length'] = emb.movingWallStart ? emb.movingWallStart.length : null
       coverageEntry['embargo']['movingWallStart']['unit'] = emb.movingWallStart ? "${embargoUnit(emb.movingWallStart.unit)}" : null
       coverageEntry['embargo']['movingWallEnd'] = [:]
-      coverageEntry['embargo']['movingWallEnd']['length'] = emb.movingWallEnd ? "${emb.movingWallEnd.length}" : null
+      coverageEntry['embargo']['movingWallEnd']['length'] = emb.movingWallEnd ? emb.movingWallEnd.length : null
       coverageEntry['embargo']['movingWallEnd']['unit'] = emb.movingWallEnd ? "${embargoUnit(emb.movingWallEnd.unit)}" : null
     }
     
