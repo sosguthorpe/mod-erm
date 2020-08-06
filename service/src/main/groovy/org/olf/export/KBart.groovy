@@ -30,29 +30,29 @@ public class KBart implements Serializable {
 
 
   @CsvBindByPosition(position = 0)
-  public String title_id = "" // not implemented
-  @CsvBindByPosition(position = 1)
   public String publication_title = "" // TitleInstance.name
-  @CsvBindByPosition(position = 2)
-  public String title_url = "" // platformTitleInstance.url
-  @CsvBindByPosition(position = 3)
+  @CsvBindByPosition(position = 1)
   public String print_identifier = "" // titleInstance.identifiers.value WHERE .ns = "issn" OR ??? WHERE .ns = "isbn"
-  @CsvBindByPosition(position = 4)
+  @CsvBindByPosition(position = 2)
   public String online_identifier = "" // titleInstance.identifiers.value WHERE .ns = "eissn"
-  @CsvBindByPosition(position = 5)
+  @CsvBindByPosition(position = 3)
   public String date_first_issue_online = "" // derived from coverageService
-  @CsvBindByPosition(position = 6)
+  @CsvBindByPosition(position = 4)
   public String num_first_vol_online = "" // not implemented
-  @CsvBindByPosition(position = 7)
+  @CsvBindByPosition(position = 5)
   public String num_first_issue_online = "" // not implemented
-  @CsvBindByPosition(position = 8)
+  @CsvBindByPosition(position = 6)
   public String date_last_issue_online = "" // derived from coverageService
-  @CsvBindByPosition(position = 9)
+  @CsvBindByPosition(position = 7)
   public String num_last_vol_online = "" // not implemented
-  @CsvBindByPosition(position = 10)
+  @CsvBindByPosition(position = 8)
   public String num_last_issue_online = "" // not implemented
-  @CsvBindByPosition(position = 11)
+  @CsvBindByPosition(position = 9)
+  public String title_url = "" // platformTitleInstance.url
+  @CsvBindByPosition(position = 10)
   public String first_author = "" // not implemented
+  @CsvBindByPosition(position = 11)
+  public String title_id = "" // not implemented
   @CsvBindByPosition(position = 12)
   public String embargo_info = "" // not implemented
   @CsvBindByPosition(position = 13)
