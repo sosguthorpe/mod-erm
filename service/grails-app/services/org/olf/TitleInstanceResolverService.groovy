@@ -317,6 +317,34 @@ class TitleInstanceResolverService implements DataBinder{
     if (trustedSourceTI == true) {
       log.debug("Trusted source for TI enrichment--enriching")
 
+      if (title.publicationType.value != citation.instanceMedia) {
+        title.publicationTypeFromString = citation.instanceMedia
+        switch(citation.instanceMedia) {
+          case 'book':
+            title.typeFromString = 'monograph'
+            break
+          case 'journal':
+            title.typeFromString = 'serial'
+            break
+          case 'monograph':
+            title.typeFromString = 'monograph'
+            break
+          case 'serial':
+            title.typeFromString = 'serial'
+            break
+          default:
+            /**
+            ERM-987: ... check for the existence of a coverage statement.
+            If a coverage statement exists then type == "serial", otherwise "monograph"
+            **/
+            if ( citation.coverage ) {
+              title.typeFromString = 'serial'
+            } else {
+              title.typeFromString = 'monograph'
+            }
+        }
+      }
+
       if (title.name != citation.title) {
         title.name = citation.title
       }
