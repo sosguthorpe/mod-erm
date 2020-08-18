@@ -1,140 +1,79 @@
 ---
 grails:
-    profile: rest-api
-    codegen:
-        defaultPackage: org.olf
-    gorm:
-        reactor:
-            # Whether to translate GORM events into Reactor events
-            # Disabled by default for performance reasons
-            events: false
+  profile: rest-api
+  codegen:
+    defaultPackage: org.olf
+  gorm:
+    reactor:
+      # Whether to translate GORM events into Reactor events
+      # Disabled by default for performance reasons
+      events: false
 info:
-    app:
-        name: 'mod-agreements'
-        version: '@info.app.version@'
-        grailsVersion: '@info.app.grailsVersion@'
+  app:
+    name: '@info.app.name@'
+    version: '@info.app.version@'
+    grailsVersion: '@info.app.grailsVersion@'
 spring:
-    main:
-        banner-mode: "off"
-    groovy:
-        template:
-            check-template-location: false
-
-# Spring Actuator Endpoints are Disabled by Default
+  jmx:
+    unique-names: true
+  main:
+    banner-mode: "off"
+  groovy:
+    template:
+      check-template-location: false
+  devtools:
+    restart:
+      additional-exclude:
+        - '*.gsp'
+        - '**/*.gsp'
+        - '*.gson'
+        - '**/*.gson'
+        - 'logback.groovy'
+        - '*.properties'
 management:
-  context-path: '/admin'
-
-endpoints:
-    enabled: false
-    jmx:
-      exposure:
-        exclude: "*"
-    web:
-      exposure:
-        include:
-          - health
-    health:
-      enabled: true
+  endpoints:
+    enabled-by-default: false
 
 ---
 grails:
-    server:
-        host: 10.0.2.2
-        port: 8080
-    mime:
-        disable:
-            accept:
-                header:
-                    userAgents:
-                        - Gecko
-                        - WebKit
-                        - Presto
-                        - Trident
-        types:
-            json:
-              - application/json
-              - text/json
-            hal:
-              - application/hal+json
-              - application/hal+xml
-            xml:
-              - text/xml
-              - application/xml
-            atom: application/atom+xml
-            css: text/css
-            csv: text/csv
-            js: text/javascript
-            rss: application/rss+xml
-            text: text/plain
-            all: '*/*'
-            kbart: 'text/tab-separated-value;charset=UTF-8'
-    urlmapping:
-        cache:
-            maxsize: 1000
-    controllers:
-        defaultScope: singleton
-        upload:
-            maxFileSize: 209715200
-            maxRequestSize: 220200960
-    converters:
-        encoding: UTF-8
+  mime:
+    disable:
+      accept:
+        header:
+          userAgents:
+            - Gecko
+            - WebKit
+            - Presto
+            - Trident
+    types:
+      json:
+       - application/json
+       - text/json
+      hal:
+       - application/hal+json
+       - application/hal+xml
+      xml:
+       - text/xml
+       - application/xml
+      atom: application/atom+xml
+      css: text/css
+      csv: text/csv
+      js: text/javascript
+      rss: application/rss+xml
+      text: text/plain
+      all: '*/*'
+  urlmapping:
+    cache:
+      maxsize: 1000
+  controllers:
+    defaultScope: singleton
+  converters:
+    encoding: UTF-8
 
-    gorm:
-        reactor:
-            # Whether to translate GORM events into Reactor events
-            # Disabled by default for performance reasons
-            events: false
-        multiTenancy:
-            mode: SCHEMA
-            tenantResolverClass: com.k_int.okapi.OkapiTenantResolver    # See src/main/groovy
-
-    plugin:
-      springsecurity:
-        providerNames:
-          - 'okapiAuthenticationProvider'
-
-        controllerAnnotations:
-          staticRules:
-            -
-              pattern: '/okapi/**'
-              access:
-                - 'permitAll' # SHould maybe lock this down to the Super tenant once it is properly enforced?
-            -
-              pattern: '/application/**'
-              access:
-                - 'permitAll'
-            -
-              pattern: '/**'
-              access:
-                - 'permitAll'
-        filterChain:
-          chainMap:
-            -
-              pattern: '/**'
-              filters: 'JOINED_FILTERS,-securityContextPersistenceFilter,-rememberMeAuthenticationFilter,-basicAuthenticationFilter'
-    databinding:
-        dateFormats:
-          - "yyyy-MM-dd'T'HH:mm:ssX"
-          - "yyyy-MM-dd'T'HH:mm:ss.SSSX"
-          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
-          - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-          - "yyyy-MM-dd'T'HH:mm:ss"
-          - "yyyy-MM-dd'T'HH:mm:ss.SSS"
-          - 'yyyy-MM-dd'
-
-    views:
-        json:
-            generator:
-                timeZone: "UTC"
-                dateFormat: "yyyy-MM-dd'T'HH:mm:ssX"
 ---
-hibernate:
- # format_sql: true
-  cache:
-    queries: false
-    use_second_level_cache: false
-    use_query_cache: false
+#### Place _ALL_ app specifics here. Makes it easier to migrate. ####
 
+# Datasource used by default.
 dataSource:
 #  logSql: true
   pooled: true
@@ -167,6 +106,70 @@ dataSource:
     jdbcInterceptors: ConnectionState
     defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED
 
+grails:
+  mime:
+    types:
+      kbart: 'text/tab-separated-value;charset=UTF-8'  # KBART mime type.
+  controllers:
+    upload:
+      maxFileSize: 209715200
+      maxRequestSize: 220200960
+
+  gorm:
+    multiTenancy:
+      mode: SCHEMA
+      tenantResolverClass: com.k_int.okapi.OkapiTenantResolver  # From grails-okapi plugin.
+
+  plugin:
+    springsecurity:
+      providerNames:
+        - 'okapiAuthenticationProvider'   # From grails-okapi plugin.
+
+      controllerAnnotations:
+        staticRules:
+          -
+            pattern: '/okapi/**'
+            access:
+              - 'permitAll' # Should maybe lock this down to the Super tenant once it is properly enforced?
+          -
+            pattern: '/application/**'
+            access:
+              - 'permitAll'
+          -
+            pattern: '/**'
+            access:
+              - 'permitAll'
+        filterChain:
+          chainMap:
+            -
+              pattern: '/**'
+              filters: 'JOINED_FILTERS,-securityContextPersistenceFilter,-rememberMeAuthenticationFilter,-basicAuthenticationFilter'
+  databinding:
+    dateFormats:
+      - "yyyy-MM-dd'T'HH:mm:ssX"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSSX"
+      - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - "yyyy-MM-dd'T'HH:mm:ss"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSS"
+      - 'yyyy-MM-dd'
+
+  views:
+    json:
+      generator:
+        timeZone: "UTC"
+        dateFormat: "yyyy-MM-dd'T'HH:mm:ssX"
+
+hibernate:
+ # format_sql: true
+  cache:
+    queries: false
+    use_second_level_cache: false
+    use_query_cache: false
+
+  allow_update_outside_transaction: true #TODO: We should remove this in the near future and fix all dependants to wrap transactions.
+
+
 okapi:
   linkListener:
     allowedControllerActions:
@@ -185,12 +188,12 @@ okapi:
     register: false
     deploy: false
 
-
 webtoolkit:
   converters:
     numbers:
       fixedLocale: true # Can be a boolean for default locale or an IETF BCP 47 language string
 
+# Environment specific overrides.
 environments:
   test:
     dataSource:
@@ -213,6 +216,9 @@ environments:
       url: "jdbc:postgresql://${db.host:localhost}:${db.port:5432}/${db.database:olf}"
 
   development:
+    logging:
+      level:
+        web: DEBUG
     # This is only used when the there is no request from okapi coming to the module or a none-okapi request.
     # OKAPI supplies information about how to reach it to the modules. These options are used for self reg and other calls
     # when the request did not come through OKAPI.
@@ -221,7 +227,3 @@ environments:
         host: localhost
         port: 9130
 
-# Set useModVendors to true if you are running in a full FOLIO stack and wish to coordinate
-# Agreement vendors (And anywhere else we link to vendors) with records in mod-vendors
-# useModVendors: false
-# createMissingVendors: false

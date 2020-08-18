@@ -1,145 +1,35 @@
-configurations.all {
-  // Check for updates every build
-  resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-}
-
-
 buildscript {
   repositories {
-    mavenLocal()
     jcenter()
-    mavenCentral()
     maven { url "https://repo.grails.org/grails/core" }
+//    maven { url "http://maven.k-int.com/content/repositories/releases" }
   }
   dependencies {
     classpath "org.grails:grails-gradle-plugin:$grailsVersion"
-    classpath ("org.grails.plugins:hibernate5:${gormVersion-'.RELEASE'}")
-    classpath "org.grails.plugins:views-gradle:1.2.7"
-    classpath 'org.grails.plugins:database-migration:3.0.4'
-    classpath "com.bmuschko:gradle-docker-plugin:3.2.1"
-    
+    classpath "org.grails.plugins:views-gradle:2.0.1"
+    classpath "gradle.plugin.com.github.erdi.webdriver-binaries:webdriver-binaries-gradle-plugin:2.0"
+    classpath "org.grails.plugins:hibernate5:${gormHibernate-".RELEASE"}"
+    classpath 'org.grails.plugins:database-migration:3.1.0'
+    classpath 'com.bmuschko:gradle-docker-plugin:6.6.1'
   }
 }
-
 
 final String version_regex = /^(((\d+)\.\d+)\.\d+)(-([a-zA-Z]+\.\d+))?$/
 version "${appVersion}"
-group "org.olf"
+group 'org.olf'
 
-apply plugin:"eclipse"
-apply plugin:"idea"
-//apply plugin:"war"
-apply plugin:"org.grails.grails-web"
-apply plugin:"org.grails.plugins.views-json"
-apply plugin:"com.bmuschko.docker-remote-api"
-apply plugin:"jacoco"
-
-eclipse {
-  classpath {
-    defaultOutputDir = file('bin').canonicalFile
-  }
-}
-
-jacoco {
-  toolVersion = "0.8.2"
-  reportsDir = file("$buildDir/customJacocoReportDir")
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled false
-        csv.enabled false
-        html.destination file("${buildDir}/jacocoHtml")
-    }
-}
+apply plugin: 'eclipse'
+apply plugin: 'org.grails.grails-web'
+apply plugin: 'org.grails.plugins.views-json'
+apply plugin: 'com.github.erdi.webdriver-binaries'
+apply plugin: 'com.bmuschko.docker-remote-api'
 
 repositories {
-  mavenLocal()
-  maven { url 'http://maven.k-int.com/content/repositories/releases' }
+//  mavenLocal()
   jcenter()
-  mavenCentral()
-  maven { url "https://repo.grails.org/grails/core" }
+  maven { url 'https://repo.grails.org/grails/core' }
   maven { url 'http://maven.indexdata.com/' }
-}
-
-dependencies {
-  compile "org.springframework.boot:spring-boot-starter-logging"
-  compile "org.springframework.boot:spring-boot-autoconfigure"
-  compile "org.grails:grails-core"
-  compile "org.springframework.boot:spring-boot-starter-actuator"
-  compile "org.springframework.boot:spring-boot-starter-undertow"
-  compile "org.grails:grails-plugin-url-mappings"
-  compile "org.grails:grails-plugin-rest"
-  compile "org.grails:grails-plugin-codecs"
-  compile "org.grails:grails-plugin-interceptors"
-  compile "org.grails:grails-plugin-services"
-  compile "org.grails:grails-plugin-datasource"
-  compile "org.grails:grails-plugin-databinding"
-  compile "org.grails:grails-web-boot"
-  compile "org.grails:grails-logging"
-  compile "org.grails.plugins:cache"
-  compile "org.grails.plugins:async"
-  compile "org.grails.plugins:events"
-  compile ("org.grails.plugins:hibernate5") { changing = true }
-  compile 'org.grails.plugins:grails-java8'
-  
-  compile "org.hibernate:hibernate-java8:5.1.17.Final"
-  compile "org.hibernate:hibernate-core:5.1.17.Final"
-  compile "org.grails.plugins:views-json"
-  console "org.grails:grails-console"
-  compile 'org.z3950.zing:cql-java:1.13'
-  compile 'com.opencsv:opencsv:4.6'
-
-  profile "org.grails.profiles:rest-api"
-  runtime "org.glassfish.web:el-impl:2.1.2-b03"
-  runtime "com.zaxxer:HikariCP:3.2.0"
-
-  testCompile ("org.grails:grails-gorm-testing-support")
-  
-  testCompile "org.grails:grails-datastore-rest-client"
-  testCompile ("org.grails:grails-web-testing-support")
-  testCompile "org.grails.plugins:geb:1.1.2"
-  testRuntime "org.seleniumhq.selenium:selenium-chrome-driver:2.47.1"
-  testRuntime "org.seleniumhq.selenium:selenium-htmlunit-driver:2.47.1"
-  testRuntime "net.sourceforge.htmlunit:htmlunit:2.18"
-
-  // Custom non profile deps.
-  compile "org.postgresql:postgresql:42.2.5"
-
-  runtime "org.grails.plugins:async"
-  runtime "org.grails.plugins:events"
-
-  compile "org.grails.plugins:spring-security-core:3.2.0"
-  compile 'org.grails.plugins:database-migration:3.0.4'
-  compile 'org.liquibase:liquibase-core:3.5.5'
-//  compile 'com.ibm.icu:icu4j:62.1'
-  compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
-  
-  // Better test reports.
-  testCompile( 'com.athaydes:spock-reports:1.6.1' ) {
-    transitive = false // this avoids affecting your version of Groovy/Spock
-  }
-
-}
-
-// Changed this to enable inline development of the includes listed below.
-def includes = [
-  'web-toolkit-ce'   : 'com.k_int.grails:web-toolkit-ce:4.3.0',
-  'grails-okapi'  : 'com.k_int.okapi:grails-okapi:3.7.1'
-]
-
-bootRun {
-  jvmArgs(['-Dspring.output.ansi.enabled=always', '-server', '-Xms1024m', '-Xmx1024m'])
-  addResources = true
-  String springProfilesActive = 'spring.profiles.active'
-  systemProperty springProfilesActive, System.getProperty(springProfilesActive)
-}
-
-tasks.withType(Test) {
-  systemProperty "geb.env", System.getProperty('geb.env')
-  systemProperty "geb.build.reportsDir", reporting.file("geb/integrationTest")
-  systemProperty "webdriver.chrome.driver", System.getProperty('webdriver.chrome.driver')
-  systemProperty "webdriver.gecko.driver", System.getProperty('webdriver.gecko.driver')
+  maven { url "http://maven.k-int.com/content/repositories/releases" }
 }
 
 sourceSets {
@@ -149,6 +39,127 @@ sourceSets {
       srcDir 'src/main/okapi/tenant'
     }
   }
+}
+
+eclipse {
+  classpath {
+    defaultOutputDir = new File(project.buildDir.canonicalPath, 'main')
+    file {
+      whenMerged { classpath ->
+
+        entries.collect().each {
+
+          if (it.path =='grails-app/conf' && it.output?.toLowerCase().endsWith('test')) {
+            classpath.entries.remove( it )
+            println "Removed ${it}"
+          }
+
+          if (it.hasProperty('output') && it.output.startsWith('bin/')) {
+            it.output = 'build/' + it.output.substring(4)
+          }
+        }
+      }
+    }
+  }
+}
+
+configurations {
+  developmentOnly
+  runtimeClasspath {
+    extendsFrom developmentOnly
+  }
+}
+
+dependencies {
+
+  /**** Grails 4 *****/
+  developmentOnly("org.springframework.boot:spring-boot-devtools")
+  compile "org.springframework.boot:spring-boot-starter-logging"
+  compile "org.springframework.boot:spring-boot-autoconfigure"
+  compile "org.grails:grails-core"
+  compile "org.springframework.boot:spring-boot-starter-actuator"
+  compile "org.grails:grails-plugin-url-mappings"
+  compile "org.grails:grails-plugin-rest"
+  compile "org.grails:grails-plugin-codecs"
+  compile "org.grails:grails-plugin-interceptors"
+  compile "org.grails:grails-plugin-services"
+  compile "org.grails:grails-plugin-datasource"
+  compile "org.grails:grails-plugin-databinding"
+  compile "org.grails:grails-web-boot"
+  compile "org.grails:grails-logging"
+  compile "org.grails.plugins:async"
+  compile "org.grails.plugins:views-json"
+  compile "org.grails.plugins:views-json-templates"
+  compile "org.grails.plugins:events"
+  compile "org.grails.plugins:hibernate5"
+  compileOnly "io.micronaut:micronaut-inject-groovy"
+
+  console ("org.grails:grails-console") {
+    // The gpars transient depends on an older version of groovy-all.
+    exclude group: 'org.codehaus.groovy', module: 'groovy'
+  }
+
+  profile "org.grails.profiles:rest-api"
+  // runtime "com.h2database:h2"
+  runtime "javax.xml.bind:jaxb-api:2.3.1"
+
+
+  /************** Testing ************/
+  testCompile "org.grails:grails-gorm-testing-support"
+
+  testCompile "org.mockito:mockito-core"
+  testCompile "org.grails:grails-web-testing-support"
+  testCompile "org.grails.plugins:geb"
+  //  testCompile "io.micronaut:micronaut-http-client"
+  testCompile "org.seleniumhq.selenium:selenium-remote-driver:3.14.0"
+  testCompile "org.seleniumhq.selenium:selenium-api:3.14.0"
+  testCompile "org.seleniumhq.selenium:selenium-support:3.14.0"
+  testRuntime "org.seleniumhq.selenium:selenium-chrome-driver:3.14.0"
+  testRuntime "org.seleniumhq.selenium:selenium-firefox-driver:3.14.0"
+  compile 'org.z3950.zing:cql-java:1.13'
+
+
+  /*** Application changes and requirements ***/
+
+//  compile ("org.grails.plugins:cache") {
+//    // The gpars transient depends on an older version of groovy-all.
+//    exclude group: "org.codehaus.groovy", module: "groovy-all"
+//  }
+
+
+//  compile 'org.grails.plugins:grails-java8:1.2.3'               // No longer needed in grails 4.
+  compile "org.springframework.boot:spring-boot-starter-undertow" // Replaces spring-boot-starter-tomcat
+  compile "org.hibernate:hibernate-core:5.4.19.Final"             // Update to latest 5.4
+  compile "org.hibernate:hibernate-java8:5.4.19.Final"
+  runtime "com.zaxxer:HikariCP:3.4.5"                             // Replaces Tomcat JDBC pool
+  runtime "org.postgresql:postgresql:42.2.14"
+  
+  compile ('org.grails.plugins:database-migration:3.1.0') {       // Required by Grails Okapi
+    exclude group: 'org.liquibase', module: 'liquibase-core'
+  }
+  compile 'org.liquibase:liquibase-core:3.9.0'
+  // compile 'org.liquibase:liquibase-core:3.10.1'                // Liquibase changed searchpath handling. Downgrading for now. 
+//  compile 'org.liquibase:liquibase-core:3.5.5'
+
+  compile 'com.opencsv:opencsv:4.6'
+  compile 'commons-io:commons-io:2.6'
+
+  compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'     // TODO: Migrate away from this resource.
+  compile 'com.k_int.grails:web-toolkit-ce:5.0.0-rc.1'
+  compile 'com.k_int.okapi:grails-okapi:4.0.0-rc.1'
+}
+
+bootRun {
+  ignoreExitValue true
+  jvmArgs(
+      '-Dspring.output.ansi.enabled=always',
+      '-server',
+      '-noverify',
+      '-XX:TieredStopAtLevel=1',
+      '-Xmx1024m')
+  sourceResources sourceSets.main
+  String springProfilesActive = 'spring.profiles.active'
+  systemProperty springProfilesActive, System.getProperty(springProfilesActive)
 }
 
 task generateDescriptors(type: Copy) {
@@ -187,17 +198,6 @@ task generateDescriptors(type: Copy) {
   rename { String fileName ->
     fileName.replace('-template', '')
   }
-}
-
-jar {
-  version "${version.replaceAll(version_regex, '$2')}"
-}
-
-springBoot {
-  
-  // Enable the creation of a fully
-  // executable archive file.
-  executable = true
 }
 
 buildProperties.doLast {
@@ -240,34 +240,7 @@ buildProperties.doLast {
     properties.store(it,null)
   }
 }
-
 processResources.dependsOn generateDescriptors
-//assemble.dependsOn generateDescriptors
-
-includes?.each { String projectName, String mavenString ->
-  def igp = subprojects?.find {
-    if (it.name == "${projectName}") {
-      return it
-    }
-    false
-  }
-
-  if (igp) {
-    println "Using local ${igp.name} at ${igp.projectDir}"
-    grails {
-      plugins {
-        compile igp
-      }
-    }
-  } else {
-    // Use declared maven version.
-    println "Installing ${projectName} from maven"
-    dependencies {
-      compile "${mavenString}"
-    }
-  }
-}
-
 
 /**
  * Docker build config.
@@ -276,7 +249,7 @@ import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 ext {
-  dockerTag = "${project.dockerRepo}/${project.name}:${project.version}${dockerTagSuffix}"
+  dockerId = "${project.dockerRepo}/${project.name}:${project.version}${dockerTagSuffix}"
   dockerBuildDir = mkdir("${buildDir}/docker")
 }
 
@@ -285,19 +258,20 @@ task prepareDocker(type: Copy, dependsOn: assemble) {
   group = 'Docker'
 
   from project.jar
-  
+
   // from otherfileLoc
 
   into dockerBuildDir
 }
+
 task createDockerfile(type: Dockerfile, dependsOn: prepareDocker) {
   description = 'Create a Dockerfile file'
   group = 'Docker'
 
   destFile = project.file("${dockerBuildDir}/Dockerfile")
 
-  from 'folioci/alpine-jre-openjdk8:latest'
-  maintainer 'Knowledge Integration'
+  from 'folioci/alpine-jre-openjdk11:latest'
+  instruction 'LABEL maintainer="Knowledge Integration"'
 
   exposePort 8080
 
@@ -310,10 +284,23 @@ task buildImage(type: DockerBuildImage, dependsOn: createDockerfile) {
   group = 'Docker'
 
   inputDir = file(dockerBuildDir)
-  tag = dockerTag
+  images.add(dockerId)
 }
 
-jacocoTestReport {
-  executionData integrationTest, test
+tasks.withType(GroovyCompile) {
+  configure(groovyOptions) {
+    forkOptions.jvmArgs = ['-Xmx1024m']
+  }
 }
 
+webdriverBinaries {
+  chromedriver '2.45.0'
+  geckodriver '0.24.0'
+}
+
+tasks.withType(Test) {
+  systemProperty "geb.env", System.getProperty('geb.env')
+  systemProperty "geb.build.reportsDir", reporting.file("geb/integrationTest")
+  systemProperty "webdriver.chrome.driver", System.getProperty('webdriver.chrome.driver')
+  systemProperty "webdriver.gecko.driver", System.getProperty('webdriver.gecko.driver')
+}

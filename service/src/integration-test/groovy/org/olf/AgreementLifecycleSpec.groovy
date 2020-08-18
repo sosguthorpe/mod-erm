@@ -186,7 +186,9 @@ class AgreementLifecycleSpec extends BaseSpec {
       resp = doGet("/erm/sas", [
         filters:[
           "name=i=${agreement_name}" // Case insensitive match
-        ]
+        ],
+        expand: 'items',
+        exclude: 'items.owner'
       ])
       
     then: "Single Agreement found"

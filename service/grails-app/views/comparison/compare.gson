@@ -154,7 +154,7 @@ if (sources) {
   
   int triggerIndex = 0
   
-  while ( currentObject || currentPointers.any { it.hasNext() } || currentRowBuffers.any{ it != null }) {
+  while ( currentObject || currentPointers.any { it.hasNext() } || (currentRowBuffers as Iterable).any { it != null }) {
     for (int i=0; i<sourceCount; i++) {
       
       // Grab the buffer

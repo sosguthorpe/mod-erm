@@ -14,7 +14,7 @@ class DateParsingSpec extends BaseSpec {
   def 'Test various date(/time) string formats' () {
     
     when: 'Create SubscriptionAgreement with current period'
-      final Instant today = Instant.now()
+      final Instant today = Instant.now().truncatedTo(ChronoUnit.SECONDS)
       final Instant yesterday = today.minus(1, ChronoUnit.DAYS)
       final Instant tomorrow = today.plus(1, ChronoUnit.DAYS)
       final Instant dayAfter = tomorrow.plus(1, ChronoUnit.DAYS)

@@ -1,7 +1,7 @@
 import org.olf.kb.RemoteKB
 log.info "Running specific diku tenant data file"
 
-RemoteKB gokb_test = RemoteKB.findByName('GOKb_TEST') ?: new RemoteKB(
+RemoteKB.findByName('GOKb_TEST') ?: (new RemoteKB(
     name:'GOKb_TEST',
     type:'org.olf.kb.adapters.GOKbOAIAdapter',
     uri:'http://gokbt.gbv.de/gokb/oai/index',
@@ -10,4 +10,4 @@ RemoteKB gokb_test = RemoteKB.findByName('GOKb_TEST') ?: new RemoteKB(
     active:Boolean.TRUE,
     supportsHarvesting:true,
     activationEnabled:false
-).save(flush:true, failOnError:true)
+).save(failOnError:true))

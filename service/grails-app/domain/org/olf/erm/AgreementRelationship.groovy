@@ -26,8 +26,8 @@ public class AgreementRelationship implements MultiTenant<AgreementRelationship>
   static mapping = {
     id column:'ar_id', generator: 'uuid2', length:36
     type column:'ar_type'
-    inward column:'ar_inward_fk'
-    outward column:'ar_outward_fk'
+    inward column:'ar_inward_fk', lazy: false
+    outward column:'ar_outward_fk', lazy: false
     note column:'ar_note', type: 'text'
   }
   

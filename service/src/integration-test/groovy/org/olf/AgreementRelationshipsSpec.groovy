@@ -2,6 +2,7 @@ package org.olf
 
 import java.time.LocalDate
 
+import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovyx.net.http.HttpException
 import spock.lang.Shared
@@ -9,6 +10,7 @@ import spock.lang.Stepwise
 
 @Integration
 @Stepwise
+@Transactional
 class AgreementRelationshipsSpec extends BaseSpec {
   
   @Shared

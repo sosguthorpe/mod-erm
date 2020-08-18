@@ -39,8 +39,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
   def publicLookup () {
     final List<String> referenceIds = params.list('referenceId')
     final List<String> resourceIds = params.list('resourceId')
-    final List<String> disjunctiveReferences = []
-    disjunctiveReferences += referenceIds.collect { String id ->
+    final List<String> disjunctiveReferences = [] + referenceIds.collect { String id ->
       String[] parts = id.split(/\-/)
       if (parts.length == 3) {
         // assuming progressive ID and we should search for multiples
@@ -281,18 +280,19 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
         or {
           
           // Direct PTIs
-          'in' 'id', new DetachedCriteria(PlatformTitleInstance).build {
+          'in' 'id', new DetachedCriteria(PlatformTitleInstance, 'pti_sub').build {
             
-            createAlias 'entitlements', 'direct_ent'
-              eq 'direct_ent.owner.id', subscriptionAgreementId
+            entitlements {
+              eq 'owner.id', subscriptionAgreementId
               or {
-                isNull 'direct_ent.activeFrom'
-                le 'direct_ent.activeFrom', today
+                isNull 'activeFrom'
+                le 'activeFrom', today
               }
               or {
-                isNull 'direct_ent.activeTo'
-                ge 'direct_ent.activeTo', today
+                isNull 'activeTo'
+                ge 'activeTo', today
               }
+            }
               
             projections {
               property ('id')
@@ -300,26 +300,27 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           }
           
           // Direct PCIs
-          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+          'in' 'id', new DetachedCriteria(PackageContentItem, 'pci_direct_sub').build {
             
-            createAlias 'entitlements', 'direct_ent'
-              eq 'direct_ent.owner.id', subscriptionAgreementId
+            entitlements {
+              eq 'owner.id', subscriptionAgreementId
               or {
-                isNull 'direct_ent.activeFrom'
-                le 'direct_ent.activeFrom', today
+                isNull 'activeFrom'
+                le 'activeFrom', today
               }
               or {
-                isNull 'direct_ent.activeTo'
-                ge 'direct_ent.activeTo', today
+                isNull 'activeTo'
+                ge 'activeTo', today
               }
-              or {
-                isNull 'accessStart'
-                le 'accessStart', today
-              }
-              or {
-                isNull 'accessEnd'
-                ge 'accessEnd', today
-              }
+            }
+            or {
+              isNull 'accessStart'
+              le 'accessStart', today
+            }
+            or {
+              isNull 'accessEnd'
+              ge 'accessEnd', today
+            }
               
             projections {
               property ('id')
@@ -327,22 +328,23 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           }
           
           // Pci linked via package.
-          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+          'in' 'id', new DetachedCriteria(PackageContentItem,'pci_pkg_sub').build {
             
             isNull 'removedTimestamp'
-            'in' 'pkg.id', new DetachedCriteria(Pkg).build {
-              createAlias 'entitlements', 'pkg_ent'
-                eq 'pkg_ent.owner.id', subscriptionAgreementId
+            
+            'in' 'pkg.id', new DetachedCriteria(Pkg, 'pci_pkg_pkg_sub').build {
+              entitlements {
+                eq 'owner.id', subscriptionAgreementId
                 
                 or {
-                  isNull 'pkg_ent.activeFrom'
-                  le 'pkg_ent.activeFrom', today
+                  isNull 'activeFrom'
+                  le 'activeFrom', today
                 }
                 or {
-                  isNull 'pkg_ent.activeTo'
-                  ge 'pkg_ent.activeTo', today
+                  isNull 'activeTo'
+                  ge 'activeTo', today
                 }
-              
+              }
               projections {
                 property ('id')
               }

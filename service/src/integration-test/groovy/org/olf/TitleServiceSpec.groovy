@@ -8,13 +8,14 @@ import com.k_int.okapi.OkapiTenantResolver
 import grails.gorm.multitenancy.Tenants
 import grails.testing.mixin.integration.Integration
 import grails.web.databinding.DataBindingUtils
+import groovy.transform.CompileStatic
 import spock.lang.*
 
 @Integration
 @Stepwise
 class TitleServiceSpec extends BaseSpec {
 
-  def titleInstanceResolverService
+  TitleInstanceResolverService titleInstanceResolverService
   
   @Shared PackageContentImpl content
   
@@ -61,7 +62,7 @@ class TitleServiceSpec extends BaseSpec {
       // be supplied by the HTTPRequest, but we fake it here to talk directly to the service
       Tenants.withId(OkapiTenantResolver.getTenantSchemaName( tenantid )) {
         // N.B. This is a groovy MAP, not a JSON document.
-        title_instance = titleInstanceResolverService.resolve(content)
+        title_instance = titleInstanceResolverService.resolve(content, true)
         num_identifiers = title_instance.identifiers.size()
       }
 
@@ -86,8 +87,7 @@ class TitleServiceSpec extends BaseSpec {
       // We are exercising the service directly, normally a transactional context will
       // be supplied by the HTTPRequest, but we fake it here to talk directly to the service
       Tenants.withId(OkapiTenantResolver.getTenantSchemaName( tenantid )) {
-        // N.B. This is a groovy MAP, not a JSON document.
-        title_instance = titleInstanceResolverService.resolve(content)
+        title_instance = titleInstanceResolverService.resolve(content, true)
         num_identifiers = title_instance.identifiers.size()
         num_titles = TitleInstance.findAllByName('Brain of the firm').size()
       }

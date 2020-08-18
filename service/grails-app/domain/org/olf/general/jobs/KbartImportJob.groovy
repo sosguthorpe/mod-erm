@@ -1,9 +1,8 @@
 package org.olf.general.jobs
 
 import grails.gorm.MultiTenant
-
-import org.springframework.web.multipart.MultipartFile
 import org.apache.commons.io.input.BOMInputStream
+import org.springframework.web.multipart.MultipartFile
 
 import com.opencsv.ICSVParser
 import com.opencsv.CSVParser

@@ -234,7 +234,7 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
       log.debug "${isPackage ? 'Is' : 'Is not'} Package"
       outerEntitlement.metaClass.external_customCoverage = false
       
-      final def custCoverage = it.data?.attributes?.getAt("customCoverage${isPackage ? '' : 's'}")
+      def custCoverage = it.data?.attributes?.getAt("customCoverage${isPackage ? '' : 's'}")
       
       log.debug "Custom Coverage: ${custCoverage}"
       if (custCoverage) {

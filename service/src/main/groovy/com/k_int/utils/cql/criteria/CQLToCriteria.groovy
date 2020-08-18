@@ -1,13 +1,10 @@
 package com.k_int.utils.cql.criteria;
 
-import grails.gorm.DetachedCriteria;
-import org.z3950.zing.cql.*
-import groovy.util.logging.Log4j
 import org.hibernate.criterion.*
-import org.hibernate.criterion.Criterion
-// import org.grails.datastore.mapping.query.api.Criteria
+
+import org.z3950.zing.cql.*
 import grails.orm.HibernateCriteriaBuilder;
-import org.hibernate.criterion.Restrictions;
+import groovy.util.logging.Slf4j
 
 
 /*
@@ -18,7 +15,7 @@ import org.hibernate.criterion.Restrictions;
  *   baseEntity: (Class)BaseEntity
  * ]
  */
-@Log4j
+@Slf4j
 class CQLToCriteria {
 
   private static String INDENT = '   ';

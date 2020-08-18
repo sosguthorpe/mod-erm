@@ -197,7 +197,7 @@ class AgreementViewsSpec extends BaseSpec {
     final List<String> endpoints = ['current', 'future', 'dropped'] 
     
     when: 'Agreement read'
-      Map httpResult = doGet("/erm/sas/${agg_id}")
+      Map httpResult = doGet("/erm/sas/${agg_id}", ['expand': 'items', exclude: 'items.owner'])
       
     and: 'Order-line dates set to #agreement_line_start - #agreement_line_end'
       httpResult.items[0].activeFrom = agreement_line_start
@@ -211,7 +211,7 @@ class AgreementViewsSpec extends BaseSpec {
       assert (httpResult?.items?.size() ?: 0) == 1
       
     when: 'Agreement re-read'
-      httpResult = doGet("/erm/sas/${agg_id}", ['expand': 'items'])
+      httpResult = doGet("/erm/sas/${agg_id}", ['expand': 'items', exclude: 'items.owner'])
     
     then: 'Dates are correct'
       assert httpResult.items[0].activeFrom == agreement_line_start

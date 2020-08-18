@@ -27,58 +27,56 @@ public class KBart implements Serializable {
     //
   }
 
-
-
   @CsvBindByPosition(position = 0)
-  public String publication_title = "" // TitleInstance.name
+  String publication_title = "" // TitleInstance.name
   @CsvBindByPosition(position = 1)
-  public String print_identifier = "" // titleInstance.identifiers.value WHERE .ns = "issn" OR ??? WHERE .ns = "isbn"
+  String print_identifier = "" // titleInstance.identifiers.value WHERE .ns = "issn" OR ??? WHERE .ns = "isbn"
   @CsvBindByPosition(position = 2)
-  public String online_identifier = "" // titleInstance.identifiers.value WHERE .ns = "eissn"
+  String online_identifier = "" // titleInstance.identifiers.value WHERE .ns = "eissn"
   @CsvBindByPosition(position = 3)
-  public String date_first_issue_online = "" // derived from coverageService
+  String date_first_issue_online = "" // derived from coverageService
   @CsvBindByPosition(position = 4)
-  public String num_first_vol_online = "" // not implemented
+  String num_first_vol_online = "" // not implemented
   @CsvBindByPosition(position = 5)
-  public String num_first_issue_online = "" // not implemented
+  String num_first_issue_online = "" // not implemented
   @CsvBindByPosition(position = 6)
-  public String date_last_issue_online = "" // derived from coverageService
+  String date_last_issue_online = "" // derived from coverageService
   @CsvBindByPosition(position = 7)
-  public String num_last_vol_online = "" // not implemented
+  String num_last_vol_online = "" // not implemented
   @CsvBindByPosition(position = 8)
-  public String num_last_issue_online = "" // not implemented
+  String num_last_issue_online = "" // not implemented
   @CsvBindByPosition(position = 9)
-  public String title_url = "" // platformTitleInstance.url
+  String title_url = "" // platformTitleInstance.url
   @CsvBindByPosition(position = 10)
-  public String first_author = "" // not implemented
+  String first_author = "" // not implemented
   @CsvBindByPosition(position = 11)
-  public String title_id = "" // not implemented
+  String title_id = "" // not implemented
   @CsvBindByPosition(position = 12)
-  public String embargo_info = "" // not implemented
+  String embargo_info = "" // not implemented
   @CsvBindByPosition(position = 13)
-  public String coverage_depth = "" // platformContentItem.depth
+  String coverage_depth = "" // platformContentItem.depth
   @CsvBindByPosition(position = 14)
-  public String notes = "" // platformContentItem.note
+  String notes = "" // platformContentItem.note
   @CsvBindByPosition(position = 15)
-  public String publisher_name = "" // ????
+  String publisher_name = "" // ????
   @CsvBindByPosition(position = 16)
-  public String publication_type  = "" // TitleInstance.type
+  String publication_type  = "" // TitleInstance.type
   @CsvBindByPosition(position = 17)
-  public String date_monograph_published_print = "" // not implemented
+  String date_monograph_published_print = "" // not implemented
   @CsvBindByPosition(position = 18)
-  public String date_monograph_published_online = "" // not implemented
+  String date_monograph_published_online = "" // not implemented
   @CsvBindByPosition(position = 19)
-  public String monograph_volume = "" // not implemented
+  String monograph_volume = "" // not implemented
   @CsvBindByPosition(position = 20)
-  public String monograph_edition = "" // not implemented
+  String monograph_edition = "" // not implemented
   @CsvBindByPosition(position = 21)
-  public String first_editor = "" // not implemented
+  String first_editor = "" // not implemented
   @CsvBindByPosition(position = 22)
-  public String parent_publication_title_id = "" // not implemented
+  String parent_publication_title_id = "" // not implemented
   @CsvBindByPosition(position = 23)
-  public String preceding_publication_title_id = "" // not implemented
+  String preceding_publication_title_id = "" // not implemented
   @CsvBindByPosition(position = 24)
-  public String access_type = "" // not implemented
+  String access_type = "" // not implemented
 
   // public get methods are required for csv serialization
 

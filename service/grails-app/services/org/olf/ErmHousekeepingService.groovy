@@ -1,9 +1,5 @@
 package org.olf
 
-import grails.gorm.multitenancy.Tenants
-import org.olf.kb.RemoteKB
-import grails.events.annotation.Subscriber
-import grails.gorm.multitenancy.WithoutTenant
 import grails.gorm.transactions.Transactional
 
 /**

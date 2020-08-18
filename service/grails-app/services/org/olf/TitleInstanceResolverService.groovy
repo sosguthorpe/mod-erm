@@ -18,6 +18,7 @@ import groovy.json.*
 /**
  * This service works at the module level, it's often called without a tenant context.
  */
+@Transactional
 class TitleInstanceResolverService implements DataBinder{
 
   private static final float MATCH_THRESHOLD = 0.775f
@@ -83,7 +84,6 @@ class TitleInstanceResolverService implements DataBinder{
     TitleInstance result = null;
 
     List<TitleInstance> candidate_list = classOneMatch(citation.instanceIdentifiers);
-    int num_class_one_identifiers = countClassOneIDs(citation.instanceIdentifiers);
     int num_matches = candidate_list.size()
     if ( num_matches > 1 ) {
       log.debug("Class one match found multiple titles:: ${candidate_list}");
@@ -91,6 +91,7 @@ class TitleInstanceResolverService implements DataBinder{
 
     // We weren't able to match directly on an identifier for this instance - see if we have an identifier
     // for a sibling instance we can use to narrow down the list.
+    int num_class_one_identifiers = countClassOneIDs(citation.instanceIdentifiers);
     if ( num_matches == 0 ) {
       candidate_list = siblingMatch(citation)
       num_matches = candidate_list.size()

@@ -1,10 +1,14 @@
-import grails.util.BuildSettings
-import grails.util.Environment
+import java.nio.charset.StandardCharsets
+
 import org.olf.general.jobs.JobAwareAppender
 import org.springframework.boot.logging.logback.ColorConverter
 import org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter
 
-import java.nio.charset.Charset
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder
+import ch.qos.logback.core.ConsoleAppender
+import ch.qos.logback.core.FileAppender
+import grails.util.BuildSettings
+import grails.util.Environment
 
 conversionRule 'clr', ColorConverter
 conversionRule 'wex', WhitespaceThrowableProxyConverter
@@ -12,7 +16,7 @@ conversionRule 'wex', WhitespaceThrowableProxyConverter
 // See http://logback.qos.ch/manual/groovy.html for details on configuration
 appender('STDOUT', ConsoleAppender) {
     encoder(PatternLayoutEncoder) {
-        charset = Charset.forName('UTF-8')
+        charset = StandardCharsets.UTF_8
 
         pattern =
                 '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} ' + // Date
@@ -23,39 +27,39 @@ appender('STDOUT', ConsoleAppender) {
     }
 }
 
-logger ('grails.app.init', DEBUG)
-logger ('grails.app.controllers', DEBUG)
-logger ('grails.app.domains', DEBUG)
-logger ('grails.app.jobs', DEBUG)
-logger ('grails.app.services', DEBUG)
-logger ('com.k_int', DEBUG)
-logger ('pubskb', DEBUG)
-logger ('okapi', INFO)
-logger ('folio', DEBUG)
-logger ('org.olf', DEBUG)
-logger ('com.k_int.okapi.OkapiSchemaHandler', WARN)
-logger ('com.k_int.web.toolkit.refdata.GrailsDomainRefdataHelpers', WARN)
-logger ('com.k_int.web.toolkit.utils.RequestUtils', WARN)
-logger ('com.k_int.okapi.remote_resources.RemoteOkapiLinkListener', WARN)
+// Default level should be info.
+root(WARN, ['STDOUT'])
+logger ('org.hibernate.orm.deprecation', INFO)
+logger ('com.k_int.okapi.OkapiSchemaHandler', INFO)
 
-//logger("org.hibernate.SQL", DEBUG)
-//logger("org.hibernate.type.descriptor.sql.BasicBinder", TRACE)
-
-// Uncomment below logging for output of OKAPI client http.
-logger ('com.k_int.okapi.OkapiClient', DEBUG)
-
+// Just increase verbosity for dev/test. 
 if (Environment.isDevelopmentMode() || Environment.currentEnvironment == Environment.TEST) {
   
-  logger ('com.k_int.web.toolkit.refdata.GrailsDomainRefdataHelpers', DEBUG)
-  logger ('com.k_int.web.toolkit.utils.RequestUtils', DEBUG)
-  logger ('com.k_int.okapi.remote_resources.RemoteOkapiLinkListener', TRACE)
-  logger ('com.k_int.okapi.OkapiTenantAdminService', TRACE)
+  // Change default verbosity to INFO for dev/test
+  root(INFO, ['STDOUT'])
   
-  // Uncomment below logging for output of OKAPI client http.
-  logger ('com.k_int.okapi.OkapiClient', TRACE)
-  logger 'groovy.net.http.JavaHttpBuilder', DEBUG
-  logger 'groovy.net.http.JavaHttpBuilder.content', DEBUG
-  logger 'groovy.net.http.JavaHttpBuilder.headers', DEBUG
+  // Increase specific levels to debug
+  logger 'grails.app.init', DEBUG
+  logger 'grails.app.controllers', DEBUG
+  logger 'grails.app.domains', DEBUG
+  logger 'grails.app.jobs', DEBUG
+  logger 'grails.app.services', DEBUG
+  logger 'com.zaxxer.hikari.pool.HikariPool', DEBUG
+  
+  logger 'com.k_int', DEBUG
+  logger 'com.k_int.web.toolkit', DEBUG
+  logger 'org.olf', DEBUG
+  
+  
+  if (Environment.currentEnvironment == Environment.TEST) {
+    // Test only.
+//    logger 'org.hibernate', DEBUG
+    logger 'com.k_int.okapi.OkapiClient', TRACE
+    logger 'groovy.net.http.JavaHttpBuilder', DEBUG
+    logger 'org.hibernate.loader.criteria', TRACE
+    logger 'org.hibernate.SQL', DEBUG
+    logger 'org.hibernate.type.descriptor.sql.BasicBinder', TRACE
+  }
 }
 
 def targetDir = BuildSettings.TARGET_DIR
@@ -64,21 +68,16 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
         file = "${targetDir}/stacktrace.log"
         append = true
         encoder(PatternLayoutEncoder) {
+            charset = StandardCharsets.UTF_8
             pattern = "%level %logger - %msg%n"
         }
     }
     logger("StackTrace", ERROR, ['FULL_STACKTRACE'], false)
 }
-root(ERROR, ['STDOUT'])
-
-// Add a new appender that logs statements to the database for jobs.
-appender ('JOB', JobAwareAppender) 
-//{
-//  pattern = "%replace(%X{descriminator} - ){' - ', ''}%replace(%X{subDescriminator} - ){' - ', ''}" + // Add the descriminators
-//      '%m%n%' // Message
-//}
 
 // Add the appender for classes we wish to expose within the database.
+appender ('JOB', JobAwareAppender)
+
 logger ('org.olf.PackageIngestService', DEBUG, ['JOB'])
 logger ('org.olf.TitleInstanceResolverService', DEBUG, ['JOB'])
 logger ('org.olf.TitleEnricherService', DEBUG, ['JOB'])

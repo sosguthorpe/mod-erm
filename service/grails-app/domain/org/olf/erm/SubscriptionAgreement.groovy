@@ -211,14 +211,14 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
        attachedLicenceId column:'sa_licence_fk'
 	   		     licenseNote column:'sa_license_note'
           alternateNames cascade: 'all-delete-orphan'
-                   items cascade: 'all-delete-orphan'
+                   items cascade: 'all-delete-orphan', lazy: false
                 contacts cascade: 'all-delete-orphan'
             historyLines cascade: 'all-delete-orphan'
                     tags cascade: 'save-update'
                  periods cascade: 'all-delete-orphan'
                     orgs cascade: 'all-delete-orphan'
                     docs cascade: 'all-delete-orphan'
-     externalLicenseDocs cascade: 'all-delete-orphan',  joinTable: [name: 'subscription_agreement_ext_lic_doc', key: 'saeld_sa_fk', column: 'saeld_da_fk']
+     externalLicenseDocs cascade: 'all-delete-orphan', joinTable: [name: 'subscription_agreement_ext_lic_doc', key: 'saeld_sa_fk', column: 'saeld_da_fk']
           linkedLicenses cascade: 'all-delete-orphan'
        supplementaryDocs cascade: 'all-delete-orphan', joinTable: [name: 'subscription_agreement_supp_doc', key: 'sasd_sa_fk', column: 'sasd_da_fk']
       usageDataProviders cascade: 'all-delete-orphan'

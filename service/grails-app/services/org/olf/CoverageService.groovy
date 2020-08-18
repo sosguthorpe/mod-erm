@@ -30,6 +30,7 @@ import com.k_int.okapi.OkapiTenantResolver
 import grails.events.annotation.Subscriber
 import grails.gorm.DetachedCriteria
 import grails.gorm.multitenancy.Tenants
+import grails.gorm.transactions.Transactional
 import grails.util.Holders
 import groovy.util.logging.Slf4j
 
@@ -37,6 +38,7 @@ import groovy.util.logging.Slf4j
  * This service works at the module level, it's often called without a tenant context.
  */
 @Slf4j
+@Transactional
 public class CoverageService {
   
   private static MessageSource getMessageSource() {
@@ -127,62 +129,65 @@ public class CoverageService {
    */
   public static void setCoverageFromSchema (final ErmResource resource, final Iterable<CoverageStatementSchema> coverage_statements) {
     
-    boolean changed = false
-    final Set<CoverageStatement> statements = []
-    try {
-      
-      // Clear the existing coverage, or initialize to empty set.
-      if (resource.coverage) {
-        statements.addAll( resource.coverage.collect() )
-        resource.coverage.clear()
-        resource.save(failOnError: true) // Necessary to remove the orphans.
-      }
-      
-      for ( CoverageStatementSchema cs : coverage_statements ) {
-        if (cs.validate()) {
-          CoverageStatement new_cs = new CoverageStatement([
-            startDate   : cs.startDate,
-            endDate     : cs.endDate,
-            startVolume : ("${cs.startVolume}".trim() ? cs.startVolume : null),
-            startIssue  : ("${cs.startIssue}".trim() ? cs.startIssue : null),
-            endVolume   : ("${cs.endVolume}".trim() ? cs.endVolume : null),
-            endIssue    : ("${cs.endIssue}".trim() ? cs.endIssue : null)
-          ])
-
-          resource.addToCoverage( new_cs )
-          
-          // Validate the object at each step.
-          if (!resource.validate()) {
-            resource.errors.allErrors.each { ObjectError error ->
+    ErmResource.withTransaction {
+    
+      boolean changed = false
+      final Set<CoverageStatement> statements = []
+      try {
+        
+        // Clear the existing coverage, or initialize to empty set.
+        if (resource.coverage) {
+          statements.addAll( resource.coverage.collect() )
+          resource.coverage.clear()
+          resource.save(failOnError: true) // Necessary to remove the orphans.
+        }
+        
+        for ( CoverageStatementSchema cs : coverage_statements ) {
+          if (cs.validate()) {
+            CoverageStatement new_cs = new CoverageStatement([
+              startDate   : cs.startDate,
+              endDate     : cs.endDate,
+              startVolume : ("${cs.startVolume}".trim() ? cs.startVolume : null),
+              startIssue  : ("${cs.startIssue}".trim() ? cs.startIssue : null),
+              endVolume   : ("${cs.endVolume}".trim() ? cs.endVolume : null),
+              endIssue    : ("${cs.endIssue}".trim() ? cs.endIssue : null)
+            ])
+  
+            resource.addToCoverage( new_cs )
+            
+            // Validate the object at each step.
+            if (!resource.validate()) {
+              resource.errors.allErrors.each { ObjectError error ->
+                log.error (messageSource.getMessage(error, LocaleContextHolder.locale))
+              }
+              throw new ValidationException('Adding coverage statement invalidates Resource', resource.errors)
+            }
+            
+            resource.save()
+          } else {
+            // Not valid coverage statement
+            cs.errors.allErrors.each { ObjectError error ->
               log.error (messageSource.getMessage(error, LocaleContextHolder.locale))
             }
-            throw new ValidationException('Adding coverage statement invalidates Resource', resource.errors)
           }
-          
-          resource.save()
-        } else {
-          // Not valid coverage statement
-          cs.errors.allErrors.each { ObjectError error ->
-            log.error (messageSource.getMessage(error, LocaleContextHolder.locale))
-          }
+        }
+        
+        log.debug("New coverage saved")
+        changed = true
+      } catch (ValidationException e) {
+        log.error("Coverage changes to Resource ${resource.id} not saved")
+      }
+      
+      if (!changed) {
+        // Revert the coverage set.
+        if (!resource.coverage) resource.coverage = []
+        statements.each {
+          resource.addToCoverage( it )
         }
       }
       
-      log.debug("New coverage saved")
-      changed = true
-    } catch (ValidationException e) {
-      log.error("Coverage changes to Resource ${resource.id} not saved")
+      resource.save(failOnError: true, flush:true) // Save.
     }
-    
-    if (!changed) {
-      // Revert the coverage set.
-      if (!resource.coverage) resource.coverage = []
-      statements.each {
-        resource.addToCoverage( it )
-      }
-    }
-    
-    resource.save(failOnError: true, flush:true) // Save.
   }
   
   /**
@@ -193,29 +198,32 @@ public class CoverageService {
    */
   public static void calculateCoverage( final PlatformTitleInstance pti ) {
     
-    // Use a sub query to select all the coverage statements linked to PCIs,
-    // linked to this pti
-    List<org.olf.dataimport.erm.CoverageStatement> allCoverage = CoverageStatement.createCriteria().list {
-      'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
-        readOnly (true)
-        
-        createAlias 'pti', 'pci_pti'
-          eq 'pci_pti.id', pti.id
-
-        projections {
-          property ('id')
-        }
-      }
-    }.collect{ CoverageStatement cs -> 
-      new org.olf.dataimport.erm.CoverageStatement([
-        'startDate': cs.startDate,
-        'endDate': cs.endDate
-      ])
-    }
-        
-    allCoverage = collateCoverageStatements(allCoverage)
+    log.debug 'Calculate coverage for PlatformTitleInstance {}', pti.id
     
-    setCoverageFromSchema(pti, allCoverage)
+    PlatformTitleInstance.withTransaction {
+    
+      // Use a sub query to select all the coverage statements linked to PCIs,
+      // linked to this pti
+      List<org.olf.dataimport.erm.CoverageStatement> allCoverage = CoverageStatement.createCriteria().list {
+        'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
+          readOnly (true)
+          eq 'pti.id', pti.id
+  
+          projections {
+            property ('id')
+          }
+        }
+      }.collect{ CoverageStatement cs -> 
+        new org.olf.dataimport.erm.CoverageStatement([
+          'startDate': cs.startDate,
+          'endDate': cs.endDate
+        ])
+      }
+          
+      allCoverage = collateCoverageStatements(allCoverage)
+      
+      setCoverageFromSchema(pti, allCoverage)
+    }
   }
   
   /**
@@ -225,30 +233,32 @@ public class CoverageService {
    * @param ti The TitleInstance
    */
   public static void calculateCoverage( final TitleInstance ti ) {
-    
+    log.debug 'Calculate coverage for TitleInstance {}', ti.id
     // Use a sub query to select all the coverage statements linked to PTIs,
     // linked to this TI
-    List<org.olf.dataimport.erm.CoverageStatement> allCoverage = CoverageStatement.createCriteria().list {
-      'in' 'resource.id', new DetachedCriteria(PlatformTitleInstance).build {
-        readOnly (true)
-        
-        createAlias 'titleInstance', 'pti_ti'
-          eq 'pti_ti.id', ti.id
-
-        projections {
-          property ('id')
+    TitleInstance.withTransaction {
+      List<CoverageStatement> results = CoverageStatement.createCriteria().list {
+        'in' 'resource.id', new DetachedCriteria(PlatformTitleInstance, 'linked_ptis').build {
+          readOnly (true)
+          eq 'titleInstance.id', ti.id
+  
+          projections {
+            property ('id')
+          }
         }
       }
-    }.collect{ CoverageStatement cs -> 
-      new org.olf.dataimport.erm.CoverageStatement([
-        'startDate': cs.startDate,
-        'endDate': cs.endDate
-      ])
+      
+      List<org.olf.dataimport.erm.CoverageStatement> allCoverage = results.collect { CoverageStatement cs -> 
+        new org.olf.dataimport.erm.CoverageStatement([
+          'startDate': cs.startDate,
+          'endDate': cs.endDate
+        ])
+      }
+      
+      allCoverage = collateCoverageStatements(allCoverage)
+      
+      setCoverageFromSchema(ti, allCoverage)
     }
-    
-    allCoverage = collateCoverageStatements(allCoverage)
-    
-    setCoverageFromSchema(ti, allCoverage)
   }
   
   private static int dateWithinCoverage(CoverageStatementSchema cs, LocalDate date, int defaultValue) {

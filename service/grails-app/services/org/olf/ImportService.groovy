@@ -159,7 +159,7 @@ class ImportService implements DataBinder {
     String[] header = file.readNext()
 
     // Create an object containing fields we can accept and their mappings in our domain structure, as well as indices in the imported file, with -1 if not found
-    Map<String, ? extends Map> acceptedFields = [
+    Map<String, LinkedHashMap<String, ?>> acceptedFields = [
       publication_title: [field: 'title', index: -1],
       print_identifier: [field: 'siblingInstanceIdentifiers', index: -1],
       online_identifier: [field: 'instanceIdentifiers', index: -1],
@@ -191,7 +191,8 @@ class ImportService implements DataBinder {
     for (int i=0; i<header.length; i++) {
       final String key = header[i]
       if (acceptedFields.containsKey(key)) {
-        acceptedFields[key]['index'] = i
+        Map data = acceptedFields[key] as Map
+        data['index'] = i
       }
     }
 

@@ -29,7 +29,7 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
   Long lastCheck
   Long rectype  // 1-PACKAGE
 
-  public static final Long RECTYPE_PACKAGE = new Long(1);
+  public static final Long RECTYPE_PACKAGE = 1L;
 
   // Mark KB as protected/readonly, e.g. the LOCAL KB
   boolean readonly = false
@@ -70,27 +70,27 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
   }
 
   static constraints = {
-                   name(nullable:false, blank:false, unique:true)
-                 cursor(nullable:true, blank:false)
-                    uri(nullable:true, blank:false)
-                   type(nullable:true, blank:false)
-             fullPrefix(nullable:true, blank:false)
-             listPrefix(nullable:true, blank:false)
-              principal(nullable:true, blank:false)
-            credentials(nullable:true, blank:false)
-                 active(nullable:true, blank:false)
-     supportsHarvesting(nullable:true, blank:false)
-      activationEnabled(nullable:true, blank:false)
-    activationSupported(nullable:true, blank:false)
-             syncStatus(nullable:true, blank:false)
-              lastCheck(nullable:true, blank:false)
-               readonly(nullable:true, blank:false, bindable:false)
-        trustedSourceTI(nullable: false, blank: false)
+                   name( nullable:false, blank:false, unique:true)
+                 cursor( nullable:true, blank:false)
+                    uri( nullable:true, blank:false)
+                   type( nullable:true, blank:false)
+             fullPrefix( nullable:true, blank:false)
+             listPrefix( nullable:true, blank:false)
+              principal( nullable:true, blank:false)
+            credentials( nullable:true, blank:false)
+                 active( nullable:true, blank:false)
+     supportsHarvesting( nullable:true, blank:false)
+      activationEnabled( nullable:true, blank:false)
+    activationSupported( nullable:true, blank:false)
+             syncStatus( nullable:true, blank:false)
+              lastCheck( nullable:true, blank:false)
+               readonly( nullable:true, blank:false, bindable:false)
+        trustedSourceTI( nullable:false, blank: false)
   }
 
 
   public String toString() {
-    return "RemoteKB ${name} - ${type}/${uri}/${cursor}".toString()
+    return "RemoteKB ${name} - ${type}/${uri}${cursor ? '/' + cursor : ''}".toString()
   }
 
   // When RemoteKB is readonly we want SOME properties to be editable, some not to be
