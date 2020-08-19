@@ -32,8 +32,12 @@ root(WARN, ['STDOUT'])
 logger ('org.hibernate.orm.deprecation', INFO)
 logger ('com.k_int.okapi.OkapiSchemaHandler', INFO)
 
-// Just increase verbosity for dev/test. 
-if (Environment.isDevelopmentMode() || Environment.currentEnvironment == Environment.TEST) {
+// Just increase verbosity for dev/test.
+
+
+boolean devEnv = Environment.isDevelopmentMode() || Environment.currentEnvironment.name == 'vagrant-db'
+
+if (devEnv || Environment.currentEnvironment == Environment.TEST) {
   
   // Change default verbosity to INFO for dev/test
   root(INFO, ['STDOUT'])
@@ -63,7 +67,7 @@ if (Environment.isDevelopmentMode() || Environment.currentEnvironment == Environ
 }
 
 def targetDir = BuildSettings.TARGET_DIR
-if (Environment.isDevelopmentMode() && targetDir != null) {
+if (devEnv && targetDir != null) {
     appender("FULL_STACKTRACE", FileAppender) {
         file = "${targetDir}/stacktrace.log"
         append = true
