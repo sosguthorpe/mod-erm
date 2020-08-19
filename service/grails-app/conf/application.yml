@@ -169,6 +169,26 @@ hibernate:
 
   allow_update_outside_transaction: true #TODO: We should remove this in the near future and fix all dependants to wrap transactions.
 
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      base-path: '/admin'
+      exposure:
+        include:
+          - health
+          - info
+  endpoint:
+    info:
+      enabled: true
+    health:
+      enabled: true
+      
+  health:
+     datasource:
+        enabled: true
+     defaults:
+        enabled: false
 
 okapi:
   linkListener:
