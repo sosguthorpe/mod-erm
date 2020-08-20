@@ -1,20 +1,10 @@
 package org.olf 
-import org.olf.kb.ErmResource 
-import com.k_int.okapi.OkapiTenantAwareController
-
-
-import grails.gorm.DetachedCriteria
-import grails.gorm.multitenancy.CurrentTenant
-import groovy.util.logging.Slf4j
 import java.time.LocalDate
-import grails.gorm.transactions.Transactional
-import org.grails.datastore.gorm.GormStaticApi
-import org.hibernate.Hibernate
-import org.hibernate.sql.JoinType
-import grails.converters.JSON
+
 import org.olf.erm.SubscriptionAgreement
-import org.olf.export.KBart
-import org.olf.export.KBartExport
+import org.olf.kb.ErmResource
+
+import grails.gorm.transactions.Transactional
 
 /**
  * Service for exporting resources.

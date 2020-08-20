@@ -1,5 +1,8 @@
 import groovy.transform.Field
 import org.olf.kb.ErmResource
+
+import com.k_int.web.toolkit.refdata.RefdataValue
+
 import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 
 @Field
@@ -18,8 +21,10 @@ json {
   'suppressFromDiscovery' ermResource.suppressFromDiscovery
   'tags' g.render(ermResource.tags)
   
-  if (ermResource.type) {
-    'type' g.render (ermResource.type)
+  RefdataValue rdv = ermResource.getType() 
+  
+  if (rdv) {
+    'type' g.render (rdv)
   }
   
   if (ermResource.publicationType) {

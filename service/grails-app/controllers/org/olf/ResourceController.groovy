@@ -13,6 +13,7 @@ import org.olf.kb.TitleInstance
 import com.k_int.okapi.OkapiTenantAwareController
 import grails.gorm.DetachedCriteria
 import grails.gorm.multitenancy.CurrentTenant
+import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import java.time.Duration
 import java.time.Instant
@@ -44,7 +45,8 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
    * This is an availability checker for the resource. Show me all the places I can get this resource.
    * @return List of resources representing things that can be added to an Entitlement
    */
-  def entitlementOptions ( String resourceId ) {
+  @Transactional(readOnly=true)
+  def entitlementOptions ( final String resourceId ) {
     log.debug("entitlementOptions(${resourceId})");
 
     // Easiest way to check that this resource is a title is to read it in as one.
@@ -92,11 +94,12 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
 //          }
           
           // PCIs
-          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+          'in' 'id', new DetachedCriteria(PackageContentItem, 'direct_pci').build {
             readOnly (true)
             
-            createAlias 'pti', 'pci_pti'
-              eq 'pci_pti.titleInstance', ti
+            pti {
+              eq 'titleInstance.id', resourceId
+            }
               
             isNull 'removedTimestamp'
 
@@ -107,12 +110,12 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
           }
           
           // Packages.
-          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+          'in' 'id', new DetachedCriteria(PackageContentItem, 'pkg_pcis').build {
             readOnly (true)
             
-            createAlias 'pti', 'pci_pti'
-              eq 'pci_pti.titleInstance', ti
-            
+            pti {
+              eq 'titleInstance.id', resourceId
+            }
             isNull 'removedTimestamp'
 
             projections {
@@ -128,10 +131,10 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
     switch (resClass) {
       case TitleInstance:
         or {
-          'in' 'resource.id', new DetachedCriteria(PlatformTitleInstance).build {
+          'in' 'resource.id', new DetachedCriteria(PlatformTitleInstance,  'ti_ptis').build {
             readOnly (true)
             
-            eq 'titleInstance', res
+            eq 'titleInstance.id', res.id
               
             projections {
               property ('id')
@@ -139,11 +142,12 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
           }
           
           // PCIs
-          'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
+          'in' 'resource.id', new DetachedCriteria(PackageContentItem, 'ti_pcis').build {
             readOnly (true)
             
-            createAlias 'pti', 'pci_pti'
-              eq 'pci_pti.titleInstance', res
+            pti {
+              eq 'titleInstance.id', res.id
+            }
               
             projections {
               property ('id')
@@ -151,11 +155,11 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
           }
           
           // Packages.
-          'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
+          'in' 'resource.id', new DetachedCriteria(PackageContentItem, 'ti_pkg_pcis').build {
             readOnly (true)
-            
-            createAlias 'pti', 'pci_pti'
-              eq 'pci_pti.titleInstance', res
+            pti {
+              eq 'titleInstance.id', res.id
+            }
 
             isNull 'removedTimestamp'
 
@@ -167,13 +171,13 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
         break
       case PlatformTitleInstance:
         or {
-          eq 'resource', res
+          eq 'resource.id', res.id
           
           // PCIs
-          'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
+          'in' 'resource.id', new DetachedCriteria(PackageContentItem, 'pti_pci').build {
             readOnly (true)
             
-            eq 'pti', res
+            eq 'pti.id', res.id
               
             projections {
               property ('id')
@@ -181,10 +185,10 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
           }
           
           // Packages.
-          'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
+          'in' 'resource.id', new DetachedCriteria(PackageContentItem, 'pti_pkg_pci').build {
             readOnly (true)
             
-            eq 'pti', res
+            eq 'pti.id', res.id
 
             isNull 'removedTimestamp'
 
@@ -197,12 +201,12 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
         
       case PackageContentItem:
         or {
-          eq 'resource', res
-          eq 'resource', (res as PackageContentItem).pkg
+          eq 'resource.id', res.id // Direct
+          eq 'resource.id', (res as PackageContentItem).pkg.id // Via package
         }
         break
       default :
-        eq 'resource', res
+        eq 'resource.id', res.id
         break
     }
   }
@@ -272,7 +276,7 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
         switch (resClass) {
           case TitleInstance:
             or {
-              'in' 'excludes.resource.id', new DetachedCriteria(PlatformTitleInstance).build {
+              'in' 'excludes.resource.id', new DetachedCriteria(PlatformTitleInstance, 'excl_ptis').build {
                 readOnly (true)
                 
                 eq 'titleInstance', res
@@ -283,11 +287,12 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
               }
               
               // PCIs
-              'in' 'excludes.resource.id', new DetachedCriteria(PackageContentItem).build {
+              'in' 'excludes.resource.id', new DetachedCriteria(PackageContentItem, 'excl_pcis').build {
                 readOnly (true)
                 
-                createAlias 'pti', 'pci_pti'
-                  eq 'pci_pti.titleInstance', res
+                pti {
+                  eq 'titleInstance.id', res.id
+                }
                   
                 projections {
                   property ('id')
@@ -295,11 +300,12 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
               }
               
               // Packages.
-              'in' 'excludes.resource.id', new DetachedCriteria(PackageContentItem).build {
+              'in' 'excludes.resource.id', new DetachedCriteria(PackageContentItem, 'excl_pkg_pcis').build {
                 readOnly (true)
                 
-                createAlias 'pti', 'pci_pti'
-                  eq 'pci_pti.titleInstance', res
+                pti {
+                  eq 'titleInstance.id', res.id
+                }
     
                 isNull 'removedTimestamp'
     
@@ -314,10 +320,10 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
               eq 'excludes.resource', res
               
               // PCIs
-              'in' 'excludes.resource.id', new DetachedCriteria(PackageContentItem).build {
+              'in' 'excludes.resource.id', new DetachedCriteria(PackageContentItem,'excl_pcis').build {
                 readOnly (true)
                 
-                eq 'pti', res
+                eq 'pti.id', res.id
                   
                 projections {
                   property ('id')
@@ -325,10 +331,10 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
               }
               
               // Packages.
-              'in' 'excludes.resource.id', new DetachedCriteria(PackageContentItem).build {
+              'in' 'excludes.resource.id', new DetachedCriteria(PackageContentItem, 'excl_pkg_pcis').build {
                 readOnly (true)
                 
-                eq 'pti', res
+                eq 'pti.id', res.id
     
                 isNull 'removedTimestamp'
     
@@ -341,12 +347,12 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
             
           case PackageContentItem:
             or {
-              eq 'excludes.resource', res
-              eq 'excludes.resource', (res as PackageContentItem).pkg
+              eq 'excludes.resource.id', res.id
+              eq 'excludes.resource.id', (res as PackageContentItem).pkg.id
             }
             break
           default :
-            eq 'excludes.resource', res
+            eq 'excludes.resource.id', res.id
             break
         }
         projections {

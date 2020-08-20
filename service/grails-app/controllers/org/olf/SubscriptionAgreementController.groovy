@@ -88,23 +88,23 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
             or {
               
                // Direct PTIs
-              'in' 'direct_ent.resource.id', new DetachedCriteria(PlatformTitleInstance).build {
+              'in' 'direct_ent.resource.id', new DetachedCriteria(PlatformTitleInstance, 'direct_ptis').build {
                 
                 or {
                   'in' 'id', resourceIds
                   'in' 'titleInstance.id', resourceIds
                 }
                 
-                createAlias 'entitlements', 'direct_ent'
-                
+                entitlements {
                   or {
-                    isNull 'direct_ent.activeFrom'
-                    le 'direct_ent.activeFrom', today
+                    isNull 'activeFrom'
+                    le 'activeFrom', today
                   }
                   or {
-                    isNull 'direct_ent.activeTo'
-                    ge 'direct_ent.activeTo', today
+                    isNull 'activeTo'
+                    ge 'activeTo', today
                   }
+                }
                   
                 projections {
                   property ('id')
@@ -112,25 +112,26 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
               }
               
               // Direct PCIs
-              'in' 'direct_ent.resource.id', new DetachedCriteria(PackageContentItem).build {
-                createAlias 'entitlements', 'direct_ent'
+              'in' 'direct_ent.resource.id', new DetachedCriteria(PackageContentItem, 'direct_pcis').build {
                 or {
                   'in' 'id', resourceIds
                   'in' 'pti.id', resourceIds
-                  'in' 'pti.id', new DetachedCriteria(PlatformTitleInstance).build {
+                  'in' 'pti.id', new DetachedCriteria(PlatformTitleInstance, 'direct_pci_tis').build {
                     'in' 'titleInstance.id', resourceIds
                     projections {
                       property ('id')
                     }
                   }
                 }
-                or {
-                  isNull 'direct_ent.activeFrom'
-                  le 'direct_ent.activeFrom', today
-                }
-                or {
-                  isNull 'direct_ent.activeTo'
-                  ge 'direct_ent.activeTo', today
+                entitlements {
+                  or {
+                    isNull 'activeFrom'
+                    le 'activeFrom', today
+                  }
+                  or {
+                    isNull 'activeTo'
+                    ge 'activeTo', today
+                  }
                 }
                 or {
                   isNull 'accessStart'
@@ -147,34 +148,36 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
               }
               
               // Pci linked via package.
-              'in' 'direct_ent.resource.id', new DetachedCriteria(Pkg).build {
-                createAlias 'entitlements', 'pkg_ent'
-                createAlias 'contentItems', 'pcis'
+              'in' 'direct_ent.resource.id', new DetachedCriteria(Pkg, 'pkgs').build {
                 
                 or {
                   'in' 'id', resourceIds
-                  'in' 'pcis.id', new DetachedCriteria(PackageContentItem).build {
-                
-                    or {
-                      'in' 'id', resourceIds
-                      'in' 'pti.id', resourceIds
-                      'in' 'pti.id', new DetachedCriteria(PlatformTitleInstance).build {
-                        'in' 'titleInstance.id', resourceIds
-                        projections {
-                          property ('id')
+                  
+                  contentItems {
+                    'in' 'id', new DetachedCriteria(PackageContentItem, 'pkg_pcis').build {
+                  
+                      or {
+                        'in' 'id', resourceIds
+                        'in' 'pti.id', resourceIds
+                        'in' 'pti.id', new DetachedCriteria(PlatformTitleInstance, 'pkg_pci_ptis').build {
+                          'in' 'titleInstance.id', resourceIds
+                          projections {
+                            property ('id')
+                          }
                         }
                       }
-                    }
-                    
-                    createAlias 'entitlements', 'direct_ent'
-                      or {
-                        isNull 'direct_ent.activeFrom'
-                        le 'direct_ent.activeFrom', today
+                      
+                      entitlements {
+                        or {
+                          isNull 'activeFrom'
+                          le 'activeFrom', today
+                        }
+                        or {
+                          isNull 'activeTo'
+                          ge 'activeTo', today
+                        }
                       }
-                      or {
-                        isNull 'direct_ent.activeTo'
-                        ge 'direct_ent.activeTo', today
-                      }
+                      
                       or {
                         isNull 'accessStart'
                         le 'accessStart', today
@@ -183,20 +186,23 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
                         isNull 'accessEnd'
                         ge 'accessEnd', today
                       }
-                      
-                    projections {
-                      property ('id')
+                        
+                      projections {
+                        property ('id')
+                      }
                     }
                   }
                 }
                 
-                or {
-                  isNull 'pkg_ent.activeFrom'
-                  le 'pkg_ent.activeFrom', today
-                }
-                or {
-                  isNull 'pkg_ent.activeTo'
-                  ge 'pkg_ent.activeTo', today
+                entitlements {
+                  or {
+                    isNull 'activeFrom'
+                    le 'activeFrom', today
+                  }
+                  or {
+                    isNull 'activeTo'
+                    ge 'activeTo', today
+                  }
                 }
                 
                 projections {
@@ -219,11 +225,12 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
         or {
           
           // Direct PTIs
-          'in' 'id', new DetachedCriteria(PlatformTitleInstance).build {
+          'in' 'id', new DetachedCriteria(PlatformTitleInstance, 'direct_ptis').build {
             readOnly (true)
             
-            createAlias 'entitlements', 'direct_ent'
-              eq 'direct_ent.owner.id', subscriptionAgreementId
+            entitlements {
+              eq 'owner.id', subscriptionAgreementId
+            }
               
             projections {
               property ('id')
@@ -231,11 +238,12 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           }
           
           // Direct PCIs
-          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+          'in' 'id', new DetachedCriteria(PackageContentItem, 'direct_pcis').build {
             readOnly (true)
             
-            createAlias 'entitlements', 'direct_ent'
-              eq 'direct_ent.owner.id', subscriptionAgreementId
+            entitlements {
+              eq 'owner.id', subscriptionAgreementId
+            }
               
             projections {
               property ('id')
@@ -243,17 +251,24 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           }
           
           // Pci linked via package.
-          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+          'in' 'id', new DetachedCriteria(PackageContentItem, 'pkg_pcis').build {
             isNull 'removedTimestamp'
             
-            'in' 'pkg.id', new DetachedCriteria(Pkg).build {
-              createAlias 'entitlements', 'pkg_ent'
-                eq 'pkg_ent.owner.id', subscriptionAgreementId
-                
-              projections {
-                property ('id')
+            pkg {
+              entitlements {
+                eq 'owner.id', subscriptionAgreementId
               }
-            }            
+            }
+            
+//            'in' 'pkg.id', new DetachedCriteria(Pkg, 'pkg_pci_pkgs').build {
+//              entitlements {
+//                eq 'owner.id', subscriptionAgreementId
+//              }
+//              
+//              projections {
+//                property ('id')
+//              }
+//            }            
             projections {
               property ('id')
             }
