@@ -98,8 +98,16 @@
           "methods": ["PUT"],
           "pathPattern": "/erm/entitlements/{id}",
           "permissionsRequired": [ "erm.entitlements.item.put" ]
+        },{
+          "methods": ["POST"],
+          "pathPattern": "/erm/entitlements",
+          "permissionsRequired": [ "erm.entitlements.item.post" ]
+        },{
+          "methods": ["DELETE"],
+          "pathPattern": "/erm/entitlements/{id}",
+          "permissionsRequired": [ "erm.entitlements.item.delete" ]
         },
-        
+
         {
           "methods": ["GET"],
           "pathPattern": "/erm/files",
@@ -571,10 +579,17 @@
     "permissionName": "erm.entitlements.edit",
     "subPermissions": [
       "erm.entitlements.view",
+      "erm.entitlements.item.post",
       "erm.entitlements.item.put"
     ]
+  },{
+    "permissionName": "erm.entitlements.delete",
+    "subPermissions": [
+      "erm.entitlements.view",
+      "erm.entitlements.edit",
+      "erm.entitlements.item.delete"
+    ]
   },
-  
   {
     "permissionName": "erm.titles.view",
     "subPermissions": [
