@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 import javax.annotation.PostConstruct
+
 import org.hibernate.SessionFactory
 import org.olf.ComparisonService
 import org.olf.CoverageService
@@ -38,12 +39,6 @@ class JobRunnerService implements EventPublisher {
   ImportService importService
   ComparisonService comparisonService
   SessionFactory sessionFactory
-  
-  private static final class JobContext {
-    Serializable jobId
-    Serializable tenantId = Tenants.CurrentTenant.get()
-  }
-  public static final ThreadLocal<JobContext> jobContext = new ThreadLocal<JobContext>()
   
   final int CONCURRENT_JOBS_GLOBAL = 2 // We need to be careful to not completely tie up all our resource
   final int CONCURRENT_JOBS_TENANT = 1
@@ -187,7 +182,7 @@ class JobRunnerService implements EventPublisher {
           Tenants.withId(tid) {
             try {
               MDC.setContextMap( jobId: "${jid}", tenantId: "${tid}" )
-              jobContext.set(new JobContext( jobId: jid, tenantId: tid ))
+              JobContext.current.set(new JobContext( jobId: jid, tenantId: tid ))
               beginJob(jid)
               wrk()
               endJob(jid)
@@ -195,9 +190,9 @@ class JobRunnerService implements EventPublisher {
               failJob(jid)
               log.error (e.message)
               log.error ("Job execution failed", e)
-              notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
+              notify ('jobs:log_info', JobContext.current.get().tenantId, JobContext.current.get().jobId,  "Job execution failed")
             } finally {
-              jobContext.remove()
+              JobContext.current.remove()
               MDC.clear()
               jobEnded(tid, jid)
             }
@@ -277,17 +272,17 @@ class JobRunnerService implements EventPublisher {
   }
   
   public void beginJob(final String jid = null) {
-    PersistentJob pj = PersistentJob.get(jid ?: jobContext.get().jobId)
+    PersistentJob pj = PersistentJob.get(jid ?: JobContext.current.get().jobId)
     pj.begin()
   }
 
   public void endJob(final String jid = null) {
-    PersistentJob pj = PersistentJob.get(jid ?: jobContext.get().jobId)
+    PersistentJob pj = PersistentJob.get(jid ?: JobContext.current.get().jobId)
     pj.end()
   }
 
   public void failJob(final String jid = null) {
-    PersistentJob pj = PersistentJob.get(jid ?: jobContext.get().jobId)
+    PersistentJob pj = PersistentJob.get(jid ?: JobContext.current.get().jobId)
     pj.fail()
   }
 }

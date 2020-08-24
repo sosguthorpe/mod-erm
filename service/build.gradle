@@ -73,7 +73,7 @@ configurations {
 dependencies {
 
   /**** Grails 4 *****/
-  developmentOnly("org.springframework.boot:spring-boot-devtools")
+//  developmentOnly("org.springframework.boot:spring-boot-devtools")
   compile "org.springframework.boot:spring-boot-starter-logging"
   compile "org.springframework.boot:spring-boot-autoconfigure"
   compile "org.grails:grails-core"

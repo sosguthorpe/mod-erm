@@ -11,7 +11,7 @@ public class JobAwareAppender extends AppenderBase<ILoggingEvent> {
   @Override
   protected void append(final ILoggingEvent eventObject) {
     try {
-      final Serializable jid = JobRunnerService.jobContext.get()?.jobId
+      final Serializable jid = JobContext.current.get()?.jobId
       
       // Grab the mdc map.
       Map<String, String> mdc = eventObject instanceof LoggingEvent ? eventObject.getMDCPropertyMap() : null     
@@ -21,12 +21,12 @@ public class JobAwareAppender extends AppenderBase<ILoggingEvent> {
           case Level.INFO:
 //          case Level.WARN:
           
-            final Serializable tid = JobRunnerService.jobContext.get()?.tenantId
+            final Serializable tid = JobContext.current.get()?.tenantId
             JobLoggingService.handleLogEvent(tid, jid, eventObject.formattedMessage, Level.INFO.levelStr, Instant.ofEpochMilli(eventObject.timeStamp), mdc)
             break
           
           case Level.ERROR:
-            final Serializable tid = JobRunnerService.jobContext.get()?.tenantId
+            final Serializable tid = JobContext.current.get()?.tenantId
             JobLoggingService.handleLogEvent(tid, jid, eventObject.formattedMessage, Level.ERROR.levelStr, Instant.ofEpochMilli(eventObject.timeStamp), mdc)
             break
         }

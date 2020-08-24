@@ -29,7 +29,7 @@ appender('STDOUT', ConsoleAppender) {
 
 // Default level should be info.
 root(WARN, ['STDOUT'])
-logger ('org.hibernate.orm.deprecation', INFO)
+logger ('org.hibernate.orm.deprecation', ERROR)
 logger ('com.k_int.okapi.OkapiSchemaHandler', INFO)
 
 // Just increase verbosity for dev/test.
