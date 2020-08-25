@@ -28,11 +28,13 @@ if(entitlement.respondsTo(objectProperty)){
   }
 }
 
+// @TODO: Unify this with the parent template. 
 json {
   'id' entitlement.id
   'type' 'external'
+  'description' entitlement.description
   'authority' entitlement.getAuthority()
-  'reference' entitlement.getReference()  
+  'reference' entitlement.getReference()
   'explanation' entitlement.getExplanation()
   'startDate' entitlement.activeFrom
   'endDate' entitlement.activeTo
