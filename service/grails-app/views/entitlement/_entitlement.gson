@@ -9,8 +9,15 @@ import org.olf.erm.Entitlement
 if (entitlement.type == 'external') {
   json tmpl."externalEntitlement"(entitlement)
 } else {
-
-  json g.render(entitlement, [expand: ['poLines', 'owner', 'resource', 'tags' ]]) {
+  final def should_expand = ['poLines', 'resource', 'tags' ]
+  
+  boolean renderOwnerSnippet = true
+  if ( controllerName != 'subscriptionAgreement' ) {
+    should_expand << 'owner'
+    renderOwnerSnippet = false
+  }
+  
+  json g.render(entitlement, [expand: should_expand]) {
         
     if (entitlement.coverage) {
       
@@ -24,6 +31,10 @@ if (entitlement.type == 'external') {
     } else {
       'coverage' []
       'customCoverage' false
+    }
+    
+    if (renderOwnerSnippet) {
+      'owner' g.render(entitlement.owner, [includes: ['id', 'name']])
     }
     
     'explanation' entitlement.getExplanation()
