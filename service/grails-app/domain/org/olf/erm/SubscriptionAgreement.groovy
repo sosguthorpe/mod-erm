@@ -212,12 +212,12 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
 	   		     licenseNote column:'sa_license_note'
           alternateNames cascade: 'all-delete-orphan'
                    items cascade: 'all-delete-orphan', lazy: false
-                contacts cascade: 'all-delete-orphan'
+                contacts cascade: 'all-delete-orphan', lazy: false
             historyLines cascade: 'all-delete-orphan'
                     tags cascade: 'save-update'
-                 periods cascade: 'all-delete-orphan'
-                    orgs cascade: 'all-delete-orphan'
-                    docs cascade: 'all-delete-orphan'
+                 periods cascade: 'all-delete-orphan', lazy: false
+                    orgs cascade: 'all-delete-orphan', lazy: false
+                    docs cascade: 'all-delete-orphan', lazy: false
      externalLicenseDocs cascade: 'all-delete-orphan', joinTable: [name: 'subscription_agreement_ext_lic_doc', key: 'saeld_sa_fk', column: 'saeld_da_fk']
           linkedLicenses cascade: 'all-delete-orphan'
        supplementaryDocs cascade: 'all-delete-orphan', joinTable: [name: 'subscription_agreement_supp_doc', key: 'sasd_sa_fk', column: 'sasd_da_fk']
@@ -234,7 +234,7 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
              renewalDate(nullable:true, blank:false)
           nextReviewDate(nullable:true, blank:false)
            agreementType(nullable:true, blank:false)
-           reasonForClosure(nullable:true, blank:false)
+        reasonForClosure(nullable:true, blank:false)
          renewalPriority(nullable:true, blank:false)
          agreementStatus(nullable:false)
              isPerpetual(nullable:true, blank:false)

@@ -17,7 +17,6 @@ if ( controllerName == 'subscriptionAgreement' && actionName.toLowerCase() == 's
   }
 }
 
-
 final def should_expand = [
   'agreementType',
   'renewalPriority',
@@ -37,12 +36,16 @@ final def should_expand = [
   'inwardRelationships',
   'customProperties'
 ]
-if (params.controller != 'remoteLicenseLink' ) {
+if (controllerName != 'remoteLicenseLink' ) {
   should_expand << 'linkedLicenses'
 }
 
-if (params.controller != 'usageDataProvider' ) {
+if ( controllerName != 'usageDataProvider' ) {
   should_expand << 'usageDataProviders'
+}
+
+if ( controllerName == 'subscriptionAgreement' && actionName == 'show' ) {
+  should_expand << 'items'
 }
 
 def altNames = subscriptionAgreement.alternateNames?.toSorted { AlternateName a, AlternateName b -> a.name <=> b.name } ?: []
