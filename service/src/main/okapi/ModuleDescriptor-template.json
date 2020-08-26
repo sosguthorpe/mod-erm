@@ -85,7 +85,7 @@
           "pathPattern": "/export/*",
           "permissionsRequired": [ "erm.agreements.export" ]
         },
-        
+
         {
           "methods": ["GET"],
           "pathPattern": "/erm/entitlements",
@@ -133,7 +133,7 @@
           "pathPattern": "/erm/files/{id}",
           "permissionsRequired": [ "erm.files.item.delete" ]
         },
-        
+
         {
           "methods": ["GET"],
           "pathPattern": "/erm/contacts",
@@ -143,7 +143,7 @@
           "pathPattern": "/erm/contacts/{id}",
           "permissionsRequired": [ "erm.contacts.item.get" ]
         },
-        
+
         {
           "methods": ["GET"],
           "pathPattern": "/erm/org",
@@ -153,7 +153,7 @@
           "pathPattern": "/erm/org/{id}",
           "permissionsRequired": [ "erm.orgs.item.get" ]
         },
-        
+
         {
           "methods": ["GET"],
           "pathPattern": "/erm/packages",
@@ -171,7 +171,7 @@
           "pathPattern": "/erm/packages/{id}/content/*",
           "permissionsRequired": [ "erm.packages.item.content.get" ]
         },
-        
+
         {
           "methods": ["GET"],
           "pathPattern": "/erm/jobs",
@@ -209,7 +209,7 @@
           "pathPattern": "/erm/jobs/type/{type}",
           "permissionsRequired": [ "erm.jobs.collection.get" ]
         },
-        
+
         {
           "methods": ["GET"],
           "pathPattern": "/erm/refdata",
@@ -235,7 +235,7 @@
           "pathPattern": "/erm/refdata/{id}",
           "permissionsRequired": [ "erm.refdata.item.delete" ]
         },
-        
+
         {
           "methods": ["GET"],
           "pathPattern": "/erm/kbs",
@@ -257,7 +257,7 @@
           "pathPattern": "/erm/kbs/{id}",
           "permissionsRequired": [ "erm.kbs.item.delete" ]
         },
-        
+
         {
           "methods": ["GET"],
           "pathPattern": "/erm/resource",
@@ -283,7 +283,7 @@
           "pathPattern": "/erm/resource/{id}/entitlementOptions",
           "permissionsRequired": [ "erm.resources.item.entitlementOptions.get" ]
         },
-        
+
         {
           "methods": ["GET"],
           "pathPattern": "/erm/titles",
@@ -301,7 +301,7 @@
           "pathPattern": "/erm/titles/{id}",
           "permissionsRequired": [ "erm.titles.item.put" ]
         },
-        
+
         {
           "methods": ["GET"],
           "pathPattern": "/erm/pci",
@@ -315,7 +315,7 @@
           "pathPattern": "/erm/pci/{id}",
           "permissionsRequired": [ "erm.pci.item.put" ]
         },
-        
+
         {
           "methods": ["GET"],
           "pathPattern": "/erm/pti",
@@ -329,7 +329,7 @@
           "pathPattern": "/erm/pti/{id}",
           "permissionsRequired": [ "erm.pti.item.put" ]
         },
-  
+
         {
           "methods": ["GET"],
           "pathPattern": "/erm/custprops",
@@ -409,7 +409,7 @@
   ],
   "permissionSets": [{
     "permissionName": "erm.agreements.view",
-    "subPermissions": [ 
+    "subPermissions": [
       "erm.agreements.collection.get",
       "erm.agreements.item.get",
       "erm.agreements.item.resources.get",
@@ -434,7 +434,7 @@
     ]
   },{
     "permissionName": "erm.files.view",
-    "subPermissions": [ 
+    "subPermissions": [
       "erm.files.collection.get",
       "erm.files.item.get"
     ]
@@ -489,7 +489,7 @@
     ]
   },{
     "permissionName": "erm.refdata.view",
-    "subPermissions": [ 
+    "subPermissions": [
       "erm.refdata.collection.get",
       "erm.refdata.item.get"
     ]
@@ -507,10 +507,10 @@
       "erm.refdata.item.delete"
     ]
   },
-  
+
   {
     "permissionName": "erm.kbs.view",
-    "subPermissions": [ 
+    "subPermissions": [
       "erm.kbs.collection.get",
       "erm.kbs.item.get"
     ]
@@ -528,10 +528,10 @@
       "erm.kbs.item.delete"
     ]
   },
-  
+
   {
     "permissionName": "erm.pci.view",
-    "subPermissions": [ 
+    "subPermissions": [
       "erm.pci.collection.get",
       "erm.pci.item.get"
     ]
@@ -542,10 +542,10 @@
       "erm.pci.item.put"
     ]
   },
-  
+
   {
     "permissionName": "erm.pti.view",
-    "subPermissions": [ 
+    "subPermissions": [
       "erm.pti.collection.get",
       "erm.pti.item.get"
     ]
@@ -556,7 +556,7 @@
       "erm.pti.item.put"
     ]
   },
-  
+
   {
     "permissionName": "erm.resources.view",
     "subPermissions": [
@@ -568,7 +568,7 @@
       "erm.kbs.collection.get"
     ]
   },
-  
+
   {
     "permissionName": "erm.entitlements.view",
     "subPermissions": [
@@ -603,10 +603,10 @@
       "erm.titles.item.put"
     ]
   },
-  
+
   {
     "permissionName": "erm.custprops.view",
-    "subPermissions": [ 
+    "subPermissions": [
       "erm.custprops.collection.get",
       "erm.custprops.item.get"
     ]
@@ -630,15 +630,15 @@
     "dockerImage": "${info.app.name}:${info.app.version}",
     "dockerArgs": {
       "HostConfig": {
-        "Memory": 872415232,
-        "PortBindings": { 
-          "8080/tcp":  [{ "HostPort": "%p" }] 
+        "Memory": 1073741824,
+        "PortBindings": {
+          "8080/tcp":  [{ "HostPort": "%p" }]
         }
       }
     },
     "dockerPull" : false,
     "env": [
-      { "name": "JAVA_OPTIONS", "value": "-server -XX:+UseContainerSupport -XX:MaxRAMPercentage=50.0 -XX:+PrintFlagsFinal" },
+      { "name": "JAVA_OPTIONS", "value": "-server -XX:+UseContainerSupport -XX:MaxRAMPercentage=55.0 -XX:+PrintFlagsFinal" },
       { "name": "DB_HOST", "value": "postgres" },
       { "name": "DB_PORT", "value": "5432" },
       { "name": "DB_USERNAME", "value": "folio_admin" },
