@@ -121,6 +121,8 @@ class PackageIngestService implements DataBinder {
             reference: package_data.header.packageSlug,
              remoteKb: kb,
                vendor: vendor).save(flush:true, failOnError:true)
+               MDC.put('packageSource', pkg.source.toString())
+               MDC.put('packageReference', pkg.reference.toString())
         } else {
           log.info("Not adding package '${package_data.header.packageName}' because status '${package_data.header.status}' doesn't match 'Current' or 'Expected'")
           skipPackage = true
@@ -137,7 +139,6 @@ class PackageIngestService implements DataBinder {
       // log.debug("Try to resolve ${pc}")
     } else {
       package_data.packageContents.eachWithIndex { ContentItemSchema pc, int index ->
-        MDC.put('subDiscriminator', "Content item #${index + 1}")
 
         // log.debug("Try to resolve ${pc}")
 
@@ -159,6 +160,8 @@ class PackageIngestService implements DataBinder {
 
               // lets try and work out the platform for the item
               def platform_url_to_use = pc.platformUrl
+              
+              MDC.put('title', pc.title.toString())
 
               if ( ( pc.platformUrl == null ) && ( pc.url != null ) ) {
                 // No platform URL, but a URL for the title. Parse the URL and generate a platform URL
@@ -195,6 +198,7 @@ class PackageIngestService implements DataBinder {
                 boolean isNew = false
                 if ( pci == null ) {
                   log.debug("Record ${result.titleCount} - Create new package content item")
+                  MDC.put('recordNumber', result.titleCount.toString())
                   pci = new PackageContentItem(
                     pti:pti,
                     pkg:Pkg.get(result.packageId),
@@ -358,6 +362,7 @@ class PackageIngestService implements DataBinder {
       }
     }
 
+    MDC.clear()
     return result
   }
 }

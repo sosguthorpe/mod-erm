@@ -70,8 +70,6 @@ class ImportService implements DataBinder {
     // Erm schema supports multiple packages per document. We should lazily parse 1 by 1.
     envelope.records?.each { Map record ->
       // Ingest 1 package at a time.
-      MDC.put('rowNumber', "${packageCount + 1}")
-      MDC.put('discriminator', "Package #${packageCount + 1}")
       Map importResult = importPackage (record, ErmPackageImpl)
       
       if (importResult.packageImported) {
@@ -88,8 +86,6 @@ class ImportService implements DataBinder {
   int importPackageUsingInternalSchema (final Map envelope) {
     // The whole envelope is a single package in this format.
     
-    MDC.put('rowNumber', "1")
-    MDC.put('discriminator', "Package #1")
     Map result = importPackage (envelope, InternalPackageImpl)
     result.packageImported ? 1 : 0
   }
@@ -148,7 +144,9 @@ class ImportService implements DataBinder {
         packageName = packageInfo.packageName
         packageSource = packageInfo.packageSource
         packageReference = packageInfo.packageReference
-      }
+    }
+      MDC.put('packageSource', packageSource.toString())
+      MDC.put('packageReference', packageReference.toString())
 
     if (packageInfo.packageProvider != null) {
       packageProvider = packageInfo.packageProvider
@@ -223,8 +221,11 @@ class ImportService implements DataBinder {
     )
 
     String[] record = file.readNext()
+    int rownumber = 0
     
     while (record != null) {
+      rownumber++
+      MDC.put('rowNumber', rownumber.toString())
 
       Identifier siblingInstanceIdentifier = new Identifier()
       Identifier instanceIdentifier = new Identifier()
@@ -299,6 +300,7 @@ class ImportService implements DataBinder {
           monographEdition: getFieldFromLine(currentRecord, acceptedFields, 'monographEdition'),
           firstEditor: getFieldFromLine(currentRecord, acceptedFields, 'firstEditor')
         )
+        MDC.put('title', pkgLine.title)
 
         pkg.packageContents << pkgLine
       }
@@ -311,6 +313,7 @@ class ImportService implements DataBinder {
       log.error("Package contents empty, skipping package creation")
     }
     
+    MDC.clear()
     return (packageImported)
   }
   
