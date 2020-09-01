@@ -290,7 +290,11 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
     this.type = this.type?.toLowerCase()
     this.authority = this.authority?.toUpperCase()
     
-    if (this.type == 'external') {
+    /* 
+     * Type 'internal' can be explicitly sent, or implicitly defined as no type being sent.
+     * Either way we want to remove any coverage before attempting to validate.
+     */
+    if (this.type != 'internal' && this.type != null) {
       // Clear the coverage.
       this.coverage?.clear()
     }
