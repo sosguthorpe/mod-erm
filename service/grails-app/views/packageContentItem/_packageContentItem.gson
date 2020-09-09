@@ -1,10 +1,11 @@
-import groovy.transform.*
 import org.olf.kb.PackageContentItem
-model {
-  PackageContentItem packageContentItem
-}
+
+import groovy.transform.*
+
+@Field
+PackageContentItem packageContentItem
 
 json g.render(packageContentItem, [expand: ['pkg', 'pti', 'coverage', 'embargo', 'tags']]) {
   longName packageContentItem.longName
-  'class' packageContentItem.class.name
+  'class' PackageContentItem.name
 }

@@ -1,5 +1,4 @@
 import org.olf.kb.TitleInstance
-import org.olf.kb.IdentifierOccurrence
 
 import groovy.transform.*
 
@@ -7,7 +6,7 @@ import groovy.transform.*
 TitleInstance titleInstance
 
 json g.render(titleInstance, [expand: ['identifiers', 'type', 'publicationType', 'subType', 'coverage', 'tags'], excludes: ['entitlements']]) {
-  'class' titleInstance.class.name
+  'class' TitleInstance.name
   longName titleInstance.longName
   
   relatedTitles (titleInstance.relatedTitles) { TitleInstance relation ->
