@@ -1,10 +1,11 @@
-import groovy.transform.*
 import org.olf.kb.PlatformTitleInstance
+
+import groovy.transform.*
 
 @Field PlatformTitleInstance platformTitleInstance
 
 json g.render(platformTitleInstance, [expand: ['titleInstance', 'platform', 'coverage', 'tags']]) {
-  'class' platformTitleInstance.class.name
+  'class' PlatformTitleInstance.name
   longName platformTitleInstance.longName
 }
 

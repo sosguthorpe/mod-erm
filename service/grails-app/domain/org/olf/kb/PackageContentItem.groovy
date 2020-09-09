@@ -13,13 +13,13 @@ public class PackageContentItem extends ErmResource implements MultiTenant<Packa
 
   Pkg pkg
   PlatformTitleInstance pti
-  
+
   String getName() {
-    "'${ StringUtils.truncate( pti?.titleInstance?.name, 70 ) }' on Platform '${ StringUtils.truncate( pti?.platform?.name, 70 ) }' in Package ${ StringUtils.truncate( pkg.name, 70 ) }"
+    "'${ StringUtils.truncate( pti?.titleInstance?.name, 70 ) }' on Platform '${ StringUtils.truncate( pti?.platform?.name, 70 ) }' in Package ${ StringUtils.truncate( pkg.name, 70 ) }" as String
   }
 
   String getLongName() {
-    "'${pti.titleInstance.name}' on Platform '${pti.platform.name}' in Package ${pkg.name}"
+    "'${pti.titleInstance.name}' on Platform '${pti.platform.name}' in Package ${pkg.name}" as String
   }
 
   static transients = ['longName']
@@ -39,7 +39,7 @@ public class PackageContentItem extends ErmResource implements MultiTenant<Packa
 
   // A field primarily to deposit KBART::CoverageDepth type data
   String depth
-  
+
   // KBART::Embargo data
   Embargo embargo
 

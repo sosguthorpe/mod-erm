@@ -1,10 +1,11 @@
-import groovy.transform.*
 import org.olf.kb.Pkg
 
-model {
-  Pkg pkg
-}
+import groovy.transform.*
+
+@Field
+Pkg pkg
+
 json g.render(pkg, [expand: ['remoteKb','vendor', 'type', 'subType'], excludes: ['contentItems']]) {
   resourceCount pkg.getResourceCount()
-  'class' pkg.class.name
+  'class' Pkg.name
 }
