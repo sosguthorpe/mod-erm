@@ -64,7 +64,6 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
       
       if (!pkg && !pci) {
         //if not then we return the empty set
-         
         //response.status = 404
         respond ([]);
         return 
