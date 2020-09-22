@@ -58,16 +58,17 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
     
     //For issue ERM-285
     if (!ti) {
-      //Check to see if the resourceId points to a package
+      //Check to see if the resourceId points to a package or a PCI
       final Pkg pkg = resourceId ? Pkg.read( resourceId ) : null
-      if (!pkg) {
+      final PackageContentItem pci = resourceId ? PackageContentItem.read( resourceId ) : null
+      
+      if (!pkg && !pci) {
         //if not then we return the empty set
-
         //response.status = 404
         respond ([]);
         return 
       } else {
-        respond ([pkg]);
+        pkg ? respond ([pkg]) : respond ([pci]);
         return
       }
     }
