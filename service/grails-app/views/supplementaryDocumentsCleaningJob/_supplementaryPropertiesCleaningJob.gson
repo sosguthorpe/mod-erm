@@ -1,0 +1,8 @@
+import org.olf.general.jobs.SupplementaryDocumentsCleaningJob
+
+import groovy.transform.Field
+
+@Field
+SupplementaryDocumentsCleaningJob supplementaryDocumentsCleaningJob
+
+json tmpl."/persistentJob/persistentJob" (persistentJob: supplementaryDocumentsCleaningJob)
