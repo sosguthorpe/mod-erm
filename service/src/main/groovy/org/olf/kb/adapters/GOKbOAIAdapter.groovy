@@ -210,26 +210,6 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
           def tipp_medium = tipp_entry?.medium?.text()
           def tipp_media = null
 
-          // It appears that tipp_entry?.title?.type?.value() can be a list
-          String title_type = tipp_entry?.title?.type?.text()
-
-          switch ( title_type ) {
-            case 'JournalInstance':
-              tipp_media = 'journal'
-              break
-            case 'BookInstance':
-              tipp_media = 'book'
-              break
-            case 'DatabaseInstance':
-              tipp_media = 'database'
-              break
-            case 'OtherInstance':
-              tipp_media = 'other'
-              break
-            default:
-              tipp_media = 'journal'
-              break
-          }
           def tipp_instance_identifiers = [] // [ "namespace": "issn", "value": "0278-7393" ]
           def tipp_sibling_identifiers = []
 
@@ -258,6 +238,28 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
 
           def tipp_coverage_depth = tipp_entry.coverage.@coverageDepth?.toString()
           def tipp_coverage_note = tipp_entry.coverage.@coverageNote?.toString()
+
+          // It appears that tipp_entry?.title?.type?.value() can be a list
+          String title_pub_type = tipp_entry?.title?.type?.text()
+          // Turns JournalInstance into journal, BookInstance into book, DatabaseInstance into database
+          String tipp_pub_media = title_pub_type.replace('Instance', '')
+
+          switch ( title_pub_type ) {
+            case 'JournalInstance':
+              tipp_media = 'serial'
+              break
+            case 'BookInstance':
+              tipp_media = 'monograph'
+              break
+            default:
+              if ( tipp_coverage ) {
+                tipp_media = 'serial'
+              } else {
+                tipp_media = 'monograph'
+              }
+              break
+          }
+
           final String embargo = tipp_entry.coverage?.@embargo?.toString()
 
           def tipp_url = tipp_entry.url?.text()
@@ -280,6 +282,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
             "title": tipp_title,
             "instanceMedium": tipp_medium,
             "instanceMedia": tipp_media,
+            "instancePublicationMedia": tipp_pub_media,
             "sourceIdentifier": title_source_identifier,
             "instanceIdentifiers": tipp_instance_identifiers,
             "siblingInstanceIdentifiers": tipp_sibling_identifiers,
@@ -305,7 +308,6 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
     if (binding?.hasErrors()) {
       binding.allErrors.each { log.debug "\t${it}" }
     }
-
     pkg
   }
 

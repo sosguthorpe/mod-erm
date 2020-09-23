@@ -94,6 +94,7 @@ interface PackageSchema extends Validateable {
     String getTitle()
     String getInstanceMedium()
     String getInstanceMedia()
+    String getInstancePublicationMedia()
     Collection<IdentifierSchema> getInstanceIdentifiers()
     Collection<IdentifierSchema> getSiblingInstanceIdentifiers()
     Collection<CoverageStatementSchema> getCoverage()

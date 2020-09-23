@@ -66,6 +66,11 @@ class ContentItem implements ContentItemSchema, Validateable {
   public String getInstanceMedia() {
     platformTitleInstance?.titleInstance?.type
   }
+
+  @Override
+  public String getInstancePublicationMedia() {
+    platformTitleInstance?.titleInstance?.publicationType
+  }
   
   private static final Map<String,List<String>> known_id_types = [
     electronic : ['EISSN', 'DOI', 'EZB'],

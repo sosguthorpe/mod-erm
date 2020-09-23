@@ -291,6 +291,10 @@ class ImportService implements DataBinder {
           coverageDepth: getFieldFromLine(currentRecord, acceptedFields, 'coverageDepth'),
           coverageNote: getFieldFromLine(currentRecord, acceptedFields, 'coverageNote'),
           instanceMedia: getFieldFromLine(currentRecord, acceptedFields, 'instanceMedia'),
+
+          // Pub Type should be populated with same data as Type for KBART
+          instancePublicationMedia: getFieldFromLine(currentRecord, acceptedFields, 'instanceMedia'),
+          
           instanceMedium: "electronic",
 
           dateMonographPublished: getFieldFromLine(currentRecord, acceptedFields, 'dateMonographPublished'),

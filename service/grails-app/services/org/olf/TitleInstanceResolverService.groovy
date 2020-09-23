@@ -115,7 +115,9 @@ class TitleInstanceResolverService implements DataBinder{
         case(0):
           log.debug("No title match, create new title")
           result = createNewTitleInstance(citation)
-          createOrLinkSiblings(citation, result.work)
+          if (result != null) {
+            createOrLinkSiblings(citation, result.work)
+          }
           break;
         case(1):
           log.debug("Exact match. Enrich title.")
@@ -130,7 +132,7 @@ class TitleInstanceResolverService implements DataBinder{
     }
 
     return result;
-  }  
+  }
 
   /**
    * Return a list of the siblings for this instance. Sometimes vendors identify a title by citing the issn of the print edition.
@@ -166,7 +168,8 @@ class TitleInstanceResolverService implements DataBinder{
         bindData (sibling_citation, [
           "title": citation.title,
           "instanceMedium": "print",
-          "instanceMedia": (id.namespace.toLowerCase() == 'issn') ? "journal" : "book",
+          "instanceMedia": (id.namespace.toLowerCase() == 'issn') ? "serial" : "monograph",
+          "instancePublicationMedia": citation.instancePublicationMedia,
           "instanceIdentifiers": [
             [
               "namespace": id.namespace.toLowerCase(),
@@ -220,11 +223,13 @@ class TitleInstanceResolverService implements DataBinder{
     //
     // boolean title_is_valid =  ( ( citation.title?.length() > 0 ) && ( citation.instanceIdentifiers.size() > 0 ) )
     // 
-    boolean title_is_valid = ( ( citation.title != null ) &&
-                               ( citation.title.length() > 0 ) )
+    Map title_is_valid = [
+      titleExists: ( citation.title != null ) && ( citation.title.length() > 0 ),
+      typeMatchesInternal: validateCitationType(citation)
+    ]
 
     // Validate
-    if ( title_is_valid == true ) {
+    if ( title_is_valid.count { k,v -> v == false} == 0 ) {
 
       if ( work == null ) {
         work = new Work(title:citation.title).save(flush:true, failOnError:true)
@@ -235,6 +240,7 @@ class TitleInstanceResolverService implements DataBinder{
 
       // Journal or Book etc
       def resource_type = citation.instanceMedia?.trim()
+      def resource_pub_type = citation.instancePublicationMedia?.trim()
       def resource_coverage = citation?.coverage
       result = new TitleInstance(
         name: citation.title,
@@ -247,39 +253,15 @@ class TitleInstanceResolverService implements DataBinder{
 
         work: work
       )
+
+      // We can trust these by the check above for file imports and through logic in the adapters to set pubType and type correctly
+      result.typeFromString = resource_type
+      result.publicationTypeFromString = resource_pub_type
       
       if ((medium?.length() ?: 0) > 0) {
         result.subTypeFromString = medium
       }
       
-      if ((resource_type?.length() ?: 0) > 0) {
-        result.publicationTypeFromString = resource_type
-        switch(resource_type) {
-          case 'book':
-            result.typeFromString = 'monograph'
-            break
-          case 'journal':
-            result.typeFromString = 'serial'
-            break
-          case 'monograph':
-            result.typeFromString = 'monograph'
-            break
-          case 'serial':
-            result.typeFromString = 'serial'
-            break
-          default:
-            /**
-            ERM-987: ... check for the existence of a coverage statement.
-            If a coverage statement exists then type == "serial", otherwise "monograph"
-            **/
-            if ( resource_coverage ) {
-              result.typeFromString = 'serial'
-            } else {
-              result.typeFromString = 'monograph'
-            }
-        }
-      }
-
       result.save(flush:true, failOnError:true)
 
       // Iterate over all idenifiers in the citation and add them to the title record. We manually create the identifier occurrence 
@@ -296,14 +278,23 @@ class TitleInstanceResolverService implements DataBinder{
         io_record.save(flush:true, failOnError:true)
       }
     }
-    else { 
-      log.debug("Create title failed validation checks - insufficient data to create a title record");
+    else {
+      // Run through the failed validation one by one and throw relavent errors
+      if (!title_is_valid.titleExists) {
+        log.error("Create title failed validation check - insufficient data to create a title record");
+      }
+      if (!title_is_valid.typeMatchesInternal) {
+        log.error("Create title \"${citation.title}\" failed validation check - type (${citation.instanceMedia.toLowerCase()}) does not match 'serial' or 'monograph'");
+      }
+      
       // We will return null, which means no title
       // throw new RuntimeException("Insufficient detail to create title instance record");
     }
-
-    // Refresh the newly minted title so we have access to all the related objects (eg Identifiers)
-    result.refresh()
+    
+    if (result != null) {
+      // Refresh the newly minted title so we have access to all the related objects (eg Identifiers)
+      result.refresh()
+    }
     result
   }
 
@@ -318,36 +309,26 @@ class TitleInstanceResolverService implements DataBinder{
     if (trustedSourceTI == true) {
       log.debug("Trusted source for TI enrichment--enriching")
 
-      if (title.publicationType.value != citation.instanceMedia) {
-        title.publicationTypeFromString = citation.instanceMedia
-        switch(citation.instanceMedia) {
-          case 'book':
-            title.typeFromString = 'monograph'
-            break
-          case 'journal':
-            title.typeFromString = 'serial'
-            break
-          case 'monograph':
-            title.typeFromString = 'monograph'
-            break
-          case 'serial':
-            title.typeFromString = 'serial'
-            break
-          default:
-            /**
-            ERM-987: ... check for the existence of a coverage statement.
-            If a coverage statement exists then type == "serial", otherwise "monograph"
-            **/
-            if ( citation.coverage ) {
-              title.typeFromString = 'serial'
-            } else {
-              title.typeFromString = 'monograph'
-            }
-        }
-      }
-
       if (title.name != citation.title) {
         title.name = citation.title
+      }
+
+      /*
+       * For some reason whenever a title is updated with just refdata fields it fails to properly mark as dirty.
+       * The below solution of '.markDirty()' is not ideal, but it does solve the problem for now.
+      */
+      if (title.publicationType.value != citation.instancePublicationMedia) {
+        title.publicationTypeFromString = citation.instancePublicationMedia
+        title.markDirty()
+      }
+
+      if (validateCitationType(citation)) {
+        if (title.type.value != citation.instanceMedia ) {
+          title.typeFromString = citation.instanceMedia
+          title.markDirty()
+        }
+      } else {
+        log.error("Type (${citation.instanceMedia}) does not match 'serial' or 'monograph' for title \"${citation.title}\", skipping field enrichment.")
       }
 
       if (title.dateMonographPublished != citation.dateMonographPublished) {
@@ -369,15 +350,21 @@ class TitleInstanceResolverService implements DataBinder{
       if (title.monographVolume != citation.monographVolume) {
         title.monographVolume = citation.monographVolume
       }
-        if(! title.save(flush: true) ) {
-          title.errors.fieldErrors.each {
-            log.error("Error saving title. Field ${it.field} rejected value: \"${it.rejectedValue}\".")
-          }
+      
+      if(! title.save(flush: true) ) {
+        title.errors.fieldErrors.each {
+          log.error("Error saving title. Field ${it.field} rejected value: \"${it.rejectedValue}\".")
         }
+      }
+
     } else {
       log.debug("Not a trusted source for TI enrichment--skipping")
     }
     return null;
+  }
+
+  private boolean validateCitationType(ContentItemSchema citation) {
+    return citation.instanceMedia.toLowerCase() == 'monograph' || citation.instanceMedia.toLowerCase() == 'serial'
   }
 
   /**
