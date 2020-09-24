@@ -89,7 +89,9 @@ public class DocumentAttachmentService {
     // Each SA needs a clone of the doc adding and the original removing.
     // Perform update to each extra in brand new transaction.
     for (int i=1; i<saIds.size(); i++) {
-      final SubscriptionAgreement duplicatedAgreement = SubscriptionAgreement.read(saIds[i])
+      
+      final saId = saIds[i]
+      final SubscriptionAgreement duplicatedAgreement = SubscriptionAgreement.read(saId)
       final Set<DocumentAttachment> toRemove = duplicatedAgreement.getAt(associationParam).findAll {
         it.id == docAttId
       }
@@ -98,7 +100,7 @@ public class DocumentAttachmentService {
       final String methodName = "addTo${GrailsNameUtils.getClassName(associationParam)}"
       for (int d=0; d<toRemove.size(); d++) {
         DocumentAttachment.withNewTransaction { TransactionStatus ts ->
-          final SubscriptionAgreement dupeAgg = SubscriptionAgreement.get(saIds[i])
+          final SubscriptionAgreement dupeAgg = SubscriptionAgreement.get(saId)
           final DocumentAttachment suppDoc = DocumentAttachment.read(docAttId)
           final DocumentAttachment suppDocClone = suppDoc.clone()
           suppDocClone.save(failOnError: true)            // Preliminary save of object.
@@ -116,15 +118,13 @@ public class DocumentAttachmentService {
       DocumentAttachment.withSession { Session sess ->
         
         log.debug ('Remove associations for document attachment {}', docAttId)
-        Query q = sess.createNativeQuery("DELETE FROM ${tName} WHERE ${daCol} = :daID AND ${saCol} IN (:saIDs)")
-          .setParameter( 'daID',docAttId )
-          .setParameterList( 'saIDs', saIds )
+        Query q = sess.createNativeQuery("DELETE FROM ${tName} WHERE ${daCol} = :daID AND ${saCol} = :saID")
+          .setParameter( 'daID', docAttId )
+          .setParameter( 'saID', saId )
           
         q.executeUpdate()
       }
-      
-      // Replaced
-      (1..(toRemove.size())).each{ log.info "Replaced shared link for ${associationParam} with ID ${docAttId} on Agreements ${saIds.join(', ')}" }
+      log.info "Replaced shared link for ${associationParam} with ID ${docAttId} on Agreement ${saId}"
     }
   }
 
