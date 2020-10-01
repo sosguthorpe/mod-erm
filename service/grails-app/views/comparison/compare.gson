@@ -110,11 +110,21 @@ final mergeIntoObject = { final ComparisonPoint cp, final int totalSources, fina
   }
   
   occurrences[(cp.id ?: "${cp.titleList.id}---${cp.date}").toString()] = true
+  def uniqueOccurrences = coverageEntries.collect([] as HashSet){ it.value['occurrences'] }
+
+  Set<Map<String, Map>> availabilityCoverage = availability.collect{ it.value['coverage'] } as Set
   
+  Set<String> uniqueAvailCovOcc = availabilityCoverage.collectMany { Map<String, Map<String, ?>> cvgs ->
+    cvgs.collectMany { String id, Map<String, ?> cvg ->
+      ((cvg.occurrences ?: [:]) as Map<String,Boolean> ).findResults { String key, Boolean val -> val == true ? key : null }
+    }
+  } as Set
+
   final int occSize = occurrences.size()
+  final int uniqueOccSize = uniqueOccurrences.size()
   if (totalSources == occSize) {
     obj['overlap'] = 'full'
-  } else if (occSize > 1 || coverageEntries.size() > 1 || availability.size() > 1) {
+  } else if (uniqueOccSize > 1 || uniqueAvailCovOcc.size() > 1) {
     obj['overlap'] = 'partial'
   } else {
     obj['overlap'] = 'none'
