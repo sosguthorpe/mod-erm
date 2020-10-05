@@ -184,11 +184,34 @@ public class KBart implements Serializable {
 
   static String[] header() {
     List<String> header = new ArrayList<String>()
-    KBart.class.getDeclaredFields().each {
-      if (it.modifiers == java.lang.reflect.Modifier.PUBLIC) {
-        header.add(it.name)
-      }
-    }
+
+    // These are added from lines 30-79 above
+    header.add("publication_title")
+    header.add("print_identifier")
+    header.add("online_identifier")
+    header.add("date_first_issue_online")
+    header.add("num_first_vol_online")
+    header.add("num_first_issue_online")
+    header.add("date_last_issue_online")
+    header.add("num_last_vol_online")
+    header.add("num_last_issue_online")
+    header.add("title_url")
+    header.add("first_author")
+    header.add("title_id")
+    header.add("embargo_info")
+    header.add("coverage_depth")
+    header.add("notes")
+    header.add("publisher_name")
+    header.add("publication_type")
+    header.add("date_monograph_published_print")
+    header.add("date_monograph_published_online")
+    header.add("monograph_volume")
+    header.add("monograph_edition")
+    header.add("first_editor")
+    header.add("parent_publication_title_id")
+    header.add("preceding_publication_title_id")
+    header.add("access_type")
+
     return header as String[]
   }
 
