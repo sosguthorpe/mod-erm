@@ -17,7 +17,7 @@ List customCoverageList = customCoverageMap?.get("${ermResource.id}")
 json {
 
   'id' ermResource.id
-  'class' ermResource.class.name
+  'class' GrailsHibernateUtil.unwrapIfProxy(ermResource).class.name
   'name' ermResource.getName()
   'suppressFromDiscovery' ermResource.suppressFromDiscovery
   'tags' g.render(ermResource.tags)
