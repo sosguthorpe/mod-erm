@@ -52,7 +52,6 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   
   // Journal/Book/...
   @CategoryId(defaultInternal=false)
-  @Defaults(['Book', 'Journal', 'Monograph', 'Serial'])
   RefdataValue publicationType
 
   // serial / monograph system
