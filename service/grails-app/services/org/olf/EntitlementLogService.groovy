@@ -60,22 +60,41 @@ public class EntitlementLogService {
           NOT EXISTS ( SELECT ele 
                          FROM EntitlementLogEntry as ele 
                         WHERE ele.res = res 
-                          AND ele.directEntitlement=direct_ent 
-                          AND ele.packageEntitlement = pkg_ent
+                          AND ( ( ( ele.directEntitlement is null ) AND ( direct_ent is null ) ) OR ele.directEntitlement=direct_ent )
+                          AND ( ( ( ele.packageEntitlement is null ) AND ( pkg_ent is null ) ) OR ele.packageEntitlement=pkg_ent )
                           AND ele.endDate is null ) 
         )
        
    '''
 
   def triggerUpdate() {
-    log.debug("EntitlementLogService::triggerUpdate()");
-    final LocalDate today = LocalDate.now()
-    def new_entitlements = EntitlementLogEntry.executeQuery(NEW_ENTITLEMENTS_QUERY, ['today': today], [readOnly: true])
-    new_entitlements.each {
-      log.debug("  -> add entitlement for ${it}");
+
+    long start_time = System.currentTimeMillis();
+    long seqno = 0;
+
+    EntitlementLogEntry.withNewTransaction {
+      log.debug("EntitlementLogService::triggerUpdate()");
+      final LocalDate today = LocalDate.now()
+      def new_entitlements = EntitlementLogEntry.executeQuery(NEW_ENTITLEMENTS_QUERY, ['today': today], [readOnly: true])
+      new_entitlements.each {
+        String seq = String.format('%015d-%06d',start_time,seqno++)
+        log.debug("  -> add entitlement for ${start_time} ${seq} ${it[0].id} pkg:${it[1]?.id} direct:${it[2]?.id}");
+        
+        EntitlementLogEntry ele = new EntitlementLogEntry(
+                                        seqid: seq,
+                                        startDate:today,
+                                        endDate:null,
+                                        res:it[0],
+                                        packageEntitlement:it[1],
+                                        directEntitlement:it[2]
+                                      ).save(flush:true, failOnError:true);
+      }
     }
+
+    log.debug("At end - ${seqno} entitlements activated");
    
     return "OK"
   }
 
 }
+

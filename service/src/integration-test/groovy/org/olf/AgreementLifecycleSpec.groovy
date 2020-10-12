@@ -295,6 +295,12 @@ class AgreementLifecycleSpec extends BaseSpec {
 
     then: 'we check that the expected entitlements are present'
       1==1
+
+    when: 'A second run should not add any more entitlements'
+      Map resp2 = doGet("/erm/admin/triggerEntitlementLogUpdate")
+
+    then: 'we check that the expected entitlements are present'
+      1==1
   }
 }
 
