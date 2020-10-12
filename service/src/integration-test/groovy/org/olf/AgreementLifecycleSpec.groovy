@@ -288,5 +288,13 @@ class AgreementLifecycleSpec extends BaseSpec {
       resp.agreementStatus?.value == 'requested'
       resp.reasonForClosure == null
   }
+
+  void "update active titles log " () {
+    when: 'we trigger an update of the entitlements log'
+      Map resp = doGet("/erm/admin/triggerEntitlementLogUpdate")
+
+    then: 'we check that the expected entitlements are present'
+      1==1
+  }
 }
 

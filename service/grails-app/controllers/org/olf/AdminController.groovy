@@ -95,7 +95,13 @@ class AdminController implements DataBinder{
   }
 
   public triggerEntitlementLogUpdate() {
+    def result = [:]
+    log.debug("AdminController::triggerEntitlementLogUpdate");
+
     entitlementLogService.triggerUpdate()
+
+    result.status = 'OK'
+    render result as JSON
   }
 }
 

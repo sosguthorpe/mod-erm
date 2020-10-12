@@ -65,6 +65,7 @@ public class EntitlementLogService {
 
   def triggerUpdate() {
     log.debug("EntitlementLogService::triggerUpdate()");
+    return "OK"
   }
 
 }
