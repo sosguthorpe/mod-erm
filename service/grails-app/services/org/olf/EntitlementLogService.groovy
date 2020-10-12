@@ -8,6 +8,10 @@ import org.olf.kb.KBCacheUpdater
 import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.RemoteKB
 import org.springframework.transaction.TransactionDefinition
+import java.time.LocalDate
+import org.olf.erm.EntitlementLogEntry;
+
+
 
 /**
  * This service turns the declarative set of entitlements which reprsent the list of available titles
@@ -56,8 +60,8 @@ public class EntitlementLogService {
           NOT EXISTS ( SELECT ele 
                          FROM EntitlementLogEntry as ele 
                         WHERE ele.res = res 
-                          AND ele.direct_ent=direct_ent 
-                          AND ele.pkg_ent = pkg_ent
+                          AND ele.directEntitlement=direct_ent 
+                          AND ele.packageEntitlement = pkg_ent
                           AND ele.endDate is null ) 
         )
        
@@ -65,6 +69,12 @@ public class EntitlementLogService {
 
   def triggerUpdate() {
     log.debug("EntitlementLogService::triggerUpdate()");
+    final LocalDate today = LocalDate.now()
+    def new_entitlements = EntitlementLogEntry.executeQuery(NEW_ENTITLEMENTS_QUERY, ['today': today], [readOnly: true])
+    new_entitlements.each {
+      log.debug("  -> add entitlement for ${it}");
+    }
+   
     return "OK"
   }
 
