@@ -22,6 +22,9 @@ import java.time.LocalDate
 import spock.lang.Stepwise
 import spock.lang.Unroll
 
+import groovy.util.logging.Slf4j
+
+@Slf4j
 @Integration
 @Stepwise
 class AgreementLifecycleSpec extends BaseSpec {
@@ -73,6 +76,8 @@ class AgreementLifecycleSpec extends BaseSpec {
   void "Create an Agreement named #agreement_name with status #status" (agreement_name, status, packageName) {
     final LocalDate today = LocalDate.now()
     final LocalDate tomorrow = today.plusDays(1)
+
+    log.debug("Create Agreement Tests....");
     
     def pkgSize = 0    
     when: "Query for Agreement with name #agreement_name"
@@ -101,6 +106,8 @@ class AgreementLifecycleSpec extends BaseSpec {
     when: "Looked up package item count"
       def packageId = resp[0].id
       
+      log.debug("we have looked up package ${packageName} and found it's ID to be ${packageId}.. get that record");
+
       Map respMap = doGet("/erm/resource", [
         perPage: 1, // Just fetch one record with the stats included. We only want the full count.
         stats: true,
@@ -114,6 +121,7 @@ class AgreementLifecycleSpec extends BaseSpec {
       (pkgSize = respMap.totalRecords) > 0
       
     when: "Post to create new agreement named #agreement_name with our package"
+      log.debug("Create new agreement : ${agreement_name}");
       respMap = doPost("/erm/sas", {
         'name' agreement_name
         'agreementStatus' status // This can be the value or id but not the label

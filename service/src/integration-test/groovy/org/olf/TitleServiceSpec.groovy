@@ -25,7 +25,7 @@ class TitleServiceSpec extends BaseSpec {
       DataBindingUtils.bindObjectToInstance(content, [
         'title':'Brain of the firm',
         'instanceMedium': 'print',
-        'instanceMedia': 'BKM',
+        'instanceMedia': 'monograph',
         'instanceIdentifiers': [ 
           [
             'namespace': 'isbn',
@@ -88,9 +88,20 @@ class TitleServiceSpec extends BaseSpec {
       // be supplied by the HTTPRequest, but we fake it here to talk directly to the service
       Tenants.withId(OkapiTenantResolver.getTenantSchemaName( tenantid )) {
         title_instance = titleInstanceResolverService.resolve(content, true)
+        assert title_instance != null
         num_identifiers = title_instance.identifiers.size()
-        num_titles = TitleInstance.findAllByName('Brain of the firm').size()
+        def matching_titles = TitleInstance.findAllByName('Brain of the firm')
+        num_titles = matching_titles.size()
+
+        // There are 2 instances here - not 1 - first and second edition.
+        if ( num_titles != 2 ) {
+          matching_titles.each { mt ->
+            log.error("   -->TITLE : ${mt}");
+          }
+        }
       }
+
+    then:
 
     then: 'Same title is returned and not duplicated'
       title_instance.name == 'Brain of the firm'
@@ -98,9 +109,10 @@ class TitleServiceSpec extends BaseSpec {
       // It would be nice to do this. but DON'T. Our session is terminated in the withId block above, so doing
       // this will cause the test to blow up as the session has gone away. Use the approach take, where we count
       // inside the block and check the count below.
-      // title_instance.identifiers.size() == 2
-      num_identifiers == 2
-      num_titles == 1
+      // title_instance.identifiers.size() == 2 
+
+      // 2 instances, 1 work
+      num_titles == 2
   }
 
 }

@@ -240,7 +240,11 @@ class TitleInstanceResolverService implements DataBinder{
 
       // Journal or Book etc
       def resource_type = citation.instanceMedia?.trim()
+
+      // This means that publication type can no longer be set directly by passing in instanceMedia - that 
+      // cannot be the right thing to do.
       def resource_pub_type = citation.instancePublicationMedia?.trim()
+
       def resource_coverage = citation?.coverage
       result = new TitleInstance(
         name: citation.title,
@@ -256,7 +260,10 @@ class TitleInstanceResolverService implements DataBinder{
 
       // We can trust these by the check above for file imports and through logic in the adapters to set pubType and type correctly
       result.typeFromString = resource_type
-      result.publicationTypeFromString = resource_pub_type
+
+      if ( ( resource_pub_type != null ) && ( resource_pub_type.length() > 0 ) ) {
+        result.publicationTypeFromString = resource_pub_type
+      }
       
       if ((medium?.length() ?: 0) > 0) {
         result.subTypeFromString = medium
@@ -316,8 +323,13 @@ class TitleInstanceResolverService implements DataBinder{
       /*
        * For some reason whenever a title is updated with just refdata fields it fails to properly mark as dirty.
        * The below solution of '.markDirty()' is not ideal, but it does solve the problem for now.
-      */
-      if (title.publicationType.value != citation.instancePublicationMedia) {
+       * TODO: Ian to Review with Ethan - this makes no sense to me at the moment
+       *
+       * If the "Authoritative" publication type is not equal to whatever mad value a remote site has sent then
+       * replace the authortiative value with the one sent?
+       */
+      if (title.publicationType?.value != citation.instancePublicationMedia) {
+       
         title.publicationTypeFromString = citation.instancePublicationMedia
         title.markDirty()
       }
