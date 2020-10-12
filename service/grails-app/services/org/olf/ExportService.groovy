@@ -130,6 +130,9 @@ public class ExportService {
           )
       """, [id: agreementId, 'today': today], [readOnly: true])
     } else {
+      // This query is duplicated in EntitlementLogService
+      // Changes here need to be reviewed and may need to be applied there. 
+      // This should be refactored into a single static repo of queries.
       results = ErmResource.executeQuery("""
         SELECT res, pkg_ent, direct_ent
         FROM ErmResource as res

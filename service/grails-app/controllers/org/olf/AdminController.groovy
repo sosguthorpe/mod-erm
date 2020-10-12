@@ -17,6 +17,7 @@ class AdminController implements DataBinder{
   def packageIngestService
   def knowledgeBaseCacheService
   def ermHousekeepingService
+  def entitlementLogService
 
   public AdminController() {
   }
@@ -91,6 +92,10 @@ class AdminController implements DataBinder{
 
   public triggerHousekeeping() {
     ermHousekeepingService.triggerHousekeeping()
+  }
+
+  public triggerEntitlementLogUpdate() {
+    entitlementLogService.triggerUpdate()
   }
 }
 
