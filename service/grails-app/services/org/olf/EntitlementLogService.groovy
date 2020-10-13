@@ -67,6 +67,30 @@ public class EntitlementLogService {
        
    '''
 
+  /**
+   * Find all the current live resources that do not have a corresponding entitlement.
+   * Do this by joining to the package or direct entitlement and looking for the resource
+   */
+  private static final String TERMINATED_ENTITLEMENTS_QUERY = '''
+    SELECT ele 
+      FROM EntitlementLogEntry as ele 
+     WHERE ele.endDate is null
+       AND NOT EXISTS ( SELECT ent
+                          FROM Entitlement as ent
+                            JOIN ent.resource as package_resource
+                              JOIN package_resource.contentItems as package_content_item
+                         WHERE ele.packageEntitlement = ent
+                           AND ent.resource.class = Pkg
+                           AND package_content_item = ele.res
+                           AND ( ent.activeTo IS NULL OR ent.activeTo >= :today ) 
+                           AND ( ent.activeFrom IS NULL OR ent.activeFrom  <= :today ) )
+       AND NOT EXISTS ( SELECT ent
+                          FROM Entitlement as ent
+                         WHERE ele.directEntitlement = ent 
+                           AND ( ent.activeTo IS NULL OR ent.activeTo >= :today ) 
+                           AND ( ent.activeFrom IS NULL OR ent.activeFrom  <= :today ) )
+  '''
+
   def triggerUpdate() {
 
     long start_time = System.currentTimeMillis();
@@ -88,6 +112,13 @@ public class EntitlementLogService {
                                         packageEntitlement:it[1],
                                         directEntitlement:it[2]
                                       ).save(flush:true, failOnError:true);
+      }
+
+      def terminated_entitlements = EntitlementLogEntry.executeQuery(TERMINATED_ENTITLEMENTS_QUERY, ['today': today], [readOnly: true])
+      terminated_entitlements.each {
+        String seq = String.format('%015d-%06d',start_time,seqno++)
+        log.debug("  -> close out entitlement for ${start_time} ${seq} ${it.id}");
+        EntitlementLogEntry.executeUpdate('UPDATE EntitlementLogEntry set endDate = :ed where id=:id',[ed:today, id:it.id]);
       }
     }
 
