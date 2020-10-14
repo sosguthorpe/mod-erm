@@ -1,3 +1,37 @@
+## 3.0.0 2020-10-14
+ * ERM-1180 Add @ EnableScheduling annotation in mod-agreements
+ * ERM-1163 Remove default values from publicationType
+ * ERM-1154 change name of an agreement with local resource AL fails 
+ * ERM-1147 Incorrect values displaying in "Acquisition method" column in "Agreements for this e-resource" MCL
+ * ERM-1131 GOKb record numbers in info/error log
+ * ERM-1117 Adding PCI to basket from /erm/eresources/<pci UUID> view results in different JSON shape added to basket
+ * ERM-1114 Duplicating an Agreement with Supplementary Documents does not duplicate the documents -- data cleanup service job created
+ * ERM-1101 Attempt to export All resources in KBART fails
+ * ERM-1094 Error on saving PCI
+ * ERM-1093 Fetching an Agreement with a PCI Entitlement gives 500 error
+ * ERM-1086 Exception being thrown on adding an agreement line while creating an agreement
+ * ERM-1080 Logging not working after Grails upgrade
+ * ERM-1070 Support POST operation for creating new entitlements
+ * ERM-1069 Add an agreement line without a resource
+ * ERM-1055 Comparison report "overlap" discrepancy
+ * ERM-1046 Non-phrase searching support for agreements
+ * ERM-1012 Correct order of fields in KBART export
+ * ERM-1010 Ensure use of MDC fields is consistent in import job error and info logging
+ * ERM-1006 "Future" and "Dropped" title lists do not include directly linked PCIs
+ * ERM-994 Comparison treats two separate resources with same title as the same
+ * ERM-966 Add "Note" to Organisation link in Agreements
+ * ERM-952 Process and save package/agreement comparisons
+ * ERM-948 Enhance eHoldings display in dedicated Agreement Line view
+ * ERM-943 Separate ERM `publication type` from `type`
+ * ERM-932 Add TI "suppress from discovery" field to Agreement resource JSON export
+ * ERM-904 Update tooling and framework
+   * ERM-908 Update agreements to Grails 4
+   * ERM-909 Update docker image to Java 11
+  * ERM-892 Sample data being used on setup
+  * ERM-851 Securing APIs by default
+ * ERM-742 Custom properties: Backend validation not working
+ * ERM-510 KB Local Admin | Log should include information to identify Record where appropriate
+
 ## 2.3.0 2020-06-11
  * ERM-941 remove time check from remotekb harvest
  * ERM-931 Add Agreement Line "suppress from discovery" field to agreement resource JSON export
