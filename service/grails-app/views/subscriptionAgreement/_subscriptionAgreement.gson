@@ -52,8 +52,10 @@ json g.render(subscriptionAgreement, [expand: should_expand, excludes:['alternat
   endDate subscriptionAgreement.endDate
   cancellationDeadline subscriptionAgreement.cancellationDeadline
 
-  items ( subscriptionAgreement.items ) { Entitlement e ->
-    id e.id
+  if (subscriptionAgreement.items) {
+    items ( subscriptionAgreement.items ) { Entitlement e ->
+      id e.id
+    }
   }
   
   if (actionName.toLowerCase() == 'export' && subscriptionAgreement.respondsTo('getResourceList')) {
