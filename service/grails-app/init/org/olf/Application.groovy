@@ -10,7 +10,9 @@ import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFa
 
 import io.micronaut.context.annotation.Bean
 import io.undertow.Undertow.Builder
+import org.springframework.scheduling.annotation.EnableScheduling
 
+@EnableScheduling
 class Application extends GrailsAutoConfiguration {
 
   static void main(String[] args) {

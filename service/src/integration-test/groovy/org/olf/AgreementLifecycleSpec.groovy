@@ -71,6 +71,30 @@ class AgreementLifecycleSpec extends BaseSpec {
     then: "The system responds with an empty list"
       resp.size() == 0
   }
+
+  // 14th Oct 2020 - gson template added an expand parameter that caused creating a new agreement to explode
+  // if it has no items. Since this is the operation most people will do when they first open agreements,
+  // add an explicit test for that case.
+  void "Check creating an empty agreement"() {
+
+    final LocalDate today = LocalDate.now()
+    final LocalDate tomorrow = today.plusDays(1)
+
+    when: "Post to create new empty agreement named Empty Agreement Test"
+      log.debug("Create new agreement : Empty Agreement Test");
+      Map respMap = doPost("/erm/sas", {
+        'name' 'Empty Agreement Test'
+        'agreementStatus' 'Active' // This can be the value or id but not the label
+        'periods' ([{
+          'startDate' today.toString()
+          'endDate' tomorrow.toString()
+        }])
+      })
+
+    then: "Response is good and we have a new ID"
+      respMap.id != null
+
+  }
   
   @Unroll
   void "Create an Agreement named #agreement_name with status #status" (agreement_name, status, packageName) {
