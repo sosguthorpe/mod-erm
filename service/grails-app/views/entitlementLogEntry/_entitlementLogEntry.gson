@@ -1,0 +1,11 @@
+import groovy.transform.Field
+import org.olf.erm.EntitlementLogEntry
+
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
+
+@Field
+EntitlementLogEntry entitlementLogEntry
+entitlementLogEntry = GrailsHibernateUtil.unwrapIfProxy(entitlementLogEntry) as EntitlementLogEntry
+
+json g.render(entitlementLogEntry, [expand: ['res'], excludes: []]) {
+}
