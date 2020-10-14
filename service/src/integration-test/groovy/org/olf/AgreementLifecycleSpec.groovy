@@ -326,5 +326,22 @@ class AgreementLifecycleSpec extends BaseSpec {
     then: 'we check that the expected entitlements are present'
       1==1
   }
+
+  void "check active titles log"() {
+    when: 'Get the first page of entitlement log entries'
+      Map resp = doGet("/erm/entitlementLogEntry",[
+        sort: 'seqid',
+        perPage: 10,
+        stats: true,
+        filters:[
+          "seqid>0"
+        ]
+      ])
+
+
+    then: 'we check that the expected number of log events are returned'
+      resp.totalRecords == 137
+      log.debug("Got response ${resp}");
+  }
 }
 
