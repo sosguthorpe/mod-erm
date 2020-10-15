@@ -7,5 +7,44 @@ import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 EntitlementLogEntry entitlementLogEntry
 entitlementLogEntry = GrailsHibernateUtil.unwrapIfProxy(entitlementLogEntry) as EntitlementLogEntry
 
+/*
+def coverage_summary = []
+entitlementLogEntry.res.coverage.each { it ->
+  coverage_summary.add( 
+  [ 
+    'startDate': it.startDate,
+    'endDate': it.endDate,
+    'startVolume': it.startVolume,
+    'startIssue': it.startIssue,
+    'endVolume': it.endVolume,
+    'endIssue': it.endIssue,
+    'summary': it.toString()
+  ] )
+}
+
+def id_list=[]
+  'coverage' coverage_summary
+  'suppress' entitlementLogEntry.res.suppressFromDiscovery
+  'type' entitlementLogEntry.res.type?.value
+  'title' entitlementLogEntry.res.name
+*/
+
+
+/**
+ *
+ * resources.coverage.startDate
+ * resources.coverage.endDate
+ * resources.coverage.startVolume
+ * resources.coverage.endVolume
+ * resources.coverage.startIssue
+ * resources.coverage.endIssue
+ * resources.coverage.summary
+ * linkedLicenses.remoteObject.customProperties
+ * linkedLicenses.remoteObject.type.value
+ * resources.title.identifiers.identifier
+ */
 json g.render(entitlementLogEntry, [expand: ['res'], excludes: []]) {
+  t1 entitlementLogEntry.class.name
+  id entitlementLogEntry.id
+  restp entitlementLogEntry.res.class.name
 }
