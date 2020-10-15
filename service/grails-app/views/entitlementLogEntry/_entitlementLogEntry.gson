@@ -7,7 +7,6 @@ import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 EntitlementLogEntry entitlementLogEntry
 entitlementLogEntry = GrailsHibernateUtil.unwrapIfProxy(entitlementLogEntry) as EntitlementLogEntry
 
-/*
 def coverage_summary = []
 entitlementLogEntry.res.coverage.each { it ->
   coverage_summary.add( 
@@ -22,13 +21,17 @@ entitlementLogEntry.res.coverage.each { it ->
   ] )
 }
 
+/*
 def id_list=[]
   'coverage' coverage_summary
   'suppress' entitlementLogEntry.res.suppressFromDiscovery
   'type' entitlementLogEntry.res.type?.value
   'title' entitlementLogEntry.res.name
+  restp entitlementLogEntry.res.class.name
+  t1 entitlementLogEntry.class.name
 */
 
+def resource_name = entitlementLogEntry.res.name
 
 /**
  *
@@ -44,8 +47,7 @@ def id_list=[]
  * resources.title.identifiers.identifier
  */
 json {
-  t1 entitlementLogEntry.class.name
-  id entitlementLogEntry.id
-  title entitlementLogEntry.res.name
-  restp entitlementLogEntry.res.class.name
+  seqid entitlementLogEntry.seqid
+  title resource_name
+  coverage coverage_summary
 }
