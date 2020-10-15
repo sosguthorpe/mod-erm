@@ -1,5 +1,6 @@
 import groovy.transform.Field
 import org.olf.erm.EntitlementLogEntry
+import org.olf.kb.PackageContentItem
 
 import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 
@@ -21,6 +22,21 @@ entitlementLogEntry.res.coverage.each { it ->
   ] )
 }
 
+
+def resource_identifiers = []
+def resource_note = 'no note'
+
+if ( entitlementLogEntry.res instanceof PackageContentItem ) {
+  PackageContentItem pci = entitlementLogEntry.res as PackageContentItem
+  resource_note='its a pci'
+  pci.pti.titleInstance.identifiers.each { id ->
+    resource_identifiers.add([
+      type: id.identifier.ns.value,
+      value: id.identifier.value
+    ])
+  }
+}
+
 /*
 def id_list=[]
   'coverage' coverage_summary
@@ -35,19 +51,13 @@ def resource_name = entitlementLogEntry.res.name
 
 /**
  *
- * resources.coverage.startDate
- * resources.coverage.endDate
- * resources.coverage.startVolume
- * resources.coverage.endVolume
- * resources.coverage.startIssue
- * resources.coverage.endIssue
- * resources.coverage.summary
  * linkedLicenses.remoteObject.customProperties
  * linkedLicenses.remoteObject.type.value
- * resources.title.identifiers.identifier
  */
 json {
   seqid entitlementLogEntry.seqid
   title resource_name
   coverage coverage_summary
+  identifiers resource_identifiers
+  note resource_note
 }
