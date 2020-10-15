@@ -43,8 +43,9 @@ def id_list=[]
  * linkedLicenses.remoteObject.type.value
  * resources.title.identifiers.identifier
  */
-json g.render(entitlementLogEntry, [expand: ['res'], excludes: []]) {
+json {
   t1 entitlementLogEntry.class.name
   id entitlementLogEntry.id
+  title entitlementLogEntry.res.name
   restp entitlementLogEntry.res.class.name
 }
