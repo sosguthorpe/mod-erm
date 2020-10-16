@@ -407,225 +407,542 @@
       ]
     }
   ],
-  "permissionSets": [{
-    "permissionName": "erm.agreements.view",
-    "subPermissions": [
-      "erm.agreements.collection.get",
-      "erm.agreements.item.get",
-      "erm.agreements.item.resources.get",
-      "erm.agreements.export",
-      "erm.agreements.linkedLicenses.get",
-      "erm.agreements.usageDataProviders.get",
-      "erm.resources.view"
-    ]
-  },{
-    "permissionName": "erm.agreements.edit",
-    "subPermissions": [
-      "erm.agreements.view",
-      "erm.agreements.item.post",
-      "erm.agreements.item.put",
-      "erm.agreements.item.clone"
-    ]
-  },{
-    "permissionName": "erm.agreements.manage",
-    "subPermissions": [
-      "erm.agreements.edit",
-      "erm.agreements.item.delete"
-    ]
-  },{
-    "permissionName": "erm.files.view",
-    "subPermissions": [
-      "erm.files.collection.get",
-      "erm.files.item.get"
-    ]
-  },{
-    "permissionName": "erm.files.edit",
-    "subPermissions": [
-      "erm.files.view",
-      "erm.files.item.post",
-      "erm.files.item.put"
-    ]
-  },{
-    "permissionName": "erm.files.manage",
-    "subPermissions": [
-      "erm.files.edit",
-      "erm.files.item.delete"
-    ]
-  },{
-    "permissionName": "erm.contacts.view",
-    "subPermissions": [
-      "erm.contacts.collection.get",
-      "erm.contacts.item.get"
-    ]
-  },{
-    "permissionName": "erm.orgs.view",
-    "subPermissions": [
-      "erm.orgs.collection.get",
-      "erm.orgs.item.get"
-    ]
-  },{
-    "permissionName": "erm.packages.view",
-    "subPermissions": [
-      "erm.packages.collection.get",
-      "erm.packages.item.get",
-      "erm.packages.item.content.get"
-    ]
-  },{
-    "permissionName": "erm.jobs.view",
-    "subPermissions": [
-      "erm.jobs.collection.get",
-      "erm.jobs.item.get"
-    ]
-  },{
-    "permissionName": "erm.jobs.edit",
-    "subPermissions": [
-      "erm.jobs.item.post"
-    ]
-  },{
-    "permissionName": "erm.jobs.manage",
-    "subPermissions": [
-      "erm.jobs.edit",
-      "erm.jobs.item.delete"
-    ]
-  },{
-    "permissionName": "erm.refdata.view",
-    "subPermissions": [
-      "erm.refdata.collection.get",
-      "erm.refdata.item.get"
-    ]
-  },{
-    "permissionName": "erm.refdata.edit",
-    "subPermissions": [
-      "erm.refdata.view",
-      "erm.refdata.item.post",
-      "erm.refdata.item.put"
-    ]
-  },{
-    "permissionName": "erm.refdata.manage",
-    "subPermissions": [
-      "erm.refdata.edit",
-      "erm.refdata.item.delete"
-    ]
-  },
-
-  {
-    "permissionName": "erm.kbs.view",
-    "subPermissions": [
-      "erm.kbs.collection.get",
-      "erm.kbs.item.get"
-    ]
-  },{
-    "permissionName": "erm.kbs.edit",
-    "subPermissions": [
-      "erm.kbs.view",
-      "erm.kbs.item.post",
-      "erm.kbs.item.put"
-    ]
-  },{
-    "permissionName": "erm.kbs.manage",
-    "subPermissions": [
-      "erm.kbs.edit",
-      "erm.kbs.item.delete"
-    ]
-  },
-
-  {
-    "permissionName": "erm.pci.view",
-    "subPermissions": [
-      "erm.pci.collection.get",
-      "erm.pci.item.get"
-    ]
-  },{
-    "permissionName": "erm.pci.edit",
-    "subPermissions": [
-      "erm.pci.view",
-      "erm.pci.item.put"
-    ]
-  },
-
-  {
-    "permissionName": "erm.pti.view",
-    "subPermissions": [
-      "erm.pti.collection.get",
-      "erm.pti.item.get"
-    ]
-  },{
-    "permissionName": "erm.pti.edit",
-    "subPermissions": [
-      "erm.pti.view",
-      "erm.pti.item.put"
-    ]
-  },
-
-  {
-    "permissionName": "erm.resources.view",
-    "subPermissions": [
-      "erm.resources.collection.get",
-      "erm.resources.item.get",
-      "erm.resources.item.entitlement.get",
-      "erm.resources.item.entitlementOptions.get",
-      "erm.entitlements.view",
-      "erm.kbs.collection.get"
-    ]
-  },
-
-  {
-    "permissionName": "erm.entitlements.view",
-    "subPermissions": [
-      "erm.entitlements.collection.get",
-      "erm.entitlements.item.get"
-    ]
-  },{
-    "permissionName": "erm.entitlements.edit",
-    "subPermissions": [
-      "erm.entitlements.view",
-      "erm.entitlements.item.post",
-      "erm.entitlements.item.put"
-    ]
-  },{
-    "permissionName": "erm.entitlements.delete",
-    "subPermissions": [
-      "erm.entitlements.view",
-      "erm.entitlements.edit",
-      "erm.entitlements.item.delete"
-    ]
-  },
-  {
-    "permissionName": "erm.titles.view",
-    "subPermissions": [
-      "erm.titles.collection.get",
-      "erm.titles.item.get"
-    ]
-  },{
-    "permissionName": "erm.titles.edit",
-    "subPermissions": [
-      "erm.titles.view",
-      "erm.titles.item.put"
-    ]
-  },
-
-  {
-    "permissionName": "erm.custprops.view",
-    "subPermissions": [
-      "erm.custprops.collection.get",
-      "erm.custprops.item.get"
-    ]
-  },{
-    "permissionName": "erm.custprops.edit",
-    "subPermissions": [
-      "erm.custprops.view",
-      "erm.custprops.item.post",
-      "erm.custprops.item.put"
-    ]
-  },{
-    "permissionName": "erm.custprops.manage",
-    "subPermissions": [
-      "erm.custprops.edit",
-      "erm.custprops.item.delete"
-    ]
-  }, {
-    "permissionName": "erm.packages.collection.import"
-  }],
+  "permissionSets": [
+    {
+      "permissionName": "erm.agreements.collection.get",
+      "displayName": "Agreements collection get",
+      "description": "Get a collection of agreement records"
+    },
+    {
+      "permissionName": "erm.agreements.item.get",
+      "displayName": "Agreements item get",
+      "description": "Get an agreement record"
+    },
+    {
+      "permissionName": "erm.agreements.item.resources.get",
+      "displayName": "Agreements item resources get",
+      "description": "Get an agreement record's resources"
+    },
+    {
+      "permissionName": "erm.agreements.export",
+      "displayName": "Agreements export",
+      "description": "Export an agreement or its resources"
+    },
+    {
+      "permissionName": "erm.agreements.linkedLicenses.get",
+      "displayName": "Agreements linked licenses get",
+      "description": "Get the linked licenses for an agreement"
+    },
+    {
+      "permissionName": "erm.agreements.usageDataProviders.get",
+      "displayName": "Agreements usage data providers get",
+      "description": "Get the usage data providers for an agreement"
+    },
+    {
+      "permissionName": "erm.agreements.view",
+      "subPermissions": [
+        "erm.agreements.collection.get",
+        "erm.agreements.item.get",
+        "erm.agreements.item.resources.get",
+        "erm.agreements.export",
+        "erm.agreements.linkedLicenses.get",
+        "erm.agreements.usageDataProviders.get",
+        "erm.resources.view"
+      ]
+    },
+    {
+      "permissionName": "erm.agreements.item.post",
+      "displayName": "Agreements item post",
+      "description": "Post an agreement"
+    },
+    {
+      "permissionName": "erm.agreements.item.put",
+      "displayName": "Agreements item put",
+      "description": "Put an agreement"
+    },
+    {
+      "permissionName": "erm.agreements.item.clone",
+      "displayName": "Agreements item clone",
+      "description": "Clone an agreement"
+    },
+    {
+      "permissionName": "erm.agreements.edit",
+      "subPermissions": [
+        "erm.agreements.view",
+        "erm.agreements.item.post",
+        "erm.agreements.item.put",
+        "erm.agreements.item.clone"
+      ]
+    },
+    {
+      "permissionName": "erm.agreements.item.delete",
+      "displayName": "Agreements item delete",
+      "description": "Delete an agreement"
+    },
+    {
+      "permissionName": "erm.agreements.manage",
+      "subPermissions": [
+        "erm.agreements.edit",
+        "erm.agreements.item.delete"
+      ]
+    },
+    {
+      "permissionName": "erm.files.collection.get",
+      "displayName": "Files collection get",
+      "description": "Get a collection of files records"
+    },
+    {
+      "permissionName": "erm.files.item.get",
+      "displayName": "Files item get",
+      "description": "Get a file record"
+    },
+    {
+      "permissionName": "erm.files.view",
+      "subPermissions": [
+        "erm.files.collection.get",
+        "erm.files.item.get"
+      ]
+    },
+    {
+      "permissionName": "erm.files.item.post",
+      "displayName": "Files item post",
+      "description": "Post a file record"
+    },
+    {
+      "permissionName": "erm.files.item.put",
+      "displayName": "Files item put",
+      "description": "Put a file record"
+    },
+    {
+      "permissionName": "erm.files.edit",
+      "subPermissions": [
+        "erm.files.view",
+        "erm.files.item.post",
+        "erm.files.item.put"
+      ]
+    },
+    {
+      "permissionName": "erm.files.item.delete",
+      "displayName": "Files item delete",
+      "description": "Delete a file record"
+    },
+    {
+      "permissionName": "erm.files.manage",
+      "subPermissions": [
+        "erm.files.edit",
+        "erm.files.item.delete"
+      ]
+    },
+    {
+      "permissionName": "erm.contacts.collection.get",
+      "displayName": "Contacts collection get",
+      "description": "Get a collection of contacts records"
+    },
+    {
+      "permissionName": "erm.contacts.item.get",
+      "displayName": "Contacts item get",
+      "description": "Get contact record"
+    },
+    {
+      "permissionName": "erm.contacts.view",
+      "subPermissions": [
+        "erm.contacts.collection.get",
+        "erm.contacts.item.get"
+      ]
+    },
+    {
+      "permissionName": "erm.orgs.collection.get",
+      "displayName": "Orgs collection get",
+      "description": "Get a collection of orgs records"
+    },
+    {
+      "permissionName": "erm.orgs.item.get",
+      "displayName": "Orgs item get",
+      "description": "Get org record"
+    },
+    {
+      "permissionName": "erm.orgs.view",
+      "subPermissions": [
+        "erm.orgs.collection.get",
+        "erm.orgs.item.get"
+      ]
+    },
+    {
+      "permissionName": "erm.packages.collection.get",
+      "displayName": "Packages collection get",
+      "description": "Get a collection of package records"
+    },
+    {
+      "permissionName": "erm.packages.item.get",
+      "displayName": "Package item get",
+      "description": "Get package record"
+    },
+    {
+      "permissionName": "erm.packages.item.content.get",
+      "displayName": "Package item content get",
+      "description": "Get package record's contents"
+    },
+    {
+      "permissionName": "erm.packages.view",
+      "subPermissions": [
+        "erm.packages.collection.get",
+        "erm.packages.item.get",
+        "erm.packages.item.content.get"
+      ]
+    },
+    {
+      "permissionName": "erm.jobs.collection.get",
+      "displayName": "Jobs collection get",
+      "description": "Get a collection of job records"
+    },
+    {
+      "permissionName": "erm.jobs.item.get",
+      "displayName": "Job item get",
+      "description": "Get job record"
+    },
+    {
+      "permissionName": "erm.jobs.view",
+      "subPermissions": [
+        "erm.jobs.collection.get",
+        "erm.jobs.item.get"
+      ]
+    },
+    {
+      "permissionName": "erm.jobs.item.post",
+      "displayName": "Job item post",
+      "description": "Post job record"
+    },
+    {
+      "permissionName": "erm.jobs.edit",
+      "subPermissions": [
+        "erm.jobs.item.post"
+      ]
+    },
+    {
+      "permissionName": "erm.jobs.item.delete",
+      "displayName": "Job item delete",
+      "description": "Delete job record"
+    },
+    {
+      "permissionName": "erm.jobs.manage",
+      "subPermissions": [
+        "erm.jobs.edit",
+        "erm.jobs.item.delete"
+      ]
+    },
+    {
+      "permissionName": "erm.refdata.collection.get",
+      "displayName": "Refdata collection get",
+      "description": "Get a collection of refdata records"
+    },
+    {
+      "permissionName": "erm.refdata.item.get",
+      "displayName": "Refdata item get",
+      "description": "Get refdata record"
+    },
+    {
+      "permissionName": "erm.refdata.view",
+      "subPermissions": [
+        "erm.refdata.collection.get",
+        "erm.refdata.item.get"
+      ]
+    },
+    {
+      "permissionName": "erm.refdata.item.post",
+      "displayName": "Refdata item post",
+      "description": "Post refdata record"
+    },
+    {
+      "permissionName": "erm.refdata.item.put",
+      "displayName": "Refdata item put",
+      "description": "Put refdata record"
+    },
+    {
+      "permissionName": "erm.refdata.edit",
+      "subPermissions": [
+        "erm.refdata.view",
+        "erm.refdata.item.post",
+        "erm.refdata.item.put"
+      ]
+    },
+    {
+      "permissionName": "erm.refdata.item.delete",
+      "displayName": "Refdata item delete",
+      "description": "Delete refdata record"
+    },
+    {
+      "permissionName": "erm.refdata.manage",
+      "subPermissions": [
+        "erm.refdata.edit",
+        "erm.refdata.item.delete"
+      ]
+    },
+    {
+      "permissionName": "erm.kbs.collection.get",
+      "displayName": "Knowledge bases collection get",
+      "description": "Get a collection of knowledge base records"
+    },
+    {
+      "permissionName": "erm.kbs.item.get",
+      "displayName": "Knowledge base item get",
+      "description": "Get knowledge base record"
+    },
+    {
+      "permissionName": "erm.kbs.view",
+      "subPermissions": [
+        "erm.kbs.collection.get",
+        "erm.kbs.item.get"
+      ]
+    },
+    {
+      "permissionName": "erm.kbs.item.post",
+      "displayName": "Knowledge base item post",
+      "description": "Post knowledge base record"
+    },
+    {
+      "permissionName": "erm.kbs.item.put",
+      "displayName": "Knowledge base item put",
+      "description": "Put knowledge base record"
+    },
+    {
+      "permissionName": "erm.kbs.edit",
+      "subPermissions": [
+        "erm.kbs.view",
+        "erm.kbs.item.post",
+        "erm.kbs.item.put"
+      ]
+    },
+    {
+      "permissionName": "erm.kbs.item.delete",
+      "displayName": "Knowledge base item delete",
+      "description": "Delete knowledge base record"
+    },
+    {
+      "permissionName": "erm.kbs.manage",
+      "subPermissions": [
+        "erm.kbs.edit",
+        "erm.kbs.item.delete"
+      ]
+    },
+    {
+      "permissionName": "erm.pci.collection.get",
+      "displayName": "Package content item collection get",
+      "description": "Get a collection of package content item records"
+    },
+    {
+      "permissionName": "erm.pci.item.get",
+      "displayName": "Package content item item get",
+      "description": "Get package content item record"
+    },
+    {
+      "permissionName": "erm.pci.view",
+      "subPermissions": [
+        "erm.pci.collection.get",
+        "erm.pci.item.get"
+      ]
+    },
+    {
+      "permissionName": "erm.pci.item.put",
+      "displayName": "Package content item item put",
+      "description": "Put package content item record"
+    },
+    {
+      "permissionName": "erm.pci.edit",
+      "subPermissions": [
+        "erm.pci.view",
+        "erm.pci.item.put"
+      ]
+    },
+    {
+      "permissionName": "erm.pti.collection.get",
+      "displayName": "Platform title instance collection get",
+      "description": "Get a collection of platform title instance records"
+    },
+    {
+      "permissionName": "erm.pti.item.get",
+      "displayName": "Platform title instance item get",
+      "description": "Get platform title instance record"
+    },
+    {
+      "permissionName": "erm.pti.view",
+      "subPermissions": [
+        "erm.pti.collection.get",
+        "erm.pti.item.get"
+      ]
+    },
+    {
+      "permissionName": "erm.pti.item.put",
+      "displayName": "Platform title instance item put",
+      "description": "Put platform title instance record"
+    },
+    {
+      "permissionName": "erm.pti.edit",
+      "subPermissions": [
+        "erm.pti.view",
+        "erm.pti.item.put"
+      ]
+    },
+    {
+      "permissionName": "erm.resources.collection.get",
+      "displayName": "Resources collection get",
+      "description": "Get a collection of resource records"
+    },
+    {
+      "permissionName": "erm.resources.item.get",
+      "displayName": "Resources item get",
+      "description": "Get resource record"
+    },
+    {
+      "permissionName": "erm.resources.item.entitlement.get",
+      "displayName": "Resources item entitlement get",
+      "description": "Get resource's entitlement records"
+    },
+    {
+      "permissionName": "erm.resources.item.entitlementOptions.get",
+      "displayName": "Resources item entitlement options get",
+      "description": "Get resource's entitlement options records"
+    },
+    {
+      "permissionName": "erm.resources.view",
+      "subPermissions": [
+        "erm.resources.collection.get",
+        "erm.resources.item.get",
+        "erm.resources.item.entitlement.get",
+        "erm.resources.item.entitlementOptions.get",
+        "erm.entitlements.view",
+        "erm.kbs.collection.get"
+      ]
+    },
+    {
+      "permissionName": "erm.entitlements.collection.get",
+      "displayName": "Entitlements collection get",
+      "description": "Get a collection of entitlement records"
+    },
+    {
+      "permissionName": "erm.entitlements.item.get",
+      "displayName": "Entitlements item get",
+      "description": "Get entitlement record"
+    },
+    {
+      "permissionName": "erm.entitlements.view",
+      "subPermissions": [
+        "erm.entitlements.collection.get",
+        "erm.entitlements.item.get"
+      ]
+    },
+    {
+      "permissionName": "erm.entitlements.item.post",
+      "displayName": "Entitlements item post",
+      "description": "Post entitlement record"
+    },
+    {
+      "permissionName": "erm.entitlements.item.put",
+      "displayName": "Entitlements item put",
+      "description": "Put entitlement record"
+    },
+    {
+      "permissionName": "erm.entitlements.edit",
+      "subPermissions": [
+        "erm.entitlements.view",
+        "erm.entitlements.item.post",
+        "erm.entitlements.item.put"
+      ]
+    },
+    {
+      "permissionName": "erm.entitlements.item.delete",
+      "displayName": "Entitlements item delete",
+      "description": "Delete entitlement record"
+    },
+    {
+      "permissionName": "erm.entitlements.delete",
+      "subPermissions": [
+        "erm.entitlements.view",
+        "erm.entitlements.edit",
+        "erm.entitlements.item.delete"
+      ]
+    },
+    {
+      "permissionName": "erm.titles.collection.get",
+      "displayName": "Title collection get",
+      "description": "Get a collection of title records"
+    },
+    {
+      "permissionName": "erm.titles.item.get",
+      "displayName": "Title item get",
+      "description": "Get title record"
+    },
+    {
+      "permissionName": "erm.titles.view",
+      "subPermissions": [
+        "erm.titles.collection.get",
+        "erm.titles.item.get"
+      ]
+    },
+    {
+      "permissionName": "erm.titles.item.put",
+      "displayName": "Title item put",
+      "description": "Put title record"
+    },
+    {
+      "permissionName": "erm.titles.edit",
+      "subPermissions": [
+        "erm.titles.view",
+        "erm.titles.item.put"
+      ]
+    },
+    {
+      "permissionName": "erm.custprops.collection.get",
+      "displayName": "Custom properties collection get",
+      "description": "Get a collection of custom properties records"
+    },
+    {
+      "permissionName": "erm.custprops.item.get",
+      "displayName": "Custom property item get",
+      "description": "Get custom property record"
+    },
+    {
+      "permissionName": "erm.custprops.view",
+      "subPermissions": [
+        "erm.custprops.collection.get",
+        "erm.custprops.item.get"
+      ]
+    },
+    {
+      "permissionName": "erm.custprops.item.post",
+      "displayName": "Custom property item post",
+      "description": "Post custom property record"
+    },
+    {
+      "permissionName": "erm.custprops.item.put",
+      "displayName": "Custom property item put",
+      "description": "Put custom property record"
+    },
+    {
+      "permissionName": "erm.custprops.edit",
+      "subPermissions": [
+        "erm.custprops.view",
+        "erm.custprops.item.post",
+        "erm.custprops.item.put"
+      ]
+    },
+    {
+      "permissionName": "erm.custprops.item.delete",
+      "displayName": "Custom property item delete",
+      "description": "Delete custom property record"
+    },
+    {
+      "permissionName": "erm.custprops.manage",
+      "subPermissions": [
+        "erm.custprops.edit",
+        "erm.custprops.item.delete"
+      ]
+    },
+    {
+      "permissionName": "erm.packages.collection.import",
+      "displayName": "Packages collection import",
+      "description": "Import a collection of package records"
+    }
+  ],
   "launchDescriptor": {
     "dockerImage": "${info.app.name}:${info.app.version}",
     "dockerArgs": {
