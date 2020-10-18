@@ -1,53 +1,47 @@
 import groovy.transform.Field
 import org.olf.erm.EntitlementLogEntry
 import org.olf.kb.PackageContentItem
+import org.olf.kb.ErmResource
 
 import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 
 @Field
 EntitlementLogEntry entitlementLogEntry
 entitlementLogEntry = GrailsHibernateUtil.unwrapIfProxy(entitlementLogEntry) as EntitlementLogEntry
+ErmResource res = GrailsHibernateUtil.unwrapIfProxy(entitlementLogEntry.res) as ErmResource
+def resource_type = null
 
 def coverage_summary = []
-entitlementLogEntry.res.coverage.each { it ->
-  coverage_summary.add( 
-  [ 
-    'startDate': it.startDate,
-    'endDate': it.endDate,
-    'startVolume': it.startVolume,
-    'startIssue': it.startIssue,
-    'endVolume': it.endVolume,
-    'endIssue': it.endIssue,
-    'summary': it.toString()
-  ] )
-}
-
-
 def resource_identifiers = []
-def resource_note = 'no note'
+def resource_title = null;
 
-if ( entitlementLogEntry.res instanceof PackageContentItem ) {
-  PackageContentItem pci = entitlementLogEntry.res as PackageContentItem
-  resource_note='its a pci'
+if ( res instanceof PackageContentItem ) {
+
+  PackageContentItem pci = res as PackageContentItem
+  resource_title = pci.pti.titleInstance.name
+  resource_type = pci.pti.titleInstance.type?.value
+
   pci.pti.titleInstance.identifiers.each { id ->
     resource_identifiers.add([
       type: id.identifier.ns.value,
       value: id.identifier.value
     ])
   }
+
+  pci.coverage.each { it ->
+    coverage_summary.add( 
+    [ 
+      'startDate': it.startDate,
+      'endDate': it.endDate,
+      'startVolume': it.startVolume,
+      'startIssue': it.startIssue,
+      'endVolume': it.endVolume,
+      'endIssue': it.endIssue,
+      'summary': it.toString()
+    ] )
+  }
+
 }
-
-/*
-def id_list=[]
-  'coverage' coverage_summary
-  'suppress' entitlementLogEntry.res.suppressFromDiscovery
-  'type' entitlementLogEntry.res.type?.value
-  'title' entitlementLogEntry.res.name
-  restp entitlementLogEntry.res.class.name
-  t1 entitlementLogEntry.class.name
-*/
-
-def resource_name = entitlementLogEntry.res.name
 
 /**
  *
@@ -56,8 +50,10 @@ def resource_name = entitlementLogEntry.res.name
  */
 json {
   seqid entitlementLogEntry.seqid
-  title resource_name
+  resource_name res.name
+  title resource_title
   coverage coverage_summary
   identifiers resource_identifiers
-  note resource_note
+  suppress res.suppressFromDiscovery
+  'type' resource_type
 }
