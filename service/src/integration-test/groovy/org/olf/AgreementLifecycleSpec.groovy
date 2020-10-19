@@ -331,7 +331,7 @@ class AgreementLifecycleSpec extends BaseSpec {
     when: 'Get the first page of entitlement log entries'
       Map resp = doGet("/erm/entitlementLogEntry",[
         sort: 'seqid',
-        perPage: 10,
+        perPage: 60,
         stats: true,
         filters:[
           "seqid>0"
