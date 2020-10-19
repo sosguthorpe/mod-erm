@@ -21,6 +21,7 @@ import com.k_int.web.toolkit.tags.Tag
 
 import grails.gorm.MultiTenant
 import groovy.util.logging.Slf4j
+import javax.persistence.Transient
 
 /**
  * Subscription agreement - object holding details about an SA connecting a resource list (Composed Of packages and platform-titles).
@@ -272,5 +273,16 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
   @Override
   public SubscriptionAgreement clone () {
     Clonable.super.clone()
+  }
+
+  @Transient
+  RemoteLicenseLink getControllingLicense() {
+    RemoteLicenseLink result = null;
+    linkedLicenses.each { ll ->
+      if ( ll.status.value == 'controlling' ) {
+        result = ll;
+      }
+    }
+    return result;
   }
 }
