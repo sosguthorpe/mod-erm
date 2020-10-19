@@ -210,7 +210,7 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
                  enabled column:'sa_enabled'
                   vendor column:'sa_vendor_fk'
        attachedLicenceId column:'sa_licence_fk'
-	   		     licenseNote column:'sa_license_note'
+             licenseNote column:'sa_license_note'
           alternateNames cascade: 'all-delete-orphan'
                    items cascade: 'all-delete-orphan', lazy: false
                 contacts cascade: 'all-delete-orphan', lazy: false

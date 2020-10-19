@@ -14,7 +14,6 @@ def resource_type = null
 def coverage_summary = []
 def resource_identifiers = []
 def resource_title = null;
-def txt_coverage_summary = null;
 
 if ( res instanceof PackageContentItem ) {
 
@@ -41,10 +40,6 @@ if ( res instanceof PackageContentItem ) {
       'summary': it.toString()
     ] )
   }
-
-  // This causes an exception
-  // txt_coverage_summary = pci.generateCoverageSummary()
-
 }
 
 /**
@@ -60,5 +55,4 @@ json {
   identifiers resource_identifiers
   suppress res.suppressFromDiscovery
   'type' resource_type
-  coverageSummary txt_coverage_summary
 }
