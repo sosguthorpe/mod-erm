@@ -329,9 +329,12 @@ class AgreementLifecycleSpec extends BaseSpec {
 
   void "check active titles log"() {
     when: 'Get the first page of entitlement log entries'
+      // Wait for coverage processing to complete
+      Thread.sleep(10000);
+
       Map resp = doGet("/erm/entitlementLogEntry",[
         sort: 'seqid',
-        perPage: 60,
+        perPage: 10,
         stats: true,
         filters:[
           "seqid>0"
