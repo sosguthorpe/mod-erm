@@ -24,10 +24,12 @@ class PlatformSpec extends BaseSpec {
 
     then: 'Name is #name'
       platform.name == name
+    then: 'Local code is #localCode'
+      platform.localCode == localCode
 
     where:
-      platformUrl                             || name
-      'http://content.apa.org/journals/str'   || 'content.apa.org'
+      platformUrl                             || name                 || localCode
+      'http://content.apa.org/journals/str'   || 'content.apa.org'    || 'ciando'
 
   }
 }
