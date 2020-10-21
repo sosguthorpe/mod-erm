@@ -24,8 +24,6 @@ class PlatformSpec extends BaseSpec {
 
     then: 'Name is #name'
       platform.name == name
-    then: 'Local code is #localCode'
-      platform.localCode == localCode
 
     where:
       platformUrl                             || name
