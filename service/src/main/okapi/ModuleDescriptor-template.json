@@ -405,6 +405,20 @@
           "permissionsRequired" : [ "codex.item.get" ]
         }
       ]
+    },
+    {
+      "id": "_timer",
+      "version": "1.0",
+      "interfaceType": "system",
+      "handlers": [
+        {
+          "permissionsRequired" : [],
+          "methods": [ "GET" ],
+          "pathPattern": "/erm/admin/triggerEntitlementLogUpdate",
+          "unit": "hour",
+          "delay": "24" 
+        }
+      ]
     }
   ],
   "permissionSets": [

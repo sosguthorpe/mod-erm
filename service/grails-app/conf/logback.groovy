@@ -48,7 +48,7 @@ if (devEnv || Environment.currentEnvironment == Environment.TEST) {
   logger 'grails.app.domains', DEBUG
   logger 'grails.app.jobs', DEBUG
   logger 'grails.app.services', DEBUG
-  logger 'com.zaxxer.hikari.pool.HikariPool', DEBUG
+  logger 'com.zaxxer.hikari.pool.HikariPool', WARN
   
   logger 'com.k_int', DEBUG
   logger 'com.k_int.web.toolkit', DEBUG
@@ -61,8 +61,8 @@ if (devEnv || Environment.currentEnvironment == Environment.TEST) {
     logger 'com.k_int.okapi.OkapiClient', TRACE
     logger 'groovy.net.http.JavaHttpBuilder', DEBUG
     logger 'org.hibernate.loader.criteria', TRACE
-    logger 'org.hibernate.SQL', DEBUG
-    logger 'org.hibernate.type.descriptor.sql.BasicBinder', TRACE
+    // logger 'org.hibernate.SQL', DEBUG
+    // logger 'org.hibernate.type.descriptor.sql.BasicBinder', TRACE
   }
 }
 

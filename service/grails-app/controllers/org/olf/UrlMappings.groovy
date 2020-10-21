@@ -170,5 +170,7 @@ class UrlMappings {
 
 
     "/erm/validate/$domain/$prop?" (controller: 'validate', method: 'POST')
+
+    "/erm/entitlementLogEntry" ( resources: 'EntitlementLogEntry')
   }
 }

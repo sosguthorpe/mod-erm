@@ -67,6 +67,7 @@ class TitleInstanceResolverService implements DataBinder{
    *   "title": "Nordic Psychology",
    *   "instanceMedium": "electronic",
    *   "instanceMedia": "journal",
+   *   "instancePublicationMedia": "journal",  -- I don't know what this is or how it's supposed to work
    *   "instanceIdentifiers": [ 
    *     {
    *       "namespace": "issn",
@@ -217,6 +218,39 @@ class TitleInstanceResolverService implements DataBinder{
 
     TitleInstance result = null
 
+
+    // Ian: adding this - Attempt to make sense of the instanceMedia value we have been passed
+    //
+    // I'm entirely befuddled by whats going on in this service with the handling of instanceMedia, resource_type and instancePublicationMedia -
+    // it's a confused mess. This method is about fuzzily absorbing a citation doing the best we can. To reject an entry out of hand because a value
+    // does not match an arbitrarily internally decided upon string leaves callers with no way of resolving what went wrong or what to do about it.
+    // I'm adding this to make the integraiton tests pass again, and try to regain some sanity.
+    // It would be more sensible to stick with the single instanceMedia field and if the value is not one we expect, stash the value in
+    // a memo field here and convert as best we can.
+    switch( citation.instanceMedia?.toLowerCase() ) {
+      case null: // No value, nothing we can do
+        break;
+      case 'serial': // One of our approved values
+        break;
+      case 'monograph': // One of our approved values
+        break;
+      case 'newspaper':
+      case 'journal':
+        // If not already set, stash the instanceMedia we are looking at in instancePublicationMedia
+        citation.instancePublicationMedia = citation.instancePublicationMedia ?: citation.instanceMedia
+        citation.instanceMedia = 'serial';
+        break;
+      case 'BKM':
+      case 'book':
+        // If not already set, stash the instanceMedia we are looking at in instancePublicationMedia
+        citation.instancePublicationMedia = citation.instancePublicationMedia ?: citation.instanceMedia
+        citation.instanceMedia = 'monograph';
+        break;
+      default:
+        log.warn("Unhandled media type ${citation.instanceMedia}");
+        break;
+    }
+
     // With the introduction of fuzzy title matching, we are relaxing this constraint and
     // will expect to enrich titles without identifiers when we next see a record. BUT
     // this needs elaboration and experimentation.
@@ -240,7 +274,11 @@ class TitleInstanceResolverService implements DataBinder{
 
       // Journal or Book etc
       def resource_type = citation.instanceMedia?.trim()
+
+      // This means that publication type can no longer be set directly by passing in instanceMedia - that 
+      // cannot be the right thing to do.
       def resource_pub_type = citation.instancePublicationMedia?.trim()
+
       def resource_coverage = citation?.coverage
       result = new TitleInstance(
         name: citation.title,
@@ -256,7 +294,10 @@ class TitleInstanceResolverService implements DataBinder{
 
       // We can trust these by the check above for file imports and through logic in the adapters to set pubType and type correctly
       result.typeFromString = resource_type
-      result.publicationTypeFromString = resource_pub_type
+
+      if ( ( resource_pub_type != null ) && ( resource_pub_type.length() > 0 ) ) {
+        result.publicationTypeFromString = resource_pub_type
+      }
       
       if ((medium?.length() ?: 0) > 0) {
         result.subTypeFromString = medium
@@ -279,10 +320,12 @@ class TitleInstanceResolverService implements DataBinder{
       }
     }
     else {
+
       // Run through the failed validation one by one and throw relavent errors
       if (!title_is_valid.titleExists) {
         log.error("Create title failed validation check - insufficient data to create a title record");
       }
+
       if (!title_is_valid.typeMatchesInternal) {
         log.error("Create title \"${citation.title}\" failed validation check - type (${citation.instanceMedia.toLowerCase()}) does not match 'serial' or 'monograph'");
       }
@@ -316,8 +359,13 @@ class TitleInstanceResolverService implements DataBinder{
       /*
        * For some reason whenever a title is updated with just refdata fields it fails to properly mark as dirty.
        * The below solution of '.markDirty()' is not ideal, but it does solve the problem for now.
-      */
-      if (title.publicationType.value != citation.instancePublicationMedia) {
+       * TODO: Ian to Review with Ethan - this makes no sense to me at the moment
+       *
+       * If the "Authoritative" publication type is not equal to whatever mad value a remote site has sent then
+       * replace the authortiative value with the one sent?
+       */
+      if (title.publicationType?.value != citation.instancePublicationMedia) {
+       
         title.publicationTypeFromString = citation.instancePublicationMedia
         title.markDirty()
       }

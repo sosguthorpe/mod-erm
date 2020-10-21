@@ -1,0 +1,82 @@
+import groovy.transform.Field
+import org.olf.erm.EntitlementLogEntry
+import org.olf.kb.PackageContentItem
+import org.olf.kb.ErmResource
+import com.k_int.okapi.remote_resources.RemoteOkapiLinkListener
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
+import java.util.concurrent.Future
+
+final String licenseProperty = "remoteId${RemoteOkapiLinkListener.FETCHED_PROPERTY_SUFFIX}"
+
+@Field
+EntitlementLogEntry entitlementLogEntry
+entitlementLogEntry = GrailsHibernateUtil.unwrapIfProxy(entitlementLogEntry) as EntitlementLogEntry
+ErmResource res = GrailsHibernateUtil.unwrapIfProxy(entitlementLogEntry.res) as ErmResource
+def resource_type = null
+
+def coverage_summary = []
+def resource_identifiers = []
+def resource_title = null;
+def license_details = null;
+
+// Get license details
+def controlling_license = null;
+if ( entitlementLogEntry.packageEntitlement != null ) {
+  controlling_license = entitlementLogEntry.packageEntitlement.owner.getControllingLicense()
+}
+else if ( entitlementLogEntry.directEntitlement != null ) {
+  controlling_license = entitlementLogEntry.directEntitlement.owner.getControllingLicense()
+}
+
+// Try to load the license details
+try {
+  def license_details_future = (controlling_license?.getAt(licenseProperty) as Future)
+  license_details = license_details_future.get()
+}
+catch(Exception e) {
+}
+
+System.out.println("Got controlling license details ${license_details}");
+
+if ( res instanceof PackageContentItem ) {
+
+  PackageContentItem pci = res as PackageContentItem
+  resource_title = pci.pti.titleInstance.name
+  resource_type = pci.pti.titleInstance.type?.value
+
+  pci.pti.titleInstance.identifiers.each { id ->
+    resource_identifiers.add([
+      type: id.identifier.ns.value,
+      value: id.identifier.value
+    ])
+  }
+
+  pci.coverage.each { it ->
+    coverage_summary.add( 
+    [ 
+      'startDate': it.startDate,
+      'endDate': it.endDate,
+      'startVolume': it.startVolume,
+      'startIssue': it.startIssue,
+      'endVolume': it.endVolume,
+      'endIssue': it.endIssue,
+      'summary': it.toString()
+    ] )
+  }
+}
+
+/**
+ *
+ * linkedLicenses.remoteObject.customProperties
+ * linkedLicenses.remoteObject.type.value
+ */
+json {
+          'seqid' entitlementLogEntry.seqid
+  'resource_name' res.name
+          'title' resource_title
+       'coverage' coverage_summary
+    'identifiers' resource_identifiers
+       'suppress' res.suppressFromDiscovery
+           'type' resource_type
+        'license' license_details
+}
