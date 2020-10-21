@@ -1,0 +1,8 @@
+import org.olf.general.StringTemplate
+
+import groovy.transform.*
+
+
+@Field StringTemplate stringTemplate
+
+json g.render(stringTemplate, [expand: ['idScopes']])
