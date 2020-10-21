@@ -15,6 +15,10 @@ class EmbargoSpec extends Specification implements DataTest, JsonViewTest {
 
   GrailsWebDataBinder binder
   
+  // ToDo: Requested by steve - G4 changed the way the tests work - this now requires a tenant
+  // so comment out for now and revisit.
+
+/*
   void setupSpec() {
     mockDomains TestEntity, Embargo, EmbargoStatement
   }
@@ -65,6 +69,7 @@ class EmbargoSpec extends Specification implements DataTest, JsonViewTest {
       result.json.movingWallEnd.length == 30
       result.json.movingWallEnd.unit == 'Months'
   }
+*/
   
 }
 

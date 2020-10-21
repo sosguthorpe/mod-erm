@@ -22,6 +22,9 @@ import java.time.LocalDate
 import spock.lang.Stepwise
 import spock.lang.Unroll
 
+import groovy.util.logging.Slf4j
+
+@Slf4j
 @Integration
 @Stepwise
 class AgreementLifecycleSpec extends BaseSpec {
@@ -68,11 +71,37 @@ class AgreementLifecycleSpec extends BaseSpec {
     then: "The system responds with an empty list"
       resp.size() == 0
   }
+
+  // 14th Oct 2020 - gson template added an expand parameter that caused creating a new agreement to explode
+  // if it has no items. Since this is the operation most people will do when they first open agreements,
+  // add an explicit test for that case.
+  void "Check creating an empty agreement"() {
+
+    final LocalDate today = LocalDate.now()
+    final LocalDate tomorrow = today.plusDays(1)
+
+    when: "Post to create new empty agreement named Empty Agreement Test"
+      log.debug("Create new agreement : Empty Agreement Test");
+      Map respMap = doPost("/erm/sas", {
+        'name' 'Empty Agreement Test'
+        'agreementStatus' 'Active' // This can be the value or id but not the label
+        'periods' ([{
+          'startDate' today.toString()
+          'endDate' tomorrow.toString()
+        }])
+      })
+
+    then: "Response is good and we have a new ID"
+      respMap.id != null
+
+  }
   
   @Unroll
   void "Create an Agreement named #agreement_name with status #status" (agreement_name, status, packageName) {
     final LocalDate today = LocalDate.now()
     final LocalDate tomorrow = today.plusDays(1)
+
+    log.debug("Create Agreement Tests....");
     
     def pkgSize = 0    
     when: "Query for Agreement with name #agreement_name"
@@ -101,6 +130,8 @@ class AgreementLifecycleSpec extends BaseSpec {
     when: "Looked up package item count"
       def packageId = resp[0].id
       
+      log.debug("we have looked up package ${packageName} and found it's ID to be ${packageId}.. get that record");
+
       Map respMap = doGet("/erm/resource", [
         perPage: 1, // Just fetch one record with the stats included. We only want the full count.
         stats: true,
@@ -114,6 +145,7 @@ class AgreementLifecycleSpec extends BaseSpec {
       (pkgSize = respMap.totalRecords) > 0
       
     when: "Post to create new agreement named #agreement_name with our package"
+      log.debug("Create new agreement : ${agreement_name}");
       respMap = doPost("/erm/sas", {
         'name' agreement_name
         'agreementStatus' status // This can be the value or id but not the label
@@ -279,6 +311,40 @@ class AgreementLifecycleSpec extends BaseSpec {
       resp.id != null
       resp.agreementStatus?.value == 'requested'
       resp.reasonForClosure == null
+  }
+
+  void "update active titles log " () {
+    when: 'we trigger an update of the entitlements log'
+      Map resp = doGet("/erm/admin/triggerEntitlementLogUpdate")
+
+    then: 'we check that the expected entitlements are present'
+      1==1
+
+    when: 'A second run should not add any more entitlements'
+      Map resp2 = doGet("/erm/admin/triggerEntitlementLogUpdate")
+
+    then: 'we check that the expected entitlements are present'
+      1==1
+  }
+
+  void "check active titles log"() {
+    when: 'Get the first page of entitlement log entries'
+      // Wait for coverage processing to complete
+      Thread.sleep(10000);
+
+      Map resp = doGet("/erm/entitlementLogEntry",[
+        sort: 'seqid',
+        perPage: 10,
+        stats: true,
+        filters:[
+          "seqid>0"
+        ]
+      ])
+
+
+    then: 'we check that the expected number of log events are returned'
+      resp.totalRecords == 137
+      log.debug("Got response ${resp}");
   }
 }
 
