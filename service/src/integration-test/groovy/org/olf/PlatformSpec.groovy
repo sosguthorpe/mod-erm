@@ -13,7 +13,7 @@ import spock.lang.*
 class PlatformSpec extends BaseSpec {
 
   @Unroll
-  void "Test Platform #name creation" ( final String platformUrl, final String name, final String localCode ) {
+  void "Test Platform #name creation" ( final String platformUrl, final String name ) {
     final String tenantid = currentTenant.toLowerCase()
     when: 'Resolve platform from url #platformUrl'
     
@@ -28,8 +28,8 @@ class PlatformSpec extends BaseSpec {
       platform.localCode == localCode
 
     where:
-      platformUrl                             || name                 || localCode
-      'http://content.apa.org/journals/str'   || 'content.apa.org'    || 'ciando'
+      platformUrl                             || name
+      'http://content.apa.org/journals/str'   || 'content.apa.org'
 
   }
 }
