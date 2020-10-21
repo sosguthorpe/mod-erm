@@ -10,15 +10,26 @@ public class Platform implements MultiTenant<Platform> {
 
   String id
   String name
+  String localCode
+
+  static hasMany = [
+        locators: PlatformLocator,
+  ]
+
+  static mappedBy = [
+    locators: 'owner'
+  ]
 
   static mapping = {
                    id column:'pt_id', generator: 'uuid2', length:36
               version column:'pt_version'
                  name column:'pt_name'
+            localCode column: 'pt_local_code'
   }
 
   static constraints = {
           name(nullable:false, blank:false)
+     localCode(nullable:true)
   }
 
   public static Platform resolve(String url) {
