@@ -375,6 +375,22 @@
           "methods": ["POST"],
           "pathPattern": "/erm/validate/remoteKB/*",
           "permissionsRequired": [ "erm.kbs.item.post", "erm.kbs.item.put" ]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/erm/sts"
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/sts/{id}"
+        },{
+          "methods": ["POST"],
+          "pathPattern": "/erm/sts"
+        },{
+          "methods": ["PUT"],
+          "pathPattern": "/erm/sts/{id}"
+        },{
+          "methods": ["DELETE"],
+          "pathPattern": "/erm/sts/{id}"
         }
       ]
     },{

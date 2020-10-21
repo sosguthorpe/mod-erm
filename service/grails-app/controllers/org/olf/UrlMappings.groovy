@@ -70,6 +70,8 @@ class UrlMappings {
       }
     }
 
+    '/erm/sts'(controller: 'stringTemplate')
+
     '/erm/titles'(resources: 'title', excludes: ['patch', 'save', 'create', 'edit', 'delete']) {
       collection {
         "/entitled" (action: 'entitled')

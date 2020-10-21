@@ -41,6 +41,12 @@ databaseChangeLog = {
     addPrimaryKey(columnNames: "ele_id", constraintName: "entitlement_log_entry_jobPK", tableName: "entitlement_log_entry")
   }
 
+  changeSet(author: "efreestone (manual)", id: "202010211111-001") {
+    addColumn (tableName: "platform" ) {
+      column(name: "pt_local_code", type: "VARCHAR(255)")
+    }
+  }
+  
   changeSet(author: "efreestone (manual)", id: "202010211324-001") {
     createTable(tableName: "string_template") {
       column(name: "st_id", type: "VARCHAR(36)") {
@@ -65,4 +71,5 @@ databaseChangeLog = {
       }
     }
   }
+
 }
