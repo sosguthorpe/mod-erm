@@ -52,6 +52,9 @@ databaseChangeLog = {
       column(name: "st_id", type: "VARCHAR(36)") {
         constraints(nullable: "false")
       }
+      column(name: "version", type: "BIGINT") {
+          constraints(nullable: "false")
+      }
       column(name: "st_name", type: "VARCHAR(255)") {
         constraints(nullable: "false")
       }
@@ -69,6 +72,12 @@ databaseChangeLog = {
       column(name: "id_scope", type: "VARCHAR(255)") {
           constraints(nullable: "false")
       }
+    }
+  }
+
+  changeSet(author: "efreestone (manual)", id: "202010211324-003") {
+    addColumn(tableName: "string_template_scopes") {
+      column(name: "string_template_id", type: "VARCHAR(255)")
     }
   }
 

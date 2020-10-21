@@ -1,6 +1,8 @@
 package org.olf.general
 
-class StringTemplate {
+import grails.gorm.MultiTenant
+
+class StringTemplate implements MultiTenant<StringTemplate> {
 
   String id
   String name
@@ -24,6 +26,6 @@ class StringTemplate {
     name column:'st_name'
     rule column:'st_rule'
     context column:'st_context'
-    idScopes cascade: 'all-delete-orphan', joinTable: [name: "string_template_scopes", column: "id_scope"]
+    idScopes cascade: 'all-delete-orphan', joinTable: [name: 'string_template_scopes', key: 'string_template_id', column: 'id_scope']
   }
 }
