@@ -29,6 +29,7 @@ public class Platform implements MultiTenant<Platform> {
 
   static constraints = {
           name(nullable:false, blank:false)
+     localCode(nullable:true)
   }
 
   public static Platform resolve(String url) {
