@@ -5,4 +5,4 @@ import groovy.transform.*
 
 @Field StringTemplate stringTemplate
 
-json g.render(stringTemplate, [expand: ['idScopes']])
+json g.render(stringTemplate, [expand: ['context', 'idScopes']])

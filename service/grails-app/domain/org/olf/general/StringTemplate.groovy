@@ -9,16 +9,25 @@ import org.olf.general.StringTemplateHelpers
 
 import grails.gorm.MultiTenant
 
+import com.k_int.web.toolkit.refdata.Defaults
+import com.k_int.web.toolkit.refdata.RefdataValue
+
 class StringTemplate implements MultiTenant<StringTemplate> {
 
   String id
   String name
   String rule
-  public final enum Context {
+
+  @Defaults(['urlProxier', 'urlCustomiser'])
+  RefdataValue context
+
+/*   public final enum Context {
     urlProxier,
     urlCustomiser
   }
-  Context context
+  Context context */
+
+
 
   /*
    * The useage of this list will depend somewhat on context,
