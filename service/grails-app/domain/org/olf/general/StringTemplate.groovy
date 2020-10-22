@@ -1,5 +1,12 @@
 package org.olf.general
 
+import uk.co.cacoethes.handlebars.HandlebarsTemplateEngine
+import com.github.jknack.handlebars.Handlebars
+
+import com.github.jknack.handlebars.helper.StringHelpers
+import com.github.jknack.handlebars.EscapingStrategy
+import org.olf.general.StringTemplateHelpers
+
 import grails.gorm.MultiTenant
 
 class StringTemplate implements MultiTenant<StringTemplate> {
@@ -28,4 +35,36 @@ class StringTemplate implements MultiTenant<StringTemplate> {
     context column:'st_context'
     idScopes cascade: 'all-delete-orphan', joinTable: [name: 'string_template_scopes', key: 'string_template_id', column: 'id_scope']
   }
+
+
+  String customiseString(Map binding) {
+
+    // Set up handlebars configuration
+
+    EscapingStrategy noEscaping = new EscapingStrategy() {
+      public String escape(final CharSequence value) {
+        return value.toString()
+      }
+    };
+
+    def handlebars = new Handlebars().with(noEscaping)
+    
+    handlebars.registerHelpers(StringHelpers)
+    handlebars.registerHelpers(StringTemplateHelpers)
+    def engine = new HandlebarsTemplateEngine()
+    engine.handlebars = handlebars
+
+
+    String outputString = ''
+    def template = engine.createTemplate(rule).make(binding)
+    StringWriter sw = new StringWriter()
+    template.writeTo(sw)
+    outputString = sw.toString()
+
+    return outputString
+  }
+
+
+
+
 }
