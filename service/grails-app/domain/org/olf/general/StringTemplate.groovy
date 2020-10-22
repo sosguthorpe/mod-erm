@@ -21,14 +21,6 @@ class StringTemplate implements MultiTenant<StringTemplate> {
   @Defaults(['urlProxier', 'urlCustomiser'])
   RefdataValue context
 
-/*   public final enum Context {
-    urlProxier,
-    urlCustomiser
-  }
-  Context context */
-
-
-
   /*
    * The useage of this list will depend somewhat on context,
    * but the general idea is that this captures the 'scope' of a translation.
