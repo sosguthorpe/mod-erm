@@ -396,6 +396,14 @@
           "methods": ["DELETE"],
           "pathPattern": "/erm/sts/{id}",
           "permissionsRequired": ["erm.sts.item.delete"]
+        },{
+          "methods": ["POST"],
+          "pathPattern": "/erm/sts/template/{id}",
+          "permissionsRequired": ["erm.sts.template"]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/sts/template/{id}",
+          "permissionsRequired": ["erm.sts.collection.get"]
         }
       ]
     },{
@@ -1023,6 +1031,11 @@
         "erm.sts.edit",
         "erm.sts.item.delete"
       ]
+    },
+    {
+      "permissionName": "erm.sts.template",
+      "displayName": "String templates perform template",
+      "description": "Performs string templating on specified id"
     }
   ],
   "launchDescriptor": {

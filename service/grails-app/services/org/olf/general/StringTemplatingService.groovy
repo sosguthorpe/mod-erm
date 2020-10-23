@@ -1,5 +1,7 @@
 package org.olf.general
 
+import net.sf.json.JSONObject
+
 import org.olf.general.StringTemplate
 
 public class StringTemplatingService {
@@ -52,8 +54,10 @@ public class StringTemplatingService {
          value: "customisedUrl"
        ]
       */
-      // Think we only need a shallow copy here
-      Map customBinding = binding.clone()
+      
+      // Think we only need a shallow copy here to pass to the proxiers
+      JSONObject customBinding = new JSONObject()
+      customBinding.putAll(binding)
       customBinding.inputUrl = customiserMap.value
 
       customiserMap.proxiedUrls = performTemplatingByContext(customBinding, "urlProxiers", stringTemplates)
