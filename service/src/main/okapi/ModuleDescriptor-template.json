@@ -315,6 +315,20 @@
           "pathPattern": "/erm/pci/{id}",
           "permissionsRequired": [ "erm.pci.item.put" ]
         },
+        
+        {
+          "methods": ["GET"],
+          "pathPattern": "/erm/platforms",
+          "permissionsRequired": [ "erm.platforms.collection.get" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/platforms/{id}",
+          "permissionsRequired": [ "erm.platforms.item.get" ]
+        },{
+          "methods": ["PUT"],
+          "pathPattern": "/erm/platforms/{id}",
+          "permissionsRequired": [ "erm.platforms.item.put" ]
+        },
 
         {
           "methods": ["GET"],
@@ -794,6 +808,35 @@
       "subPermissions": [
         "erm.pti.view",
         "erm.pti.item.put"
+      ]
+    },
+    {
+      "permissionName": "erm.platforms.collection.get",
+      "displayName": "Platform collection get",
+      "description": "Get a collection of platform records"
+    },
+    {
+      "permissionName": "erm.platforms.item.get",
+      "displayName": "Platform item get",
+      "description": "Get platform record"
+    },
+    {
+      "permissionName": "erm.platforms.view",
+      "subPermissions": [
+        "erm.platforms.collection.get",
+        "erm.platforms.item.get"
+      ]
+    },
+    {
+      "permissionName": "erm.platforms.item.put",
+      "displayName": "Platform item put",
+      "description": "Put platform record"
+    },
+    {
+      "permissionName": "erm.platforms.edit",
+      "subPermissions": [
+        "erm.platforms.view",
+        "erm.platforms.item.put"
       ]
     },
     {
