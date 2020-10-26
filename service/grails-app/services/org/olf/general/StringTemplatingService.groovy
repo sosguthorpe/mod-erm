@@ -1,8 +1,15 @@
 package org.olf.general
 
 import net.sf.json.JSONObject
+import grails.async.Promise
+import grails.async.Promises
+
+import grails.gorm.multitenancy.Tenants
 
 import org.olf.general.StringTemplate
+import org.olf.kb.Platform
+import org.olf.kb.PlatformTitleInstance
+import org.olf.kb.ErmResource
 
 public class StringTemplatingService {
 
@@ -33,47 +40,50 @@ public class StringTemplatingService {
    * This method will store the business logic determining heirachy of StringTemplate contexts,
    * and whether these "stack" or not.
    */
-  public Map performStringTemplates(String id, Map binding) {
-    Map output = [
-      url: binding.inputUrl
+  public ArrayList<Map> performStringTemplates(Map stringTemplates, Map binding) {
+    ArrayList output = [
+      [
+        name: "defaultUrl",
+        url: binding.inputUrl
+      ]
     ]
 
-    Map stringTemplates = findStringTemplatesForId(id)
-
     // First get all customised urls
-    output.customisedUrls = performTemplatingByContext(binding, "urlCustomisers", stringTemplates)
-
-    // Then proxy all urls--first the default one
-    output.proxiedUrls = performTemplatingByContext(binding, "urlProxiers", stringTemplates)
+    ArrayList customisedUrls = performTemplatingByContext(binding, "urlCustomisers", stringTemplates)
+    // Then proxy all urls
+    ArrayList proxiedUrls = proxiedUrls = performTemplatingByContext(binding, "urlProxiers", stringTemplates)
     
-    //Then proxy each customised url
-    output.customisedUrls.collect { customiserMap ->
+    // Finally we proxy all the customised urls
+    ArrayList proxiedCustomisedUrls = []
+    customisedUrls.each{ customiserMap ->
       /*
        customiserMap = [
          name: "customiserName"
-         value: "customisedUrl"
+         url: "customisedUrl"
        ]
       */
-      
       // Think we only need a shallow copy here to pass to the proxiers
       JSONObject customBinding = new JSONObject()
       customBinding.putAll(binding)
-      customBinding.inputUrl = customiserMap.value
+      customBinding.inputUrl = customiserMap.url
+      proxiedCustomisedUrls.add(performTemplatingByContext(customBinding, "urlProxiers", stringTemplates, customiserMap.url)) 
+    }
 
-      customiserMap.proxiedUrls = performTemplatingByContext(customBinding, "urlProxiers", stringTemplates)
-      return customiserMap
-    } 
+    // Add all of these to the output List
+    output.addAll(proxiedUrls)
+    output.addAll(customisedUrls)
+    output.addAll(proxiedCustomisedUrls)
 
     return output
   }
 
 
   // Simpler method which just returns a list of maps for a single StringTemplateContext--used for nested templating
-  private ArrayList<Map> performTemplatingByContext(Map binding, String context, Map stringTemplates) {
+  private ArrayList<Map> performTemplatingByContext(Map binding, String context, Map stringTemplates, String nameSuffix = '') {
     return stringTemplates[context]?.collect { st ->
       [
-        name: st.name,
-        value: st.customiseString(binding)
+        name: nameSuffix ? "${st.name}-${nameSuffix}" : st.name,
+        url: st.customiseString(binding)
       ]
     }
   }
@@ -108,5 +118,43 @@ public class StringTemplatingService {
     return stringTemplates
   }
 
+  // This method generates the templatedUrls for PTIs, given the stringTemplates and platformLocalCode
+  public void generateTemplatedUrlsForPti(final PlatformTitleInstance pti, Map stringTemplates, String platformLocalCode ) {
+    log.debug "generateTemplatedUrlsForPti called for (${pti.id})"
+    Map binding = [
+      url: pti.url,
+      platformLocalCode: platformLocalCode
+    ]
+    println("LOGDEBUG TEMPLATEDURLS: ${performStringTemplates(stringTemplates, binding)}")
+  }
 
+  public void generateTemplatedUrlsForErmResources(final String tenantId) {
+    Promise p = Promises.task {
+      Tenants.withId(tenantId) {
+        
+        /* 
+         * Right now we only scope URL templates to Platforms, so fetch a list of Platforms,
+         * then for each one fetch the stringTemplates and a list of PTIs with that platform,
+         * then perform stringTemplating on each PTI
+         */
+        Platform.getAll().each {
+          println("LOGDEBUG, Platform ${it.name}")
+          Map stringTemplates = findStringTemplatesForId(it.id)
+          String platformLocalCode = it.localCode
+          /* 
+           * Now we have the stringTemplates and platformLocalCode for the platform,
+           * find all PTIs on this platform and remove then re-add the templatedUrls
+           */
+           PlatformTitleInstance.findAllByPlatform(it).each { pti ->
+             println("LOGDEBUG, PTI ${pti.name}")
+             generateTemplatedUrlsForErmResource(it, it.class.name)
+           }
+        }
+      }
+      
+    }
+    p.onError{ Throwable e ->
+      log.error "Couldn't generate templated urls", e
+    }
+  }
 }

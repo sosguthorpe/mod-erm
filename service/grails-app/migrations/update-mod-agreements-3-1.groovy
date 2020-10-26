@@ -81,4 +81,26 @@ databaseChangeLog = {
     }
   }
 
+  changeSet(author: "efreestone (manual)", id: "202010261056-001") {
+    createTable(tableName: "templated_url") {
+      column(name: "tu_id", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+      column(name: "version", type: "BIGINT") {
+          constraints(nullable: "false")
+      }
+      column(name: "tu_name", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
+      column(name: "tu_url", type: "TEXT") {
+          constraints(nullable: "false")
+      }
+      column(name: "tu_resource_fk", type: "VARCHAR(36)")
+    }
+  }
+
+  changeSet(author: "efreestone (manual)", id: "202010261056-002") {
+    addForeignKeyConstraint(baseColumnNames: "tu_resource_fk", baseTableName: "templated_url", constraintName: "templated_url_erm_resourceFK", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "erm_resource")
+  }
+
 }
