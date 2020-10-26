@@ -397,8 +397,8 @@
           "pathPattern": "/erm/sts/{id}",
           "permissionsRequired": ["erm.sts.item.delete"]
         },{
-          "methods": ["POST"],
-          "pathPattern": "/erm/sts/template/{id}",
+          "methods": ["GET"],
+          "pathPattern": "/erm/sts/template",
           "permissionsRequired": ["erm.sts.template"]
         },{
           "methods": ["GET"],

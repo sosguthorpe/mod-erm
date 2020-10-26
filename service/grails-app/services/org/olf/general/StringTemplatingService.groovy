@@ -51,7 +51,7 @@ public class StringTemplatingService {
     // First get all customised urls
     ArrayList customisedUrls = performTemplatingByContext(binding, "urlCustomisers", stringTemplates)
     // Then proxy all urls
-    ArrayList proxiedUrls = proxiedUrls = performTemplatingByContext(binding, "urlProxiers", stringTemplates)
+    ArrayList proxiedUrls = performTemplatingByContext(binding, "urlProxiers", stringTemplates)
     
     // Finally we proxy all the customised urls
     ArrayList proxiedCustomisedUrls = []
@@ -66,7 +66,8 @@ public class StringTemplatingService {
       JSONObject customBinding = new JSONObject()
       customBinding.putAll(binding)
       customBinding.inputUrl = customiserMap.url
-      proxiedCustomisedUrls.add(performTemplatingByContext(customBinding, "urlProxiers", stringTemplates, customiserMap.url)) 
+      // Add all the proxied-customised urls to a list
+      proxiedCustomisedUrls.addAll(performTemplatingByContext(customBinding, "urlProxiers", stringTemplates, customiserMap.name)) 
     }
 
     // Add all of these to the output List
@@ -119,16 +120,30 @@ public class StringTemplatingService {
   }
 
   // This method generates the templatedUrls for PTIs, given the stringTemplates and platformLocalCode
-  public void generateTemplatedUrlsForPti(final PlatformTitleInstance pti, Map stringTemplates, String platformLocalCode ) {
+  public void generateTemplatedUrlsForPti(final PlatformTitleInstance pti, Map stringTemplates, String platformLocalCode='' ) {
     log.debug "generateTemplatedUrlsForPti called for (${pti.id})"
-    Map binding = [
-      url: pti.url,
-      platformLocalCode: platformLocalCode
-    ]
-    println("LOGDEBUG TEMPLATEDURLS: ${performStringTemplates(stringTemplates, binding)}")
+    
+    // First clear existing templatedUrls
+    pti.templatedUrls.clear()
+
+    // Then add new ones (If a url exists on this PTI)
+    if (pti.url) {
+      Map binding = [
+        inputUrl: pti.url,
+        platformLocalCode: platformLocalCode
+      ]
+      performStringTemplates(stringTemplates, binding).each { templatedUrl ->
+        TemplatedUrl tu = new TemplatedUrl(templatedUrl)
+        pti.addToTemplatedUrls(tu)
+      }
+      pti.save(failOnError: true)
+    } else {
+      log.warn "No url found for PTI (${pti.id})"
+    }
   }
 
   public void generateTemplatedUrlsForErmResources(final String tenantId) {
+    log.debug "generateTemplatedUrlsForErmResources called"
     Promise p = Promises.task {
       Tenants.withId(tenantId) {
         
@@ -138,7 +153,6 @@ public class StringTemplatingService {
          * then perform stringTemplating on each PTI
          */
         Platform.getAll().each {
-          println("LOGDEBUG, Platform ${it.name}")
           Map stringTemplates = findStringTemplatesForId(it.id)
           String platformLocalCode = it.localCode
           /* 
@@ -146,8 +160,7 @@ public class StringTemplatingService {
            * find all PTIs on this platform and remove then re-add the templatedUrls
            */
            PlatformTitleInstance.findAllByPlatform(it).each { pti ->
-             println("LOGDEBUG, PTI ${pti.name}")
-             generateTemplatedUrlsForErmResource(it, it.class.name)
+             generateTemplatedUrlsForPti(pti, stringTemplates, platformLocalCode)
            }
         }
       }

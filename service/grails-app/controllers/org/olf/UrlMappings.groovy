@@ -72,7 +72,7 @@ class UrlMappings {
 
     '/erm/sts' (resources: 'stringTemplate') {
       collection {
-        "/template/$id"  (controller: 'stringTemplate', action: 'templateStringsForId', method: 'POST')
+        "/template"  (controller: 'stringTemplate', action: 'refreshTemplatedUrls', method: 'GET')
         "/template/$id"  (controller: 'stringTemplate', action: 'getStringTemplatesForId', method: 'GET')
       }
     }
