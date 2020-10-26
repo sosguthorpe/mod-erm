@@ -30,16 +30,6 @@ class StringTemplateController extends OkapiTenantAwareController<StringTemplate
     def result = [:]
     render result as JSON
   }
-  /* def templateStringsForId(String id) {
-
-    // Grab the body to use as the binding for the templates
-    JSONObject binding = request.JSON
-
-    def templatesForId = stringTemplatingService.findStringTemplatesForId(id)
-    def result = stringTemplatingService.performStringTemplates(templatesForId, binding)
-
-    render result as JSON
-  } */
 
   def getStringTemplatesForId(String id) {
     def result = stringTemplatingService.findStringTemplatesForId(id)
