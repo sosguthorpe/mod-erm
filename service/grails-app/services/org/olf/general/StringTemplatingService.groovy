@@ -120,11 +120,13 @@ public class StringTemplatingService {
   }
 
   // This method generates the templatedUrls for PTIs, given the stringTemplates and platformLocalCode
-  public void generateTemplatedUrlsForPti(final PlatformTitleInstance pti, Map stringTemplates, String platformLocalCode='' ) {
+  public void generateTemplatedUrlsForPti(final PlatformTitleInstance pti, Map stringTemplates, String platformLocalCode='', boolean deleteUrls = false ) {
     log.debug "generateTemplatedUrlsForPti called for (${pti.id})"
     
-    // First clear existing templatedUrls
-    pti.templatedUrls.clear()
+    if (deleteUrls) {
+      // First clear existing templatedUrls
+      pti.templatedUrls.clear()
+    }
 
     // Then add new ones (If a url exists on this PTI)
     if (pti.url) {
@@ -142,29 +144,82 @@ public class StringTemplatingService {
     }
   }
 
+  // This method generates the templatedUrls for PTIs, without the stringTemplates and platformCode handed off
+  public void generateTemplatedUrlsForPti(final PlatformTitleInstance pti) {
+    Platform p = pti.platform
+    Map stringTemplates = findStringTemplatesForId(p.id)
+    String platformLocalCode = p.localCode
+
+    generateTemplatedUrlsForPti(pti, stringTemplates, platformLocalCode, true)
+  }
+
   public void generateTemplatedUrlsForErmResources(final String tenantId) {
     log.debug "generateTemplatedUrlsForErmResources called"
+
     Promise p = Promises.task {
+      log.debug "LOGDEBUG TASK START TIME"
       Tenants.withId(tenantId) {
+
+        // Initially we should clear all templated URLS in the system
+        TemplatedUrl.executeUpdate('DELETE FROM TemplatedUrl')
         
         /* 
          * Right now we only scope URL templates to Platforms, so fetch a list of Platforms,
          * then for each one fetch the stringTemplates and a list of PTIs with that platform,
          * then perform stringTemplating on each PTI
          */
-        Platform.getAll().each {
-          Map stringTemplates = findStringTemplatesForId(it.id)
-          String platformLocalCode = it.localCode
-          /* 
-           * Now we have the stringTemplates and platformLocalCode for the platform,
-           * find all PTIs on this platform and remove then re-add the templatedUrls
-           */
-           PlatformTitleInstance.findAllByPlatform(it).each { pti ->
-             generateTemplatedUrlsForPti(pti, stringTemplates, platformLocalCode)
-           }
+
+        final int platformBatchSize = 100
+        int platformBatchCount = 0
+
+        // Fetch the ids and localCodes for all platforms
+        List<String> platforms = Platform.createCriteria().list ([max: platformBatchSize, offset: platformBatchSize * platformBatchCount]) {
+          order 'id'
+          projections {
+            property('id')
+            property('localCode')
+          }
+        }
+        // This will return [[00998c04-8ab3-49ab-9053-c3e8cff328c2, ciando], [021bfce4-0533-465e-9340-1ceaad2a530f, localCode2], ...]
+        while (platforms && platforms.size() > 0) {
+          platformBatchCount ++
+          platforms.each { platform ->
+
+            Map stringTemplates = findStringTemplatesForId(platform[0])
+            String platformLocalCode = platform[1]
+
+            /* 
+            * Now we have the stringTemplates and platformLocalCode for the platform,
+            * find all PTIs on this platform and remove then re-add the templatedUrls
+            */
+
+            final int ptiBatchSize = 100
+            int ptiBatchCount = 0
+            def ptis = PlatformTitleInstance.createCriteria().list ([max: ptiBatchSize, offset: ptiBatchSize * ptiBatchCount]) {
+              order 'id'
+              eq('platform.id', platform[0])
+            }
+
+            while (ptis && ptis.size() > 0) {
+              ptiBatchCount ++
+              ptis.each { pti ->
+                generateTemplatedUrlsForPti(pti, stringTemplates, platformLocalCode)
+              }
+
+              // Next page
+              ptis = PlatformTitleInstance.createCriteria().list ([max: ptiBatchSize, offset: ptiBatchSize * ptiBatchCount]) {
+                order 'id'
+                eq('platform.id', platform[0])
+              }
+            }
+          }
+          // Next page
+          platforms = Platform.createCriteria().list ([max: platformBatchSize, offset: platformBatchSize * platformBatchCount]) {
+            order 'id'
+          }
         }
       }
-      
+      log.debug "LOGDEBUG TASK END TIME"
     }
     p.onError{ Throwable e ->
       log.error "Couldn't generate templated urls", e
