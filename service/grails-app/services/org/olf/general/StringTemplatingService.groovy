@@ -122,37 +122,24 @@ public class StringTemplatingService {
   }
 
   // This method generates the templatedUrls for PTIs, given the stringTemplates and platformLocalCode
-  public void generateTemplatedUrlsForPti(final PlatformTitleInstance pti, Map stringTemplates, String platformLocalCode='', boolean deleteUrls = false ) {
-    log.debug "generateTemplatedUrlsForPti called for (${pti.id})"
-    
-    if (deleteUrls) {
-      // First clear existing templatedUrls
-      pti.templatedUrls.clear()
-    }
-
+  public void generateTemplatedUrlsForPti(final List<String> pti, Map stringTemplates, String platformLocalCode='') {
+    log.debug "generateTemplatedUrlsForPti called for (${pti[0]})"
+    String ptiId = pti[0]
+    String ptiUrl = pti[1]
     // Then add new ones (If a url exists on this PTI)
-    if (pti.url) {
+    if (ptiUrl) {
       Map binding = [
-        inputUrl: pti.url,
+        inputUrl: ptiUrl,
         platformLocalCode: platformLocalCode
       ]
       performStringTemplates(stringTemplates, binding).each { templatedUrl ->
         TemplatedUrl tu = new TemplatedUrl(templatedUrl)
-        pti.addToTemplatedUrls(tu)
+        tu.resource = PlatformTitleInstance.get(ptiId)
+        tu.save(flush:true, failOnError: true)
       }
-      pti.save(failOnError: true)
     } else {
-      log.warn "No url found for PTI (${pti.id})"
+      log.warn "No url found for PTI (${ptiId})"
     }
-  }
-
-  // This method generates the templatedUrls for PTIs, without the stringTemplates and platformCode handed off
-  public void generateTemplatedUrlsForPti(final PlatformTitleInstance pti) {
-    Platform p = pti.platform
-    Map stringTemplates = findStringTemplatesForId(p.id)
-    String platformLocalCode = p.localCode
-
-    generateTemplatedUrlsForPti(pti, stringTemplates, platformLocalCode, true)
   }
 
   // Split these out so that we can skip them in CompileStatic
@@ -170,10 +157,14 @@ public class StringTemplatingService {
   }
 
   @CompileStatic(SKIP)
-  private List<PlatformTitleInstance> batchFetchPtis(final int ptiBatchSize, int ptiBatchCount, String platformId) {
-    List<PlatformTitleInstance> ptis = PlatformTitleInstance.createCriteria().list ([max: ptiBatchSize, offset: ptiBatchSize * ptiBatchCount]) {
+  private List<List<String>> batchFetchPtis(final int ptiBatchSize, int ptiBatchCount, String platformId) {
+    List<List<String>> ptis = PlatformTitleInstance.createCriteria().list ([max: ptiBatchSize, offset: ptiBatchSize * ptiBatchCount]) {
       order 'id'
       eq('platform.id', platformId)
+      projections {
+        property('id')
+        property('url')
+      }
     }
     return ptis
   }
@@ -202,36 +193,38 @@ public class StringTemplatingService {
       final int platformBatchSize = 100
       int platformBatchCount = 0
 
-      // Fetch the ids and localCodes for all platforms
-      List<List<String>> platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount)
+      Platform.withNewTransaction {
+        // Fetch the ids and localCodes for all platforms
+        List<List<String>> platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount)
 
-      // This will return [[00998c04-8ab3-49ab-9053-c3e8cff328c2, ciando], [021bfce4-0533-465e-9340-1ceaad2a530f, localCode2], ...]
-      while (platforms && platforms.size() > 0) {
-        platformBatchCount ++
-        platforms.each { platform ->
-          Map stringTemplates = findStringTemplatesForId(platform[0])
-          String platformLocalCode = platform[1]
+        // This will return [[00998c04-8ab3-49ab-9053-c3e8cff328c2, ciando], [021bfce4-0533-465e-9340-1ceaad2a530f, localCode2], ...]
+        while (platforms && platforms.size() > 0) {
+          platformBatchCount ++
+          platforms.each { platform ->
+            Map stringTemplates = findStringTemplatesForId(platform[0])
+            String platformLocalCode = platform[1]
 
-          /* 
-          * Now we have the stringTemplates and platformLocalCode for the platform,
-          * find all PTIs on this platform and remove then re-add the templatedUrls
-          */
+              /* 
+              * Now we have the stringTemplates and platformLocalCode for the platform,
+              * find all PTIs on this platform and remove then re-add the templatedUrls
+              */
 
-          final int ptiBatchSize = 100
-          int ptiBatchCount = 0
-          List<PlatformTitleInstance> ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, platform[0])
-          while (ptis && ptis.size() > 0) {
-            ptiBatchCount ++
-            ptis.each { pti ->
-              generateTemplatedUrlsForPti(pti, stringTemplates, platformLocalCode)
-            }
+              final int ptiBatchSize = 100
+              int ptiBatchCount = 0
+              List<List<String>> ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, platform[0])
+              while (ptis && ptis.size() > 0) {
+                ptiBatchCount ++
+                ptis.each { pti ->
+                  generateTemplatedUrlsForPti(pti, stringTemplates, platformLocalCode)
+                }
 
+                // Next page
+                ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, platform[0])
+              }
             // Next page
-            ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, platform[0])
+            platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount)
           }
         }
-        // Next page
-        platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount)
       }
     }
     log.debug "LOGDEBUG TASK END TIME"
