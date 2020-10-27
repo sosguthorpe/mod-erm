@@ -1,16 +1,20 @@
 package org.olf.general
 
 import net.sf.json.JSONObject
-import grails.async.Promise
-import grails.async.Promises
 
 import grails.gorm.multitenancy.Tenants
+import grails.gorm.transactions.Transactional
 
 import org.olf.general.StringTemplate
 import org.olf.kb.Platform
 import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.ErmResource
 
+import static groovy.transform.TypeCheckingMode.SKIP
+import groovy.transform.CompileStatic
+
+@CompileStatic
+@Transactional
 public class StringTemplatingService {
 
   /*
@@ -21,12 +25,11 @@ public class StringTemplatingService {
     Map templates = [:]
     // Below we build up the relevant StringTemplates scope by scope
 
-    // urlProxiers treat the StringTemplate's idScopes as a blacklist,  use queryNotInScope...
+    // urlProxiers treat the StringTemplate's idScopes as a denylist,  use queryNotInScope...
     templates.urlProxiers = queryNotInScopeWithContext(id, 'urlproxier')
 
-    // urlCustomisers treat the StringTemplate's idScopes as a whitelist, use queryInScope...
+    // urlCustomisers treat the StringTemplate's idScopes as a allowlist, use queryInScope...
     templates.urlCustomisers = queryInScopeWithContext(id, 'urlcustomiser')
-
     return templates
   }
 
@@ -40,21 +43,17 @@ public class StringTemplatingService {
    * This method will store the business logic determining heirachy of StringTemplate contexts,
    * and whether these "stack" or not.
    */
-  public ArrayList<Map> performStringTemplates(Map stringTemplates, Map binding) {
-    ArrayList output = [
-      [
-        name: "defaultUrl",
-        url: binding.inputUrl
-      ]
-    ]
+  public List<LinkedHashMap> performStringTemplates(Map stringTemplates, Map binding) {
+    List<LinkedHashMap> output = new ArrayList()
+    output.add([name: "defaultUrl", url: binding.inputUrl.toString()])
 
     // First get all customised urls
-    ArrayList customisedUrls = performTemplatingByContext(binding, "urlCustomisers", stringTemplates)
+    List<LinkedHashMap> customisedUrls = performTemplatingByContext(binding, "urlCustomisers", stringTemplates)
     // Then proxy all urls
-    ArrayList proxiedUrls = performTemplatingByContext(binding, "urlProxiers", stringTemplates)
+    List<LinkedHashMap> proxiedUrls = performTemplatingByContext(binding, "urlProxiers", stringTemplates)
     
     // Finally we proxy all the customised urls
-    ArrayList proxiedCustomisedUrls = []
+    List<LinkedHashMap> proxiedCustomisedUrls = []
     customisedUrls.each{ customiserMap ->
       /*
        customiserMap = [
@@ -62,12 +61,15 @@ public class StringTemplatingService {
          url: "customisedUrl"
        ]
       */
-      // Think we only need a shallow copy here to pass to the proxiers
-      JSONObject customBinding = new JSONObject()
-      customBinding.putAll(binding)
-      customBinding.inputUrl = customiserMap.url
+
+      // Think we only need a shallow copy here to pass to the proxiers -- statically typed so rebuild
+      Map customBinding = [
+        inputUrl: customiserMap.url.toString(),
+        platformLocalCode: binding.platformLocalCode.toString()
+      ]
+
       // Add all the proxied-customised urls to a list
-      proxiedCustomisedUrls.addAll(performTemplatingByContext(customBinding, "urlProxiers", stringTemplates, customiserMap.name)) 
+      proxiedCustomisedUrls.addAll(performTemplatingByContext(customBinding, "urlProxiers", stringTemplates, customiserMap.name.toString())) 
     }
 
     // Add all of these to the output List
@@ -80,17 +82,17 @@ public class StringTemplatingService {
 
 
   // Simpler method which just returns a list of maps for a single StringTemplateContext--used for nested templating
-  private ArrayList<Map> performTemplatingByContext(Map binding, String context, Map stringTemplates, String nameSuffix = '') {
-    return stringTemplates[context]?.collect { st ->
+  private List<LinkedHashMap> performTemplatingByContext(Map binding, String context, Map stringTemplates, String nameSuffix = '') {
+    return stringTemplates[context]?.collect { StringTemplate st ->
       [
-        name: nameSuffix ? "${st.name}-${nameSuffix}" : st.name,
+        name: nameSuffix ? "${st['name']}-${nameSuffix}" : st.name,
         url: st.customiseString(binding)
       ]
     }
   }
 
-  private Set<StringTemplate> queryNotInScopeWithContext(String id, String context) {
-    Set<StringTemplate> stringTemplates = StringTemplate.executeQuery("""
+  private List<StringTemplate> queryNotInScopeWithContext(String id, String context) {
+    List<StringTemplate> stringTemplates = StringTemplate.executeQuery("""
       SELECT st FROM StringTemplate st
       WHERE st.context.value = :context
       AND st NOT IN (
@@ -104,8 +106,8 @@ public class StringTemplatingService {
     return stringTemplates
   }
 
-  private Set<StringTemplate> queryInScopeWithContext(String id, String context) {
-    Set<StringTemplate> stringTemplates = StringTemplate.executeQuery("""
+  private List<StringTemplate> queryInScopeWithContext(String id, String context) {
+    List<StringTemplate> stringTemplates = StringTemplate.executeQuery("""
       SELECT st FROM StringTemplate st
       WHERE st.context.value = :context
       AND st IN (
@@ -153,76 +155,85 @@ public class StringTemplatingService {
     generateTemplatedUrlsForPti(pti, stringTemplates, platformLocalCode, true)
   }
 
+  // Split these out so that we can skip them in CompileStatic
+  @CompileStatic(SKIP)
+  private List<List<String>> batchFetchPlatforms(final int platformBatchSize, int platformBatchCount) {
+    // Fetch the ids and localCodes for all platforms
+    List<List<String>> platforms = Platform.createCriteria().list ([max: platformBatchSize, offset: platformBatchSize * platformBatchCount]) {
+      order 'id'
+      projections {
+        property('id')
+        property('localCode')
+      }
+    }
+    return platforms
+  }
+
+  @CompileStatic(SKIP)
+  private List<PlatformTitleInstance> batchFetchPtis(final int ptiBatchSize, int ptiBatchCount, String platformId) {
+    List<PlatformTitleInstance> ptis = PlatformTitleInstance.createCriteria().list ([max: ptiBatchSize, offset: ptiBatchSize * ptiBatchCount]) {
+      order 'id'
+      eq('platform.id', platformId)
+    }
+    return ptis
+  }
+
+  @CompileStatic(SKIP)
+  private void deleteAllTemplatedUrls() {
+    TemplatedUrl.withNewTransaction {
+      TemplatedUrl.executeUpdate('DELETE FROM TemplatedUrl')
+    }
+  }
+
   public void generateTemplatedUrlsForErmResources(final String tenantId) {
     log.debug "generateTemplatedUrlsForErmResources called"
 
-    Promise p = Promises.task {
-      log.debug "LOGDEBUG TASK START TIME"
-      Tenants.withId(tenantId) {
+    log.debug "LOGDEBUG TASK START TIME"
+    Tenants.withId(tenantId) {
+      // Initially we should clear all templated URLS in the system
+      deleteAllTemplatedUrls()
+      
+      /* 
+        * Right now we only scope URL templates to Platforms, so fetch a list of Platforms,
+        * then for each one fetch the stringTemplates and a list of PTIs with that platform,
+        * then perform stringTemplating on each PTI
+        */
 
-        // Initially we should clear all templated URLS in the system
-        TemplatedUrl.executeUpdate('DELETE FROM TemplatedUrl')
-        
-        /* 
-         * Right now we only scope URL templates to Platforms, so fetch a list of Platforms,
-         * then for each one fetch the stringTemplates and a list of PTIs with that platform,
-         * then perform stringTemplating on each PTI
-         */
+      final int platformBatchSize = 100
+      int platformBatchCount = 0
 
-        final int platformBatchSize = 100
-        int platformBatchCount = 0
+      // Fetch the ids and localCodes for all platforms
+      List<List<String>> platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount)
 
-        // Fetch the ids and localCodes for all platforms
-        List<String> platforms = Platform.createCriteria().list ([max: platformBatchSize, offset: platformBatchSize * platformBatchCount]) {
-          order 'id'
-          projections {
-            property('id')
-            property('localCode')
-          }
-        }
-        // This will return [[00998c04-8ab3-49ab-9053-c3e8cff328c2, ciando], [021bfce4-0533-465e-9340-1ceaad2a530f, localCode2], ...]
-        while (platforms && platforms.size() > 0) {
-          platformBatchCount ++
-          platforms.each { platform ->
+      // This will return [[00998c04-8ab3-49ab-9053-c3e8cff328c2, ciando], [021bfce4-0533-465e-9340-1ceaad2a530f, localCode2], ...]
+      while (platforms && platforms.size() > 0) {
+        platformBatchCount ++
+        platforms.each { platform ->
+          Map stringTemplates = findStringTemplatesForId(platform[0])
+          String platformLocalCode = platform[1]
 
-            Map stringTemplates = findStringTemplatesForId(platform[0])
-            String platformLocalCode = platform[1]
+          /* 
+          * Now we have the stringTemplates and platformLocalCode for the platform,
+          * find all PTIs on this platform and remove then re-add the templatedUrls
+          */
 
-            /* 
-            * Now we have the stringTemplates and platformLocalCode for the platform,
-            * find all PTIs on this platform and remove then re-add the templatedUrls
-            */
-
-            final int ptiBatchSize = 100
-            int ptiBatchCount = 0
-            def ptis = PlatformTitleInstance.createCriteria().list ([max: ptiBatchSize, offset: ptiBatchSize * ptiBatchCount]) {
-              order 'id'
-              eq('platform.id', platform[0])
+          final int ptiBatchSize = 100
+          int ptiBatchCount = 0
+          List<PlatformTitleInstance> ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, platform[0])
+          while (ptis && ptis.size() > 0) {
+            ptiBatchCount ++
+            ptis.each { pti ->
+              generateTemplatedUrlsForPti(pti, stringTemplates, platformLocalCode)
             }
 
-            while (ptis && ptis.size() > 0) {
-              ptiBatchCount ++
-              ptis.each { pti ->
-                generateTemplatedUrlsForPti(pti, stringTemplates, platformLocalCode)
-              }
-
-              // Next page
-              ptis = PlatformTitleInstance.createCriteria().list ([max: ptiBatchSize, offset: ptiBatchSize * ptiBatchCount]) {
-                order 'id'
-                eq('platform.id', platform[0])
-              }
-            }
-          }
-          // Next page
-          platforms = Platform.createCriteria().list ([max: platformBatchSize, offset: platformBatchSize * platformBatchCount]) {
-            order 'id'
+            // Next page
+            ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, platform[0])
           }
         }
+        // Next page
+        platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount)
       }
-      log.debug "LOGDEBUG TASK END TIME"
     }
-    p.onError{ Throwable e ->
-      log.error "Couldn't generate templated urls", e
-    }
+    log.debug "LOGDEBUG TASK END TIME"
   }
 }

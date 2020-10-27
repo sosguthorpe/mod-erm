@@ -11,6 +11,8 @@ import grails.converters.JSON
 
 import grails.gorm.multitenancy.Tenants
 import grails.gorm.multitenancy.CurrentTenant
+import grails.async.Promise
+import grails.async.Promises
 import groovy.util.logging.Slf4j
 
 
@@ -25,7 +27,12 @@ class StringTemplateController extends OkapiTenantAwareController<StringTemplate
 
   def refreshTemplatedUrls() {
     String tenantId = Tenants.currentId()
-    stringTemplatingService.generateTemplatedUrlsForErmResources(tenantId)
+    Promise p = Promises.task {
+      stringTemplatingService.generateTemplatedUrlsForErmResources(tenantId)
+    }
+    p.onError{ Throwable e ->
+      log.error "Couldn't generate templated urls", e
+    }
 
     def result = [:]
     render result as JSON
