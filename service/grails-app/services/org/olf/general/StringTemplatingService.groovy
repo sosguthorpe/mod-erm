@@ -135,7 +135,7 @@ public class StringTemplatingService {
       performStringTemplates(stringTemplates, binding).each { templatedUrl ->
         TemplatedUrl tu = new TemplatedUrl(templatedUrl)
         tu.resource = PlatformTitleInstance.get(ptiId)
-        tu.save(flush:true, failOnError: true)
+        tu.save(failOnError: true)
       }
     } else {
       log.warn "No url found for PTI (${ptiId})"
