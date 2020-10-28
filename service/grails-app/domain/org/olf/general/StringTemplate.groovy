@@ -11,6 +11,7 @@ import grails.gorm.MultiTenant
 
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
+import com.k_int.web.toolkit.databinding.BindImmutably
 
 class StringTemplate implements MultiTenant<StringTemplate> {
 
@@ -26,6 +27,8 @@ class StringTemplate implements MultiTenant<StringTemplate> {
    * but the general idea is that this captures the 'scope' of a translation.
    * For certain contexts this list will act as a 'whitelist', for others as a 'blacklist'
    */
+  @BindImmutably
+  Set<String> idScopes = []
   static hasMany = [idScopes: String]
 
 
