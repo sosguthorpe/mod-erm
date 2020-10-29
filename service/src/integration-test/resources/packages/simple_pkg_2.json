@@ -1,0 +1,45 @@
+{
+  "header": {
+    "availability": {
+      "type": "general"
+    },
+    "packageProvider": {
+      "name": "Knowledge Integration Ltd"
+    },
+    "packageSource": "k-int",
+    "packageName": "K-Int Test Package 002",
+    "startDate": "2015-01-01T00:00:00Z",
+    "endDate": "2030-10-10T00:00:00Z",
+    "packageSlug": "kint_test_002",
+    "_intenalId": 193753621336
+  },
+  "packageContents": [{
+    "title": "Arithmetic of Finite Fields",
+    "instanceMedium": "print",
+    "instanceMedia": "monograph",
+    "instanceIdentifiers": [{
+      "namespace": "isbn",
+      "value": "978-3-319-55227-9"
+    }],
+    "siblingInstanceIdentifiers": [{
+      "namespace": "pisbn",
+      "value": "978-3-319-55226-2"
+    }],
+    "coverage": [
+      {
+      "startVolume": "1",
+      "startIssue": "1",
+      "startDate": "2013-05-09",
+      "endVolume": "1",
+      "endIssue": "4",
+      "endDate": "2018-03-29"
+      }
+    ],
+    "embargo": null,
+    "coverageDepth": "fulltext",
+    "coverageNote": "This is a made up package for string templating tests",
+    "url": "http://link.springer.com/10.1007/978-3-319-55227-9",
+    "platformName": "SpringerLink",
+    "_platformId": 932
+  }]
+}
