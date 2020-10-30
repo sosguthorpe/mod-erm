@@ -260,13 +260,17 @@ public class StringTemplatingService {
     }
     log.debug "LOGDEBUG TASK END TIME"
 
-    // Task finished, turn 'running' boolean off
-    running = false
+    
 
-    if (runAgain) {
-      // While this task was running we got another trigger, so run again
-      runAgain = false
-      generateTemplatedUrlsForErmResources(final String tenantId)
+    synchronized ( this ) {
+      // Task finished, turn 'running' boolean off
+      running = false
+
+      if (runAgain) {
+        // While this task was running we got another trigger, so run again
+        runAgain = false
+        generateTemplatedUrlsForErmResources(final String tenantId)
+      }
     }
   }
 }
