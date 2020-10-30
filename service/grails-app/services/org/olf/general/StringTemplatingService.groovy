@@ -179,7 +179,7 @@ public class StringTemplatingService {
   @CompileStatic(SKIP)
   private void deleteTemplatedUrlsForPlatform(String platformId) {
     TemplatedUrl.withNewTransaction {
-      log.debug ("LOGDEBUG TU FOR PLATFORM(${platformId}): ${TemplatedUrl.executeQuery('SELECT tu FROM TemplatedUrl as tu JOIN (tu.resource as pti JOIN pti.platform as p) WHERE p.id = :pId', [pId: platformId])}"
+      log.debug "LOGDEBUG TU FOR PLATFORM(${platformId}): ${TemplatedUrl.executeQuery('SELECT tu FROM TemplatedUrl as tu JOIN (tu.resource as pti JOIN pti.platform as p) WHERE p.id = :pId', [pId: platformId])}"
     }
   }
 
@@ -201,7 +201,7 @@ public class StringTemplatingService {
    * 
    * It will only add a params block to the queue if it's relevant to do so, and will remove any it overrules
    */
-  void addTaskToTaskQueue(Map<String, String> params) {
+  private void addTaskToTaskQueue(Map<String, String> params) {
     if (params.context == 'stringTemplate') {
       // If we're going to run a full system refresh we can just clear the current queue and run that instead
       taskQueue.clear()
