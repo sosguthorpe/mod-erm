@@ -176,10 +176,37 @@ public class StringTemplatingService {
     }
   }
 
+  // For some reason you can't join on a DELETE, so run subquery to get list of TU ids, and then delete from that list
   @CompileStatic(SKIP)
   private void deleteTemplatedUrlsForPlatform(String platformId) {
     TemplatedUrl.withNewTransaction {
-      log.debug "LOGDEBUG TU FOR PLATFORM(${platformId}): ${TemplatedUrl.executeQuery('SELECT tu FROM TemplatedUrl as tu JOIN (tu.resource as pti JOIN pti.platform as p) WHERE p.id = :pId', [pId: platformId])}"
+      TemplatedUrl.executeUpdate("""
+        DELETE FROM TemplatedUrl as tu
+        WHERE tu.id IN (
+          SELECT tu.id FROM TemplatedUrl as tu
+          JOIN tu.resource as pti
+          JOIN pti.platform as p
+          WHERE p.id = :pId
+        )
+        """,
+        [pId: platformId]
+      )
+    }
+  }
+
+  @CompileStatic(SKIP)
+  private void deleteTemplatedUrlsForPTI(String ptiId) {
+    TemplatedUrl.withNewTransaction {
+      TemplatedUrl.executeUpdate("""
+        DELETE FROM TemplatedUrl as tu
+        WHERE tu.id IN (
+          SELECT tu.id FROM TemplatedUrl as tu
+          JOIN tu.resource as pti
+          WHERE pti.id = :id
+        )
+        """,
+        [id: ptiId]
+      )
     }
   }
 
@@ -292,7 +319,7 @@ public class StringTemplatingService {
           break;
         case 'platform':
           deleteTemplatedUrlsForPlatform(params.id)
-          Platform p = Platform.get(params.id)
+          Platform p = Platform.read(params.id)
           Map stringTemplates = findStringTemplatesForId(p.id)
           String platformLocalCode = p.localCode
           /* 
@@ -314,11 +341,15 @@ public class StringTemplatingService {
           }
           break;
         case 'pti':
+          deleteTemplatedUrlsForPTI(params.id)
           //In this case we don't have the platform, but we passed the platformId in the params
-          Platform p = Platform.get(params.platformId)
-          Map stringTemplates = findStringTemplatesForId(p.id)
-          String platformLocalCode = p.localCode
-          generateTemplatedUrlsForPti(params.id, stringTemplates, platformLocalCode)
+          Platform platform = Platform.read(params.platformId)
+          PlatformTitleInstance pti = PlatformTitleInstance.read(params.id)
+
+          Map stringTemplates = findStringTemplatesForId(params.platformId)
+          String platformLocalCode = platform.localCode
+
+          generateTemplatedUrlsForPti([pti.id, pti.url], stringTemplates, platformLocalCode)
           break;
         default:
           log.warn "Don't know what to do with params context (${params.context})"
