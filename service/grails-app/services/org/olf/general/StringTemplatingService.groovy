@@ -176,8 +176,39 @@ public class StringTemplatingService {
     }
   }
 
+  /*
+   * Trigger plan - have two mutex booleans, running and locked.
+   * On any action the system undertakes which can change multiple Stringtemplates/Platforms/PTIs,
+   * we MUST fire a "lock" event at the start and an "unlock" at the end.
+   *
+   * When we recieve a "refresh" event, we first check if locked. If so we discard it
+   * (knowing that later it will unlock and fire a refrsh anyway)
+   * If not locked we check if running. If so we set runAgain to true.
+   * If neither are true we run the task. Once a task is finished we run again if runAgain true.
+  */
+
+  static boolean running = false;
+  static boolean locked = false;
+  // Since having two full refreshes queued is pointless, we just set a boolean to true
+  static boolean runAgain = false;
+
+
   public void generateTemplatedUrlsForErmResources(final String tenantId) {
     log.debug "generateTemplatedUrlsForErmResources called"
+
+    // If locked then just ignore
+    synchronized ( this ) {
+      if ( locked == true ) {
+        log.debug("StringTemplatingSevice::generateTemplatedUrlsForErmResources locked - return");
+        return
+      } else if (running == true) {
+        log.debug("StringTemplatingSevice::generateTemplatedUrlsForErmResources already running - make note to run again when finished");
+        runAgain = true
+        return
+      } else {
+        running = true
+      }
+    }
 
     log.debug "LOGDEBUG TASK START TIME"
     Tenants.withId(tenantId) {
@@ -228,5 +259,14 @@ public class StringTemplatingService {
       }
     }
     log.debug "LOGDEBUG TASK END TIME"
+
+    // Task finished, turn 'running' boolean off
+    running = false
+
+    if (runAgain) {
+      // While this task was running we got another trigger, so run again
+      runAgain = false
+      generateTemplatedUrlsForErmResources(final String tenantId)
+    }
   }
 }
