@@ -25,7 +25,7 @@ class UrlMappings {
 
       "/resources/export/$format?"          (controller: 'export', method: 'GET')
       "/resources/export/current/$format?"  (controller: 'export', action: 'current', method: 'GET')
-      "/resources/export/all/$format?"  (controller: 'export', action: 'current', method: 'GET')
+      "/resources/export/all/$format?"  (controller: 'export', action: 'index', method: 'GET')
 //      "/resources/export/future/$format?"   (controller: 'export', action: 'future', method: 'GET')
 //      "/resources/export/dropped/$format?"  (controller: 'export', action: 'dropped', method: 'GET')
       
