@@ -44,7 +44,7 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
   }
   
   def current() {
-    log.debug("ExportController::index")
+    log.debug("ExportController::current")
     final String subscriptionAgreementId = params.get("subscriptionAgreementId")
     log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
     List<List> results = exportService.current(subscriptionAgreementId)

@@ -32,6 +32,12 @@ public class EntitlementLogService {
               (direct_ent.activeTo IS NULL OR direct_ent.activeTo >= :today)
                 AND
                  (direct_ent.activeFrom IS NULL OR direct_ent.activeFrom  <= :today)
+                AND
+                (
+                  direct_ent.owner IS NOT NULL
+                  AND
+                  res.class != Pkg
+                )
             )
           LEFT JOIN res.pkg as pkg
 
@@ -47,15 +53,13 @@ public class EntitlementLogService {
                 (pkg_ent.activeTo IS NULL OR pkg_ent.activeTo >= :today)
                   AND
                    (pkg_ent.activeFrom IS NULL OR pkg_ent.activeFrom  <= :today)
+                  AND
+                    (pkg_ent.owner IS NOT NULL)
               )
         WHERE (
-          (
-            direct_ent.owner IS NOT NULL
-            AND
-            res.class != Pkg
-          ) OR (
-            pkg_ent.owner IS NOT NULL
-          )
+          (direct_ent IS NOT NULL)
+            OR
+          (pkg_ent IS NOT NULL)
         ) AND (
           NOT EXISTS ( SELECT ele 
                          FROM EntitlementLogEntry as ele 

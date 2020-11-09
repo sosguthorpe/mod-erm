@@ -8,6 +8,11 @@ CREATE DATABASE okapi_modules;
 GRANT ALL PRIVILEGES ON DATABASE okapi_modules to folio_admin;
 GRANT ALL PRIVILEGES ON DATABASE okapi_modules to folio;
 
+DROP DATABASE if exists okapi_modules_test;
+CREATE DATABASE okapi_modules_test;
+GRANT ALL PRIVILEGES ON DATABASE okapi_modules_test to folio_admin;
+GRANT ALL PRIVILEGES ON DATABASE okapi_modules_test to folio;
+
 DROP DATABASE if exists olftest;
 CREATE DATABASE olftest;
 GRANT ALL PRIVILEGES ON DATABASE olftest to folio_admin;
