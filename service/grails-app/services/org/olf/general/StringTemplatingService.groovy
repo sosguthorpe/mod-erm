@@ -124,21 +124,39 @@ public class StringTemplatingService {
   // This method generates the templatedUrls for PTIs, given the stringTemplates and platformLocalCode
   public void generateTemplatedUrlsForPti(final List<String> pti, Map stringTemplates, String platformLocalCode='') {
     log.debug "generateTemplatedUrlsForPti called for (${pti[0]})"
-    String ptiId = pti[0]
-    String ptiUrl = pti[1]
-    // Then add new ones (If a url exists on this PTI)
-    if (ptiUrl) {
-      Map binding = [
-        inputUrl: ptiUrl,
-        platformLocalCode: platformLocalCode
-      ]
-      performStringTemplates(stringTemplates, binding).each { templatedUrl ->
-        TemplatedUrl tu = new TemplatedUrl(templatedUrl)
-        tu.resource = PlatformTitleInstance.get(ptiId)
-        tu.save(failOnError: true)
+
+    log.debug "LOGDEBUG pti string list:(${pti})"
+    
+    try {
+      String ptiId = pti[0]
+      String ptiUrl = pti[1]
+      log.debug "LOGDEBUG stringTemplates for ${ptiId}: (${stringTemplates})"
+      // Then add new ones (If a url exists on this PTI)
+      if (ptiUrl) {
+        PlatformTitleInstance fetchedPti = PlatformTitleInstance.get(ptiId)
+        if (fetchedPti) {
+          Map binding = [
+            inputUrl: ptiUrl,
+            platformLocalCode: platformLocalCode
+          ]
+          performStringTemplates(stringTemplates, binding).each { templatedUrl ->
+            TemplatedUrl tu = new TemplatedUrl(templatedUrl)
+            tu.resource = fetchedPti
+            tu.save(failOnError: true)
+          }
+        } else {
+          // We need to be sure that this data has actually made it into the system.
+          // If it has not, then simply add back on to the end of the queue
+          String platformId = pti[2]
+
+          Map params = [context: 'pti', id: ptiId, platformId: platformId]
+          addTaskToTaskQueue(params)
+        }
+      } else {
+        log.warn "No url found for PTI (${ptiId})"
       }
-    } else {
-      log.warn "No url found for PTI (${ptiId})"
+    } catch (Exception e) {
+      log.error "LOGDEBUG WHOOPSIE ${e.message}"
     }
   }
 
@@ -164,6 +182,7 @@ public class StringTemplatingService {
       projections {
         property('id')
         property('url')
+        property('platform.id')
       }
     }
     return ptis
@@ -349,7 +368,7 @@ public class StringTemplatingService {
           Map stringTemplates = findStringTemplatesForId(params.platformId)
           String platformLocalCode = platform.localCode
 
-          generateTemplatedUrlsForPti([pti.id, pti.url], stringTemplates, platformLocalCode)
+          generateTemplatedUrlsForPti([pti.id, pti.url, params.platformId], stringTemplates, platformLocalCode)
           break;
         default:
           log.warn "Don't know what to do with params context (${params.context})"
