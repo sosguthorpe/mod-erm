@@ -213,6 +213,8 @@ public class StringTemplatingService {
     // Theoretically updates could happen after the process begins but before the url_refresh_cursor gets updated
     // So save the time before starting process as the new cursor pt
     String new_cursor_value = System.currentTimeMillis()
+    // Also create container for the current cursor value
+    String last_refreshed
     AppSetting url_refresh_cursor
 
     Tenants.withId(tenantId) {
@@ -225,7 +227,7 @@ public class StringTemplatingService {
           key: 'url_refresh_cursor',
           value: System.currentTimeMillis()
         ).save(flush: true, failOnError: true)
-        String last_refreshed = url_refresh_cursor.value
+        last_refreshed = url_refresh_cursor.value
         log.debug "LOGDEBUG last_refreshed (${last_refreshed})"
       }
 

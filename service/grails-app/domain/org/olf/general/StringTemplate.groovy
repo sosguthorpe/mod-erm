@@ -19,6 +19,9 @@ class StringTemplate implements MultiTenant<StringTemplate> {
   String name
   String rule
 
+  Date dateCreated
+  Date lastUpdated
+
   @Defaults(['urlProxier', 'urlCustomiser'])
   RefdataValue context
 
@@ -33,10 +36,12 @@ class StringTemplate implements MultiTenant<StringTemplate> {
 
 
   static mapping = {
-    id column:'st_id', generator: 'uuid2', length:36
-    name column:'st_name'
-    rule column:'st_rule'
-    context column:'st_context'
+    id column:'strt_id', generator: 'uuid2', length:36
+    name column:'strt_name'
+    rule column:'strt_rule'
+    context column:'strt_context'
+    dateCreated column: 'strt_date_created'
+    lastUpdated column: 'strt_last_updated'
     idScopes cascade: 'all-delete-orphan', joinTable: [name: 'string_template_scopes', key: 'string_template_id', column: 'id_scope']
   }
 

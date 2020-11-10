@@ -49,21 +49,23 @@ databaseChangeLog = {
   
   changeSet(author: "efreestone (manual)", id: "202010211324-001") {
     createTable(tableName: "string_template") {
-      column(name: "st_id", type: "VARCHAR(36)") {
+      column(name: "strt_id", type: "VARCHAR(36)") {
         constraints(nullable: "false")
       }
       column(name: "version", type: "BIGINT") {
           constraints(nullable: "false")
       }
-      column(name: "st_name", type: "VARCHAR(255)") {
+      column(name: "strt_name", type: "VARCHAR(255)") {
         constraints(nullable: "false")
       }
-      column(name: "st_rule", type: "TEXT") {
+      column(name: "strt_rule", type: "TEXT") {
           constraints(nullable: "false")
       }
-      column(name: "st_context", type: "VARCHAR(255)") {
+      column(name: "strt_context", type: "VARCHAR(255)") {
           constraints(nullable: "false")
       }
+      column(name: "strt_date_created", type: "timestamp")
+      column(name: "strt_last_updated", type: "timestamp")
     }
   }
 
