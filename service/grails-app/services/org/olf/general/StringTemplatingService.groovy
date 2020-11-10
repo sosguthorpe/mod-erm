@@ -45,17 +45,17 @@ public class StringTemplatingService {
    * This method will store the business logic determining heirachy of StringTemplate contexts,
    * and whether these "stack" or not.
    */
-  public List<LinkedHashMap> performStringTemplates(Map stringTemplates, Map binding) {
-    List<LinkedHashMap> output = new ArrayList()
+  public List<LinkedHashMap<String, String>> performStringTemplates(Map stringTemplates, Map binding) {
+    List<LinkedHashMap<String, String>> output = new ArrayList()
     output.add([name: "defaultUrl", url: binding.inputUrl.toString()])
 
     // First get all customised urls
-    List<LinkedHashMap> customisedUrls = performTemplatingByContext(binding, "urlCustomisers", stringTemplates)
+    List<LinkedHashMap<String, String>> customisedUrls = performTemplatingByContext(binding, "urlCustomisers", stringTemplates)
     // Then proxy all urls
-    List<LinkedHashMap> proxiedUrls = performTemplatingByContext(binding, "urlProxiers", stringTemplates)
+    List<LinkedHashMap<String, String>> proxiedUrls = performTemplatingByContext(binding, "urlProxiers", stringTemplates)
     
     // Finally we proxy all the customised urls
-    List<LinkedHashMap> proxiedCustomisedUrls = []
+    List<LinkedHashMap<String, String>> proxiedCustomisedUrls = []
     customisedUrls.each{ customiserMap ->
       /*
        customiserMap = [
@@ -138,10 +138,20 @@ public class StringTemplatingService {
           inputUrl: ptiUrl,
           platformLocalCode: platformLocalCode
         ]
-        performStringTemplates(stringTemplates, binding).each { templatedUrl ->
-          TemplatedUrl tu = new TemplatedUrl(templatedUrl)
-          tu.resource = fetchedPti
-          tu.save(failOnError: true)
+        List<LinkedHashMap<String, String>> newTemplatedUrls = performStringTemplates(stringTemplates, binding)
+
+        //TODO only delete and make new if they differ
+        List<String> etus = fetchedPti.templatedUrls.collect { tu -> tu.url }
+        List<String> ntus = newTemplatedUrls.collect { tu -> tu.url }
+        if (etus.size() != ntus.size() || etus.sort() != ntus.sort()) {
+          log.debug "LOGDEBUG CHANGE: (${etus}) -> (${ntus})"
+          deleteTemplatedUrlsForPTI(ptiId)
+
+           newTemplatedUrls.each { templatedUrl ->
+            TemplatedUrl tu = new TemplatedUrl(templatedUrl)
+            tu.resource = fetchedPti
+            tu.save(failOnError: true)
+          }
         }
       } else {
         log.warn "No url found for PTI (${ptiId})"
@@ -179,44 +189,17 @@ public class StringTemplatingService {
   }
 
   @CompileStatic(SKIP)
-  private void deleteAllTemplatedUrls() {
-    TemplatedUrl.withNewTransaction {
-      TemplatedUrl.executeUpdate('DELETE FROM TemplatedUrl')
-    }
-  }
-
-  // For some reason you can't join on a DELETE, so run subquery to get list of TU ids, and then delete from that list
-  @CompileStatic(SKIP)
-  private void deleteTemplatedUrlsForPlatform(String platformId) {
-    TemplatedUrl.withNewTransaction {
-      TemplatedUrl.executeUpdate("""
-        DELETE FROM TemplatedUrl as tu
-        WHERE tu.id IN (
-          SELECT tu.id FROM TemplatedUrl as tu
-          JOIN tu.resource as pti
-          JOIN pti.platform as p
-          WHERE p.id = :pId
-        )
-        """,
-        [pId: platformId]
-      )
-    }
-  }
-
-  @CompileStatic(SKIP)
   private void deleteTemplatedUrlsForPTI(String ptiId) {
-    TemplatedUrl.withNewTransaction {
-      TemplatedUrl.executeUpdate("""
-        DELETE FROM TemplatedUrl as tu
-        WHERE tu.id IN (
-          SELECT tu.id FROM TemplatedUrl as tu
-          JOIN tu.resource as pti
-          WHERE pti.id = :id
-        )
-        """,
-        [id: ptiId]
+    TemplatedUrl.executeUpdate("""
+      DELETE FROM TemplatedUrl as tu
+      WHERE tu.id IN (
+        SELECT tu.id FROM TemplatedUrl as tu
+        JOIN tu.resource as pti
+        WHERE pti.id = :id
       )
-    }
+      """,
+      [id: ptiId]
+    )
   }
 
   /*
@@ -228,10 +211,16 @@ public class StringTemplatingService {
   void refreshUrls(String tenantId) {
     log.debug "stringTemplatingService::refreshUrls called with tenantId (${tenantId})"
 
+    // Theoretically updates could happen after the process begins but before the url_refresh_cursor gets updated
+    // So save the time before starting process as the new cursor pt
+    String new_cursor_value = System.currentTimeMillis()
+    AppSetting url_refresh_cursor
+
     Tenants.withId(tenantId) {
+      // One transaction for fetching the initial value/creating AppSetting
       AppSetting.withNewTransaction {
         // Need to flush this initially so it exists for first instance
-        AppSetting url_refresh_cursor = AppSetting.findByKey('url_refresh_cursor') ?: new AppSetting(
+        url_refresh_cursor = AppSetting.findByKey('url_refresh_cursor') ?: new AppSetting(
           section:'registry',
           settingType:'Date',
           key: 'url_refresh_cursor',
@@ -239,10 +228,15 @@ public class StringTemplatingService {
         ).save(flush: true, failOnError: true)
         String last_refreshed = url_refresh_cursor.value
         log.debug "LOGDEBUG last_refreshed (${last_refreshed})"
+      }
 
-        // DO WORK ON STUFF UPDATED SINCE SINCE LAST_REFRESHED
+      // DO WORK ON STUFF UPDATED SINCE SINCE LAST_REFRESHED
+      //TODO make this more generic
+      generateTemplatedUrlsForErmResources(tenantId)
 
-        url_refresh_cursor.value = System.currentTimeMillis()
+      //One transaction for updating value with new refresh time
+      AppSetting.withNewTransaction {
+        url_refresh_cursor.value = new_cursor_value
         url_refresh_cursor.save(failOnError: true)
       }
     }
@@ -308,10 +302,8 @@ public class StringTemplatingService {
 
     log.debug "LOGDEBUG TASK START TIME"
     Tenants.withId(tenantId) {
-      // Initially we should clear all templated URLS in the system
       switch (params.context) {
         case 'stringTemplate':
-          deleteAllTemplatedUrls()
           /* 
           * Right now we only scope URL templates to Platforms, so fetch a list of Platforms,
           * then for each one fetch the stringTemplates and a list of PTIs with that platform,
@@ -356,7 +348,6 @@ public class StringTemplatingService {
           }
           break;
         case 'platform':
-          deleteTemplatedUrlsForPlatform(params.id)
           Platform p = Platform.read(params.id)
           Map stringTemplates = findStringTemplatesForId(p.id)
           String platformLocalCode = p.localCode
@@ -379,7 +370,6 @@ public class StringTemplatingService {
           }
           break;
         case 'pti':
-          deleteTemplatedUrlsForPTI(params.id)
           //In this case we don't have the platform, but we passed the platformId in the params
           Platform platform = Platform.read(params.platformId)
           PlatformTitleInstance pti = PlatformTitleInstance.read(params.id)
