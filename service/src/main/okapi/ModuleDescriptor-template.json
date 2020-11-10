@@ -460,6 +460,13 @@
           "pathPattern": "/erm/admin/triggerEntitlementLogUpdate",
           "unit": "hour",
           "delay": "24" 
+        },
+        {
+          "permissionsRequired" : ["erm.sts.template"],
+          "methods": [ "GET" ],
+          "pathPattern": "/erm/sts/template",
+          "unit": "second",
+          "delay": "10" 
         }
       ]
     }
@@ -1078,7 +1085,7 @@
     {
       "permissionName": "erm.sts.template",
       "displayName": "String templates perform template",
-      "description": "Performs string templating on specified id"
+      "description": "Performs string templating"
     }
   ],
   "launchDescriptor": {

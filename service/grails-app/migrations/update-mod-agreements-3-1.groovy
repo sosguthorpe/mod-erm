@@ -103,4 +103,20 @@ databaseChangeLog = {
     addForeignKeyConstraint(baseColumnNames: "tu_resource_fk", baseTableName: "templated_url", constraintName: "templated_url_erm_resourceFK", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "erm_resource")
   }
 
+  changeSet(author: "efreestone (manual)", id: "202011101241-001") {
+    createTable(tableName: "app_setting") {
+      column(name: "st_id", type: "VARCHAR(36)") {
+          constraints(nullable: "false")
+      }
+      column(name: "st_version", type: "BIGINT") {
+          constraints(nullable: "false")
+      }
+      column(name: 'st_section', type: "VARCHAR(255)")
+      column(name: 'st_key', type: "VARCHAR(255)")
+      column(name: 'st_setting_type', type: "VARCHAR(255)")
+      column(name: 'st_vocab', type: "VARCHAR(255)")
+      column(name: 'st_default_value', type: "VARCHAR(255)")
+      column(name: 'st_value', type: "VARCHAR(255)")
+    } 
+  }
 }

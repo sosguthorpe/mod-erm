@@ -29,10 +29,10 @@ class StringTemplateController extends OkapiTenantAwareController<StringTemplate
     def result = [:]
     String tenantId = Tenants.currentId()
     Promise p = Promises.task {
-      stringTemplatingService.generateTemplatedUrlsForErmResources(tenantId)
+      stringTemplatingService.refreshUrls(tenantId)
     }
     p.onError{ Throwable e ->
-      log.error "Couldn't generate templated urls", e
+      log.error "Couldn't refresh templated urls", e
     }
     
     render result as JSON

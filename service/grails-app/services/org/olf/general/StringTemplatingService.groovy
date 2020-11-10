@@ -13,6 +13,8 @@ import org.olf.kb.ErmResource
 import static groovy.transform.TypeCheckingMode.SKIP
 import groovy.transform.CompileStatic
 
+import com.k_int.web.toolkit.settings.AppSetting
+
 @CompileStatic
 @Transactional
 public class StringTemplatingService {
@@ -124,33 +126,22 @@ public class StringTemplatingService {
   // This method generates the templatedUrls for PTIs, given the stringTemplates and platformLocalCode
   public void generateTemplatedUrlsForPti(final List<String> pti, Map stringTemplates, String platformLocalCode='') {
     log.debug "generateTemplatedUrlsForPti called for (${pti[0]})"
-
-    log.debug "LOGDEBUG pti string list:(${pti})"
-    
     try {
       String ptiId = pti[0]
       String ptiUrl = pti[1]
-      log.debug "LOGDEBUG stringTemplates for ${ptiId}: (${stringTemplates})"
+      PlatformTitleInstance fetchedPti = PlatformTitleInstance.get(ptiId)
+      
+      log.debug "stringTemplates for ${ptiId}: (${stringTemplates})"
       // Then add new ones (If a url exists on this PTI)
       if (ptiUrl) {
-        PlatformTitleInstance fetchedPti = PlatformTitleInstance.get(ptiId)
-        if (fetchedPti) {
-          Map binding = [
-            inputUrl: ptiUrl,
-            platformLocalCode: platformLocalCode
-          ]
-          performStringTemplates(stringTemplates, binding).each { templatedUrl ->
-            TemplatedUrl tu = new TemplatedUrl(templatedUrl)
-            tu.resource = fetchedPti
-            tu.save(failOnError: true)
-          }
-        } else {
-          // We need to be sure that this data has actually made it into the system.
-          // If it has not, then simply add back on to the end of the queue
-          String platformId = pti[2]
-
-          Map params = [context: 'pti', id: ptiId, platformId: platformId]
-          addTaskToTaskQueue(params)
+        Map binding = [
+          inputUrl: ptiUrl,
+          platformLocalCode: platformLocalCode
+        ]
+        performStringTemplates(stringTemplates, binding).each { templatedUrl ->
+          TemplatedUrl tu = new TemplatedUrl(templatedUrl)
+          tu.resource = fetchedPti
+          tu.save(failOnError: true)
         }
       } else {
         log.warn "No url found for PTI (${ptiId})"
@@ -182,7 +173,6 @@ public class StringTemplatingService {
       projections {
         property('id')
         property('url')
-        property('platform.id')
       }
     }
     return ptis
@@ -226,6 +216,34 @@ public class StringTemplatingService {
         """,
         [id: ptiId]
       )
+    }
+  }
+
+  /*
+   * This is the actual method which gets called by the endpoint /erm/sts/template on a timer. 
+   * Firstly it will look up the cursor indicating the last time the urls were refreshed.
+   * Then it will go through and start calling generateTemplatedUrlsForErmResources for each object updated since
+   * It'll do this in order from small change -> large change, that way the "smart" queue has a chance to overwrite
+   * 1000 PTI updates with a single StringTemplate update.
+   */
+  @CompileStatic(SKIP)
+  void refreshUrls(String tenantId) {
+    log.debug "stringTemplatingService::refreshUrls called with tenantId (${tenantId})"
+
+    Tenants.withId(tenantId) {
+      AppSetting.withNewTransaction {
+        AppSetting url_refresh_cursor = AppSetting.findByKey('url_refresh_cursor') ?: new AppSetting(
+          section:'registry',
+          settingType:'Date',
+          key: 'url_refresh_cursor',
+          value: System.currentTimeMillis()
+        ).save(failOnError: true)
+        String last_refreshed = url_refresh_cursor.value
+        log.debug "last_refreshed (${last_refreshed})"
+
+        url_refresh_cursor.value = System.currentTimeMillis()
+        url_refresh_cursor.save(failOnError: true)
+      }
     }
   }
 
@@ -368,7 +386,7 @@ public class StringTemplatingService {
           Map stringTemplates = findStringTemplatesForId(params.platformId)
           String platformLocalCode = platform.localCode
 
-          generateTemplatedUrlsForPti([pti.id, pti.url, params.platformId], stringTemplates, platformLocalCode)
+          generateTemplatedUrlsForPti([pti.id, pti.url], stringTemplates, platformLocalCode)
           break;
         default:
           log.warn "Don't know what to do with params context (${params.context})"
