@@ -161,11 +161,15 @@ public class StringTemplatingService {
   }
 
   // Split these out so that we can skip them in CompileStatic
+  // This method can batch fetch all Platforms or just those updated after a certain time
   @CompileStatic(SKIP)
-  private List<List<String>> batchFetchPlatforms(final int platformBatchSize, int platformBatchCount) {
+  private List<List<String>> batchFetchPlatforms(final int platformBatchSize, int platformBatchCount, Date since = null) {
     // Fetch the ids and localCodes for all platforms
     List<List<String>> platforms = Platform.createCriteria().list ([max: platformBatchSize, offset: platformBatchSize * platformBatchCount]) {
       order 'id'
+      if (since) {
+        gt('lastUpdated', since)
+      }
       projections {
         property('id')
         property('localCode')
@@ -174,14 +178,24 @@ public class StringTemplatingService {
     return platforms
   }
 
+
+  // This method can batch fetch all PTIs on a platform or updated after a certain time (or both)
   @CompileStatic(SKIP)
-  private List<List<String>> batchFetchPtis(final int ptiBatchSize, int ptiBatchCount, String platformId) {
+  private List<List<String>> batchFetchPtis(final int ptiBatchSize, int ptiBatchCount, String platformId = null, Date since = null) {
     List<List<String>> ptis = PlatformTitleInstance.createCriteria().list ([max: ptiBatchSize, offset: ptiBatchSize * ptiBatchCount]) {
       order 'id'
-      eq('platform.id', platformId)
+      if (platformId) {
+        eq('platform.id', platformId)
+      }
+      if (since) {
+        gt('lastUpdated', since)
+      }
       projections {
         property('id')
         property('url')
+        if (!platformId) {
+          property('platform.id')
+        }
       }
     }
     return ptis
@@ -228,23 +242,65 @@ public class StringTemplatingService {
           value: System.currentTimeMillis()
         ).save(flush: true, failOnError: true)
         last_refreshed = url_refresh_cursor.value
-        log.debug "LOGDEBUG last_refreshed (${last_refreshed})"
       }
 
+      Date last_refreshed_date = new Date(Long.parseLong(last_refreshed))
       // Fetch stringTemplates that have changed since the last refresh
       List<String> sts = StringTemplate.createCriteria().list() {
         order 'id'
-        gt('lastUpdated', last_refreshed)
+        gt('lastUpdated', last_refreshed_date)
         projections {
           property('id')
         }
       }
-      log.debug "LOGDEBUG List of changed sts: ${sts}"
 
+      if (sts.size() > 0) {
+        // StringTemplates have changed, ignore more granular changes and just refresh everything
+        generateTemplatedUrlsForErmResources(tenantId)
+      } else {
+        // FIRST - refresh all updated PTIs
+        final int ptiBatchSize = 100
+        int ptiBatchCount = 0
+        List<List<String>> ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed_date)
+        while (ptis && ptis.size() > 0) {
+          ptiBatchCount ++
+          ptis.each { pti ->
+            log.debug "LOGDEBUG CHANGED PTI: ${pti}"
+            // Here we send it to the generic case not the specific one to get the queueing behaviour
+            generateTemplatedUrlsForErmResources(
+              tenantId,
+              [
+                context: 'pti',
+                id: pti[0],
+                platformId: pti[2]
+              ]
+            )
+          }
+          // Next page
+          ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed_date)
+        }
 
-      // DO WORK ON STUFF UPDATED SINCE SINCE LAST_REFRESHED
-      //TODO make this more generic
-      generateTemplatedUrlsForErmResources(tenantId)
+        // Next - refresh all updated Platforms
+        final int platformBatchSize = 100
+        int platformBatchCount = 0
+        List<List<String>> platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed_date)
+        while (platforms && platforms.size() > 0) {
+          platformBatchCount ++
+          platforms.each { platform ->
+            // Here we send it to the generic case not the specific one to get the queueing behaviour
+            generateTemplatedUrlsForErmResources(
+              tenantId,
+              [
+                context: 'platform',
+                id: platform[0]
+              ]
+            )
+            // Next page
+            platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed_date)
+          }
+        }
+
+      }
 
       //One transaction for updating value with new refresh time
       AppSetting.withNewTransaction {

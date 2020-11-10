@@ -12,6 +12,9 @@ public class Platform implements MultiTenant<Platform> {
   String name
   String localCode
 
+  Date dateCreated
+  Date lastUpdated
+
   static hasMany = [
         locators: PlatformLocator,
   ]
@@ -25,6 +28,8 @@ public class Platform implements MultiTenant<Platform> {
               version column:'pt_version'
                  name column:'pt_name'
             localCode column: 'pt_local_code'
+            dateCreated column: 'pt_date_created'
+            lastUpdated column: 'pt_last_updated'
   }
 
   static constraints = {

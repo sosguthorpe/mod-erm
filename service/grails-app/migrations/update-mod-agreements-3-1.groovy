@@ -121,4 +121,13 @@ databaseChangeLog = {
       column(name: 'st_value', type: "VARCHAR(255)")
     } 
   }
+
+  changeSet(author: "efreestone (manual)", id: "202011101241-002") {
+    addColumn (tableName: "platform" ) {
+      column(name: "pt_date_created", type: "timestamp")
+    }
+    addColumn (tableName: "platform" ) {
+      column(name: "pt_last_updated", type: "timestamp")
+    }
+  }
 }
