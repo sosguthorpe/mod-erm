@@ -223,8 +223,6 @@ public class StringTemplatingService {
    * This is the actual method which gets called by the endpoint /erm/sts/template on a timer. 
    * Firstly it will look up the cursor indicating the last time the urls were refreshed.
    * Then it will go through and start calling generateTemplatedUrlsForErmResources for each object updated since
-   * It'll do this in order from small change -> large change, that way the "smart" queue has a chance to overwrite
-   * 1000 PTI updates with a single StringTemplate update.
    */
   @CompileStatic(SKIP)
   void refreshUrls(String tenantId) {
@@ -232,14 +230,17 @@ public class StringTemplatingService {
 
     Tenants.withId(tenantId) {
       AppSetting.withNewTransaction {
+        // Need to flush this initially so it exists for first instance
         AppSetting url_refresh_cursor = AppSetting.findByKey('url_refresh_cursor') ?: new AppSetting(
           section:'registry',
           settingType:'Date',
           key: 'url_refresh_cursor',
           value: System.currentTimeMillis()
-        ).save(failOnError: true)
+        ).save(flush: true, failOnError: true)
         String last_refreshed = url_refresh_cursor.value
-        log.debug "last_refreshed (${last_refreshed})"
+        log.debug "LOGDEBUG last_refreshed (${last_refreshed})"
+
+        // DO WORK ON STUFF UPDATED SINCE SINCE LAST_REFRESHED
 
         url_refresh_cursor.value = System.currentTimeMillis()
         url_refresh_cursor.save(failOnError: true)
