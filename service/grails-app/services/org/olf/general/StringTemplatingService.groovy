@@ -131,8 +131,7 @@ public class StringTemplatingService {
       String ptiUrl = pti[1]
       PlatformTitleInstance fetchedPti = PlatformTitleInstance.get(ptiId)
       
-      log.debug "stringTemplates for ${ptiId}: (${stringTemplates})"
-      // Then add new ones (If a url exists on this PTI)
+      // If a url exists on this PTI--check if templatedUrls have changed, then delete and recreate
       if (ptiUrl) {
         Map binding = [
           inputUrl: ptiUrl,
@@ -157,7 +156,7 @@ public class StringTemplatingService {
         log.warn "No url found for PTI (${ptiId})"
       }
     } catch (Exception e) {
-      log.error "LOGDEBUG WHOOPSIE ${e.message}"
+      log.error "Failed to update pti (${pti[0]}): ${e.message}"
     }
   }
 
@@ -230,6 +229,17 @@ public class StringTemplatingService {
         log.debug "LOGDEBUG last_refreshed (${last_refreshed})"
       }
 
+      // Fetch stringTemplates that have changed since the last refresh
+      List<String> sts = StringTemplate.createCriteria().list() {
+        order 'id'
+        gt('lastUpdated', last_refreshed)
+        projections {
+          property('id')
+        }
+      }
+      log.debug "LOGDEBUG List of changed sts: ${sts}"
+
+
       // DO WORK ON STUFF UPDATED SINCE SINCE LAST_REFRESHED
       //TODO make this more generic
       generateTemplatedUrlsForErmResources(tenantId)
@@ -252,34 +262,12 @@ public class StringTemplatingService {
   static boolean running = false
   private ArrayList<Map<String, String>> taskQueue = new ArrayList<Map<String, String>>()
 
-  /* 
-   * This params map needs to have two/three elements:
-   * context (being 'pti', 'platform' or 'stringTemplate'),
-   * id (only valid if context != stringTemplate)
-   * platformId (only valid if context is PTI)
-   * 
-   * It will only add a params block to the queue if it's relevant to do so, and will remove any it overrules
-   */
   private void addTaskToTaskQueue(Map<String, String> params) {
     if (params.context == 'stringTemplate') {
       // If we're going to run a full system refresh we can just clear the current queue and run that instead
       taskQueue.clear()
       taskQueue.add(params)
-    } else if (
-      params.context == 'platform' &&
-      !taskQueue.any {it.context == 'stringTemplate'} &&
-      !taskQueue.any {it.id == params.id}
-    ) {
-      // Only bother adding if there's no system refresh/platform refresh for this id
-      // Remove all PTI updates with this id as platformId
-      taskQueue.removeIf {p -> p.platformId == params.id}
-      taskQueue.add(params)
-      
-    } else if (
-      !taskQueue.any {it.context == 'stringTemplate'} &&
-      !taskQueue.any {it.id == params.platformId}
-    ) {
-      // Only bother adding if there's no system refresh/platform refresh for this platformId
+    } else {
       taskQueue.add(params)
     }
     log.debug "LOGDEBUG TASK QUEUE SIZE: ${taskQueue.size()}"
@@ -292,7 +280,6 @@ public class StringTemplatingService {
     // If running then just add to queue
     synchronized ( this ) {
       if (running == true) {
-        log.debug("StringTemplatingSevice::generateTemplatedUrlsForErmResources already running - make note to run again when finished");
         addTaskToTaskQueue(params)
         return
       } else {
@@ -383,7 +370,6 @@ public class StringTemplatingService {
           log.warn "Don't know what to do with params context (${params.context})"
           break;
       }
-      
     }
     log.debug "LOGDEBUG TASK END TIME"
 
