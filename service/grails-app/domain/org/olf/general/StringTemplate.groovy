@@ -28,7 +28,7 @@ class StringTemplate implements MultiTenant<StringTemplate> {
   /*
    * The useage of this list will depend somewhat on context,
    * but the general idea is that this captures the 'scope' of a translation.
-   * For certain contexts this list will act as a 'whitelist', for others as a 'blacklist'
+   * For certain contexts this list will act as a 'allowlist', for others as a 'denylist'
    */
   @BindImmutably
   Set<String> idScopes = []
