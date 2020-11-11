@@ -228,7 +228,7 @@ public class StringTemplatingService {
     // IMPORTANT--This only works because LastUpdated on the pti ISN'T triggered for a collection update, ie TemplatedUrls
     String new_cursor_value = System.currentTimeMillis()
     // Also create container for the current cursor value
-    String last_refreshed
+    Date last_refreshed
     AppSetting url_refresh_cursor
 
     Tenants.withId(tenantId) {
@@ -242,14 +242,15 @@ public class StringTemplatingService {
           key: 'url_refresh_cursor',
           value: 0
         ).save(flush: true, failOnError: true)
-        last_refreshed = url_refresh_cursor.value
+
+        // Parse setting String to Date
+        last_refreshed = new Date(Long.parseLong(url_refresh_cursor.value))
       }
 
-      Date last_refreshed_date = new Date(Long.parseLong(last_refreshed))
       // Fetch stringTemplates that have changed since the last refresh
       List<String> sts = StringTemplate.createCriteria().list() {
         order 'id'
-        gt('lastUpdated', last_refreshed_date)
+        gt('lastUpdated', last_refreshed)
         projections {
           property('id')
         }
@@ -263,7 +264,7 @@ public class StringTemplatingService {
         PlatformTitleInstance.withNewTransaction{
           final int ptiBatchSize = 100
           int ptiBatchCount = 0
-          List<List<String>> ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed_date)
+          List<List<String>> ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed)
           while (ptis && ptis.size() > 0) {
             ptiBatchCount ++
             ptis.each { pti ->
@@ -278,7 +279,7 @@ public class StringTemplatingService {
               )
             }
             // Next page
-            ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed_date)
+            ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed)
           }
         }
 
@@ -286,7 +287,7 @@ public class StringTemplatingService {
         Platform.withNewTransaction{
           final int platformBatchSize = 100
           int platformBatchCount = 0
-          List<List<String>> platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed_date)
+          List<List<String>> platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed)
           while (platforms && platforms.size() > 0) {
             platformBatchCount ++
             platforms.each { platform ->
@@ -299,7 +300,7 @@ public class StringTemplatingService {
                 ]
               )
               // Next page
-              platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed_date)
+              platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed)
             }
           }
         }
@@ -331,7 +332,7 @@ public class StringTemplatingService {
     } else {
       taskQueue.add(params)
     }
-    log.debug "LOGDEBUG TASK QUEUE SIZE: ${taskQueue.size()}"
+    log.debug "Refresh task queue size: ${taskQueue.size()}"
   }
 
   /* IMPORTANT NOTE -- When calling this for PTI/Platforms, wrap in a new transaction. Left out of this block so that
