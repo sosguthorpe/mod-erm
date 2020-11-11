@@ -28,6 +28,12 @@ public class ExportService {
     
     agreement
   }
+
+  /* Note - HQL query construction looks to have changed since v5.2.
+   * Before, we were using an OR in the WHERE block to "null out" certain rows on JOINs,
+   * but this is no longer happening. The solution here was to add the WHERE clauses to the JOIN,
+   * and replace the WHERE with a not-null constraint.  
+  */
    
   List<List> all(final String agreementId = null) {
     def results = null
@@ -36,40 +42,49 @@ public class ExportService {
         SELECT res, pkg_ent, direct_ent
         FROM ErmResource as res
           LEFT JOIN res.entitlements as direct_ent
+            ON (
+              (
+                direct_ent.owner.id = :id
+                  AND
+                res.class != Pkg
+              )
+            )
           LEFT JOIN res.pkg as pkg
 
             ON (res.class = PackageContentItem) 
             LEFT JOIN pkg.entitlements as pkg_ent
+              ON (
+                pkg_ent.owner.id = :id
+              )
         WHERE
-          (
-            direct_ent.owner.id = :id
-            AND
-            res.class != Pkg
-          )
-        OR
-          (
-            pkg_ent.owner.id = :id
-          )
+          (direct_ent IS NOT NULL)
+            OR
+          (pkg_ent IS NOT NULL)
+          
       """, [id: agreementId], [readOnly: true])
     } else {
       results = ErmResource.executeQuery("""
         SELECT res, pkg_ent, direct_ent
         FROM ErmResource as res
           LEFT JOIN res.entitlements as direct_ent
+            ON (
+              (
+                direct_ent.owner IS NOT NULL
+                AND
+                res.class != Pkg
+              )
+            )
           LEFT JOIN res.pkg as pkg
 
             ON res.class = PackageContentItem
             LEFT JOIN pkg.entitlements as pkg_ent
+              ON (
+                pkg_ent.owner IS NOT NULL
+              )
         WHERE
-          (
-            direct_ent.owner IS NOT NULL
-            AND
-            res.class != Pkg
-          )
-        OR
-          (
-            pkg_ent.owner IS NOT NULL
-          )
+          (direct_ent IS NOT NULL)
+            OR
+          (pkg_ent IS NOT NULL)
       """, [readOnly: true])
     }
 	
@@ -102,6 +117,12 @@ public class ExportService {
               (direct_ent.activeTo IS NULL OR direct_ent.activeTo >= :today)
                 AND
                  (direct_ent.activeFrom IS NULL OR direct_ent.activeFrom  <= :today)
+                AND (
+                  direct_ent.owner.id = :agreementId
+                  AND
+                  res.class != Pkg
+                )
+
             )
           LEFT JOIN res.pkg as pkg
 
@@ -117,18 +138,14 @@ public class ExportService {
               (pkg_ent.activeTo IS NULL OR pkg_ent.activeTo >= :today)
                 AND
                  (pkg_ent.activeFrom IS NULL OR pkg_ent.activeFrom  <= :today)
+                 AND pkg_ent.owner.id = :agreementId
             )
-        WHERE
-          (
-            direct_ent.owner.id = :id
-            AND
-            res.class != Pkg
-          )
-        OR
-          (
-            pkg_ent.owner.id = :id
-          )
-      """, [id: agreementId, 'today': today], [readOnly: true])
+
+          WHERE
+            (direct_ent IS NOT NULL)
+            OR
+            (pkg_ent IS NOT NULL)
+      """, ['agreementId': agreementId, 'today': today], [readOnly: true])
     } else {
       // This query is duplicated in EntitlementLogService
       // Changes here need to be reviewed and may need to be applied there. 
@@ -141,6 +158,12 @@ public class ExportService {
               (direct_ent.activeTo IS NULL OR direct_ent.activeTo >= :today)
                 AND
                  (direct_ent.activeFrom IS NULL OR direct_ent.activeFrom  <= :today)
+                AND
+                (
+                  direct_ent.owner IS NOT NULL
+                  AND
+                  res.class != Pkg
+                )
             )
           LEFT JOIN res.pkg as pkg
 
@@ -156,17 +179,12 @@ public class ExportService {
                 (pkg_ent.activeTo IS NULL OR pkg_ent.activeTo >= :today)
                   AND
                    (pkg_ent.activeFrom IS NULL OR pkg_ent.activeFrom  <= :today)
+                   AND pkg_ent.owner IS NOT NULL
               )
         WHERE
-          (
-            direct_ent.owner IS NOT NULL
-            AND
-            res.class != Pkg
-          )
-        OR
-          (
-            pkg_ent.owner IS NOT NULL
-          )
+          (direct_ent IS NOT NULL)
+            OR
+          (pkg_ent IS NOT NULL)
       """, ['today': today], [readOnly: true])
     }
   
@@ -185,7 +203,8 @@ public class ExportService {
       
     return results
   }
-  
+
+// TODO if this is uncommented and used, check the WHERE changes made above are actually working here
 //  List<ErmResource> future (final String agreementId = null) {
 //    final LocalDate today = LocalDate.now()
 //    
@@ -199,6 +218,12 @@ public class ExportService {
 //              (direct_ent.activeTo IS NULL OR direct_ent.activeTo >= :today)
 //                AND
 //                 (direct_ent.activeFrom IS NULL OR direct_ent.activeFrom  <= :today)
+//                AND
+//                  (
+//                    direct_ent.owner.id = :id
+//                      AND
+//                    res.class != Pkg
+//                  )
 //            )
 //          LEFT JOIN res.pkg as pkg
 //
@@ -214,17 +239,13 @@ public class ExportService {
 //              (pkg_ent.activeTo IS NULL OR pkg_ent.activeTo >= :today)
 //                AND
 //                 (pkg_ent.activeFrom IS NULL OR pkg_ent.activeFrom  <= :today)
+//                AND
+//                  (pkg_ent.owner.id = :id)
 //            )
 //        WHERE
-//          (
-//            direct_ent.owner.id = :id
-//            AND
-//            res.class != Pkg
-//          )
-//        OR
-//          (
-//            pkg_ent.owner.id = :id
-//          )
+//          (direct_ent IS NOT NULL)
+//            OR
+//          (pkg_ent IS NOT NULL)
 //      """, [id: agreementId, 'today': today], [readOnly: true])
 //    } else {
 //      results = ErmResource.executeQuery("""
@@ -235,6 +256,12 @@ public class ExportService {
 //              (direct_ent.activeTo IS NULL OR direct_ent.activeTo >= :today)
 //                AND
 //                 (direct_ent.activeFrom IS NULL OR direct_ent.activeFrom  <= :today)
+//                AND
+//                 (
+//                   direct_ent.owner IS NOT NULL
+//                     AND
+//                   res.class != Pkg
+//                 )
 //            )
 //          LEFT JOIN res.pkg as pkg
 //
@@ -250,17 +277,12 @@ public class ExportService {
 //                (pkg_ent.activeTo IS NULL OR pkg_ent.activeTo >= :today)
 //                  AND
 //                   (pkg_ent.activeFrom IS NULL OR pkg_ent.activeFrom  <= :today)
+//                  AND (pkg_ent.owner IS NOT NULL)
 //              )
 //        WHERE
-//          (
-//            direct_ent.owner IS NOT NULL
-//            AND
-//            res.class != Pkg
-//          )
-//        OR
-//          (
-//            pkg_ent.owner IS NOT NULL
-//          )
+//          (direct_ent IS NOT NULL)
+//            OR
+//          (pkg_ent IS NOT NULL)
 //      """, ['today': today], [readOnly: true])
 //    }
 //  
