@@ -87,7 +87,7 @@ public class StringTemplatingService {
   private List<LinkedHashMap> performTemplatingByContext(Map binding, String context, Map stringTemplates, String nameSuffix = '') {
     return stringTemplates[context]?.collect { StringTemplate st ->
       [
-        name: nameSuffix ? "${st['name']}-${nameSuffix}" : st.name,
+        name: nameSuffix ? "${st['name']}-${nameSuffix}".toString() : st.name,
         url: st.customiseString(binding)
       ]
     }
@@ -123,6 +123,26 @@ public class StringTemplatingService {
     return stringTemplates
   }
 
+  // Returns true if equivalent, false otherwise
+  boolean compareTemplatedUrls(List<List<String>> existingTus, List<List<String>> newTus) {
+    if (existingTus.size() == newTus.size()) {
+      //Sort existing and new
+      List<List<String>> newSorted = newTus.toSorted {a,b -> a[0] <=> b[0]}
+      List<List<String>> existingSorted = existingTus.toSorted {a,b -> a[0] <=> b[0]}
+
+      //Using for loop because can't break out of groovy each without throwing exception
+      for (int i = 0; i < existingSorted.size(); i++) {
+        List<String> existingSortedIndex = existingSorted[i]
+        List<String> newSortedIndex = newSorted[i]
+        if (existingSortedIndex[0] != newSortedIndex[0] || existingSortedIndex[1] != newSortedIndex[1]) {
+          return false
+        }
+      }
+      return true
+    }
+    return false
+  }
+
   // This method generates the templatedUrls for PTIs, given the stringTemplates and platformLocalCode
   public void generateTemplatedUrlsForPti(final List<String> pti, Map stringTemplates, String platformLocalCode='') {
     log.debug "generateTemplatedUrlsForPti called for (${pti[0]})"
@@ -139,10 +159,10 @@ public class StringTemplatingService {
         ]
         List<LinkedHashMap<String, String>> newTemplatedUrls = performStringTemplates(stringTemplates, binding)
 
-        //TODO only delete and make new if they differ
-        List<String> etus = fetchedPti.templatedUrls.collect { tu -> tu.url }
-        List<String> ntus = newTemplatedUrls.collect { tu -> tu.url }
-        if (etus.size() != ntus.size() || etus.sort() != ntus.sort()) {
+        //Only delete and make new if they differ
+        List<List<String>> etus = fetchedPti.templatedUrls.collect { tu -> [tu.name.toString(), tu.url.toString()] }
+        List<List<String>> ntus = newTemplatedUrls.collect { tu -> [tu.name, tu.url] }
+        if (!compareTemplatedUrls(etus, ntus)) {
           deleteTemplatedUrlsForPTI(ptiId)
 
           newTemplatedUrls.each { templatedUrl ->
