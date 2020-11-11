@@ -123,6 +123,124 @@ public class StringTemplatingService {
     return stringTemplates
   }
 
+  /// We need to lock the refresh task in the same way we need to lock the actual generation,
+  // since we access/hold/edit an AppSetting value here
+  static boolean refreshRunning = false
+
+  /*
+   * This is the actual method which gets called by the endpoint /erm/sts/template on a timer. 
+   * Firstly it will look up the cursor indicating the last time the urls were refreshed.
+   * Then it will go through and start calling generateTemplatedUrlsForErmResources for each object updated since
+   */
+  @CompileStatic(SKIP)
+  void refreshUrls(String tenantId) {
+    log.debug "stringTemplatingService::refreshUrls called with tenantId (${tenantId})"
+
+    // If running then just ignore
+    synchronized ( this ) {
+      if (refreshRunning == true) {
+        return
+      } else {
+        refreshRunning = true
+      }
+    }
+
+    // Theoretically updates could happen after the process begins but before the url_refresh_cursor gets updated
+    // So save the time before starting process as the new cursor pt
+    // IMPORTANT--This only works because LastUpdated on the pti ISN'T triggered for a collection update, ie TemplatedUrls
+    String new_cursor_value = System.currentTimeMillis()
+    // Also create container for the current cursor value
+    Date last_refreshed
+    AppSetting url_refresh_cursor
+
+    Tenants.withId(tenantId) {
+      // One transaction for fetching the initial value/creating AppSetting
+      AppSetting.withNewTransaction {
+        // Need to flush this initially so it exists for first instance
+        // Set initial cursor to 0 so everything currently in system gets updated
+        url_refresh_cursor = AppSetting.findByKey('url_refresh_cursor') ?: new AppSetting(
+          section:'registry',
+          settingType:'Date',
+          key: 'url_refresh_cursor',
+          value: 0
+        ).save(flush: true, failOnError: true)
+
+        // Parse setting String to Date
+        last_refreshed = new Date(Long.parseLong(url_refresh_cursor.value))
+      }
+
+      // Fetch stringTemplates that have changed since the last refresh
+      List<String> sts = StringTemplate.createCriteria().list() {
+        order 'id'
+        gt('lastUpdated', last_refreshed)
+        projections {
+          property('id')
+        }
+      }
+
+      if (sts.size() > 0) {
+        // StringTemplates have changed, ignore more granular changes and just refresh everything
+        generateTemplatedUrlsForErmResources(tenantId)
+      } else {
+        // FIRST - refresh all updated PTIs
+        PlatformTitleInstance.withNewTransaction{
+          final int ptiBatchSize = 100
+          int ptiBatchCount = 0
+          List<List<String>> ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed)
+          while (ptis && ptis.size() > 0) {
+            ptiBatchCount ++
+            ptis.each { pti ->
+              // Here we send it to the generic case not the specific one to get the queueing behaviour
+              generateTemplatedUrlsForErmResources(
+                tenantId,
+                [
+                  context: 'pti',
+                  id: pti[0],
+                  platformId: pti[2]
+                ]
+              )
+            }
+            // Next page
+            ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed)
+          }
+        }
+
+        // Next - refresh all updated Platforms
+        Platform.withNewTransaction{
+          final int platformBatchSize = 100
+          int platformBatchCount = 0
+          List<List<String>> platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed)
+          while (platforms && platforms.size() > 0) {
+            platformBatchCount ++
+            platforms.each { platform ->
+              // Here we send it to the generic case not the specific one to get the queueing behaviour
+              generateTemplatedUrlsForErmResources(
+                tenantId,
+                [
+                  context: 'platform',
+                  id: platform[0]
+                ]
+              )
+              // Next page
+              platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed)
+            }
+          }
+        }
+      }
+
+      //One transaction for updating value with new refresh time
+      AppSetting.withNewTransaction {
+        url_refresh_cursor.value = new_cursor_value
+        url_refresh_cursor.save(failOnError: true)
+      }
+    }
+
+    synchronized ( this ) {
+      // Refresh finished, turn 'refreshRunning' boolean off
+      refreshRunning = false
+    }
+  }
+
   // Returns true if equivalent, false otherwise
   boolean compareTemplatedUrls(List<List<String>> existingTus, List<List<String>> newTus) {
     if (existingTus.size() == newTus.size()) {
@@ -232,106 +350,6 @@ public class StringTemplatingService {
       """,
       [id: ptiId]
     )
-  }
-
-  /*
-   * This is the actual method which gets called by the endpoint /erm/sts/template on a timer. 
-   * Firstly it will look up the cursor indicating the last time the urls were refreshed.
-   * Then it will go through and start calling generateTemplatedUrlsForErmResources for each object updated since
-   */
-  @CompileStatic(SKIP)
-  void refreshUrls(String tenantId) {
-    log.debug "stringTemplatingService::refreshUrls called with tenantId (${tenantId})"
-
-    // Theoretically updates could happen after the process begins but before the url_refresh_cursor gets updated
-    // So save the time before starting process as the new cursor pt
-    // IMPORTANT--This only works because LastUpdated on the pti ISN'T triggered for a collection update, ie TemplatedUrls
-    String new_cursor_value = System.currentTimeMillis()
-    // Also create container for the current cursor value
-    Date last_refreshed
-    AppSetting url_refresh_cursor
-
-    Tenants.withId(tenantId) {
-      // One transaction for fetching the initial value/creating AppSetting
-      AppSetting.withNewTransaction {
-        // Need to flush this initially so it exists for first instance
-        // Set initial cursor to 0 so everything currently in system gets updated
-        url_refresh_cursor = AppSetting.findByKey('url_refresh_cursor') ?: new AppSetting(
-          section:'registry',
-          settingType:'Date',
-          key: 'url_refresh_cursor',
-          value: 0
-        ).save(flush: true, failOnError: true)
-
-        // Parse setting String to Date
-        last_refreshed = new Date(Long.parseLong(url_refresh_cursor.value))
-      }
-
-      // Fetch stringTemplates that have changed since the last refresh
-      List<String> sts = StringTemplate.createCriteria().list() {
-        order 'id'
-        gt('lastUpdated', last_refreshed)
-        projections {
-          property('id')
-        }
-      }
-
-      if (sts.size() > 0) {
-        // StringTemplates have changed, ignore more granular changes and just refresh everything
-        generateTemplatedUrlsForErmResources(tenantId)
-      } else {
-        // FIRST - refresh all updated PTIs
-        PlatformTitleInstance.withNewTransaction{
-          final int ptiBatchSize = 100
-          int ptiBatchCount = 0
-          List<List<String>> ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed)
-          while (ptis && ptis.size() > 0) {
-            ptiBatchCount ++
-            ptis.each { pti ->
-              // Here we send it to the generic case not the specific one to get the queueing behaviour
-              generateTemplatedUrlsForErmResources(
-                tenantId,
-                [
-                  context: 'pti',
-                  id: pti[0],
-                  platformId: pti[2]
-                ]
-              )
-            }
-            // Next page
-            ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed)
-          }
-        }
-
-        // Next - refresh all updated Platforms
-        Platform.withNewTransaction{
-          final int platformBatchSize = 100
-          int platformBatchCount = 0
-          List<List<String>> platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed)
-          while (platforms && platforms.size() > 0) {
-            platformBatchCount ++
-            platforms.each { platform ->
-              // Here we send it to the generic case not the specific one to get the queueing behaviour
-              generateTemplatedUrlsForErmResources(
-                tenantId,
-                [
-                  context: 'platform',
-                  id: platform[0]
-                ]
-              )
-              // Next page
-              platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed)
-            }
-          }
-        }
-      }
-
-      //One transaction for updating value with new refresh time
-      AppSetting.withNewTransaction {
-        url_refresh_cursor.value = new_cursor_value
-        url_refresh_cursor.save(failOnError: true)
-      }
-    }
   }
 
   /*
