@@ -145,9 +145,18 @@ public class StringTemplatingService {
       }
     }
 
-    // Theoretically updates could happen after the process begins but before the url_refresh_cursor gets updated
-    // So save the time before starting process as the new cursor pt
-    // IMPORTANT--This only works because LastUpdated on the pti ISN'T triggered for a collection update, ie TemplatedUrls
+    /* Theoretically updates could happen after the process begins but before the url_refresh_cursor gets updated
+     * So save the time before starting process as the new cursor pt
+     * IMPORTANT--This only works because LastUpdated on the pti ISN'T triggered for a collection update,
+     * ie TemplatedUrls.
+     */
+
+     /* TODO In future we may wish to change this, in order to keep track of those PTIs who were updated
+     * between the last refresh date but not after after the platform updates started.
+     * Some work would need to be done to make lastUpdated change, and to figure out what to do for manual
+     * changes in the interval.
+     */
+     
     String new_cursor_value = System.currentTimeMillis()
     // Also create container for the current cursor value
     Date last_refreshed
