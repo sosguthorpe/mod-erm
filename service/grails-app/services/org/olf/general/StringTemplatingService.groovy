@@ -146,7 +146,7 @@ public class StringTemplatingService {
           log.debug "LOGDEBUG CHANGE: (${etus}) -> (${ntus})"
           deleteTemplatedUrlsForPTI(ptiId)
 
-           newTemplatedUrls.each { templatedUrl ->
+          newTemplatedUrls.each { templatedUrl ->
             TemplatedUrl tu = new TemplatedUrl(templatedUrl)
             tu.resource = fetchedPti
             tu.save(failOnError: true)
@@ -226,6 +226,7 @@ public class StringTemplatingService {
 
     // Theoretically updates could happen after the process begins but before the url_refresh_cursor gets updated
     // So save the time before starting process as the new cursor pt
+    // IMPORTANT--This only works because LastUpdated on the pti ISN'T triggered for a collection update, ie TemplatedUrls
     String new_cursor_value = System.currentTimeMillis()
     // Also create container for the current cursor value
     String last_refreshed
@@ -235,11 +236,12 @@ public class StringTemplatingService {
       // One transaction for fetching the initial value/creating AppSetting
       AppSetting.withNewTransaction {
         // Need to flush this initially so it exists for first instance
+        // Set initial cursor to 0 so everything currently in system gets updated
         url_refresh_cursor = AppSetting.findByKey('url_refresh_cursor') ?: new AppSetting(
           section:'registry',
           settingType:'Date',
           key: 'url_refresh_cursor',
-          value: System.currentTimeMillis()
+          value: 0
         ).save(flush: true, failOnError: true)
         last_refreshed = url_refresh_cursor.value
       }
@@ -259,47 +261,50 @@ public class StringTemplatingService {
         generateTemplatedUrlsForErmResources(tenantId)
       } else {
         // FIRST - refresh all updated PTIs
-        final int ptiBatchSize = 100
-        int ptiBatchCount = 0
-        List<List<String>> ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed_date)
-        while (ptis && ptis.size() > 0) {
-          ptiBatchCount ++
-          ptis.each { pti ->
-            log.debug "LOGDEBUG CHANGED PTI: ${pti}"
-            // Here we send it to the generic case not the specific one to get the queueing behaviour
-            generateTemplatedUrlsForErmResources(
-              tenantId,
-              [
-                context: 'pti',
-                id: pti[0],
-                platformId: pti[2]
-              ]
-            )
+        PlatformTitleInstance.withNewTransaction{
+          final int ptiBatchSize = 100
+          int ptiBatchCount = 0
+          List<List<String>> ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed_date)
+          while (ptis && ptis.size() > 0) {
+            ptiBatchCount ++
+            ptis.each { pti ->
+              log.debug "LOGDEBUG CHANGED PTI: ${pti}"
+              // Here we send it to the generic case not the specific one to get the queueing behaviour
+              generateTemplatedUrlsForErmResources(
+                tenantId,
+                [
+                  context: 'pti',
+                  id: pti[0],
+                  platformId: pti[2]
+                ]
+              )
+            }
+            // Next page
+            ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed_date)
           }
-          // Next page
-          ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed_date)
         }
 
         // Next - refresh all updated Platforms
-        final int platformBatchSize = 100
-        int platformBatchCount = 0
-        List<List<String>> platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed_date)
-        while (platforms && platforms.size() > 0) {
-          platformBatchCount ++
-          platforms.each { platform ->
-            // Here we send it to the generic case not the specific one to get the queueing behaviour
-            generateTemplatedUrlsForErmResources(
-              tenantId,
-              [
-                context: 'platform',
-                id: platform[0]
-              ]
-            )
-            // Next page
-            platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed_date)
+        Platform.withNewTransaction{
+          final int platformBatchSize = 100
+          int platformBatchCount = 0
+          List<List<String>> platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed_date)
+          while (platforms && platforms.size() > 0) {
+            platformBatchCount ++
+            platforms.each { platform ->
+              // Here we send it to the generic case not the specific one to get the queueing behaviour
+              generateTemplatedUrlsForErmResources(
+                tenantId,
+                [
+                  context: 'platform',
+                  id: platform[0]
+                ]
+              )
+              // Next page
+              platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed_date)
+            }
           }
         }
-
       }
 
       //One transaction for updating value with new refresh time
@@ -331,7 +336,9 @@ public class StringTemplatingService {
     log.debug "LOGDEBUG TASK QUEUE SIZE: ${taskQueue.size()}"
   }
 
-
+  /* IMPORTANT NOTE -- When calling this for PTI/Platforms, wrap in a new transaction. Left out of this block so that
+   * many edits can happen in one transaction block if called for multiple.
+   */
   public void generateTemplatedUrlsForErmResources(final String tenantId, Map<String, String> params = [context: 'stringTemplate']) {
     log.debug "generateTemplatedUrlsForErmResources called"
 

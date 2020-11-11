@@ -465,8 +465,8 @@
           "permissionsRequired" : ["erm.sts.template"],
           "methods": [ "GET" ],
           "pathPattern": "/erm/sts/template",
-          "unit": "second",
-          "delay": "10" 
+          "unit": "hour",
+          "delay": "20"
         }
       ]
     }
