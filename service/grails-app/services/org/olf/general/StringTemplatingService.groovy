@@ -143,7 +143,6 @@ public class StringTemplatingService {
         List<String> etus = fetchedPti.templatedUrls.collect { tu -> tu.url }
         List<String> ntus = newTemplatedUrls.collect { tu -> tu.url }
         if (etus.size() != ntus.size() || etus.sort() != ntus.sort()) {
-          log.debug "LOGDEBUG CHANGE: (${etus}) -> (${ntus})"
           deleteTemplatedUrlsForPTI(ptiId)
 
           newTemplatedUrls.each { templatedUrl ->
@@ -268,7 +267,6 @@ public class StringTemplatingService {
           while (ptis && ptis.size() > 0) {
             ptiBatchCount ++
             ptis.each { pti ->
-              log.debug "LOGDEBUG CHANGED PTI: ${pti}"
               // Here we send it to the generic case not the specific one to get the queueing behaviour
               generateTemplatedUrlsForErmResources(
                 tenantId,
