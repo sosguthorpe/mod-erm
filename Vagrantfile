@@ -15,12 +15,16 @@ Vagrant.configure(2) do |config|
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "folio/testing-backend"
-  config.vm.box_version  = "5.0.0-20200414.4050"
-  # config.vm.box_version = "5.0.0-20190612.2294"
-  # config.vm.box_version = "5.0.0-20190604.2248"
-  #config.vm.box_version = "5.0.0-20190419.1982"
-  #config.vm.box_version = "5.0.0-20180813.956"
-  # config.vm.box_version = "5.0.0-20181022.1192"
+  
+  # We don't specify this any more to make sure that developers can pull the latest version. be aware that
+  # this exposes you to bugs that may be published and gives you a slightly less stable base to build on
+  # Relvant vagrant commands
+  #   
+  #     vagrant box list -- list the currently installed images
+  #     vagrant box prune -- prune any unused version - free disk space
+  #     vagrant box update -- update the current box to the latest version
+  #   
+  #config.vm.box_version  = "5.0.0-20200414.4050"
 
   config.vm.provider "virtualbox" do |v|
     v.memory = 10240
