@@ -398,7 +398,7 @@ public class StringTemplatingService {
       }
     }
 
-    log.debug "LOGDEBUG TASK START TIME"
+    log.debug "generateTemplatedUrlsForErmResources task start"
     Tenants.withId(tenantId) {
       switch (params.context) {
         case 'stringTemplate':
@@ -482,7 +482,7 @@ public class StringTemplatingService {
           break;
       }
     }
-    log.debug "LOGDEBUG TASK END TIME"
+    log.debug "generateTemplatedUrlsForErmResources task end"
 
     synchronized ( this ) {
       // Task finished, turn 'running' boolean off
