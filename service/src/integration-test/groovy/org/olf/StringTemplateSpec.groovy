@@ -198,7 +198,33 @@ class StringTemplateSpec extends BaseSpec {
       } == true
   }
 
-  //TODO add tests for automatically triggered updates when they're done
+
+  void "Test smart templatedUrl comparison" () {
+    // Test that we're not deleting those templatedUrls which don't change
+
+    def sts = doGet("/erm/sts")
+    def proxy1STS = sts.findAll { st ->
+      st.name == 'proxy1'
+    }[0]
+    def pti = fetchPTIWithRefresh()
+
+    proxy1STS = doPut("/erm/sts/${proxy1STS.id}", {
+      'idScopes' ([pti.platform.id])
+    })
+    pti = fetchPTIWithRefresh()
+    def templatedUrlIds = pti.templatedUrls.collect { tu -> tu.id }
+
+    when: "we update proxy1"
+      proxy1STS = doPut("/erm/sts/${proxy1STS.id}", {
+        'name' 'proxy-1-test'
+      })
+      pti = fetchPTIWithRefresh()
+      def templatedUrlIds2 = pti.templatedUrls.collect { tu -> tu.id }
+
+    then: "the original templated urls don't get updated"
+      // Make sure they're sorted in the same order
+      templatedUrlIds.sort() == templatedUrlIds2.sort()
+  }
 
   def fetchPTIWithRefresh() {
     doGet("/erm/sts/template")
