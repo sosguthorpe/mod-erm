@@ -39,7 +39,7 @@ class StringTemplateSpec extends BaseSpec {
 
     where:
       test_package_file | _
-      'src/integration-test/resources/packages/simple_pkg_2.json' | _
+      'src/integration-test/resources/packages/stringTemplating/simple_pkg.json' | _
   }
 
   void "Test creation of StringTemplates" (
@@ -229,6 +229,7 @@ class StringTemplateSpec extends BaseSpec {
   def fetchPTIWithRefresh() {
     doGet("/erm/sts/template")
     // Wait for 5 seconds for this to be done
+    //TODO this is not great -- need a way to programatically tell if templating is finished?
     Thread.sleep(5000);
 
     return fetchPTI()
