@@ -28,6 +28,11 @@ if(entitlement.respondsTo(objectProperty)){
   }
 }
 
+boolean renderOwnerSnippet = true
+if ( controllerName != 'subscriptionAgreement' ) {
+  renderOwnerSnippet = false
+}
+
 // @TODO: Unify this with the parent template. 
 json {
   'id' entitlement.id
@@ -46,7 +51,12 @@ json {
   'note' entitlement.note
   'tags' entitlement.tags
   
-  'owner' g.render(entitlement.owner, [includes: ['id', 'name']])
+  if (renderOwnerSnippet) {
+    'owner' g.render(entitlement.owner, [includes: ['id', 'name']])
+  } else {
+    'owner' g.render(entitlement.owner)
+  }
+  
   
   if (entitlement.poLines) {
     'poLines' g.render (entitlement.poLines)
