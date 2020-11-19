@@ -24,6 +24,9 @@ class StringTemplateBulkSpec extends BaseSpec {
   def importService
   def stringTemplatingService
 
+  static String[] elsevierTitles = ['ACC Current Journal Review', 'Spanish Journal of Legal Medicine']
+  static String[] jstorITitles = ['American Journal of Mathematics', 'The Economic Bulletin']
+  static String[] jstorIITitles = ['African Affairs','The Phylon Quarterly']
   // Place to store the id of the PTI we load in the package for use in multiple tests
   
   void "Load Packages" (test_package_file) {
@@ -38,18 +41,16 @@ class StringTemplateBulkSpec extends BaseSpec {
         result = importService.importPackageUsingInternalSchema( package_data )
         //result = importService.importPackageUsingErmSchema( package_data ).packageCount
       }
-      def ptis = doGet("/erm/pti")
-      println "LOGDEBUG PTIs: ${ptis}"
 
     then: 'Package imported'
       result > 0
     
     where:
       test_package_file | _
-      //'src/integration-test/resources/packages/stringTemplating/elsevier_freedom_package.json' | _
-      'src/integration-test/resources/packages/stringTemplating/elsevier_freedom_package_internal.json' | _
-      //'src/integration-test/resources/packages/stringTemplating/jstor_arts_science_I_package.json' | _
-      //'src/integration-test/resources/packages/stringTemplating/jstor_arts_science_I_package_internal.json' | _
+      'src/integration-test/resources/packages/stringTemplating/elsevier_freedom_package_internal.json'      | _
+      'src/integration-test/resources/packages/stringTemplating/jstor_arts_science_I_package_internal.json'  | _
+      'src/integration-test/resources/packages/stringTemplating/jstor_arts_science_II_package_internal.json' | _
+
   }
 
   void "Create StringTemplates" (
@@ -71,21 +72,148 @@ class StringTemplateBulkSpec extends BaseSpec {
       respMap.rule == the_rule
       respMap.context.value == the_context
     where:
-      the_name   || the_rule                                                                                                  || the_context
-      'proxy1'   || 'http://sub-hh-{{replace (replace (removeProtocol inputUrl) \"link.\" \"\") \".com\" \".co.uk\"}}/proxy1' || 'urlproxier'
-      'custom1'  || 'proxy-2-stuff-{{platformLocalCode}}'                                                                     || 'urlcustomiser'
+      the_name   || the_rule                              || the_context
+      'proxy1'   || 'http://sub-hh-{{platformLocalCode}}' || 'urlproxier'
+      'custom1'  || 'custom1-stuff-{{platformLocalCode}}' || 'urlcustomiser'
   }
 
   void "Templating triggers without errors" () {
     when: "We trigger a template task"
-      doGet("/erm/sts/template")
-      // Allow 20 seconds for templating to occur
-      Thread.sleep(20000);
+      boolean noErrors = true
+      try {
+        final String tenantid = currentTenant.toLowerCase()
+        stringTemplatingService.refreshUrls(OkapiTenantResolver.getTenantSchemaName( tenantid ))
+      } catch (Exception e) {
+        log.error "URL Refresh failed: ${e.message}"
+        noErrors = false
+      }
+      
+    then: "Templating finishes"
+      // On this occasion we're just testing that we don't get any errors when we template this many PTIs
+      noErrors
+  }
 
-      def ptis = doGet("/erm/pti")
-      println "PTI COUNT: ${ptis.size()}"
-    then: "Templating happens for all PTIs in system"
-      1==1
+  void "Check initial templating is complete" (String[] ptiNames) {
+    when: "We fetch PTIs"
+      def ptiList = []
+      ptiNames.each{ name ->
+        def pti = fetchPTI(name)
+        ptiList.add(pti)
+      }
+
+      // bear in mind this should always be at least one if the service has finished running, since we create defaultUrl
+      boolean allHaveTemplatedUrls = true
+      ptiList.each { pti ->
+        if (pti.templatedUrls.size() == 0) {
+          allHaveTemplatedUrls = false
+        }
+      }
+      
+    then: "The PTIs already have attached TemplatedUrls"
+      allHaveTemplatedUrls
+
+    where:
+      ptiNames        || _
+      // These two are from elsevier
+      elsevierTitles  || _
+      // These two from JSTOR 1
+      jstorITitles    || _
+      // These two from JSTOR 2
+      jstorIITitles   || _
+  }
+
+  void "Test that platform level update updates for all titles in platform" (String platformName, String platformCode) {
+    when: "We update platform and refresh URLs"
+      def platform = fetchPlatform(platformName)
+      // Edit platform localCode
+      doPut("erm/platforms/${platform.id}", {
+        'localCode' platformCode
+      })
+      refreshUrls()
+
+    then: "TemplatedUrls on platform reflect this"
+      def ptiNames = []
+      switch (platformName) {
+        case 'ScienceDirect':
+          ptiNames = elsevierTitles
+          break;
+        case 'JSTOR':
+          ptiNames = jstorITitles + jstorIITitles
+          break;
+        default:
+          ptiNames = []
+          break;
+      }
+      def ptiList = []
+      ptiNames.each { name ->
+        def pti = fetchPTI(name)
+        ptiList.add(pti)
+      }
+      
+      boolean allHaveUpdatedPlatformCode = true;
+      ptiList.each { pti ->
+        def proxy1TU = pti.templatedUrls.findAll {tu ->
+          tu.name == 'proxy1'
+        }[0]
+        log.debug "LOGDEBUG expect: \"http://sub-hh-${platformCode}\", got \"${proxy1TU.url}\""
+        if (proxy1TU.url != "http://sub-hh-${platformCode}") {
+          allHaveUpdatedPlatformCode = false
+        }
+      }
+    then: "All PTIs have updated templated urls"
+      allHaveUpdatedPlatformCode
+
+    where:
+      platformName    || platformCode
+      "ScienceDirect" || 'sciDir'
+      "JSTOR"         || 'jstor-lib'
+  }
+
+  void refreshUrls() {
+    final String tenantid = currentTenant.toLowerCase()
+    stringTemplatingService.refreshUrls(OkapiTenantResolver.getTenantSchemaName( tenantid ))
+  }
+
+  def fetchPTI(String nameLike) {
+      // Find the PTI we imported from the package ingest
+      def ptis = doGet("/erm/pti", [
+        filters:[
+          "titleInstance.name=i=${nameLike}" // Case insensitive match
+        ]
+      ])
+      switch (ptis.size()) {
+        case 0:
+          return []
+          break;
+        case 1:
+          return ptis[0]
+          break;
+        default:
+          log.error "Found more than one PTI for name (${nameLike})"
+          return ptis[0]
+          break;
+      }
+  }
+
+  def fetchPlatform(String name) {
+      // Find the PTI we imported from the package ingest
+      def platforms = doGet('/erm/platforms',
+        filters:[
+          "name==${name}" // Case insensitive match
+        ]
+      )
+      switch (platforms.size()) {
+        case 0:
+          return []
+          break;
+        case 1:
+          return platforms[0]
+          break;
+        default:
+          log.error "Found more than one Platform for name (${name})"
+          return platforms[0]
+          break;
+      }
   }
 }
 
