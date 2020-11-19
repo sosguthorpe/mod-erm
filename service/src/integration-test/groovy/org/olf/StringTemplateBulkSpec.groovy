@@ -126,7 +126,7 @@ class StringTemplateBulkSpec extends BaseSpec {
     when: "We update platform and refresh URLs"
       def platform = fetchPlatform(platformName)
       // Edit platform localCode
-      doPut("erm/platforms/${platform.id}", {
+      doPut("/erm/platforms/${platform.id}", {
         'localCode' platformCode
       })
       refreshUrls()
@@ -197,11 +197,11 @@ class StringTemplateBulkSpec extends BaseSpec {
 
   def fetchPlatform(String name) {
       // Find the PTI we imported from the package ingest
-      def platforms = doGet('/erm/platforms',
+      def platforms = doGet('/erm/platforms', [
         filters:[
           "name==${name}" // Case insensitive match
         ]
-      )
+      ])
       switch (platforms.size()) {
         case 0:
           return []
