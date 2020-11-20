@@ -45,6 +45,11 @@ class StringTemplate implements MultiTenant<StringTemplate> {
     idScopes cascade: 'all-delete-orphan', joinTable: [name: 'string_template_scopes', key: 'string_template_id', column: 'id_scope']
   }
 
+  static constraints = {
+    rule(validator: {rule, obj ->
+      return obj.checkValidTemplate()
+    })
+  }
 
   String customiseString(Map binding) {
 
@@ -73,7 +78,18 @@ class StringTemplate implements MultiTenant<StringTemplate> {
     return outputString
   }
 
-
+  public ArrayList<String> checkValidTemplate() {
+    try {
+      this.customiseString([
+        inputUrl: "testing",
+        platformLocalCode: "12345"
+      ])
+    } catch (Exception e) {
+      log.debug "LOGDEBUG ${e.message}"
+      return ["invalidTemplate", e.message]
+    }
+    return null
+  }
 
 
 }
