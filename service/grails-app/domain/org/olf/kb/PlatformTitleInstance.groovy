@@ -21,7 +21,8 @@ public class PlatformTitleInstance extends ErmResource implements MultiTenant<Pl
     "'${titleInstance.name}' on Platform '${platform.name}'"
   }
 
-  static transients = ['longName']
+  boolean urlChanged = false
+  static transients = ['longName', 'urlChanged']
   
   static hasMany = [
     packageOccurences: PackageContentItem,
@@ -41,6 +42,10 @@ public class PlatformTitleInstance extends ErmResource implements MultiTenant<Pl
           titleInstance(nullable:false, blank:false)
                platform(nullable:false, blank:false)
                     url(nullable:true, blank:false)
+  }
+
+  void beforeUpdate() {
+    urlChanged = this.isDirty("url")
   }
 
 }

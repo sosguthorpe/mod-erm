@@ -389,6 +389,35 @@
           "methods": ["POST"],
           "pathPattern": "/erm/validate/remoteKB/*",
           "permissionsRequired": [ "erm.kbs.item.post", "erm.kbs.item.put" ]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/erm/sts",
+          "permissionsRequired": ["erm.sts.collection.get"]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/sts/{id}",
+          "permissionsRequired": ["erm.sts.item.get"]
+        },{
+          "methods": ["POST"],
+          "pathPattern": "/erm/sts",
+          "permissionsRequired": ["erm.sts.item.post"]
+        },{
+          "methods": ["PUT"],
+          "pathPattern": "/erm/sts/{id}",
+          "permissionsRequired": ["erm.sts.item.put"]
+        },{
+          "methods": ["DELETE"],
+          "pathPattern": "/erm/sts/{id}",
+          "permissionsRequired": ["erm.sts.item.delete"]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/sts/template",
+          "permissionsRequired": ["erm.sts.template"]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/sts/template/{id}",
+          "permissionsRequired": ["erm.sts.collection.get"]
         }
       ]
     },{
@@ -431,6 +460,13 @@
           "pathPattern": "/erm/admin/triggerEntitlementLogUpdate",
           "unit": "hour",
           "delay": "24" 
+        },
+        {
+          "permissionsRequired" : ["erm.sts.template"],
+          "methods": [ "GET" ],
+          "pathPattern": "/erm/sts/template",
+          "unit": "minute",
+          "delay": "2"
         }
       ]
     }
@@ -998,6 +1034,58 @@
       "permissionName": "erm.packages.collection.import",
       "displayName": "Packages collection import",
       "description": "Import a collection of package records"
+    },
+    {
+      "permissionName": "erm.sts.collection.get",
+      "displayName": "String templates collection get",
+      "description": "Get a collection of string templates"
+    },
+    {
+      "permissionName": "erm.sts.item.get",
+      "displayName": "String templates item get",
+      "description": "Get a string template record"
+    },
+    {
+      "permissionName": "erm.sts.view",
+      "subPermissions": [
+        "erm.sts.collection.get",
+        "erm.sts.item.get"
+      ]
+    },
+    {
+      "permissionName": "erm.sts.item.post",
+      "displayName": "String templates item post",
+      "description": "Post a string template record"
+    },
+    {
+      "permissionName": "erm.sts.item.put",
+      "displayName": "String templates item put",
+      "description": "Put a string template record"
+    },
+    {
+      "permissionName": "erm.sts.edit",
+      "subPermissions": [
+        "erm.sts.view",
+        "erm.sts.item.post",
+        "erm.sts.item.put"
+      ]
+    },
+    {
+      "permissionName": "erm.sts.item.delete",
+      "displayName": "String templates item delete",
+      "description": "Delete a string template record"
+    },
+    {
+      "permissionName": "erm.sts.manage",
+      "subPermissions": [
+        "erm.sts.edit",
+        "erm.sts.item.delete"
+      ]
+    },
+    {
+      "permissionName": "erm.sts.template",
+      "displayName": "String templates perform template",
+      "description": "Performs string templating"
     }
   ],
   "launchDescriptor": {

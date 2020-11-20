@@ -70,6 +70,13 @@ class UrlMappings {
       }
     }
 
+    '/erm/sts' (resources: 'stringTemplate') {
+      collection {
+        "/template"  (controller: 'stringTemplate', action: 'refreshTemplatedUrls', method: 'GET')
+        "/template/$id"  (controller: 'stringTemplate', action: 'getStringTemplatesForId', method: 'GET')
+      }
+    }
+
     '/erm/titles'(resources: 'title', excludes: ['patch', 'save', 'create', 'edit', 'delete']) {
       collection {
         "/entitled" (action: 'entitled')

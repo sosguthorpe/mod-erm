@@ -2,6 +2,7 @@ package org.olf.kb
 
 import org.olf.CoverageService
 import org.olf.erm.Entitlement
+import org.olf.general.TemplatedUrl
 import com.k_int.web.toolkit.refdata.RefdataValue
 import com.k_int.web.toolkit.tags.Tag
 import grails.async.Promises
@@ -31,12 +32,15 @@ public class ErmResource extends ErmTitleList implements MultiTenant<ErmResource
     coverage: CoverageStatement,
     entitlements: Entitlement,
     tags: Tag,
+    templatedUrls: TemplatedUrl
   ]
 
   static mappedBy = [
     coverage: 'resource',
-    entitlements: 'resource'
+    entitlements: 'resource',
+    templatedUrls: 'resource'
   ]
+
   static mapping = {
               tablePerHierarchy false
                    name column: 'res_name'
@@ -48,6 +52,7 @@ public class ErmResource extends ErmTitleList implements MultiTenant<ErmResource
                 subType column: 'res_sub_type_fk'
   suppressFromDiscovery column: 'res_suppress_discovery'
               coverage cascade: 'all-delete-orphan'
+         templatedUrls cascade: 'all-delete-orphan'
                   tags cascade: 'save-update'
   }
 

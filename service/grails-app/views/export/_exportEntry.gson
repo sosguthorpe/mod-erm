@@ -1,5 +1,6 @@
 import groovy.transform.Field
 import org.olf.erm.Entitlement
+import org.olf.general.TemplatedUrl
 import org.olf.kb.Embargo
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
@@ -18,6 +19,7 @@ Platform the_platform
 String the_depth
 String the_note
 String the_url
+Set<TemplatedUrl> the_templated_urls
 boolean the_suppress_from_discovery
 
 switch (resource) {
@@ -28,6 +30,7 @@ switch (resource) {
     ti = pci.pti.titleInstance
     the_platform = pci.pti.platform
     the_url = pci.pti.url
+    the_templated_urls = pci.pti.templatedUrls
     the_embargo = pci.embargo
     the_depth = pci.depth
     the_note = pci.note
@@ -40,6 +43,7 @@ switch (resource) {
     ti = pti.titleInstance
     the_platform = pti.platform
     the_url = pti.url
+    the_templated_urls = pti.templatedUrls
     the_suppress_from_discovery = pti.suppressFromDiscovery
     break
     
@@ -94,7 +98,15 @@ json {
   if (the_url) {
      url the_url
   }
-  
+
+  if (the_templated_urls) {
+    templatedUrls ( the_templated_urls ) { TemplatedUrl tu ->
+      id tu.id
+      name tu.name
+      url tu.url
+    }
+  }
+
   if (the_depth) {
     depth the_depth 
   }
