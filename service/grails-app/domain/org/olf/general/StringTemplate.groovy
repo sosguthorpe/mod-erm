@@ -79,16 +79,20 @@ class StringTemplate implements MultiTenant<StringTemplate> {
   }
 
   public ArrayList<String> checkValidTemplate() {
+    String output
     try {
-      this.customiseString([
+      output = this.customiseString([
         inputUrl: "testing",
         platformLocalCode: "12345"
       ])
     } catch (Exception e) {
-      log.debug "LOGDEBUG ${e.message}"
       return ["invalidTemplate", e.message]
     }
-    return null
+    if (output && output?.length() > 0) {
+      return null
+    } else {
+      return ["invalidTemplate", "Output is null or empty"]
+    }
   }
 
 
