@@ -66,8 +66,8 @@ public class StringTemplatingService {
 
       // Think we only need a shallow copy here to pass to the proxiers -- statically typed so rebuild
       Map customBinding = [
-        inputUrl: customiserMap.url.toString(),
-        platformLocalCode: binding.platformLocalCode.toString()
+        inputUrl: customiserMap.url ? customiserMap.url.toString() : "",
+        platformLocalCode: binding.platformLocalCode ? binding.platformLocalCode.toString() : ""
       ]
 
       // Add all the proxied-customised urls to a list
