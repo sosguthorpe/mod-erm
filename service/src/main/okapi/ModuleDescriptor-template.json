@@ -1,4 +1,4 @@
-{
+entitlementLogEntry{
   "id": "${info.app.name}-${info.app.version}",
   "name": "${info.app.name}",
   "provides": [
@@ -418,6 +418,12 @@
           "methods": ["GET"],
           "pathPattern": "/erm/sts/template/{id}",
           "permissionsRequired": ["erm.sts.collection.get"]
+        },
+
+        {
+          "methods": ["GET"],
+          "pathPattern": "/erm/entitlementLogEntry",
+          "permissionsRequired": ["erm.entitlements.collection.get"]
         }
       ]
     },{
