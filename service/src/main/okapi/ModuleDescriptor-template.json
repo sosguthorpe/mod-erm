@@ -1,4 +1,4 @@
-entitlementLogEntry{
+{
   "id": "${info.app.name}-${info.app.version}",
   "name": "${info.app.name}",
   "provides": [
