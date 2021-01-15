@@ -130,4 +130,31 @@ databaseChangeLog = {
       column(name: "pt_last_updated", type: "timestamp")
     }
   }
+
+  changeSet(author: "efreestone (manual)", id: "202101151051-001") {
+    modifyDataType(
+      tableName: "title_instance",
+      columnName: "ti_monograph_volume", type: "VARCHAR(255)",
+      newDataType: "VARCHAR(255)",
+      confirm: "Successfully updated the ti_monograph_volume column."
+    )
+    modifyDataType(
+      tableName: "title_instance",
+      columnName: "ti_monograph_edition", type: "VARCHAR(255)",
+      newDataType: "VARCHAR(255)",
+      confirm: "Successfully updated the ti_monograph_edition column."
+    )
+    modifyDataType(
+      tableName: "title_instance",
+      columnName: "ti_first_author", type: "VARCHAR(255)",
+      newDataType: "VARCHAR(255)",
+      confirm: "Successfully updated the ti_first_author column."
+    )
+    modifyDataType(
+      tableName: "title_instance",
+      columnName: "ti_first_editor", type: "VARCHAR(255)",
+      newDataType: "VARCHAR(255)",
+      confirm: "Successfully updated the ti_first_editor column."
+    )
+  }
 }
