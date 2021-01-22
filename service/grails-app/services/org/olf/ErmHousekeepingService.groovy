@@ -9,9 +9,15 @@ import grails.gorm.transactions.Transactional
 public class ErmHousekeepingService {
 
   def coverageService
+  def entitlementLogService
+  def subscriptionAgreementCleanupService
 
   public void triggerHousekeeping() {
     // An administrative process - attempt to coalesce any rogue coverage statements
     coverageService.coalesceCoverageStatements();
+    entitlementLogService.triggerUpdate();
+
+    // A process to ensure the correct start/end date is stored per agreement
+    subscriptionAgreementCleanupService.triggerDateCleanup();
   }
 }

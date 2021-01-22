@@ -419,11 +419,15 @@
           "pathPattern": "/erm/sts/template/{id}",
           "permissionsRequired": ["erm.sts.collection.get"]
         },
-
         {
           "methods": ["GET"],
           "pathPattern": "/erm/entitlementLogEntry",
           "permissionsRequired": ["erm.entitlements.collection.get"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/erm/admin/*",
+          "permissionsRequired": ["erm.admin.action"]
         }
       ]
     },{
@@ -463,7 +467,7 @@
         {
           "permissionsRequired" : [],
           "methods": [ "GET" ],
-          "pathPattern": "/erm/admin/triggerEntitlementLogUpdate",
+          "pathPattern": "/erm/admin/triggerHousekeeping",
           "unit": "hour",
           "delay": "24" 
         },
@@ -1092,6 +1096,11 @@
       "permissionName": "erm.sts.template",
       "displayName": "String templates perform template",
       "description": "Performs string templating"
+    },
+    {
+      "permissionName": "erm.admin.action",
+      "displayName": "Admin endpoint perform action",
+      "description": "Performs action from admin endpoint"
     }
   ],
   "launchDescriptor": {

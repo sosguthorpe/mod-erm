@@ -91,7 +91,10 @@ class AdminController implements DataBinder{
   }
 
   public triggerHousekeeping() {
+    def result = [:]
     ermHousekeepingService.triggerHousekeeping()
+    result.status = 'OK'
+    render result as JSON
   }
 
   public triggerEntitlementLogUpdate() {

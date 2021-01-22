@@ -157,4 +157,13 @@ databaseChangeLog = {
       confirm: "Successfully updated the ti_first_editor column."
     )
   }
+
+  changeSet(author: "efreestone (manual)", id: "202101211152-001") {
+    addColumn (tableName: "subscription_agreement" ) {
+      column(name: "sa_start_date", type: "timestamp")
+    }
+    addColumn (tableName: "subscription_agreement" ) {
+      column(name: "sa_end_date", type: "timestamp")
+    }
+  }
 }
