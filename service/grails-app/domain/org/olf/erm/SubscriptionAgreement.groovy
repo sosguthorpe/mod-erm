@@ -252,6 +252,86 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
     Clonable.super.clone()
   }
 
+  public LocalDate getLocalDate() {
+    LocalDate ld
+    // Use the request if possible
+    RequestAttributes attributes = RequestContextHolder.getRequestAttributes()
+    if(attributes && attributes instanceof GrailsWebRequest) {
+      
+      GrailsWebRequest gwr = attributes as GrailsWebRequest
+      
+      log.debug "Is within a request context"
+      TimeZone tz = RequestContextUtils.getTimeZone(gwr.currentRequest) ?: TimeZone.getDefault()
+      
+      log.debug "Using TZ ${tz}"
+      ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.now(), tz.toZoneId())
+      
+      log.debug "Now in ${tz} is ${zdt}"
+      ld = zdt.toLocalDate()
+      
+      log.debug "LocalDate of ${ld} extracted for query"
+    } else {
+      log.debug "Is not within a request context, using default TZ (${TimeZone.getDefault()})"
+      ld = LocalDate.now()
+    }
+
+    ld
+  }
+
+  public String findCurrentPeriod() {
+    log.debug "Find current period"
+    String cpId
+    LocalDate ld = getLocalDate()
+    cpId = Period.executeQuery("""
+      SELECT p.id FROM Period p
+      WHERE p.startDate < :ld
+      AND (p.endDate > :ld OR p.endDate = NULL)
+      AND p.owner.id = :id
+      """,
+      [id: id, ld: ld]
+    )[0]
+
+    cpId
+  }
+
+  public String findPreviousPeriod() {
+    log.debug "Find previous period"
+    String ppId
+    LocalDate ld = getLocalDate()
+    ppId = Period.executeQuery("""
+      SELECT p.id FROM Period p
+      WHERE p.startDate = (
+        SELECT MAX(p1.startDate) FROM Period p1 
+        WHERE p1.endDate < :ld
+        AND p1.owner.id = :id
+      )
+      AND p.owner.id = :id
+      """,
+      [id: id, ld: ld]
+    )[0]
+
+    ppId
+  }
+
+  public String findNextPeriod() {
+    log.debug "Find next period"
+    String npId
+    LocalDate ld = getLocalDate()
+    npId = Period.executeQuery("""
+      SELECT p.id FROM Period p
+      WHERE p.startDate = (
+        SELECT MIN(p1.startDate) FROM Period p1 
+        WHERE p1.startDate > :ld
+        AND p1.owner.id = :id
+      )
+      AND p.owner.id = :id
+      """,
+      [id: id, ld: ld]
+    )[0]
+
+    npId
+  }
+
   @Transient
   RemoteLicenseLink getControllingLicense() {
     RemoteLicenseLink result = null;

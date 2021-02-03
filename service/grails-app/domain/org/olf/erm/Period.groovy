@@ -2,6 +2,11 @@ package org.olf.erm
 
 import java.time.LocalDate
 
+import com.k_int.web.toolkit.refdata.CategoryId
+import com.k_int.web.toolkit.refdata.Defaults
+import com.k_int.web.toolkit.refdata.RefdataCategory
+import com.k_int.web.toolkit.refdata.RefdataValue
+
 import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 import groovy.util.logging.Slf4j
@@ -15,6 +20,30 @@ class Period implements MultiTenant<Period>  {
   LocalDate endDate
   LocalDate cancellationDeadline
   String note
+
+  static transients = ['periodStatus']
+  private String periodStatus
+
+  String getPeriodStatus() {
+    String currentPeriodId = owner.findCurrentPeriod()
+    String previousPeriodId = owner.findPreviousPeriod()
+    String nextPeriodId = owner.findNextPeriod()
+
+    switch (id) {
+      case currentPeriodId:
+        periodStatus = "current"
+        break;
+      case previousPeriodId:
+        periodStatus = "previous"
+        break;
+      case nextPeriodId:
+        periodStatus = "next"
+        break;
+      default:
+        break;
+    }
+    periodStatus
+  }
 
   static belongsTo = [
     owner: SubscriptionAgreement

@@ -1,3 +1,6 @@
+## 4.0.0 (IN PROGRESS)
+ * ERM-1534 Changed Agreement API to no longer directly expose "current agreement", switching instead to a tag on the period object.
+
 ## 3.0.0 2020-10-14
  * ERM-1180 Add @ EnableScheduling annotation in mod-agreements
  * ERM-1163 Remove default values from publicationType

@@ -1,0 +1,10 @@
+import org.olf.erm.Period
+
+import groovy.transform.*
+
+@Field
+Period period
+
+json g.render(period) {
+  periodStatus period.periodStatus
+}
