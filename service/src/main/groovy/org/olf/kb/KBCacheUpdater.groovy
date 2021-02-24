@@ -47,7 +47,8 @@ public interface KBCacheUpdater {
   public void freshenPackageData(String source_name, 
                                    String base_uri, 
                                    String cursor, 
-                                   KBCache cache);
+                                   KBCache cache,
+                                   boolean trustedSourceTI);
 
   public void freshenHoldingsData(String cursor,
                                   String source_name,

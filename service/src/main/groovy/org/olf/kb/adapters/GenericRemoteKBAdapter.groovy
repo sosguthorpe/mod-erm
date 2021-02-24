@@ -23,7 +23,8 @@ public class GenericRemoteKBAdapter implements KBCacheUpdater {
   public void freshenPackageData(String source_name,
                                  String base_url,
                                  String current_cursor,
-                                 KBCache cache) {
+                                 KBCache cache,
+                                 boolean trustedSourceTI = false) {
     throw new RuntimeException("Not supported by this KB provider");
   }
 

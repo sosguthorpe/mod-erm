@@ -22,24 +22,27 @@ import org.apache.http.protocol.*
 import java.text.SimpleDateFormat
 import java.nio.charset.Charset
 import static groovy.json.JsonOutput.*
-
-
+import org.olf.dataimport.internal.InternalPackageImpl
+import org.olf.dataimport.internal.PackageSchema
 import java.text.*
+import org.springframework.validation.BindingResult
+import grails.web.databinding.DataBinder
 
 
-public class KIJPFAdapter implements KBCacheUpdater {
+public class KIJPFAdapter implements KBCacheUpdater, DataBinder {
 
 
   public void freshenPackageData(String source_name,
-                                                   String base_url,
-                                                   String current_cursor,
-                                                   KBCache cache) {
+                                 String base_url,
+                                 String current_cursor,
+                                 KBCache cache,
+                                 boolean trustedSourceTI = false) {
 
     println("KIJPFAdapter::freshen - fetching from URI: ${base_url}");
     def jpf_api = new HTTPBuilder(base_url)
 
     def query_params = [
-        'max': '50',
+        'max': '10',
         'format': 'json',
         'order':'lastUpdated'
     ]
@@ -119,7 +122,8 @@ public class KIJPFAdapter implements KBCacheUpdater {
     jpf_api.request(Method.GET) { req ->
       headers.Accept = 'application/json'
       response.success = { resp, json ->
-        cache.onPackageChange(source_name, json);
+        PackageSchema json_package_description = kbplusToERM(json)
+        cache.onPackageChange(source_name, json_package_description);
       }
       response.failure = { resp ->
         println "Request failed with status ${resp.status}"
@@ -168,4 +172,13 @@ public class KIJPFAdapter implements KBCacheUpdater {
     throw new RuntimeException("Not supported by this KB provider");
   }
 
+
+  private PackageSchema kbplusToERM(Map m) {
+    InternalPackageImpl pkg = new InternalPackageImpl()
+    BindingResult binding = bindData (pkg, m)
+    if (binding?.hasErrors()) {
+      binding.allErrors.each { log.debug "\t${it}" }
+    }
+    pkg
+  }
 }

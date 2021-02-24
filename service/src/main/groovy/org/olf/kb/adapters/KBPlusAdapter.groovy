@@ -13,7 +13,8 @@ public class KBPlusAdapter implements KBCacheUpdater {
   public void freshenPackageData(String source_id,
                                    String uri,
                                    String cursor,
-                                   KBCache cache) {
+                                   KBCache cache,
+                                   boolean trustedSourceTI = false) {
 
     // We want this update to happen independently of any other transaction, on it's own, and in the background.
     RemoteKB.withNewTransaction {

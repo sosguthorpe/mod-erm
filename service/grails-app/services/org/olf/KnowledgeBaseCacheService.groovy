@@ -57,8 +57,6 @@ where ( exists ( select pci.id
     }
   }
 
-
-
   /**
    *  Called when a remote KB package add/update is detected. It is the responsibility
    *  of the KBCacheUpdater to convert the remote package format into the canonical object map  
