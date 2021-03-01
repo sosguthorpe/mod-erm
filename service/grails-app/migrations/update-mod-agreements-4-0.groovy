@@ -166,4 +166,10 @@ databaseChangeLog = {
       column(name: "sa_end_date", type: "timestamp")
     }
   }
+
+  changeSet(author: "efreestone (manual)", id: "2021-03-01-001") {
+    addColumn (tableName: "subscription_agreement" ) {
+      column(name: "sa_cancellation_deadline", type: "timestamp")
+    }
+  }
 }

@@ -1,4 +1,5 @@
 ## 4.0.0 (IN PROGRESS)
+ * ERM-1567 Cancellation deadline is now non-transient property on agreement
  * ERM-1534 Changed Agreement API to no longer directly expose "current agreement", switching instead to a tag on the period object.
 
 ## 3.0.0 2020-10-14

@@ -19,6 +19,7 @@ class SubscriptionAgreementCleanupService {
         property('id')
         property('startDate')
         property('endDate')
+        property('cancellationDeadline')
       }
     }
     return agreements
@@ -46,13 +47,19 @@ class SubscriptionAgreementCleanupService {
             Set<Period> periods = fetchPeriodsForAgreementId(a[0])
             LocalDate earliest = periodService.calculateStartDate(periods)
             LocalDate latest = periodService.calculateEndDate(periods)
-            
-            if (a[1] != earliest || a[2] != latest) {
-              log.warn("Agreement date mismatch for (${a[0]}), calculating new start and end dates")
+            LocalDate cancellationDeadline = periodService.calculateCancellationDeadline(periods)
+
+            if (
+              a[1] != earliest ||
+              a[2] != latest ||
+              a[3] != cancellationDeadline
+            ) {
+              log.warn("Agreement date mismatch for (${a[0]}), calculating new start date, end date and cancellation deadline")
               // Only actually fetch object if you have to
               SubscriptionAgreement agg = SubscriptionAgreement.get(a[0])
               agg.startDate = earliest
               agg.endDate = latest
+              agg.cancellationDeadline = cancellationDeadline
               agg.save(failOnError: true)
             }
           }

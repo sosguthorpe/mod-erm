@@ -29,4 +29,25 @@ class PeriodService {
     }
     latest
   }
+
+  public static LocalDate calculateCancellationDeadline (Set<Period> periods) {
+    LocalDate latestCancellationDeadline = null
+    for (def p : periods) {
+      /*
+       * If the period has a cancellation deadline,
+       * and either the latest is null or it's later than the latest,
+       * then replace it. 
+       */
+      if (
+        p.cancellationDeadline &&
+        (
+          latestCancellationDeadline == null ||
+          p.cancellationDeadline > latestCancellationDeadline
+        )
+      ) {
+        latestCancellationDeadline = p.cancellationDeadline
+      }
+    }
+    latestCancellationDeadline
+  }
 }

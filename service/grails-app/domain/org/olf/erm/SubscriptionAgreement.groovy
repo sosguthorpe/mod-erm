@@ -30,8 +30,6 @@ import javax.persistence.Transient
 @Slf4j
 public class SubscriptionAgreement extends ErmTitleList implements CustomProperties,MultiTenant<SubscriptionAgreement>, Clonable<SubscriptionAgreement> {
    
-  static transients = ['cancellationDeadline', 'currentPeriod']
-
   static cloneStaticValues = [
     periods: { [new Period('owner': delegate, 'startDate': LocalDate.now())] },
     name: { "Copy of: ${owner.name}" /* Owner is the current object. */ }
@@ -90,45 +88,10 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
   Set<AlternateName> alternateNames
   
   private Period currentPeriod
-  Period getCurrentPeriod () {
-    log.debug "Get current period"
-    if (!currentPeriod) {
-      LocalDate ld
-      
-      // Use the request if possible
-      RequestAttributes attributes = RequestContextHolder.getRequestAttributes()
-      if(attributes && attributes instanceof GrailsWebRequest) {
-        
-        GrailsWebRequest gwr = attributes as GrailsWebRequest
-        
-        log.debug "Is within a request context"
-        TimeZone tz = RequestContextUtils.getTimeZone(gwr.currentRequest) ?: TimeZone.getDefault()
-        
-        log.debug "Using TZ ${tz}"
-        ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.now(), tz.toZoneId())
-        
-        log.debug "Now in ${tz} is ${zdt}"
-        ld = zdt.toLocalDate()
-        
-        log.debug "LocalDate of ${ld} extracted for query"
-      } else {
-        log.debug "Is not within a request context, using default TZ (${TimeZone.getDefault()})"
-        ld = LocalDate.now()
-      }
-      
-      currentPeriod = periods.find { Period p ->
-        p.startDate <= ld && (p.endDate == null || p.endDate >= ld)
-      }
-    }
-    currentPeriod
-  }
-  
-  LocalDate getCancellationDeadline() {
-    currentPeriod?.cancellationDeadline
-  }
   
   LocalDate startDate
   LocalDate endDate
+  LocalDate cancellationDeadline
   
   static hasMany = [
          alternateNames: AlternateName,
@@ -181,6 +144,7 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
              licenseNote column:'sa_license_note'
                startDate column: 'sa_start_date'
                  endDate column: 'sa_end_date'
+    cancellationDeadline column: 'sa_cancellation_deadline'
           alternateNames cascade: 'all-delete-orphan'
                    items cascade: 'all-delete-orphan', lazy: false
                 contacts cascade: 'all-delete-orphan', lazy: false
@@ -202,6 +166,7 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
                     name(nullable:false, blank:false, unique: true)
                startDate(nullable:true, blank:false, bindable: false)
                  endDate(nullable:true, blank:false, bindable: false)
+    cancellationDeadline(nullable:true, blank:false, bindable: false)
           localReference(nullable:true, blank:false)
          vendorReference(nullable:true, blank:false)
              renewalDate(nullable:true, blank:false)
@@ -242,6 +207,7 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
   public void calculateDates () {
     startDate = PeriodService.calculateStartDate(periods)
     endDate = PeriodService.calculateEndDate(periods)
+    cancellationDeadline = PeriodService.calculateCancellationDeadline(periods)
   }
   
   /**
