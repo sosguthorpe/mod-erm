@@ -250,8 +250,8 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
     LocalDate ld = getLocalDate()
     cpId = Period.executeQuery("""
       SELECT p.id FROM Period p
-      WHERE p.startDate < :ld
-      AND (p.endDate > :ld OR p.endDate = NULL)
+      WHERE p.startDate <= :ld
+      AND (p.endDate >= :ld OR p.endDate = NULL)
       AND p.owner.id = :id
       """,
       [id: id, ld: ld]
