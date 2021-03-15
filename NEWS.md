@@ -1,7 +1,28 @@
-## 4.0.0 (IN PROGRESS)
- * ERM-1567 Cancellation deadline is now non-transient property on agreement
- * ERM-1534 Changed Agreement API to no longer directly expose "current agreement", switching instead to a tag on the period object.
+## 4.1.0 (IN PROGRESS)
 
+## 4.0.0 2021-03-15
+ * ERM-1567 Cancellation deadline is now non-transient property on agreement
+ * ERM-1564 Period starting/ending on current date not shown as current period
+ * ERM-1534 Changed Agreement API to no longer directly expose "current agreement", switching instead to a tag on the period object.
+ * ERM-1533 Agreement start and end dates should be the earliest period start and latest period end date respectively
+ * ERM-1457 Extend length of field for monographVolume, monographEdition, firstAuthor, firstEditor
+ * ERM-1248 If local platform code not set, appears as `null` when a customised URL is proxied
+ * ERM-1246 Template with null output will fail silently
+ * ERM-1243 CustomProperty values not duplicated properly
+ * ERM-1238 Agreements /erm/entitlements endpoint doesn't expand owner when entitlement is external
+ * ERM-1213 Exporting Resources from Agreement when "All" filter selected does not export all resources
+ * ERM-1203 Agreement Resources Export contains duplicate resources and incorrect agreement line information
+ * ERM-1156 Support user access to platform records
+  * ERM-1157 Implement Platform controller and URLMappings in mod-agreements
+  * ERM-1185 Add hasMany platformLocators to platform in domain model
+ * ERM-1079 Unable to delete license without permissions in agreements module
+ * ERM-1048 Implement "template" mechanism to create URLs for resources based on existing data
+  * ERM-1108 Add proxied URLs to exports
+ * ERM-1047 Support for customised URLs at platform level
+  * ERM-1135 Platform local code field
+ * ERM-972 Missing permission definitions
+ * Removed static version from vagrant box for developers
+ * Feature ii kbplus kb -- Internal tweaks to the KIJPFAdapter
 ## 3.0.0 2020-10-14
  * ERM-1180 Add @ EnableScheduling annotation in mod-agreements
  * ERM-1163 Remove default values from publicationType
