@@ -1,5 +1,8 @@
 ## 4.1.0 (IN PROGRESS)
 
+## 4.0.1 2021-03-31
+ * ERM-1616 ERM admin/triggerHousekeeping fails
+
 ## 4.0.0 2021-03-15
  * ERM-1567 Cancellation deadline is now non-transient property on agreement
  * ERM-1564 Period starting/ending on current date not shown as current period
