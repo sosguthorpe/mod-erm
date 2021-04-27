@@ -149,7 +149,7 @@ class JobRunnerService implements EventPublisher {
     final long WAIT_MAX = 3000 // 3 seconds should be enough.
     final long WAIT_INCREMENT = 200
     
-    log.debug "Enqueueing job ${jobId} for ${tenantId}"
+    log.info "Enqueueing job ${jobId} for ${tenantId}"
     // Use me within nested closures to ensure we are talking about this service.
     final def me = this
     

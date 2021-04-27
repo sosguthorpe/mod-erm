@@ -36,6 +36,7 @@ class KbHarvestService {
 from RemoteKB as rkb
 where rkb.type is not null
   and rkb.active = :true
+  and ( ( rkb.lastCheck is null ) OR ( ( :current_time - rkb.lastCheck ) > 1*60*60*1000 ) )
   and ( ( rkb.syncStatus is null ) OR ( rkb.syncStatus <> :inprocess ) )
 '''
 
@@ -43,7 +44,12 @@ where rkb.type is not null
   public void onDataloadSample (final String tenantId, final String value, final String existing_tenant, final String upgrading, final String toVersion, final String fromVersion) {
     log.debug "Perform trigger sync for new tenant ${tenantId} via data load event"
     final String schemaName = OkapiTenantResolver.getTenantSchemaName(tenantId)
-    triggerUpdateForTenant(schemaName)
+    try {
+      triggerUpdateForTenant(schemaName)
+    }
+    catch ( Exception e ) {
+      log.error("Unexpected error when responding to okapi:dataload:sample event for tenant ${schemaName}", e);
+    }
   }
 
   @CompileStatic(SKIP)
@@ -72,7 +78,12 @@ where rkb.type is not null
     // ToDo: Don't think this will work for newly added tenants - need to investigate.
     okapiTenantAdminService.getAllTenantSchemaIds().each { tenant_schema_id ->
       log.debug "Perform trigger sync for tenant schema ${tenant_schema_id}"
-      triggerUpdateForTenant(tenant_schema_id as String)
+      try {
+        triggerUpdateForTenant(tenant_schema_id as String)
+      }
+      catch ( Exception e ) {
+        log.error("Unexpected error in triggerSync for tenant ${tenant_schema_id}", e);
+      }
     }
   }
 
@@ -81,7 +92,9 @@ where rkb.type is not null
     log.debug("KBHarvestService::triggerCacheUpdate()")
 
     // List all pending jobs that are eligible for processing - That is everything enabled and not currently in-process and has not been processed in the last hour
-    RemoteKB.executeQuery(PENDING_JOBS_HQL,['true':true,'inprocess':'in-process'],[lock:false]).each { remotekb_id ->
+    RemoteKB.executeQuery(PENDING_JOBS_HQL,['true':true,
+                                            'inprocess':'in-process',
+                                            'current_time':System.currentTimeMillis()],[lock:false]).each { remotekb_id ->
 
       try {
         // We will check each candidate job to see if it has been picked up by some other thread or load balanced
