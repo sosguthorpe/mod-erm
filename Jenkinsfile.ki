@@ -8,7 +8,7 @@ Map args=[
   serviceName:'mod-agreements',
   descriptorRegistries:['http://okapi.reshare:9130/_/proxy/modules'
   ],
-  deploymentTemplate:'other-scripts/k8s_deployment_template.yaml',
+  deploymentTemplate:'scripts/k8s_deployment_template.yaml',
   targetNamespace:'reshare'
 ]
 buildOkapiModule(args)
