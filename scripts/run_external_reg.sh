@@ -14,6 +14,8 @@ the_jar_file=`ls build/libs/mod-agreements*.jar | tail -n 1`
 
 echo Attempting to start jar $the_jar_file
 
+export LOGGING_LEVEL_ORG_OLF=DEBUG
+
 # THis DOES work as expected however - 
 java -jar $the_jar_file -Xmx1G --grails.server.host=10.0.2.2 --dataSource.username=folio_admin --dataSource.password=folio_admin --dataSource.url=jdbc:postgresql://localhost:54321/okapi_modules
 
