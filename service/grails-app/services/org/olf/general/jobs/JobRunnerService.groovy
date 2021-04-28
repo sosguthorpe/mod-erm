@@ -184,7 +184,7 @@ class JobRunnerService implements EventPublisher {
       work = { final String tid, final String jid, final Runnable wrk ->
           Tenants.withId(tid) {
             try {
-              MDC.setContextMap( jobId: "${jid}", tenantId: "${tid}" )
+              MDC.setContextMap( jobId: "${jid}", tenantId: "${tid}", tenant: OkapiTenantResolver.schemaNameToTenantId(tid) )
               JobContext.current.set(new JobContext( jobId: jid, tenantId: tid ))
               beginJob(jid)
               wrk()
