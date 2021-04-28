@@ -13,11 +13,11 @@ import org.olf.dataimport.internal.HeaderImpl
 import org.olf.dataimport.internal.InternalPackageImpl
 import org.olf.dataimport.internal.PackageContentImpl
 import org.olf.dataimport.internal.PackageSchema
-import org.slf4j.MDC
 import org.springframework.context.MessageSource
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.validation.ObjectError
 
+import com.k_int.web.toolkit.mdc.TrackingMdcWrapper
 import com.opencsv.CSVReader
 
 import grails.web.databinding.DataBinder
@@ -27,6 +27,7 @@ import groovy.util.logging.Slf4j
 @CompileStatic
 @Slf4j
 class ImportService implements DataBinder {
+  private static final TrackingMdcWrapper MDC = new TrackingMdcWrapper()
   
   PackageIngestService packageIngestService
   
