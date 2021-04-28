@@ -18,10 +18,10 @@ import org.olf.CoverageService
 import org.olf.DocumentAttachmentService
 import org.olf.ImportService
 import org.olf.KbHarvestService
-import org.slf4j.MDC
 
 import com.k_int.okapi.OkapiTenantAdminService
 import com.k_int.okapi.OkapiTenantResolver
+import com.k_int.web.toolkit.mdc.TrackingMdcWrapper
 import com.k_int.web.toolkit.refdata.RefdataValue
 
 import grails.events.EventPublisher
@@ -31,6 +31,7 @@ import groovy.util.logging.Slf4j
 
 @Slf4j
 class JobRunnerService implements EventPublisher {
+  private static final TrackingMdcWrapper MDC = new TrackingMdcWrapper()
   
   // Any auto injected beans here can be accessed within the `work` runnable
   // of the job itself.
@@ -183,7 +184,7 @@ class JobRunnerService implements EventPublisher {
       work = { final String tid, final String jid, final Runnable wrk ->
           Tenants.withId(tid) {
             try {
-              MDC.setContextMap( jobId: "${jid}", tenantId: "${tid}" )
+              MDC.setContextMap( jobId: "${jid}", tenantId: "${tid}", tenant: OkapiTenantResolver.schemaNameToTenantId(tid) )
               JobContext.current.set(new JobContext( jobId: jid, tenantId: tid ))
               beginJob(jid)
               wrk()

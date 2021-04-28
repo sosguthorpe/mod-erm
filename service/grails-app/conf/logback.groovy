@@ -20,6 +20,7 @@ appender('STDOUT', ConsoleAppender) {
 
         pattern =
                 '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} ' + // Date
+                        '[%X{tenant:-_NO_TENANT_}] ' + // Tenant
                         '%clr(%5p) ' + // Log level
                         '%clr(---){faint} %clr([%15.15t]){faint} ' + // Thread
                         '%clr(%-40.40logger{39}){cyan} %clr(:){faint} ' + // Logger
