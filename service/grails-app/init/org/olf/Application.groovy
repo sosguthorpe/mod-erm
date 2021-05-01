@@ -9,6 +9,7 @@ import org.springframework.boot.web.embedded.undertow.UndertowBuilderCustomizer
 import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory
 
 import io.micronaut.context.annotation.Bean
+import io.undertow.UndertowOptions
 import io.undertow.Undertow.Builder
 import org.springframework.scheduling.annotation.EnableScheduling
 
@@ -49,9 +50,9 @@ class Application extends GrailsAutoConfiguration {
 
         // 8 Workers per I/O thread
         builder.workerThreads = builder.workerThreads = builder.ioThreads * workers_per_io
-
         // Enable HTTP2
         builder.setServerOption(UndertowOptions.ENABLE_HTTP2, true)
+        builder.directBuffers = false
 
         log.info "Runtime memory reported ${Runtime.getRuntime().maxMemory() / 1024 / 1024} mb"
         log.info "Runtime CPUs reported ${Runtime.getRuntime().availableProcessors()}"
