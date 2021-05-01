@@ -13,11 +13,11 @@ import org.olf.dataimport.internal.HeaderImpl
 import org.olf.dataimport.internal.InternalPackageImpl
 import org.olf.dataimport.internal.PackageContentImpl
 import org.olf.dataimport.internal.PackageSchema
+import org.slf4j.MDC
 import org.springframework.context.MessageSource
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.validation.ObjectError
 
-import com.k_int.web.toolkit.mdc.TrackingMdcWrapper
 import com.opencsv.CSVReader
 
 import grails.web.databinding.DataBinder
@@ -27,7 +27,6 @@ import groovy.util.logging.Slf4j
 @CompileStatic
 @Slf4j
 class ImportService implements DataBinder {
-  private static final TrackingMdcWrapper MDC = new TrackingMdcWrapper()
   
   PackageIngestService packageIngestService
   
@@ -146,8 +145,9 @@ class ImportService implements DataBinder {
         packageSource = packageInfo.packageSource
         packageReference = packageInfo.packageReference
     }
-      MDC.put('packageSource', packageSource.toString())
-      MDC.put('packageReference', packageReference.toString())
+    
+    MDC.put('packageSource', packageSource.toString())
+    MDC.put('packageReference', packageReference.toString())
 
     if (packageInfo.packageProvider != null) {
       packageProvider = packageInfo.packageProvider
@@ -318,7 +318,9 @@ class ImportService implements DataBinder {
       log.error("Package contents empty, skipping package creation")
     }
     
-    MDC.clear()
+    // Explicitly clear the items we added only
+    ['packageSource', 'packageReference', 'rowNumber', 'title'].each { MDC.remove(it) }
+    
     return (packageImported)
   }
   

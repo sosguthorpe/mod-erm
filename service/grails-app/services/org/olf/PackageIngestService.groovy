@@ -12,9 +12,7 @@ import org.olf.kb.Platform
 import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.RemoteKB
 import org.olf.kb.TitleInstance
-
-import com.k_int.web.toolkit.mdc.TrackingMdcWrapper
-
+import org.slf4j.MDC
 import grails.util.GrailsNameUtils
 import grails.web.databinding.DataBinder
 import groovy.util.logging.Slf4j
@@ -24,7 +22,6 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 class PackageIngestService implements DataBinder {
-  private static final TrackingMdcWrapper MDC = new TrackingMdcWrapper()
 
   // This boolean controls the behaviour of the loader when we encounter a title that does not have
   // a platform URL. We can error the row and do nothing, or create a row and point it at a proxy
@@ -123,8 +120,8 @@ class PackageIngestService implements DataBinder {
             reference: package_data.header.packageSlug,
              remoteKb: kb,
                vendor: vendor).save(flush:true, failOnError:true)
-               MDC.put('packageSource', pkg.source.toString())
-               MDC.put('packageReference', pkg.reference.toString())
+          MDC.put('packageSource', pkg.source.toString())
+          MDC.put('packageReference', pkg.reference.toString())
         } else {
           log.info("Not adding package '${package_data.header.packageName}' because status '${package_data.header.status}' doesn't match 'Current' or 'Expected'")
           skipPackage = true
@@ -364,8 +361,9 @@ class PackageIngestService implements DataBinder {
         }
       }
     }
-
-    MDC.clear()
+    
+    // Explicitly clear the items we added only
+    ['packageSource', 'packageReference', 'title', 'recordNumber'].each { MDC.remove(it) }
     return result
   }
 }
