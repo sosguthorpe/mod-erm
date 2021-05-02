@@ -12,8 +12,7 @@ import org.olf.kb.Platform
 import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.RemoteKB
 import org.olf.kb.TitleInstance
-
-import com.k_int.web.toolkit.mdc.TrackingMdcWrapper
+import org.slf4j.MDC
 
 import grails.util.GrailsNameUtils
 import grails.web.databinding.DataBinder
@@ -24,7 +23,6 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 class PackageIngestService implements DataBinder {
-  private static final TrackingMdcWrapper MDC = new TrackingMdcWrapper()
 
   // This boolean controls the behaviour of the loader when we encounter a title that does not have
   // a platform URL. We can error the row and do nothing, or create a row and point it at a proxy
