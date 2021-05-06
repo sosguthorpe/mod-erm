@@ -126,6 +126,7 @@ class ImportService implements DataBinder {
   }
 
   boolean importPackageFromKbart (CSVReader file, Map packageInfo) {
+    
     boolean packageImported = false
     log.debug("Attempting to import package from KBART file")
 
@@ -145,8 +146,9 @@ class ImportService implements DataBinder {
         packageSource = packageInfo.packageSource
         packageReference = packageInfo.packageReference
     }
-      MDC.put('packageSource', packageSource.toString())
-      MDC.put('packageReference', packageReference.toString())
+    
+    MDC.put('packageSource', packageSource.toString())
+    MDC.put('packageReference', packageReference.toString())
 
     if (packageInfo.packageProvider != null) {
       packageProvider = packageInfo.packageProvider
@@ -317,7 +319,7 @@ class ImportService implements DataBinder {
       log.error("Package contents empty, skipping package creation")
     }
     
-    MDC.clear()
+//    MDC.clear()
     return (packageImported)
   }
   

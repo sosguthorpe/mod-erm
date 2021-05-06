@@ -14,7 +14,14 @@ public class JobAwareAppender extends AppenderBase<ILoggingEvent> {
       final Serializable jid = JobContext.current.get()?.jobId
       
       // Grab the mdc map.
-      Map<String, String> mdc = eventObject instanceof LoggingEvent ? eventObject.getMDCPropertyMap() : null     
+      Map<String, String> mdc = null
+      
+      if (eventObject instanceof LoggingEvent) {
+        mdc = [:]
+        for(Map.Entry entry : eventObject.getMDCPropertyMap()) {
+          mdc["${entry.key}"] = "${entry.value}"
+        }
+      }     
       
       if (jid) {
         switch (eventObject.level) {

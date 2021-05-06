@@ -1,7 +1,5 @@
 package org.olf.general
 
-import net.sf.json.JSONObject
-
 import org.olf.general.StringTemplate
 import org.olf.general.StringTemplatingService
 

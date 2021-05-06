@@ -1,4 +1,4 @@
-import org.apache.commons.lang.ClassUtils
+import org.apache.commons.lang3.ClassUtils
 import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 
 import grails.plugin.json.builder.JsonOutput

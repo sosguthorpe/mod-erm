@@ -1,16 +1,20 @@
 package org.olf.kb.adapters
 
+import static groovy.transform.TypeCheckingMode.SKIP
+
 import java.text.*
 
+import org.olf.TitleEnricherService
 import org.olf.dataimport.internal.InternalPackageImpl
 import org.olf.dataimport.internal.PackageSchema
 import org.olf.kb.KBCache
 import org.olf.kb.KBCacheUpdater
-import org.olf.TitleEnricherService
 import org.springframework.validation.BindingResult
 
 import grails.web.databinding.DataBinder
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import groovy.util.slurpersupport.GPathResult
 import groovyx.net.http.*
 
 
@@ -21,23 +25,29 @@ import groovyx.net.http.*
  */
 
 @Slf4j
-public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
+@CompileStatic
+public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, DataBinder {
+  private final SimpleDateFormat ISO_DATE = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX")
+  
+  private static final String PATH_PACKAGES = '/packages'
+  private static final String PATH_TITLES = '/titles'
+  
+  public void freshenPackageData(final String source_name,
+                                 final String base_url,
+                                 final String current_cursor,
+                                 final KBCache cache,
+                                 final boolean trustedSourceTI = false) {
 
-  public void freshenPackageData(String source_name,
-                                 String base_url,
-                                 String current_cursor,
-                                 KBCache cache,
-                                 boolean trustedSourceTI = false) {
-
-    log.debug("GOKbOAIAdapter::freshen - fetching from URI: ${base_url}/packages")
-    def jpf_api = new HTTPBuilder("${base_url}/packages")
+    final String packagesUrl = "${stripTrailingSlash(base_url)}${PATH_PACKAGES}"
+                                 
+    log.debug("GOKbOAIAdapter::freshen - fetching from URI: ${packagesUrl}")
 
     def query_params = [
         'verb': 'ListRecords',
         'metadataPrefix': 'gokb'
     ]
 
-    def cursor = null
+    String cursor = null
     def found_records = true
 
     if ( current_cursor != null ) {
@@ -47,53 +57,53 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
     else {
       cursor = ''
     }
-
+    GPathResult xml
     while ( found_records ) {
 
+      log.debug("** GET ${packagesUrl} ${query_params}")
 
-      log.debug("** GET ${base_url}/packages ${query_params}")
+      // Built in parser for XML returns GPathResult
+      xml = (GPathResult) getSync(packagesUrl, query_params) {
 
-      jpf_api.request(Method.GET) { req ->
-        // uri.path=''
-        // requestContentType = ContentType.JSON
-        headers.Accept = 'application/xml'
-        uri.query=query_params
-
-        response.success = { resp, xml ->
-          // println "Success! ${resp.status} ${xml}"
-          log.debug("got page of data from OAI, cursor=${cursor}, ...")
-
-          Map page_result = processPage(cursor, xml, source_name, cache, trustedSourceTI)
-
-
-          log.debug("processPage returned, processed ${page_result.count} packages, cursor will be ${page_result.new_cursor}")
-          // Store the cursor so we know where we are up to
-          cache.updateCursor(source_name,page_result.new_cursor)
-
-          if ( page_result.count > 0 ) {
-            // If we processed records, and we have a resumption token, carry on.
-            if ( page_result.resumptionToken ) {
-              query_params.resumptionToken = page_result.resumptionToken
-              /** / found_records = false /**/
-            }
-            else {
-              // Reached the end of the data
-              found_records = false
-            }
-          }
-          else {
-            found_records = false
-          }
-        }
-
-        response.failure = { resp ->
-          log.debug "Request failed with status ${resp.status}"
+        response.failure { FromServer fromServer ->
+          log.debug "Request failed with status ${fromServer.statusCode}"
           found_records = false
         }
       }
+      
+      if (found_records) {
+      
+        log.debug("got page of data from OAI, cursor=${cursor}, ...")
+        
+        Map page_result = processPage(cursor, xml, source_name, cache, trustedSourceTI)
+  
+        log.debug("processPage returned, processed ${page_result.count} packages, cursor will be ${page_result.new_cursor}")
+        
+        // Extract some info from the page.
+        final String new_cursor = page_result.new_cursor as String
+        final int result_count = (page_result.count ?: 0) as int
+        
+        // Store the cursor so we know where we are up to.
+        cache.updateCursor(source_name, new_cursor)
+  
+        if ( result_count > 0 ) {
+          // If we processed records, and we have a resumption token, carry on.
+          if ( page_result.resumptionToken ) {
+            query_params.resumptionToken = page_result.resumptionToken
+            /** / found_records = false /**/
+          }
+          else {
+            // Reached the end of the data
+            found_records = false
+          }
+        }
+        else {
+          found_records = false
+        }
+      }
+  
+      log.debug("GOKbOAIAdapter::freshen - exiting URI: ${base_url} with cursor ${cursor}")
     }
-
-    log.debug("GOKbOAIAdapter::freshen - exiting URI: ${base_url} with cursor ${cursor}")
   }
 
   public void freshenHoldingsData(String cursor,
@@ -102,8 +112,8 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
     throw new RuntimeException("Holdings data not suported by GOKb")
   }
 
-
-  private Map processPage(String cursor, Object oai_page, String source_name, KBCache cache, boolean trustedSourceTI) {
+  @CompileStatic(SKIP)
+  private Map processPage(String cursor, GPathResult oai_page, String source_name, KBCache cache, boolean trustedSourceTI) {
 
     final SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
@@ -170,7 +180,8 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
    * the GOKb records look like this
    *   https://gokbt.gbv.de/gokb/oai/index/packages?verb=ListRecords&metadataPrefix=gokb
    */
-  private InternalPackageImpl gokbToERM(Object xml_gokb_record, boolean trustedSourceTI) {
+  @CompileStatic(SKIP)
+  private InternalPackageImpl gokbToERM(GPathResult xml_gokb_record, boolean trustedSourceTI) {
 
     def package_record = xml_gokb_record?.metadata?.gokb?.package
 
@@ -321,45 +332,49 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
     throw new RuntimeException("Not supported by this KB provider")
     return false
   }
-
+  
+  @CompileStatic(SKIP)
   public Map getTitleInstance(String source_name, String base_url, String goKbIdentifier, String type, String publicationType, String subType) {
-
-    if (type.toLowerCase() == "monograph") {
+    
+    Map ti
+    
+    final String titlesUrl = "${stripTrailingSlash(base_url)}${PATH_TITLES}"
+    
+    if (type?.toLowerCase() == "monograph") {
+      
       log.debug("Making secondary enrichment call for book/monograph title with GOKb identifier: ${goKbIdentifier}")
-      Map ti = [:];
-
-      log.debug("GOKbOAIAdapter::getTitleInstance - fetching from URI: ${base_url}/titles")
-      def jpf_api = new HTTPBuilder("${base_url}/titles")
-
-      def query_params = [
-          'verb': 'GetRecord',
-          'identifier': goKbIdentifier,
-          'metadataPrefix': 'gokb'
+      
+      final def query_params = [
+        'verb': 'GetRecord',
+        'identifier': goKbIdentifier,
+        'metadataPrefix': 'gokb'
       ]
+      
+      log.debug("** GET ${titlesUrl} ${query_params}")
 
-      log.debug("** GET ${base_url}/titles ${query_params}")
-
-      jpf_api.request(Method.GET) { req ->
-        headers.Accept = 'application/xml'
-        uri.query=query_params
-
-        response.success = { resp, xml ->
-          log.debug("got titleInstance data from OAI, ...")
-
-          ti = gokbToERMSecondary(xml.GetRecord.record, subType)
-        }
-
-        response.failure = { resp ->
-          log.error "Request failed with status ${resp.status}"
+      log.debug("GOKbOAIAdapter::getTitleInstance - fetching from URI: ${titlesUrl}")
+      boolean valid = true
+      GPathResult xml = (GPathResult) getSync(titlesUrl, query_params) {
+        
+        response.failure { FromServer fromServer ->
+          log.error "Request failed with status ${fromServer.statusCode}"
+          valid = false
         }
       }
-      return ti;
+      
+      if (valid) {
+        
+        ti = gokbToERMSecondary(xml.GetRecord.record, subType)
+      }
     } else {
       log.debug("No secondary enrichment call needed for publicationType: ${publicationType}")
     }
+    
+    ti
   }
-
-  private Map gokbToERMSecondary(Object xml_gokb_record, String subType) {
+  
+  @CompileStatic(SKIP)
+  private Map gokbToERMSecondary(GPathResult xml_gokb_record, String subType) {
     /* We take in the subType here as we may need to do different things
      * with the data depending on whether it refers to an electronic/print TI
     */
@@ -388,14 +403,12 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
 
   public String makePackageReference(Map params) {
     throw new RuntimeException("Not yet implemented")
-    return null
+//    return null
   }
 
   // Move date parsing here - we might want to do something more sophistocated with different fallback formats
   // here in the future.
   Date parseDate(String s) {
-    final SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX")
-    return sdf.parse(s)
+    ISO_DATE.parse(s)
   }
-
 }
