@@ -181,9 +181,10 @@ class JobRunnerService implements EventPublisher {
       // as well as setting the job status on execution
       final Runnable currentWork = work
       work = { final String tid, final String jid, final Runnable wrk ->
+          final String tenantName = OkapiTenantResolver.schemaNameToTenantId(tid)
           Tenants.withId(tid) {
             try {
-              MDC.setContextMap( jobId: "${jid}", tenantId: "${tid}", 'tenant': OkapiTenantResolver.schemaNameToTenantId("${tid}"))
+              MDC.setContextMap( jobId: '' + jid, tenantId: '' + tid, 'tenant': '' + tenantName)
               JobContext.current.set(new JobContext( jobId: jid, tenantId: tid ))
               beginJob(jid)
               wrk()

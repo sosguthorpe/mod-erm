@@ -49,7 +49,7 @@ class JobLoggingService {
       ]
 
       if ( jobId ) {
-        if (tenantId) {
+        if ( tenantId ) {
           Tenants.withId( tenantId, addLogEntry.curry(jobProperties, jobId) )
         } else {
           addLogEntry(jobProperties, jobId)

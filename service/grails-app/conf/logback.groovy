@@ -80,12 +80,12 @@ if (devEnv && targetDir != null) {
 }
 
 // Add the appender for classes we wish to expose within the database.
-appender ('JOB', JobAwareAppender)
-
-logger ('org.olf.PackageIngestService', DEBUG, ['JOB'])
-logger ('org.olf.TitleInstanceResolverService', DEBUG, ['JOB'])
-logger ('org.olf.TitleEnricherService', DEBUG, ['JOB'])
-logger ('org.olf.kb.adapters.GOKbOAIAdapter', DEBUG, ['JOB'])
-logger ('org.olf.CoverageService', DEBUG, ['JOB'])
-logger ('org.olf.ImportService', DEBUG, ['JOB'])
-logger ('org.olf.DocumentAttachmentService', DEBUG, ['JOB'])
+//appender ('JOB', JobAwareAppender)
+//
+//logger ('org.olf.PackageIngestService', DEBUG, ['JOB'])
+//logger ('org.olf.TitleInstanceResolverService', DEBUG, ['JOB'])
+//logger ('org.olf.TitleEnricherService', DEBUG, ['JOB'])
+//logger ('org.olf.kb.adapters.GOKbOAIAdapter', DEBUG, ['JOB'])
+//logger ('org.olf.CoverageService', DEBUG, ['JOB'])
+//logger ('org.olf.ImportService', DEBUG, ['JOB'])
+//logger ('org.olf.DocumentAttachmentService', DEBUG, ['JOB'])
