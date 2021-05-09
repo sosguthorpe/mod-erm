@@ -2,7 +2,7 @@ buildscript {
   repositories {
     jcenter()
     maven { url "https://repo.grails.org/grails/core" }
-//    maven { url "http://maven.k-int.com/content/repositories/releases" }
+//    maven { url "https://maven.k-int.com/content/repositories/releases" }
   }
   dependencies {
     classpath "org.grails:grails-gradle-plugin:$grailsVersion"
@@ -43,7 +43,7 @@ repositories {
   jcenter()
   maven { url 'https://repo.grails.org/grails/core' }
   maven { url 'https://maven.indexdata.com/' }
-  maven { url "http://maven.k-int.com/content/repositories/releases" }
+  maven { url "https://maven.k-int.com/content/repositories/releases" }
 }
 
 sourceSets {
