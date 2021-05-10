@@ -33,12 +33,12 @@ public class JobAwareAppender extends AppenderBase<ILoggingEvent> {
             break
           
           case Level.ERROR:
-            final Serializable tid = JobContext.current.get()?.tenantId
+            final String tid = "${JobContext.current.get()?.tenantId ?: ''}"
             JobLoggingService.handleLogEvent(tid, jid, eventObject.formattedMessage, Level.ERROR.levelStr, Instant.ofEpochMilli(eventObject.timeStamp), mdc)
             break
         }
       }
-    } catch (Throwable t) { 
+    } catch (Throwable t) {
       t.printStackTrace()
     }
   }

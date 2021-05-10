@@ -18,7 +18,6 @@ import org.olf.CoverageService
 import org.olf.DocumentAttachmentService
 import org.olf.ImportService
 import org.olf.KbHarvestService
-import org.slf4j.MDC
 
 import com.k_int.okapi.OkapiTenantAdminService
 import com.k_int.okapi.OkapiTenantResolver
@@ -184,7 +183,8 @@ class JobRunnerService implements EventPublisher {
           final String tenantName = OkapiTenantResolver.schemaNameToTenantId(tid)
           Tenants.withId(tid) {
             try {
-              MDC.setContextMap( jobId: '' + jid, tenantId: '' + tid, 'tenant': '' + tenantName)
+              org.slf4j.MDC.clear()
+              org.slf4j.MDC.setContextMap( jobId: '' + jid, tenantId: '' + tid, 'tenant': '' + tenantName)
               JobContext.current.set(new JobContext( jobId: jid, tenantId: tid ))
               beginJob(jid)
               wrk()
@@ -196,7 +196,7 @@ class JobRunnerService implements EventPublisher {
               notify ('jobs:log_info', JobContext.current.get().tenantId, JobContext.current.get().jobId,  "Job execution failed")
             } finally {
               JobContext.current.remove()
-              MDC.clear()
+              org.slf4j.MDC.clear()
               jobEnded(tid, jid)
             }
           }

@@ -106,9 +106,9 @@ dataSource:
 
   properties:
     initialSize: 5
-    maxActive: ${db.maxpoolsize:50}
+    maxActive: ${db.maxpoolsize:5}
     minIdle: 5
-    maxIdle: 25
+    maxIdle: 10
     maxWait: 10000
     maxAge: 600000
     timeBetweenEvictionRunsMillis: 5000

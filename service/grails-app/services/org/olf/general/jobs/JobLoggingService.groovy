@@ -1,20 +1,27 @@
 package org.olf.general.jobs
 
-import static grails.async.Promises.*
+
+import java.time.Instant
+import java.util.concurrent.TimeUnit
+
+import javax.annotation.PreDestroy
+
+import org.olf.general.async.QueueingThreadPoolPromiseFactory
 
 import grails.async.Promise
 import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.Tenants
 import groovy.util.logging.Slf4j
-import java.time.Instant
-import java.util.concurrent.TimeUnit
-import org.grails.async.factory.future.CachedThreadPoolPromiseFactory
 
 @Slf4j
 class JobLoggingService {
 
-  static {
-    promiseFactory = new CachedThreadPoolPromiseFactory (10, 5L, TimeUnit.SECONDS)
+  private static QueueingThreadPoolPromiseFactory factory = null
+  private static QueueingThreadPoolPromiseFactory getInternalFactory() {
+    if (!factory) {
+      factory = new QueueingThreadPoolPromiseFactory (5, 10, 10L, TimeUnit.SECONDS)
+    }
+    factory
   }
 
   @Subscriber('jobs:log_error')
@@ -28,6 +35,7 @@ class JobLoggingService {
   }
 
   private final static Closure addLogEntry = { final Map<String, ?> logProperties, final Serializable jobId ->
+    log.debug ( "Entry running on thread ${Thread.currentThread().name}" )
     LogEntry le = new LogEntry(logProperties)
     le.setAdditionalinfo(logProperties.additionalInfo)
     le.save(failOnError: true, flush: true)
@@ -35,19 +43,21 @@ class JobLoggingService {
 
   static void handleLogEvent ( final String tenantId, final String jobId, final String message, final String type, final Instant timestamp = Instant.now(), final Map<String, String> contextVals = [:]) {
 
+    final Map<String, ?> theProps = [
+      'type': type ? '' + type : null,
+      'origin': jobId ? '' + jobId : null,
+      'message': message ? '' + message : null,
+      'dateCreated': timestamp,
+      'additionalInfo': new HashMap<String,String>( contextVals )
+    ]
+    
+    log.debug "Current promise factory HC: ${internalFactory.hashCode()}"
+        
     // First copy the additional info map.
-    final Map<String, String> additionalInfo = [:]
-    additionalInfo.putAll( contextVals )
-
-    Promise p = task {
-      final Map<String, ?> jobProperties = [
-        'type': type,
-        'origin': jobId,
-        'message': message,
-        'dateCreated': timestamp,
-        'additionalInfo': additionalInfo
-      ]
-
+    log.debug ( "Raising event handle ${Thread.currentThread().name}" )
+    
+    Promise p = internalFactory.createPromise({ final Map<String, String> jobProperties ->
+      log.debug ( "Task running on thread ${Thread.currentThread().name}" )
       if ( jobId ) {
         if ( tenantId ) {
           Tenants.withId( tenantId, addLogEntry.curry(jobProperties, jobId) )
@@ -55,9 +65,17 @@ class JobLoggingService {
           addLogEntry(jobProperties, jobId)
         }
       }
-    }
+    }.curry ( theProps ))
     p.onError { Throwable err ->
       log.error "Error saving log message", err
     }
+  }
+  
+  @PreDestroy
+  void preDestroy() {
+    if (!(factory?.isShutdown() ?: true) ) {
+      factory.shutdown()
+    }
+    factory = null
   }
 }
