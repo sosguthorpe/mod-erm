@@ -4,8 +4,6 @@ package org.olf.general.jobs
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 
-import javax.annotation.PreDestroy
-
 import org.olf.general.async.QueueingThreadPoolPromiseFactory
 
 import grails.async.Promise
@@ -19,7 +17,7 @@ class JobLoggingService {
   private static QueueingThreadPoolPromiseFactory factory = null
   private static QueueingThreadPoolPromiseFactory getInternalFactory() {
     if (!factory) {
-      factory = new QueueingThreadPoolPromiseFactory (5, 10, 10L, TimeUnit.SECONDS)
+      factory = new QueueingThreadPoolPromiseFactory (7, 100, 10L, TimeUnit.SECONDS)
     }
     factory
   }
@@ -51,13 +49,7 @@ class JobLoggingService {
       'additionalInfo': new HashMap<String,String>( contextVals )
     ]
     
-    log.debug "Current promise factory HC: ${internalFactory.hashCode()}"
-        
-    // First copy the additional info map.
-    log.debug ( "Raising event handle ${Thread.currentThread().name}" )
-    
     Promise p = internalFactory.createPromise({ final Map<String, String> jobProperties ->
-      log.debug ( "Task running on thread ${Thread.currentThread().name}" )
       if ( jobId ) {
         if ( tenantId ) {
           Tenants.withId( tenantId, addLogEntry.curry(jobProperties, jobId) )
@@ -69,13 +61,5 @@ class JobLoggingService {
     p.onError { Throwable err ->
       log.error "Error saving log message", err
     }
-  }
-  
-  @PreDestroy
-  void preDestroy() {
-    if (!(factory?.isShutdown() ?: true) ) {
-      factory.shutdown()
-    }
-    factory = null
   }
 }

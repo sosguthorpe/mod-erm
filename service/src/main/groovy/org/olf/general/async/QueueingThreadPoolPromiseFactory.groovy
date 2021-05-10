@@ -22,14 +22,11 @@ import groovy.transform.CompileStatic
 class QueueingThreadPoolPromiseFactory extends AbstractPromiseFactory implements Closeable, ExecutorPromiseFactory {
 
   final @Delegate ExecutorService executorService
-  
-  final LinkedBlockingQueue<Runnable> queue
 
-  QueueingThreadPoolPromiseFactory(int maxPoolSize = 15, int maxQueueLength = 5, long timeout = 10L, TimeUnit unit = TimeUnit.SECONDS) {
+  public QueueingThreadPoolPromiseFactory(int maxPoolSize = 15, int maxQueueLength = 5, long timeout = 10L, TimeUnit unit = TimeUnit.SECONDS) {
     final QueueingThreadPoolPromiseFactory pf = this
-    queue = new LinkedBlockingQueue<Runnable>(maxQueueLength)
     
-    this.executorService = new ThreadPoolExecutor(0, maxPoolSize, timeout, unit, queue) {
+    this.executorService = new ThreadPoolExecutor(0, maxPoolSize, timeout, unit, new LinkedBlockingQueue<Runnable>(maxQueueLength)) {
       @Override
       protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
         return new FutureTaskPromise<T>(pf,callable)
