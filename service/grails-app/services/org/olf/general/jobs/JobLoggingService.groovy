@@ -17,7 +17,7 @@ class JobLoggingService {
   private static QueueingThreadPoolPromiseFactory factory = null
   private static QueueingThreadPoolPromiseFactory getInternalFactory() {
     if (!factory) {
-      factory = new QueueingThreadPoolPromiseFactory (7, 100, 10L, TimeUnit.SECONDS)
+      factory = new QueueingThreadPoolPromiseFactory( 25, 2000, 1L, TimeUnit.MINUTES )
     }
     factory
   }
@@ -33,7 +33,6 @@ class JobLoggingService {
   }
 
   private final static Closure addLogEntry = { final Map<String, ?> logProperties, final Serializable jobId ->
-    log.debug ( "Entry running on thread ${Thread.currentThread().name}" )
     LogEntry le = new LogEntry(logProperties)
     le.setAdditionalinfo(logProperties.additionalInfo)
     le.save(failOnError: true, flush: true)

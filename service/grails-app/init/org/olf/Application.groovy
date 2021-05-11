@@ -8,14 +8,15 @@ import org.springframework.scheduling.annotation.EnableScheduling
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
 import groovy.transform.CompileStatic
-import groovy.util.logging.Slf4j
 import io.undertow.Undertow.Builder
 
-
-@Slf4j
 @CompileStatic
 @EnableScheduling
 class Application extends GrailsAutoConfiguration {
+  
+  private void info ( final String message) {
+    println "Application Initialization: ${message}"
+  }
 
   static void main(String[] args) {
 
@@ -60,10 +61,10 @@ class Application extends GrailsAutoConfiguration {
         // Enable HTTP2
 //        builder.setServerOption(UndertowOptions.ENABLE_HTTP2, true)
 
-        log.info "Runtime memory reported ${Runtime.getRuntime().maxMemory() / 1024 / 1024} mb"
-        log.info "Runtime CPUs reported ${Runtime.getRuntime().availableProcessors()}"
-        log.info "Allocated ${ioThreadCount} IO Threads"
-        log.info "Allocated ${workerThreadCount} worker threads"
+        info "Runtime memory reported ${Runtime.getRuntime().maxMemory() / 1024 / 1024} mb"
+        info "Runtime CPUs reported ${Runtime.getRuntime().availableProcessors()}"
+        info "Allocated ${ioThreadCount} IO Threads"
+        info "Allocated ${workerThreadCount} worker threads"
       }
     }
     factory
