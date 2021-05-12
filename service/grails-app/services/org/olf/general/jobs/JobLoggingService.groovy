@@ -2,10 +2,7 @@ package org.olf.general.jobs
 
 
 import java.time.Instant
-import java.util.concurrent.TimeUnit
-
-import org.olf.general.async.QueueingThreadPoolPromiseFactory
-
+import com.k_int.web.toolkit.async.WithPromises
 import grails.async.Promise
 import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.Tenants
@@ -13,14 +10,6 @@ import groovy.util.logging.Slf4j
 
 @Slf4j
 class JobLoggingService {
-
-  private static QueueingThreadPoolPromiseFactory factory = null
-  private static QueueingThreadPoolPromiseFactory getInternalFactory() {
-    if (!factory) {
-      factory = new QueueingThreadPoolPromiseFactory( 25, 2000, 1L, TimeUnit.MINUTES )
-    }
-    factory
-  }
 
   @Subscriber('jobs:log_error')
   void handleLogError(final String tenantId, final String jobId, final String message) {
@@ -47,8 +36,8 @@ class JobLoggingService {
       'dateCreated': timestamp,
       'additionalInfo': new HashMap<String,String>( contextVals )
     ]
-    
-    Promise p = internalFactory.createPromise({ final Map<String, String> jobProperties ->
+
+    Promise p = WithPromises.task ({ final Map<String, String> jobProperties ->
       if ( jobId ) {
         if ( tenantId ) {
           Tenants.withId( tenantId, addLogEntry.curry(jobProperties, jobId) )
