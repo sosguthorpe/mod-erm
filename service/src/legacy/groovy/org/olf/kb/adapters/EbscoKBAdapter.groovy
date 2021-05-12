@@ -1,8 +1,6 @@
 package org.olf.kb.adapters;
 
 import static groovy.json.JsonOutput.*
-import static groovyx.net.http.ContentType.*
-import static groovyx.net.http.Method.*
 
 import grails.web.databinding.DataBinder
 import java.text.*
@@ -16,6 +14,7 @@ import org.olf.kb.KBCache;
 import org.olf.kb.KBCacheUpdater;
 import org.springframework.validation.BindingResult
 
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import groovyx.net.http.*
 
@@ -27,8 +26,14 @@ import groovyx.net.http.*
  */
 
 @Slf4j
-public class EbscoKBAdapter implements KBCacheUpdater, DataBinder {
+@CompileStatic
+public class EbscoKBAdapter extends WebSourceAdapter implements KBCacheUpdater, DataBinder {
 
+  EbscoKBAdapter() {
+    super (HttpBuilder.configure {
+      
+    })
+  }
 
   public void freshenPackageData(String source_name,
                                  String base_url,
@@ -52,14 +57,15 @@ public class EbscoKBAdapter implements KBCacheUpdater, DataBinder {
    * using a native package identifier, request a specific package from the remote source and add it to the KB Cache.
    * If the package already exists, implementors MAY update the existing package with the new information.
    */
-  public Map importPackage(Map params,
+  public Map importPackage(Map<String, String> params,
                            KBCache cache) {
 
-    InternalPackageImpl erm_package = buildErmPackage(params.vendorid,
-                                      params.packageid,
-                                      params.principal,
-                                      params.credentials,
-                                      makePackageReference(params))
+    InternalPackageImpl erm_package = buildErmPackage(
+        params.vendorid,
+        params.packageid,
+        params.principal,
+        params.credentials,
+        makePackageReference(params))
 
     return cache.onPackageChange(params.kb, erm_package)
   }

@@ -141,7 +141,7 @@ where rkb.type is not null
           }
         }
         else {
-          log.info("Skipping remote kb ${remotekb_id} as sync status is ${rkb.syncStatus}");
+          log.info("Skipping remote kb ${remotekb_id} as it is currently in progress.");
         }
       }
       catch ( Exception e ) {

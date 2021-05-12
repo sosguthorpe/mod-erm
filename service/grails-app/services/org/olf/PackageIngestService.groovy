@@ -56,7 +56,7 @@ class PackageIngestService implements DataBinder {
    * @return id of package upserted
    */
   public Map upsertPackage(PackageSchema package_data, String remotekbname, boolean readOnly=false) {
-
+    
     def result = [
       startTime: System.currentTimeMillis(),
       titleCount: 0,
@@ -363,7 +363,8 @@ class PackageIngestService implements DataBinder {
       }
     }
 
-    MDC.clear()
+//    MDC.clear()
+    
     return result
   }
 }

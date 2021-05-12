@@ -3,12 +3,11 @@ package org.olf.kb
 import org.olf.CoverageService
 import org.olf.erm.Entitlement
 import org.olf.general.TemplatedUrl
+
 import com.k_int.web.toolkit.refdata.RefdataValue
 import com.k_int.web.toolkit.tags.Tag
-import grails.async.Promises
+
 import grails.gorm.MultiTenant
-import grails.gorm.multitenancy.Tenants
-import java.time.LocalDate
 
 /**
  * an ErmResource - Superclass

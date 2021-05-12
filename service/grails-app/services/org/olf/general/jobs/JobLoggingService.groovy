@@ -1,21 +1,15 @@
 package org.olf.general.jobs
 
-import static grails.async.Promises.*
 
+import java.time.Instant
+import com.k_int.web.toolkit.async.WithPromises
 import grails.async.Promise
 import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.Tenants
 import groovy.util.logging.Slf4j
-import java.time.Instant
-import java.util.concurrent.TimeUnit
-import org.grails.async.factory.future.CachedThreadPoolPromiseFactory
 
 @Slf4j
 class JobLoggingService {
-
-  static {
-    promiseFactory = new CachedThreadPoolPromiseFactory (10, 5L, TimeUnit.SECONDS)
-  }
 
   @Subscriber('jobs:log_error')
   void handleLogError(final String tenantId, final String jobId, final String message) {
@@ -35,27 +29,23 @@ class JobLoggingService {
 
   static void handleLogEvent ( final String tenantId, final String jobId, final String message, final String type, final Instant timestamp = Instant.now(), final Map<String, String> contextVals = [:]) {
 
-    // First copy the additional info map.
-    final Map<String, String> additionalInfo = [:]
-    additionalInfo.putAll( contextVals )
+    final Map<String, ?> theProps = [
+      'type': type ? '' + type : null,
+      'origin': jobId ? '' + jobId : null,
+      'message': message ? '' + message : null,
+      'dateCreated': timestamp,
+      'additionalInfo': new HashMap<String,String>( contextVals )
+    ]
 
-    Promise p = task {
-      final Map<String, ?> jobProperties = [
-        'type': type,
-        'origin': jobId,
-        'message': message,
-        'dateCreated': timestamp,
-        'additionalInfo': additionalInfo
-      ]
-
+    Promise p = WithPromises.task ({ final Map<String, String> jobProperties ->
       if ( jobId ) {
-        if (tenantId) {
+        if ( tenantId ) {
           Tenants.withId( tenantId, addLogEntry.curry(jobProperties, jobId) )
         } else {
           addLogEntry(jobProperties, jobId)
         }
       }
-    }
+    }.curry ( theProps ))
     p.onError { Throwable err ->
       log.error "Error saving log message", err
     }

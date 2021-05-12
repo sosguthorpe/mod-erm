@@ -1,3 +1,8 @@
+//configurations.all {
+//  // Check for updates every build
+//  resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+//}
+
 buildscript {
   repositories {
     jcenter()
@@ -158,9 +163,9 @@ dependencies {
   compile 'com.opencsv:opencsv:4.6'
   compile 'commons-io:commons-io:2.6'
 
-  compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'     // TODO: Migrate away from this resource.
-  compile 'com.k_int.grails:web-toolkit-ce:5.0.0'
-  compile 'com.k_int.okapi:grails-okapi:4.0.0-rc.1'
+  // compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'     // TODO: Migrate away from this resource.
+  compile 'com.k_int.grails:web-toolkit-ce:5.2.0'
+  compile 'com.k_int.okapi:grails-okapi:4.0.2'
 
   compile 'uk.co.cacoethes:groovy-handlebars-engine:0.2'
   compile 'com.github.jknack:handlebars-helpers:2.0.0'

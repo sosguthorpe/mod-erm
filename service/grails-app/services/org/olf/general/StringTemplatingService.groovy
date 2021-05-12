@@ -1,7 +1,5 @@
 package org.olf.general
 
-import net.sf.json.JSONObject
-
 import grails.gorm.multitenancy.Tenants
 import grails.gorm.transactions.Transactional
 

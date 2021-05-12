@@ -1,7 +1,7 @@
 package org.olf
 
 import java.time.LocalDate
-import net.sf.json.JSONObject
+import org.grails.web.json.JSONObject
 import org.hibernate.sql.JoinType
 import org.olf.erm.SubscriptionAgreement
 import org.olf.kb.ErmResource

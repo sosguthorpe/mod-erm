@@ -1,18 +1,13 @@
 package org.olf.general
 
-import net.sf.json.JSONObject
-
-import org.olf.general.StringTemplate
-import org.olf.general.StringTemplatingService
+import com.k_int.web.toolkit.async.WithPromises
 
 import com.k_int.okapi.OkapiTenantAwareController
 
-import grails.converters.JSON
-
-import grails.gorm.multitenancy.Tenants
-import grails.gorm.multitenancy.CurrentTenant
 import grails.async.Promise
-import grails.async.Promises
+import grails.converters.JSON
+import grails.gorm.multitenancy.CurrentTenant
+import grails.gorm.multitenancy.Tenants
 import groovy.util.logging.Slf4j
 
 
@@ -28,7 +23,7 @@ class StringTemplateController extends OkapiTenantAwareController<StringTemplate
   def refreshTemplatedUrls() {
     def result = [:]
     String tenantId = Tenants.currentId()
-    Promise p = Promises.task {
+    Promise p = WithPromises.task {
       stringTemplatingService.refreshUrls(tenantId)
     }
     p.onError{ Throwable e ->
