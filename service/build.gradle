@@ -49,6 +49,7 @@ repositories {
   maven { url 'https://repo.grails.org/grails/core' }
   maven { url 'https://maven.indexdata.com/' }
   maven { url "https://maven.k-int.com/content/repositories/releases" }
+  maven { url "https://maven.k-int.com/content/repositories/snapshots" }
 }
 
 sourceSets {
@@ -164,7 +165,7 @@ dependencies {
   compile 'commons-io:commons-io:2.6'
 
   // compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'     // TODO: Migrate away from this resource.
-  compile 'com.k_int.grails:web-toolkit-ce:5.1.1'
+  compile 'com.k_int.grails:web-toolkit-ce:5.2.0-SNAPSHOT'
   compile 'com.k_int.okapi:grails-okapi:4.0.2'
 
   compile 'uk.co.cacoethes:groovy-handlebars-engine:0.2'
