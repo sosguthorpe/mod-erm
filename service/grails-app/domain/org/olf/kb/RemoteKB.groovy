@@ -84,7 +84,7 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
     activationSupported( nullable:true, blank:false)
              syncStatus( nullable:true, blank:false)
               lastCheck( nullable:true, blank:false)
-               readonly( nullable:true, blank:false, bindable:false)
+               readonly( nullable:true, blank:false)
         trustedSourceTI( nullable:false, blank: false)
   }
 
