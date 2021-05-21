@@ -96,8 +96,13 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
   // When RemoteKB is readonly we want SOME properties to be editable, some not to be
   private static final Set<String> updateableWhenReadOnly = ['trustedSourceTI']
   def beforeUpdate() {
+    def readonlyInDB = getPersistentValue('readonly')
     def dissallowedProperties = (updateableWhenReadOnly + this.dirtyPropertyNames) - updateableWhenReadOnly.intersect( this.dirtyPropertyNames )
-    if (readonly == true && dissallowedProperties) {
+    if (readonlyInDB == true && dissallowedProperties) {
+      if (this.readonly == false) {
+        log.debug("Denying update to KB ${this.id} / ${this.name} because 'readonly' is set to 'true' and cannot be changed to 'false'")
+        return false
+      }
       log.debug("Denying update to KB ${this.id} / ${this.name} because 'readonly' is set to 'true' and updates were attempted to ${dissallowedProperties}")
       return false
     }

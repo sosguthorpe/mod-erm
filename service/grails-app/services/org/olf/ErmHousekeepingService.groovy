@@ -11,11 +11,14 @@ public class ErmHousekeepingService {
   def coverageService
   def entitlementLogService
   def subscriptionAgreementCleanupService
+  def remoteKbCleanupService
 
   public void triggerHousekeeping() {
     entitlementLogService.triggerUpdate();
 
     // A process to ensure the correct start/end date is stored per agreement
     subscriptionAgreementCleanupService.triggerDateCleanup();
+    
+    remoteKbCleanupService.checkLocal();
   }
 }
