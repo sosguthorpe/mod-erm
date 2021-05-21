@@ -1,4 +1,5 @@
 ## 4.1.0 (IN PROGRESS)
+ * Implemented dashboard interface ERM-1643
 
 ## 4.0.1 2021-03-31
  * ERM-1616 ERM admin/triggerHousekeeping fails
