@@ -1,0 +1,137 @@
+{
+  "type": {
+    "name": "SimpleSearch",
+    "version": "1.0"
+  },
+  "version": "1.0",
+  "name":"ERM Agreement Jobs",
+  "definition":{
+    "baseUrl":"/erm/jobs",
+    "resource": "job",
+    "results": {
+      "columns": [
+        {
+          "name":"jobName",
+          "label": "Job name",
+          "accessPath":"name",
+          "valueType": "Link"
+        },
+        {
+          "name":"jobStatus",
+          "label": "Status",
+          "accessPath":"status.label",
+          "valueType": "String"
+        },
+        {
+          "name":"jobResult",
+          "label": "Result",
+          "accessPath":"result.label",
+          "valueType": "String"
+        },
+        {
+          "name":"errorCount",
+          "label": "Number of errors",
+          "accessPath":"errorLogCount",
+          "valueType": "Integer"
+        },
+        {
+          "name":"startTime",
+          "label": "Start time",
+          "accessPath":"started",
+          "valueType": "DateTime"
+        },
+        {
+          "name":"endTime",
+          "label": "End time",
+          "accessPath":"ended",
+          "valueType": "DateTime"
+        }
+      ]
+    },
+    "filters": {
+      "columns": [
+        {
+          "name":"jobName",
+          "label": "Job name",
+          "filterPath":"name",
+          "valueType": "String",
+          "comparators": ["==", "!=", "=~", "!~"]
+        },
+        {
+          "name": "jobType",
+          "label": "Job type",
+          "filterPath": "class",
+          "valueType": "Enum",
+          "enumValues": [
+            {
+              "value": "org.olf.general.jobs.PackageIngestJob",
+              "label": "Harvester"
+            },
+            {
+              "value": "org.olf.general.jobs.PackageImportJob",
+              "label": "File import"
+            }
+          ],
+          "comparators": ["==", "!="]
+        },
+        {
+          "name":"jobStatus",
+          "label": "Job status",
+          "filterPath":"status.value",
+          "valueType": "Enum",
+          "enumValues": [
+            {"value": "ended", "label": "Ended"},
+            {"value": "in_progress", "label": "In progress"},
+            {"value": "queued", "label": "Queued"}
+          ],
+          "comparators": ["==", "!="]
+        },
+        {
+          "name":"jobResult",
+          "label": "Job result",
+          "filterPath":"result.value",
+          "valueType": "Enum",
+          "enumValues": [
+            {"value": "success", "label": "Success"},
+            {"value": "partial_success", "label": "Partial success"},
+            {"value": "failure", "label": "Failure"},
+            {"value": "interrupted", "label": "Interrupted"}
+          ],
+          "comparators": ["==", "!="]
+        }
+      ]
+    },
+    "sort": {
+      "columns": [
+        {
+          "name":"id",
+          "label": "Id",
+          "sortPath":"id",
+          "sortTypes": ["asc", "desc"]
+        },
+        {
+          "name":"startTime",
+          "sortPath":"started",
+          "label": "Start time",
+          "sortTypes": ["asc", "desc"]
+        },
+        {
+          "name":"endTime",
+          "sortPath":"ended",
+          "label": "End time",
+          "sortTypes": ["asc", "desc"]
+        }
+      ]
+    },
+    "configurableProperties": {
+      "urlLink": {
+        "configurable": true,
+        "defValue": "/local-kb-admin"
+      },
+      "numberOfRows": {
+        "configurable": true,
+        "defValue": 10
+      }
+    }
+  }
+}

@@ -14,7 +14,7 @@
           "name":"agreementName",
           "label": "Agreement name",
           "accessPath":"name",
-          "valueType": "String"
+          "valueType": "Link"
         },
         {
           "name":"startDate",
@@ -31,12 +31,24 @@
         {
           "name":"agreementStatus",
           "label": "Status",
-          "accessPath":"agreementStatus.value",
+          "accessPath":"agreementStatus.label",
           "valueType": "String"
         },
         {
-          "name": "currentPeriodStartDate",
-          "label": "Current period start",
+          "name": "internalContacts",
+          "label": "Internal contact(s)"
+        },
+        {
+          "name": "tags",
+          "label": "Tags",
+          "accessPath": "tags",
+          "valueType": "Array",
+          "arrayDisplayPath": "value"
+        },
+        {
+          "name": "isPerpetual",
+          "label": "Is perpetual",
+          "accessPath": "isPerpetual.label",
           "valueType": "String"
         }
       ]
@@ -48,7 +60,15 @@
           "label": "Agreement name",
           "filterPath":"name",
           "valueType": "String",
-          "comparators": ["=~", "!~"]
+          "comparators": ["==", "!=", "=~", "!~"]
+        },
+        {
+          "name":"agreement",
+          "label": "Agreement",
+          "filterPath":"id",
+          "valueType": "UUID",
+          "resource": "agreement",
+          "comparators": ["==", "!="]
         },
         {
           "name":"agreementStatus",
@@ -58,7 +78,9 @@
           "enumValues": [
             {"value": "active", "label": "Active"},
             {"value": "closed", "label": "Closed"},
-            {"value": "in_negotiation", "label": "In negotiation"}
+            {"value": "draft", "label": "Draft"},
+            {"value": "in_negotiation", "label": "In negotiation"},
+            {"value": "requested", "label": "Requested"}
           ],
           "comparators": ["==", "!="]
         },
@@ -67,30 +89,54 @@
           "label": "Start date",
           "filterPath":"startDate",
           "valueType": "Date",
-          "comparators": ["==", "!=", ">", ">=", "<", "<="]
+          "comparators": ["==", "!=", ">=", "<="]
         },
         {
           "name":"endDate",
           "label": "End date",
           "filterPath":"endDate",
           "valueType": "Date",
-          "comparators": ["==", "!=", ">", ">=", "<", "<=", "isNull", "isNotNull"]
+          "comparators": ["==", "!=", ">=", "<=", "isSet", "isNotSet"]
+        },
+        {
+          "name":"cancellationDeadline",
+          "label": "Cancellation deadline",
+          "filterPath":"cancellationDeadline",
+          "valueType": "Date",
+          "comparators": ["==", "!=", ">=", "<=", "isSet", "isNotSet"]
         },
         {
           "name":"internalContact",
           "label": "Internal contact",
-          "filterPath":"contacts.user",
+          "filterPath":"contacts.user.id",
           "valueType": "UUID",
           "resource": "user",
           "comparators": ["==", "!="]
         },
         {
-          "name":"linkedLicense",
-          "label": "Linked license",
-          "filterPath":"linkedLicenses.remoteId",
-          "valueType": "UUID",
-          "resource": "license",
+          "name":"tags",
+          "label": "Tags",
+          "filterPath":"tags.value",
+          "valueType": "String",
+          "comparators": ["==", "!=", "=~", "!~"]
+        },
+        {
+          "name":"isPerpetual",
+          "label": "Is perpetual",
+          "filterPath":"isPerpetual.value",
+          "valueType": "Enum",
+          "enumValues": [
+            {"value": "yes", "label": "Yes"},
+            {"value": "no", "label": "No"}
+          ],
           "comparators": ["==", "!="]
+        },
+        {
+          "name": "hasItems",
+          "label": "Has agreement lines",
+          "filterPath": "items",
+          "valueType": "Array",
+          "comparators": ["isEmpty", "isNotEmpty"]
         }
       ]
     },
@@ -98,33 +144,50 @@
       "columns": [
         {
           "name":"id",
+          "label": "Id",
           "sortPath":"id",
-          "sortTypes": ["asc"]
+          "sortTypes": ["asc", "desc"]
         },
         {
           "name":"agreementName",
+          "label": "Name",
           "sortPath":"name",
+          "sortTypes": ["asc", "desc"]
+        },
+        {
+          "name":"agreementStatus",
+          "label": "Status",
+          "sortPath":"agreementStatus.label",
           "sortTypes": ["asc", "desc"]
         },
         {
           "name":"startDate",
           "sortPath":"startDate",
+          "label": "Start date",
           "sortTypes": ["asc", "desc"]
         },
         {
           "name":"endDate",
           "sortPath":"endDate",
+          "label": "End date",
+          "sortTypes": ["asc", "desc"]
+        },
+        {
+          "name":"cancellationDeadline",
+          "sortPath":"cancellationDeadline",
+          "label": "Cancellation deadline",
           "sortTypes": ["asc", "desc"]
         }
       ]
     },
     "configurableProperties": {
       "urlLink": {
-        "configurable": true
+        "configurable": true,
+        "defValue": "/erm/agreements"
       },
       "numberOfRows": {
-        "configurable": false,
-        "defValue": 5
+        "configurable": true,
+        "defValue": 10
       }
     }
   }
