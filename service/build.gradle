@@ -5,9 +5,10 @@
 
 buildscript {
   repositories {
-    jcenter()
+    mavenCentral()
     maven { url "https://repo.grails.org/grails/core" }
-//    maven { url "https://maven.k-int.com/content/repositories/releases" }
+    maven { url "https://repo.grails.org/artifactory/core" }
+    // jcenter() - JCentre closed
   }
   dependencies {
     classpath "org.grails:grails-gradle-plugin:$grailsVersion"
@@ -44,11 +45,13 @@ apply plugin: 'com.github.erdi.webdriver-binaries'
 apply plugin: 'com.bmuschko.docker-remote-api'
 
 repositories {
-//  mavenLocal()
-  jcenter()
+  //  mavenLocal()
+  // jcenter()
+  mavenCentral()
   maven { url 'https://repo.grails.org/grails/core' }
   maven { url 'https://maven.indexdata.com/' }
-  maven { url "https://maven.k-int.com/content/repositories/releases" }
+  maven { url "https://maven.k-int.com/content/repositories/public" }
+  maven { url "https://repo.gradle.org/gradle/libs-releases-local" }
 }
 
 sourceSets {
