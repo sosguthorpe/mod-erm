@@ -29,6 +29,12 @@
           "valueType": "Date"
         },
         {
+          "name":"cancellationDeadline",
+          "label": "Cancellation deadline",
+          "accessPath":"cancellationDeadline",
+          "valueType": "Date"
+        },
+        {
           "name":"agreementStatus",
           "label": "Status",
           "accessPath":"agreementStatus.label",
@@ -76,11 +82,11 @@
           "filterPath":"agreementStatus.value",
           "valueType": "Enum",
           "enumValues": [
-            {"value": "active", "label": "Active"},
-            {"value": "closed", "label": "Closed"},
-            {"value": "draft", "label": "Draft"},
-            {"value": "in_negotiation", "label": "In negotiation"},
-            {"value": "requested", "label": "Requested"}
+            {"value": "active"},
+            {"value": "closed"},
+            {"value": "draft"},
+            {"value": "in_negotiation"},
+            {"value": "requested"}
           ],
           "comparators": ["==", "!="]
         },
@@ -108,17 +114,17 @@
         {
           "name":"internalContact",
           "label": "Internal contact",
-          "filterPath":"contacts.user.id",
+          "filterPath":"contacts.user",
           "valueType": "UUID",
           "resource": "user",
-          "comparators": ["==", "!="]
+          "comparators": ["=="]
         },
         {
           "name":"tags",
           "label": "Tags",
           "filterPath":"tags.value",
           "valueType": "String",
-          "comparators": ["==", "!=", "=~", "!~"]
+          "comparators": ["==", "=~"]
         },
         {
           "name":"isPerpetual",

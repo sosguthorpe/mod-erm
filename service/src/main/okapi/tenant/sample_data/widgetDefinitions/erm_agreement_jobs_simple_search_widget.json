@@ -80,9 +80,9 @@
           "filterPath":"status.value",
           "valueType": "Enum",
           "enumValues": [
-            {"value": "ended", "label": "Ended"},
-            {"value": "in_progress", "label": "In progress"},
-            {"value": "queued", "label": "Queued"}
+            {"value": "ended"},
+            {"value": "in_progress"},
+            {"value": "queued"}
           ],
           "comparators": ["==", "!="]
         },
@@ -92,10 +92,10 @@
           "filterPath":"result.value",
           "valueType": "Enum",
           "enumValues": [
-            {"value": "success", "label": "Success"},
-            {"value": "partial_success", "label": "Partial success"},
-            {"value": "failure", "label": "Failure"},
-            {"value": "interrupted", "label": "Interrupted"}
+            {"value": "success"},
+            {"value": "partial_success"},
+            {"value": "failure"},
+            {"value": "interrupted"}
           ],
           "comparators": ["==", "!="]
         }
