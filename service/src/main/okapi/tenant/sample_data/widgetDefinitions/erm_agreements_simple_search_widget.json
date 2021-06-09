@@ -41,6 +41,12 @@
           "valueType": "String"
         },
         {
+          "name":"renewalPriority",
+          "label": "Renewal priority",
+          "accessPath":"renewalPriority.label",
+          "valueType": "String"
+        },
+        {
           "name": "internalContacts",
           "label": "Internal contact(s)"
         },
@@ -110,6 +116,13 @@
           "filterPath":"cancellationDeadline",
           "valueType": "Date",
           "comparators": ["==", "!=", ">=", "<=", "isSet", "isNotSet"]
+        },
+        {
+          "name":"renewalPriority",
+          "label": "Renewal priority",
+          "filterPath":"renewalPriority.value",
+          "valueType": "String",
+          "comparators": ["==", "!="]
         },
         {
           "name":"internalContact",
@@ -183,6 +196,12 @@
           "sortPath":"cancellationDeadline",
           "label": "Cancellation deadline",
           "sortTypes": ["asc", "desc"]
+        },
+        {
+          "name":"renewalPriority",
+          "label":"Renewal priority",
+          "sortPath":"renewalPriority.value",
+          "sortTypes": ["asc", "desc"] 
         }
       ]
     },
