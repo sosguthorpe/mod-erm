@@ -54,7 +54,14 @@ public class Pkg extends ErmResource implements MultiTenant<Pkg> {
 
   @Transient
   public long getResourceCount() {
-    long num_items = PackageContentItem.countByPkg (this)
+    long num_items = (PackageContentItem.executeQuery("""
+      SELECT count(*) FROM PackageContentItem pci
+      WHERE pci.pkg.id = :id
+      AND pci.removedTimestamp = NULL
+      """,
+      [id: id]
+    ) ?: [])[0];
+    
     return num_items;
   }
 
