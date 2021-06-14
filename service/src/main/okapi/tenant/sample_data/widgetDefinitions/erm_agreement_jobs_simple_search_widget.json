@@ -48,6 +48,17 @@
         }
       ]
     },
+    "matches": {
+      "columns": [
+        {
+          "name": "jobName",
+          "label": "Name",
+          "accessPath": "name",
+          "default": true
+        }
+      ],
+      "termConfigurable": true
+    },
     "filters": {
       "columns": [
         {
