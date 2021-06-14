@@ -24,7 +24,7 @@ class StringTemplateBulkSpec extends BaseSpec {
   def importService
   def stringTemplatingService
 
-  static String[] elsevierTitles = ['ACC Current Journal Review', 'Spanish Journal of Legal Medicine']
+  static String[] elsevierTitles = ['ACC Current Journal Review', 'Information Security Technical Report']
   static String[] jstorITitles = ['American Journal of Mathematics', 'The Economic Bulletin']
   static String[] jstorIITitles = ['African Affairs','The Phylon Quarterly']
   // Place to store the id of the PTI we load in the package for use in multiple tests
