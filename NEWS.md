@@ -1,5 +1,18 @@
-## 4.1.0 (IN PROGRESS)
- * Implemented dashboard interface ERM-1643
+## 4.1.0 2021-06-15
+ * ERM-1730 Add renewalPriority to agreement widget definition
+ * ERM-1724 Reduce running time for StringTemplateBulkSpec integration test
+ * ERM-1696 Added match terms to WidgetDefinitions
+ * ERM-1652 Agreement jobs simple search widget definition
+ * ERM-1651 Agreements simple search widget definition
+ * ERM-1650 Add unique indexes for refdata tables
+ * The package resourceCount incorrectly includes PCIs with a removedTimestamp
+ * ERM-1643 Implemented dashboard interface 
+ * ERM-1632 Remote KB "LOCAL" should be created as read only
+ * FOLIO-3131: Use https for maven.k-int.com
+ * FOLIO-3106 Use https for maven.indexdata.com
+ * Enable tenant logging
+ * Harmonize snapshot versions
+ * Added sample KBs
 
 ## 4.0.1 2021-03-31
  * ERM-1616 ERM admin/triggerHousekeeping fails
