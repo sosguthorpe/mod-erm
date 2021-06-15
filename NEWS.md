@@ -1,3 +1,5 @@
+## 4.2.0 (In Progress) 
+
 ## 4.1.0 2021-06-15
  * ERM-1730 Add renewalPriority to agreement widget definition
  * ERM-1724 Reduce running time for StringTemplateBulkSpec integration test
