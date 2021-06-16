@@ -27,7 +27,7 @@ class CustomPropertyDefinitionController extends OkapiTenantAwareController<Cust
     final List<String> match_in = params.list("match[]") ?: params.list("match")
     
     // This is an ugly way to set defaults. We need to fix this.
-    final List<String> sorts = params.list("sort[]") ?: params.list("sort") ?: [ 'primary;desc', 'weight;asc', 'name;asc', 'id;asc']
+    final List<String> sorts = params.list("sort[]") ?: params.list("sort") ?: [ 'primary;desc', 'weight;asc', 'label;asc', 'id;asc']
     
     if (params.boolean('stats')) {
       return simpleLookupService.lookupWithStats(res, params.term, perPage, page, filters, match_in, sorts, null, baseQuery)
