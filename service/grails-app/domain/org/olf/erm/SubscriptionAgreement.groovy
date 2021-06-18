@@ -189,6 +189,14 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
             int controlling_count = ((license_links?.findAll({ RemoteLicenseLink license -> license.status?.value == 'controlling' })?.size()) ?: 0)
             ( controlling_count > 1 ? [ 'only.one.controlling.license' ] : true )
           })
+
+          // it should be validated that primaryOrg is true only for one org per subscription agreement
+          orgs(validator: { Collection<SubscriptionAgreementOrg> sa_orgs, _obj, errors ->
+            int primaryCount = ((sa_orgs?.findAll({ SubscriptionAgreementOrg org -> org.primaryOrg == true })?.size()) ?: 0)
+            if (primaryCount > 1) {
+              errors.rejectValue('orgs', 'only.one.primary.org')
+            }
+          })
   }
 
   def beforeValidate() {

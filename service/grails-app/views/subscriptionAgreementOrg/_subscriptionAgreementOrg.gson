@@ -2,5 +2,5 @@ import groovy.transform.*
 import org.olf.erm.SubscriptionAgreementOrg
 
 @Field SubscriptionAgreementOrg subscriptionAgreementOrg
-json g.render(subscriptionAgreementOrg, [expand: ['role', 'org' ]])
+json g.render(subscriptionAgreementOrg, [expand: ['roles', 'org' ]])
 
