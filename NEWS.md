@@ -1,4 +1,6 @@
-## 4.2.0 (In Progress) 
+## 5.0.0 (In Progress)
+ * ERM-1542 Make organization roles for agreements editable in tenant settings
+ * ERM-1540 Support for multiple roles per organisation in Agreements
 
 ## 4.1.0 2021-06-15
  * ERM-1730 Add renewalPriority to agreement widget definition
