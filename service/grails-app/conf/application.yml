@@ -30,28 +30,6 @@ spring:
         - '**/*.gson'
         - 'logback.groovy'
         - '*.properties'
-management:
-    security:
-        enabled: true
-    endpoints:
-        enabled-by-default: true
-        jmx:
-            enabled: true
-        health:
-            enabled: true
-            db:
-                enabled: true
-            defaults:
-                enabled: true
-        info:
-            enabled: true
-        configprops:
-            enabled: true
-        loggers:
-            enabled: true
-        web:
-            exposure:
-                include: 'health,info'
 ---
 grails:
   mime:
