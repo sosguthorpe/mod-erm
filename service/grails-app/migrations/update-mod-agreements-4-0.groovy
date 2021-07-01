@@ -235,7 +235,7 @@ databaseChangeLog = {
       }
   }
 
-  changeSet(author: "claudia (manual)", id: "20210518-009") {
+  changeSet(author: "claudia (manual)", id: "20210518-010") {
     // Insert all roles from subscription_agreement_org for one sa org in table subscription_agreement_org_role 
     // and leave only one entry
     // and remove the role column from subscription_agreement_org
@@ -264,6 +264,10 @@ databaseChangeLog = {
           sql.execute("""
           DELETE FROM ${database.defaultSchemaName}.subscription_agreement_org WHERE sao_owner_fk = :ownerId and sao_org_fk = :orgId AND sao_id != :saoId;
           """.toString(), [ownerId: it.sao_owner_fk, orgId: it.sao_org_fk, saoId: saoId])
+          // empty the note field of the remaining line
+          sql.execute("""
+          UPDATE ${database.defaultSchemaName}.subscription_agreement_org SET sao_note = null WHERE sao_id = :saoId;
+          """.toString(), [saoId: saoId])
         }
       }
     }
