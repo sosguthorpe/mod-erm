@@ -121,8 +121,20 @@ public class EntitlementLogService {
       def terminated_entitlements = EntitlementLogEntry.executeQuery(TERMINATED_ENTITLEMENTS_QUERY, ['today': today], [readOnly: true])
       terminated_entitlements.each {
         String seq = String.format('%015d-%06d',start_time,seqno++)
+
         log.debug("  -> close out entitlement for ${start_time} ${seq} ${it.id}");
         EntitlementLogEntry.executeUpdate('UPDATE EntitlementLogEntry set endDate = :ed where id=:id',[ed:today, id:it.id]);
+
+        log.debug("  -> Create a new log entry that documents the closing out of the entitlement");
+        EntitlementLogEntry ele = new EntitlementLogEntry(
+                                        seqid: seq,
+                                        startDate:it.startDate,
+                                        endDate:today,
+                                        res:it.res,
+                                        packageEntitlement:it.packageEntitlement,
+                                        directEntitlement:it.directEntitlement
+                                      ).save(flush:true, failOnError:true);
+
       }
     }
 
