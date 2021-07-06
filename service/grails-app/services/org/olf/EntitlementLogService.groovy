@@ -114,7 +114,8 @@ public class EntitlementLogService {
                                         endDate:null,
                                         res:it[0],
                                         packageEntitlement:it[1],
-                                        directEntitlement:it[2]
+                                        directEntitlement:it[2],
+                                        eventType:'ADD'
                                       ).save(flush:true, failOnError:true);
       }
 
@@ -132,7 +133,8 @@ public class EntitlementLogService {
                                         endDate:today,
                                         res:it.res,
                                         packageEntitlement:it.packageEntitlement,
-                                        directEntitlement:it.directEntitlement
+                                        directEntitlement:it.directEntitlement,
+                                        eventType:'REMOVE'
                                       ).save(flush:true, failOnError:true);
 
       }
