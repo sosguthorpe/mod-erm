@@ -372,7 +372,7 @@ class TitleInstanceResolverService implements DataBinder{
       }
 
       if (validateCitationType(citation)) {
-        if (title.type.value != citation.instanceMedia ) {
+        if ((title.type == null) || (title.type.value != citation.instanceMedia)) {
           title.typeFromString = citation.instanceMedia
           title.markDirty()
         }
