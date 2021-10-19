@@ -21,7 +21,7 @@ def resource_title = null;
 def license_details = null;
 def pti_url = null;
 
-def suppress = false;
+def the_suppress_value = false;
 
 // Get license details
 RemoteLicenseLink controlling_license = null;
@@ -29,11 +29,11 @@ RemoteLicenseLink controlling_license = null;
 // Any differing logic between direct/package entitlement
 if ( entitlementLogEntry.packageEntitlement != null ) {
   controlling_license = entitlementLogEntry.packageEntitlement.owner.getControllingLicense()
-  suppress = entitlementLogEntry.packageEntitlement.suppressFromDiscovery
+  the_suppress_value = entitlementLogEntry.packageEntitlement.suppressFromDiscovery
 }
 else if ( entitlementLogEntry.directEntitlement != null ) {
   controlling_license = entitlementLogEntry.directEntitlement.owner.getControllingLicense()
-  suppress = entitlementLogEntry.packageEntitlement.suppressFromDiscovery
+  the_suppress_value = entitlementLogEntry.packageEntitlement.suppressFromDiscovery
 }
 
 // Try to load the license details
@@ -80,7 +80,7 @@ if ( res instanceof PackageContentItem ) {
     pci.pti.suppressFromDiscovery ||
     pci.pti.titleInstance.suppressFromDiscovery
   ) {
-    suppress = true
+    the_suppress_value = true
   }
 }
 
@@ -95,7 +95,7 @@ json {
           'title' resource_title
        'coverage' coverage_summary
     'identifiers' resource_identifiers
-       'suppress' suppress
+       'suppress' the_suppress_value
            'type' resource_type
         'license' license_details
       'licenseId' controlling_license?.remoteId
