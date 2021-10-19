@@ -29,11 +29,11 @@ RemoteLicenseLink controlling_license = null;
 // Any differing logic between direct/package entitlement
 if ( entitlementLogEntry.packageEntitlement != null ) {
   controlling_license = entitlementLogEntry.packageEntitlement.owner.getControllingLicense()
-  the_suppress_value = entitlementLogEntry.packageEntitlement.suppressFromDiscovery
+  the_suppress_value = entitlementLogEntry.packageEntitlement?.suppressFromDiscovery ?: false
 }
 else if ( entitlementLogEntry.directEntitlement != null ) {
   controlling_license = entitlementLogEntry.directEntitlement.owner.getControllingLicense()
-  the_suppress_value = entitlementLogEntry.packageEntitlement.suppressFromDiscovery
+  the_suppress_value = entitlementLogEntry.directEntitlement?.suppressFromDiscovery ?: false
 }
 
 // Try to load the license details
