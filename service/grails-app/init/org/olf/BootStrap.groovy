@@ -10,6 +10,14 @@ class BootStrap {
   JobRunnerService jobRunnerService
 
   def init = { servletContext ->
+
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        log.info("mod-agreements shutdown hook - process terminating");
+      }
+    });
+
     log.info("${grailsApplication.getMetadata().getApplicationName()}  (${grailsApplication.config?.info?.app?.version}) initialising");
     log.info("          build number -> ${grailsApplication.metadata['build.number']}");
     log.info("        build revision -> ${grailsApplication.metadata['build.git.revision']}");
@@ -18,8 +26,10 @@ class BootStrap {
     log.info("            build time -> ${grailsApplication.metadata['build.time']}");
     log.info("            build host -> ${grailsApplication.metadata['build.host']}");
     log.info("         Base JDBC URL -> ${grailsApplication.config.dataSource.url} / ${grailsApplication.config.dataSource.username}");
+
     jobRunnerService.populateJobQueue()
   }
+
   def destroy = {
   }
 }
