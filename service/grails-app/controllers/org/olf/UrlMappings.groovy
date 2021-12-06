@@ -184,6 +184,8 @@ class UrlMappings {
 
     "/erm/entitlementLogEntry" ( resources: 'EntitlementLogEntry')
 
+    "/erm/settings/appSettings" (resources: 'setting');
+
     "/dashboard/definitions" (controller: 'dashboardDefinitions', action: 'getDefinitions' ,method: 'GET')
   }
 }
