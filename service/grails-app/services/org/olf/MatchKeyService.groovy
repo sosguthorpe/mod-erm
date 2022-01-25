@@ -168,7 +168,7 @@ class MatchKeyService {
 
       // If there was no matching key then simply create a new one
       if (!resourceMatchKey) {
-        resource.addToMatchKeys(new MatchKey(mk))}
+        resource.addToMatchKeys(new MatchKey(mk))
       } else if (mk.value != resourceMatchKey.value) {
         // Mismatched value, update
         resourceMatchKey.value = mk.value
