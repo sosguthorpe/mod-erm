@@ -82,8 +82,7 @@ class PackageIngestService implements DataBinder {
                           rectype: RemoteKB.RECTYPE_PACKAGE,
                           active: Boolean.TRUE,
                           readonly:readOnly,
-                          // TODO ERM-1799 REMOVE THIS BEFORE MERGING
-                          trustedSourceTI:true).save(flush:true, failOnError:true)
+                          trustedSourceTI:false).save(flush:true, failOnError:true)
       }
 
       if (trustedSourceTI == null) {
