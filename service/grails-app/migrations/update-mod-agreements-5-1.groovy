@@ -60,4 +60,17 @@ databaseChangeLog = {
       referencedTableName: "erm_resource"
     )
   }
+
+  changeSet(author: "efreestone (manual)", id: "20220127-1024-001") {
+    createTable(tableName: "identifier_reassignment_job") {
+      column(name: "id", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+    }
+  }
+
+  changeSet(author: "efreestone (manual)", id: "20220127-1024-002") {
+    addPrimaryKey(columnNames: "id", constraintName: "identifier_reassignment_jobPK", tableName: "identifier_reassignment_job")
+  }
+
 }

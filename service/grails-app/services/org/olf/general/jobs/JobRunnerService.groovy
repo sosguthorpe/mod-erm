@@ -41,6 +41,7 @@ class JobRunnerService implements EventPublisher {
   DocumentAttachmentService documentAttachmentService
   ImportService importService
   ComparisonService comparisonService
+  IdentifierService identifierService
   SessionFactory sessionFactory
 
   // Access to the inputStream of FileObjects is now via this service instead of directly
