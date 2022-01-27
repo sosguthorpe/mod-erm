@@ -14,7 +14,6 @@ import grails.gorm.transactions.Transactional
 import grails.util.GrailsNameUtils
 import groovy.util.logging.Slf4j
 
-import org.grails.web.json.JSONObject
 import groovy.json.JsonOutput
 import com.k_int.web.toolkit.files.FileUpload
 import com.k_int.web.toolkit.files.FileUploadService
@@ -72,7 +71,7 @@ class PersistentJobController extends OkapiTenantAwareController<PersistentJob> 
 
     if (!objToBind?.fileUpload && objToBind?.payload) {
       // We have a RAW JSON payload, convert to FileUpload and store on Job
-      MultipartFile multipartFile = jsonPayloadToMultipartFile(objToBind)
+      MultipartFile multipartFile = jsonPayloadToMultipartFile(objToBind?.payload)
 
       // With a transaction, attempt to upload file and store on job
       FileUpload.withTransaction {
@@ -104,7 +103,7 @@ class PersistentJobController extends OkapiTenantAwareController<PersistentJob> 
     respond instance
   }
 
-  MultipartFile jsonPayloadToMultipartFile(JSONObject payload) {
+  MultipartFile jsonPayloadToMultipartFile(def payload) { // This payload could be a JSONObject or JSONArray
     FileItem fileItem = new DiskFileItemFactory().createItem(
       "payload",
       "application/json",

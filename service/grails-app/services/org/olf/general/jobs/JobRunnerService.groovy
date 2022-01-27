@@ -17,6 +17,7 @@ import org.olf.ComparisonService
 import org.olf.CoverageService
 import org.olf.DocumentAttachmentService
 import org.olf.ImportService
+import org.olf.IdentifierService
 import org.olf.KbHarvestService
 
 import com.k_int.okapi.OkapiTenantAdminService
