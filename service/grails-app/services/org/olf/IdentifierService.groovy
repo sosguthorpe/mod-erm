@@ -36,8 +36,6 @@ public class IdentifierService {
     It will attempt to "reassign" each IdentifierOccurence in turn to the new TitleInstance
     Reassignation will actually consist of the IdentifierOccurence in question
     being marked as "ERROR", and a new Occurrence being created on the targetTI
-
-    TODO Ask Ian about this
   */
   def reassignFromFile (final ArrayList<Map<String, String>> reassignmentQueue) {
     reassignmentQueue.each{reassignmentMap ->
@@ -77,7 +75,7 @@ public class IdentifierService {
                 status: IdentifierOccurrence.lookupOrCreateStatus('approved')
               ).save(failOnError: true)
 
-              log.info("IdentifierOccurrence for TI (${initialTI}) marked as ERROR, new IdentifierOccurrence created on TI (${targetTI})")
+              log.info("(${reassignmentMap.identifierNamespace}:${reassignmentMap.identifierValue}) IdentifierOccurrence for TI (${initialTI}) marked as ERROR, new IdentifierOccurrence created on TI (${targetTI})")
 
               break;
             default:
