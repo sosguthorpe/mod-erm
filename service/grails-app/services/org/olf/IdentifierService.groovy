@@ -30,9 +30,9 @@ public class IdentifierService {
 
     TODO Ask Ian about this
   */
-  def reassignFromFile (final ArrayList<Map> reassignmentQueue) {
+  def reassignFromFile (final ArrayList<Map<String, String>> reassignmentQueue) {
     reassignmentQueue.each{ reassignmentMap ->
-      IdentifierOccurence.withNewTransaction{
+      IdentifierOccurrence.withNewTransaction{
         TitleInstance initialTI = TitleInstance.get(reassignmentMap.initialTitleInstanceId)
         TitleInstance targetTI = TitleInstance.get(reassignmentMap.targetTitleInstanceId)
         
@@ -42,7 +42,7 @@ public class IdentifierService {
 
           // Now look up an IdentifierOccurrence for the correct set of information
           // TODO SQL FOR THIS
-          IdentifierOccurence identifierOccurrence
+          IdentifierOccurrence identifierOccurrence
           //IdentifierOccurence identifierOccurrence = IdentifierOccurence.get(reassignmentMap.identifierOccurrenceId)
 
           if (identifierOccurrence != null) {
@@ -53,10 +53,10 @@ public class IdentifierService {
         } else {
           String errorString = "Error(s) fetching specified objects:"
           if (initialTI == null) {
-            errorString += " TitleInstance could not be found for initialTitleInstanceId (${initialTitleInstanceId})."
+            errorString += " TitleInstance could not be found for initialTitleInstanceId (${reassignmentMap.initialTitleInstanceId})."
           }
           if (targetTI == null) {
-            errorString += " TitleInstance could not be found for targetTitleInstanceId (${targetTitleInstanceId})."
+            errorString += " TitleInstance could not be found for targetTitleInstanceId (${reassignmentMap.targetTitleInstanceId})."
           }
 
           log.error(errorString)
