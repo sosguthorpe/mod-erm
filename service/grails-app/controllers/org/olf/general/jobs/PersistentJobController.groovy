@@ -22,6 +22,8 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.commons.CommonsMultipartFile
 
+import java.time.Instant
+
 
 @Slf4j
 @CurrentTenant
@@ -70,8 +72,27 @@ class PersistentJobController extends OkapiTenantAwareController<PersistentJob> 
     def objToBind = getObjectToBind();
 
     if (!objToBind?.fileUpload && objToBind?.payload) {
+      // If a fileTitle was passed along with payload, use that as title, else construct one
+      String fileName = objToBind?.fileTitle ?: "JSON payload for ${params.type} at ${Instant.now()}"
+
       // We have a RAW JSON payload, convert to FileUpload and store on Job
-      MultipartFile multipartFile = jsonPayloadToMultipartFile(objToBind?.payload)
+      FileItem fileItem = new DiskFileItemFactory().createItem(
+        "payload",
+        "application/json",
+        false,
+        fileName
+      );
+      
+      try {
+        InputStream is = new ByteArrayInputStream(JsonOutput.toJson(objToBind?.payload)?.getBytes("UTF-8"))
+        OutputStream out = fileItem.getOutputStream()
+
+        is.transferTo(out)
+      } catch (Exception e) {
+          throw new IllegalArgumentException("Invalid file: " + e, e);
+      }
+
+      MultipartFile multipartFile = new CommonsMultipartFile(fileItem);
 
       // With a transaction, attempt to upload file and store on job
       FileUpload.withTransaction {
@@ -102,29 +123,6 @@ class PersistentJobController extends OkapiTenantAwareController<PersistentJob> 
     saveResource instance
     respond instance
   }
-
-  MultipartFile jsonPayloadToMultipartFile(def payload) { // This payload could be a JSONObject or JSONArray
-    FileItem fileItem = new DiskFileItemFactory().createItem(
-      "payload",
-      "application/json",
-      false,
-      "jsonPayload"
-    );
-    
-    try {
-      InputStream is = new ByteArrayInputStream(JsonOutput.toJson(payload)?.getBytes("UTF-8"))
-      OutputStream out = fileItem.getOutputStream()
-
-      is.transferTo(out)
-    } catch (Exception e) {
-        throw new IllegalArgumentException("Invalid file: " + e, e);
-    }
-
-    MultipartFile multipartFile = new CommonsMultipartFile(fileItem);
-
-    multipartFile
-  }
-
 
   def listTyped () {
     try {
