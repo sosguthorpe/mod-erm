@@ -15,7 +15,7 @@ class IdentifierReassignmentJob extends PersistentJob implements MultiTenant<Ide
     
     final Closure theWork = { final String eventId, final String tenantId ->
     
-      log.info "Running Package Import Job"
+      log.info "Running Identifier Reassignment Job"
       PersistentJob.withTransaction {
         // We should ensure the job is read into the current session.
         // This closure will probably execute in a future session

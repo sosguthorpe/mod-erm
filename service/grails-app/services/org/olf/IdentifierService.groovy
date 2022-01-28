@@ -9,8 +9,17 @@ import groovy.util.logging.Slf4j
 import grails.gorm.transactions.Transactional
 
 @Slf4j
-@CompileStatic
+// Cannot @CompileStatic while using DomainClass.lookupOrCreate${upperName} static method for RefdataValues
 public class IdentifierService {
+
+  private static final String IDENTIFIER_OCCURRENCE_MATCH_HQL = '''
+    SELECT io from IdentifierOccurrence as io
+    WHERE 
+      io.title.id = :initialTitleInstanceId AND
+      io.identifier.ns.value = :identifierNamespace AND
+      io.identifier.value = :identifierValue AND
+      io.status.value = :status
+  '''
 
   /*
     This method accepts an ArrayList of Maps of the form:
@@ -31,35 +40,56 @@ public class IdentifierService {
     TODO Ask Ian about this
   */
   def reassignFromFile (final ArrayList<Map<String, String>> reassignmentQueue) {
-    reassignmentQueue.each{ reassignmentMap ->
+    reassignmentQueue.each{reassignmentMap ->
       IdentifierOccurrence.withNewTransaction{
         TitleInstance initialTI = TitleInstance.get(reassignmentMap.initialTitleInstanceId)
         TitleInstance targetTI = TitleInstance.get(reassignmentMap.targetTitleInstanceId)
         
         // Check that we could find the specified titleinstances
         if (targetTI != null & initialTI != null) {
-          log.info("LOGDEBUG WE GOT HERE")
-
           // Now look up an IdentifierOccurrence for the correct set of information
-          // TODO SQL FOR THIS
-          IdentifierOccurrence identifierOccurrence
-          //IdentifierOccurence identifierOccurrence = IdentifierOccurence.get(reassignmentMap.identifierOccurrenceId)
+          List<IdentifierOccurrence> identifierOccurrences = IdentifierOccurrence.executeQuery(
+            IDENTIFIER_OCCURRENCE_MATCH_HQL,
+            [
+              initialTitleInstanceId: reassignmentMap.initialTitleInstanceId,
+              identifierNamespace: reassignmentMap.identifierNamespace,
+              identifierValue: reassignmentMap.identifierValue,
+              status: 'approved'
+            ]
+          )
+          // Should only be one of these -- check and error out otherwise
+          switch (identifierOccurrences.size()) {
+            case 0:
+              log.error("IdentifierOccurrence could not be found for (${reassignmentMap.identifierNamespace}:${reassignmentMap.identifierValue}) on initial TitleInstance.")
+              break;
+            case 1:
+              IdentifierOccurrence identifierOccurrence = identifierOccurrences[0];
+              // We have identified the single IO we wish to "move" to another TI
 
-          if (identifierOccurrence != null) {
-            log.debug("LOGDEBUG AND WE ALSO GOT HERE")
-          } else {
-            log.error("IdentifierOccurrence could not be found for (${reassignmentMap.identifierNamespace}:${reassignmentMap.identifierValue}) on initial TitleInstance.")
+              // First we mark the current identifier occurrence as "error"
+              identifierOccurrence.status = IdentifierOccurrence.lookupOrCreateStatus('error');
+              identifierOccurrence.save(failOnError: true)
+
+              // Next we create a new IdentifierOccurrence on the targetTI
+              IdentifierOccurrence newIdentifierOccurrence = new IdentifierOccurrence(
+                identifier: identifierOccurrence.identifier,
+                title: targetTI,
+                status: IdentifierOccurrence.lookupOrCreateStatus('approved')
+              ).save(failOnError: true)
+
+              log.info("IdentifierOccurrence for TI (${initialTI}) marked as ERROR, new IdentifierOccurrence created on TI (${targetTI})")
+
+              break;
+            default:
+              log.error("Multiple valid IdentifierOccurrences matched for (${reassignmentMap.identifierNamespace}:${reassignmentMap.identifierValue}) on initial TitleInstance (${initialTI}).")
           }
         } else {
-          String errorString = "Error(s) fetching specified objects:"
           if (initialTI == null) {
-            errorString += " TitleInstance could not be found for initialTitleInstanceId (${reassignmentMap.initialTitleInstanceId})."
+            log.error("TitleInstance could not be found for initialTitleInstanceId (${reassignmentMap.initialTitleInstanceId}).")
           }
           if (targetTI == null) {
-            errorString += " TitleInstance could not be found for targetTitleInstanceId (${reassignmentMap.targetTitleInstanceId})."
+            log.error("TitleInstance could not be found for targetTitleInstanceId (${reassignmentMap.targetTitleInstanceId}).")
           }
-
-          log.error(errorString)
         }
       }
     }
