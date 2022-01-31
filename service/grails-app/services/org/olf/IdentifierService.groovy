@@ -51,7 +51,7 @@ public class IdentifierService {
             [
               initialTitleInstanceId: reassignmentMap.initialTitleInstanceId,
               identifierNamespace: reassignmentMap.identifierNamespace,
-              identifierValue: reassignmentMap.identifierValue,
+              identifierValue: reassignmentMap.identifierValue.toLowerCase(),
               status: 'approved'
             ]
           )
