@@ -17,6 +17,7 @@ import org.olf.ComparisonService
 import org.olf.CoverageService
 import org.olf.DocumentAttachmentService
 import org.olf.ImportService
+import org.olf.IdentifierService
 import org.olf.KbHarvestService
 
 import com.k_int.okapi.OkapiTenantAdminService
@@ -41,6 +42,7 @@ class JobRunnerService implements EventPublisher {
   DocumentAttachmentService documentAttachmentService
   ImportService importService
   ComparisonService comparisonService
+  IdentifierService identifierService
   SessionFactory sessionFactory
 
   // Access to the inputStream of FileObjects is now via this service instead of directly

@@ -344,9 +344,10 @@ class IdFirstTIRSImpl extends BaseTIRS implements DataBinder, TitleInstanceResol
                 result << io.title
               }
             }
-            else {
-              throw new RuntimeException("Match on non-approved");
-            }
+            // ERM-1986 Don't throw on non approved occurrence existing, just skip
+            //else {
+            //  throw new RuntimeException("Match on non-approved");
+            //}
           }
         }
       }

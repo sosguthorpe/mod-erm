@@ -61,6 +61,18 @@ databaseChangeLog = {
     )
   }
 
+  changeSet(author: "efreestone (manual)", id: "20220127-1024-001") {
+    createTable(tableName: "identifier_reassignment_job") {
+      column(name: "id", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+    }
+  }
+
+  changeSet(author: "efreestone (manual)", id: "20220127-1024-002") {
+    addPrimaryKey(columnNames: "id", constraintName: "identifier_reassignment_jobPK", tableName: "identifier_reassignment_job")
+  }
+
   changeSet(author: "ianibbo (manual)", id: "202201261047-001") {
     addColumn (tableName: "custom_property_definition" ) {
       column(name: "pd_ctx", type: "VARCHAR(255)")
