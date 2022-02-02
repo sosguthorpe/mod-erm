@@ -51,8 +51,6 @@ if ( controllerName == 'subscriptionAgreement' ) {
 def altNames = subscriptionAgreement.alternateNames?.toSorted { AlternateName a, AlternateName b -> a.name <=> b.name } ?: []
 
 json g.render(subscriptionAgreement, [expand: should_expand, excludes:['alternateNames']]) {
-  startDate subscriptionAgreement.startDate
-  endDate subscriptionAgreement.endDate
   cancellationDeadline subscriptionAgreement.cancellationDeadline
 
   if (actionName.toLowerCase() == 'export' && subscriptionAgreement.respondsTo('getResourceList')) {
