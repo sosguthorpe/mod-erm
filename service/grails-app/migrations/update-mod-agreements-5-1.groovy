@@ -87,4 +87,19 @@ databaseChangeLog = {
     }
   }
 
+
+  changeSet(author: "efreestone (manual)", id: "20220207-1310-001") {
+    createTable(tableName: "resource_rematch_job") {
+      column(name: "id", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+    }
+  }
+
+  changeSet(author: "efreestone (manual)", id: "20220208-1107-001") {
+    addColumn (tableName: "identifier_occurrence" ) {
+      column(name: "io_date_created", type: "TIMESTAMP")
+      column(name: "io_last_updated", type: "TIMESTAMP")
+    }
+  }
 }
