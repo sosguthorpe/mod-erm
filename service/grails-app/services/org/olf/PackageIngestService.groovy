@@ -186,13 +186,13 @@ class PackageIngestService implements DataBinder {
                   ).save(failOnError: true)
                   
                   // ERM-1799 Ensure initial matchKeyCreation
-                  matchKeyService.upsertMatchKeys(pti, matchKeys)
+                  matchKeyService.updateMatchKeys(pti, matchKeys)
                 } else if (trustedSourceTI) {
                   /*
                    * We may need to update the match key information
                    * from the incoming package for existing PTIs
                    */
-                  matchKeyService.upsertMatchKeys(pti, matchKeys)
+                  matchKeyService.updateMatchKeys(pti, matchKeys)
                 }
 
                 // Lookup or create a package content item record for this title on this platform in this package
@@ -214,7 +214,7 @@ class PackageIngestService implements DataBinder {
                   )
 
                   // ERM-1799, match keys need adding to PCI 
-                  matchKeyService.upsertMatchKeys(pci, matchKeys, false)
+                  matchKeyService.updateMatchKeys(pci, matchKeys, false)
                   isNew = true
                 }
                 else {
@@ -226,7 +226,7 @@ class PackageIngestService implements DataBinder {
                     * We may need to update the match key information
                     * from the incoming package for existing PCIs
                     */
-                    matchKeyService.upsertMatchKeys(pci, matchKeys, false)
+                    matchKeyService.updateMatchKeys(pci, matchKeys, false)
                   }
                 }
 

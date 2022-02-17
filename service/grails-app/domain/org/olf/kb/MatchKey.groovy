@@ -25,4 +25,8 @@ public class MatchKey implements MultiTenant<MatchKey> {
       key(nullable:false, blank:false)
     value(nullable:true, blank:false)
   }
+
+  String toString() {
+    "MatchKey:${id} (${key}: ${value}) on resource (${resource})"
+  }
 }

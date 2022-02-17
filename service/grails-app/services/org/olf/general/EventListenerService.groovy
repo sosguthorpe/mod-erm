@@ -5,10 +5,12 @@ import groovy.util.logging.Slf4j
 
 import org.olf.kb.ErmResource
 import org.olf.kb.IdentifierOccurrence
+import org.olf.kb.MatchKey
+import org.olf.kb.TitleInstance
 import org.olf.kb.CoverageStatement
 
 import org.olf.EntitlementService
-import org.olf.KbManagementService
+import org.olf.ErmResourceService
 
 import grails.gorm.transactions.Transactional
 
@@ -28,7 +30,7 @@ import org.grails.datastore.mapping.engine.event.PostUpdateEvent
 public class EventListenerService implements ApplicationListener {
 
   EntitlementService entitlementService
-  KbManagementService kbManagementService
+  ErmResourceService ermResourceService
 
   void afterUpdate(PostUpdateEvent event) {
     if (event.entityObject instanceof ErmResource) {
@@ -39,7 +41,16 @@ public class EventListenerService implements ApplicationListener {
     if (event.entityObject instanceof IdentifierOccurrence) {
       IdentifierOccurrence io = (IdentifierOccurrence) event.entityObject
       // Identifier has changed, add the TI to the queue.
-      kbManagementService.addTiToQueue(io.title?.id)
+      ermResourceService.addTiToQueue(io.title)
+    }
+
+    /* Match keys are technically not updated currently.
+     * We treat key/value as a static pair and insert delete accordingly.
+     * This line is simply for futureproofing/consistency
+     */
+    if (event.entityObject instanceof MatchKey) {
+      MatchKey mk = (MatchKey) event.entityObject
+      ermResourceService.addTiToQueue(mk.resource)
     }
   }
 
@@ -48,12 +59,22 @@ public class EventListenerService implements ApplicationListener {
       ErmResource res = (ErmResource) event.entityObject
       entitlementService.handleErmResourceChange(res)
     }
+
+    if (event.entityObject instanceof MatchKey) {
+      MatchKey mk = (MatchKey) event.entityObject
+      ermResourceService.addTiToQueue(mk.resource)
+    }
   }
 
   void afterDelete(PostDeleteEvent event) {
     if (event.entityObject instanceof ErmResource) {
       ErmResource res = (ErmResource) event.entityObject
       entitlementService.handleErmResourceChange(res)
+    }
+
+    if (event.entityObject instanceof MatchKey) {
+      MatchKey mk = (MatchKey) event.entityObject
+      ermResourceService.addTiToQueue(mk.resource)
     }
   }
 

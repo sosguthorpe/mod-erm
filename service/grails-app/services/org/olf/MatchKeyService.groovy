@@ -136,21 +136,30 @@ class MatchKeyService implements DataBinder{
     with mismatched values will be updated.
     NOTE this function does not care about "trusted" sources, that logic belongs elsewhere
    */
-  void upsertMatchKeys(ErmResource resource, List<Map> matchKeyData, boolean saveOnExit = true) {
-    /*
-     * ERM-1799 What do we do if there's match keys on the resource
-     * which are missing from incoming data? -- Do we ignore deletion or allow it? 
-     */
-    matchKeyData.each {mk -> 
-      def resourceMatchKey = resource.matchKeys.find {rmk -> rmk.key == mk.key}
-
-      // If there was no matching key then simply create a new one
+  void updateMatchKeys(ErmResource resource, List<Map> matchKeyData, boolean saveOnExit = true) {
+    // Add any new match keys to resource
+    matchKeyData.each {mk ->
+      def resourceMatchKey = resource.matchKeys?.find {rmk -> (rmk.key == mk.key && rmk.value == mk.value)}
       if (!resourceMatchKey) {
+        // Add to resource
         resource.addToMatchKeys(new MatchKey(mk))
-      } else if (mk.value != resourceMatchKey.value) {
-        // Mismatched value, update
-        resourceMatchKey.value = mk.value
       }
+    }
+
+    // Remove any match keys not present in upsert data
+    List<MatchKey> matchKeysForRemoval = []
+
+    resource.matchKeys?.each {rmk -> 
+      def matchKey = matchKeyData?.find {mk -> (mk.key == rmk.key && mk.value == rmk.value)}
+      if (!matchKey) {
+        // Mark for removal from resource
+        matchKeysForRemoval.add(rmk)
+      }
+    }
+
+    // Remove outside of each to avoid ConcurrentModificationException
+    matchKeysForRemoval.each {mkfr ->
+      resource.removeFromMatchKeys(mkfr)
     }
 
     if (saveOnExit) {
@@ -222,7 +231,7 @@ class MatchKeyService implements DataBinder{
 
     // Upsert generated match keys
     PackageContentItem.withNewTransaction{
-      upsertMatchKeys(pci, matchKeys, true)
+      updateMatchKeys(pci, matchKeys, true)
     }
   }
 
