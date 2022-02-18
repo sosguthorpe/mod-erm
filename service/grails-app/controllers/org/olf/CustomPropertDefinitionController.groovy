@@ -63,12 +63,13 @@ class CustomPropertyDefinitionController extends OkapiTenantAwareController<Cust
   }
 
   List<String> fetchContexts() {
-    List<String> contexts = CustomPropertyDefinition.createCriteria().list() {
+    List<String> contexts = CustomPropertyDefinition.createCriteria().list {
+      isNotNull('ctx')
+
       projections {
         distinct 'ctx'
       }
     }
-
     respond contexts
   }
 }
