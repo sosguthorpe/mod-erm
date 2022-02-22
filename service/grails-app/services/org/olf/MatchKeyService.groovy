@@ -1,33 +1,16 @@
 package org.olf
 
-import java.util.concurrent.TimeUnit
-
 import org.olf.dataimport.internal.PackageContentImpl
-import org.olf.dataimport.internal.PackageSchema
-import org.olf.dataimport.internal.PackageSchema.IdentifierSchema
 import org.olf.dataimport.internal.PackageSchema.ContentItemSchema
-import org.olf.dataimport.erm.Identifier
-
-import org.olf.IdentifierService
-
-import org.olf.kb.RemoteKB
 import org.olf.kb.ErmResource
-import org.olf.kb.TitleInstance
-import org.olf.kb.PackageContentItem
-import org.olf.kb.MatchKey
 import org.olf.kb.IdentifierOccurrence
-
-
-import org.slf4j.MDC
-
-import grails.util.GrailsNameUtils
-import grails.web.databinding.DataBinder
-import org.springframework.validation.BindingResult
-import groovy.util.logging.Slf4j
-
 import org.olf.kb.MatchKey
+import org.olf.kb.PackageContentItem
+import org.olf.kb.TitleInstance
+import org.springframework.validation.BindingResult
 
-import grails.plugin.json.builder.JsonOutput
+import grails.web.databinding.DataBinder
+import groovy.util.logging.Slf4j
 
 @Slf4j
 class MatchKeyService implements DataBinder{
@@ -137,11 +120,13 @@ class MatchKeyService implements DataBinder{
     NOTE this function does not care about "trusted" sources, that logic belongs elsewhere
    */
   void updateMatchKeys(ErmResource resource, List<Map> matchKeyData, boolean saveOnExit = true) {
+    def changed = 0
     // Add any new match keys to resource
     matchKeyData.each {mk ->
       def resourceMatchKey = resource.matchKeys?.find {rmk -> (rmk.key == mk.key && rmk.value == mk.value)}
       if (!resourceMatchKey) {
         // Add to resource
+        changed++
         resource.addToMatchKeys(new MatchKey(mk))
       }
     }
@@ -153,6 +138,7 @@ class MatchKeyService implements DataBinder{
       def matchKey = matchKeyData?.find {mk -> (mk.key == rmk.key && mk.value == rmk.value)}
       if (!matchKey) {
         // Mark for removal from resource
+        changed++
         matchKeysForRemoval.add(rmk)
       }
     }
@@ -162,7 +148,8 @@ class MatchKeyService implements DataBinder{
       resource.removeFromMatchKeys(mkfr)
     }
 
-    if (saveOnExit) {
+    // Do not save resource if match keys have not changed
+    if (changed > 0 && saveOnExit) {
       resource.save(failOnError: true) // This save will cascade to all matchKeys
     }
   }
