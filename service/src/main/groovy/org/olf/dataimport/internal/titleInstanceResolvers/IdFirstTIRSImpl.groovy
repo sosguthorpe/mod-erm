@@ -109,7 +109,7 @@ class IdFirstTIRSImpl extends BaseTIRS implements DataBinder, TitleInstanceResol
     if ( candidate_list != null ) {
       switch ( num_matches ) {
         case(0):
-          log.debug("No title match, create new title")
+          log.debug("No title match, create new title ${citation}")
           result = createNewTitleInstance(citation)
           if (result != null) {
             // We assume that the incoming citation already has split ids and siblingIds
