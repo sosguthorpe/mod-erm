@@ -16,7 +16,7 @@ import org.olf.dataimport.internal.InternalPackageImpl
 import org.olf.kb.KBCacheUpdater
 import org.olf.general.jobs.NaiveMatchKeyAssignmentJob
 import org.olf.general.jobs.PersistentJob
-
+import grails.gorm.transactions.Transactional
 import java.time.Instant
 
 @Slf4j
@@ -124,6 +124,7 @@ class AdminController implements DataBinder{
   /**
    * Trigger migration of uploaded LOB objects from PostgresDB to configured S3/MinIO
    */
+  @Transactional
   public triggerDocMigration() {
     def result = [:]
     log.debug("AdminController::triggerDocMigration");
