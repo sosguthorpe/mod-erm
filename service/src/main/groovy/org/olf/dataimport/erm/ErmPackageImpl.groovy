@@ -18,6 +18,10 @@ class ErmPackageImpl implements PackageHeaderSchema, PackageSchema, Validateable
   String name
   PackageProvider packageProvider
   Boolean trustedSourceTI
+  LocalDate sourceDataCreated
+  LocalDate sourceDataUpdated
+  String availabilityScope
+  String lifecycleStatus 
   List<Identifier> identifiers
 
   Set<ContentItem> contentItems = []
@@ -75,6 +79,26 @@ class ErmPackageImpl implements PackageHeaderSchema, PackageSchema, Validateable
   @Override
   public Boolean getTrustedSourceTI() {
     trustedSourceTI
+  }
+  
+  @Override
+  public LocalDate getSourceDataCreated() {
+    sourceDataCreated
+  } 
+  
+  @Override
+  public LocalDate getSourceDataUpdated() {
+    sourceDataUpdated
+  }  
+  
+  @Override
+  public String getAvailabilityScope() {
+    availabilityScope
+  }  
+  
+  @Override
+  public String getLifecycleStatus() {
+    lifecycleStatus
   }
 
   @Override
