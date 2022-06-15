@@ -7,6 +7,8 @@ import org.olf.dataimport.internal.PackageSchema.ContentItemSchema
 import org.olf.dataimport.internal.PackageSchema.CoverageStatementSchema
 import org.olf.kb.Embargo
 import org.olf.kb.PackageContentItem
+import org.olf.kb.AlternateResourceName
+import org.olf.kb.ContentType
 import org.olf.kb.Pkg
 import org.olf.kb.Platform
 import org.olf.kb.PlatformTitleInstance
@@ -129,6 +131,15 @@ class PackageIngestService implements DataBinder {
                vendor: vendor).save(flush:true, failOnError:true)
                MDC.put('packageSource', pkg.source.toString())
                MDC.put('packageReference', pkg.reference.toString())
+               
+               (package_data?.header?.contentTypes ?: []).each { 
+                 pkg.addToContentTypes(new ContentType([contentType: ContentType.lookupOrCreateContentType(it.contentType)]))
+               }
+
+               (package_data?.header?.alternateResourceNames ?: []).each {
+                 pkg.addToAlternateResourceNames(new AlternateResourceName([name: it.name]))
+               }
+               pkg.save(failOnError: true)
         } else {
           log.info("Not adding package '${package_data.header.packageName}' because status '${package_data.header.status}' doesn't match 'Current' or 'Expected'")
           skipPackage = true
