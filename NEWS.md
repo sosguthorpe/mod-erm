@@ -1,4 +1,25 @@
-## 5.2.0 In progress
+## 5.2.0 2022-06-29
+  * ERM-2219 Description property missing from package schema
+  * ERM-2218 Removing values from multi-valued custom property in UI does not update the values
+  * ERM-2209 New package metadata fields give errors on null
+  * ERM-2201 Error on attempting to render agreement with a supplementary property
+  * ERM-2174 Invalid JSON returned for some entitlementOptions
+  * ERM-2172 Populate extended Package metadata from GOKb data (hasMany properties)
+  * ERM-2124 Add multi-value support to custom properties
+  * ERM-2094 Populate GOKb UUID and ID as package identifier
+  * ERM-2092 Include package IDs in exports
+  * ERM-2069 mod-agreements Grails wrapper SAXParseException
+  * ERM-2059 Populate extended Package metadata from GOKb data
+  * ERM-2046 Support package identifiers
+  * ERM-2045 Extend Package data model to store additional information
+  * ERM-2044 Ability to make custom properties deprecated
+  * ERM-2042 Duplicating agreement/license inc. documents moves files from original to new agreement/license
+  * ERM-1986 Move identifiers between title instances
+  * ERM-1981 Add version property for Subscription Agreements
+  * ERM-1850 In e-resources search and sort results only include results that have entitlementOptions
+  * ERM-778 Add Date type to customProperties
+  * Removed GOKb_TEST from sample data
+  * Removed default perPage 100 in urlMappings for customPropertyDefinitions
 
 ## 5.1.0 2022-03-03
   * ERM-2036 Remove 'is not' option from Organization filter in Agreements simple search
