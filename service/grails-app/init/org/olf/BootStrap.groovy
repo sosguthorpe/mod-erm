@@ -33,7 +33,9 @@ class BootStrap {
     log.info("    default_aws_region -> ${grailsApplication.config.kiwt?.filestore?.aws_region}");
     log.info("       default_aws_url -> ${grailsApplication.config.kiwt?.filestore?.aws_url}");
     log.info("    default_aws_bucket -> ${grailsApplication.config.kiwt?.filestore?.aws_bucket}");
-    
+    log.info("    okapi_service_host -> ${grailsApplication.config.okapi?.service?.host}");
+    log.info("    okapi_service_port -> ${grailsApplication.config.okapi?.service?.port}");
+
     Map<String, String> env = System.getenv();
     env.each { name,value ->
       log.info("    ENV: ${name}=\"${value}\"");
