@@ -6,6 +6,7 @@ import com.k_int.okapi.OkapiTenantAwareController
 
 import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
+import grails.gorm.transactions.Transactional
 
 
 /**
@@ -17,6 +18,16 @@ class EntitlementController extends OkapiTenantAwareController<EntitlementContro
 
   EntitlementController() {
     super(Entitlement)
+  }
+
+  @Transactional(readOnly=true)
+  def index(Integer max) {
+    super.index(max)
+  }
+
+  @Transactional(readOnly=true)
+  def show() {
+    super.show()
   }
   
   def external() {
