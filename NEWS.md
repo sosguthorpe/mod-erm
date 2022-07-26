@@ -1,4 +1,6 @@
 ## 5.3.0 In progress
+  * Extended logging
+  * Added readonly transaction scopes for read only operations in subscription agreements and entitlements
 
 ## 5.2.0 2022-06-29
   * ERM-2219 Description property missing from package schema
