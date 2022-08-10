@@ -1,3 +1,6 @@
+## 5.2.2 2022-08-10
+  * ERM-2305 Entitlement options not displaying
+
 ## 5.2.1 2022-07-26
   * Extended logging
   * Added readonly transaction scopes for read only operations in subscription agreements and entitlements
