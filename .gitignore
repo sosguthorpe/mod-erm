@@ -1,5 +1,5 @@
 /.*
 !.gitignore
 !/.okapi
-.DS_Store
 /bin/
+/tools/testing/zk-single-kafka-single
