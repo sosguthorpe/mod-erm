@@ -1,13 +1,11 @@
 package org.olf
 
-import org.olf.dataimport.erm.Identifier
 
 import org.olf.kb.TitleInstance
 import org.olf.kb.Pkg
 
 import org.olf.kb.IdentifierOccurrence
 import org.olf.kb.IdentifierNamespace
-import org.olf.kb.Identifier
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j

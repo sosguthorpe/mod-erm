@@ -41,7 +41,7 @@ class BootStrap {
       log.info("    ENV: ${name}=\"${value}\"");
     }
 
-    jobRunnerService.populateJobQueue()
+//    jobRunnerService.populateJobQueue()
   }
 
   def destroy = {
