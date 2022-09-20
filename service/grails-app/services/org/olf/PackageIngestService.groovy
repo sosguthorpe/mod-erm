@@ -50,6 +50,62 @@ class PackageIngestService implements DataBinder {
   }
 
   private static final def countChanges = ['accessStart', 'accessEnd']
+  
+  def updateContentTypes (String pkgId, PackageSchema package_data) {
+    Pkg pkg = Pkg.get(pkgId);
+    def contentTypes = package_data?.header?.contentTypes ?: []
+    // To avoid changing the object we're iterating over,
+    // we first iterate over the object to grab the items to remove,
+    // then iterate over _that_ list to remove them
+    def contentTypesToRemove = [];
+
+    pkg.contentTypes.each {
+      if (!contentTypes.contains(it.contentType.label)) {
+        contentTypesToRemove << it
+      }
+    }
+
+    contentTypesToRemove.each {
+      pkg.removeFromContentTypes(it)
+    }
+
+    contentTypes.each {def ct ->
+      if(!pkg.contentTypes?.collect {def pct -> pct.contentType.label }.contains(ct.contentType)) {
+        pkg.addToContentTypes(new ContentType([contentType: ContentType.lookupOrCreateContentType(ct.contentType)]))
+      }
+    }
+
+    pkg.save(failOnError: true)
+  }
+
+  def updateAlternateNames (String pkgId, PackageSchema package_data) {
+    Pkg pkg = Pkg.get(pkgId);
+
+    def resourceNames = package_data?.header?.alternateResourceNames ?: []
+    // To avoid changing the object we're iterating over,
+    // we first iterate over the object to grab the items to remove,
+    // then iterate over _that_ list to remove them
+    def alternateNamesToRemove = [];
+
+    pkg.alternateResourceNames.each {
+      if (!resourceNames.contains(it.name)) {
+        def arn_tbd = AlternateResourceName.findByName(it.name)
+        alternateNamesToRemove << arn_tbd
+      }
+    }
+
+    alternateNamesToRemove.each {
+      pkg.removeFromAlternateResourceNames(it)
+    }
+
+    resourceNames.each {def arn ->
+      if(!pkg.alternateResourceNames?.collect {def parn -> parn.name }.contains(arn.name)) {
+        pkg.addToAlternateResourceNames(new AlternateResourceName([name: arn.name]))
+      }
+    }
+
+    pkg.save(failOnError: true)
+  }
 
   /**
    * Load the paackage data (Given in the agreed canonical json package format) into the KB.
@@ -132,27 +188,39 @@ class PackageIngestService implements DataBinder {
                      remoteKb: kb,
                        vendor: vendor
           ).save(flush:true, failOnError:true)
-               MDC.put('packageSource', pkg.source.toString())
-               MDC.put('packageReference', pkg.reference.toString())
+          MDC.put('packageSource', pkg.source.toString())
+          MDC.put('packageReference', pkg.reference.toString())
                
-               (package_data?.header?.contentTypes ?: []).each { 
-                 pkg.addToContentTypes(new ContentType([contentType: ContentType.lookupOrCreateContentType(it.contentType)]))
-               }
+          (package_data?.header?.contentTypes ?: []).each { 
+            pkg.addToContentTypes(new ContentType([contentType: ContentType.lookupOrCreateContentType(it.contentType)]))
+          }
 
-               (package_data?.header?.alternateResourceNames ?: []).each {
-                 pkg.addToAlternateResourceNames(new AlternateResourceName([name: it.name]))
-               }
+          (package_data?.header?.alternateResourceNames ?: []).each {
+            pkg.addToAlternateResourceNames(new AlternateResourceName([name: it.name]))
+          }
 
-               (package_data?.header?.availabilityConstraints ?: []).each { 
-                 pkg.addToAvailabilityConstraints(new AvailabilityConstraint([body: AvailabilityConstraint.lookupOrCreateBody(it.body)]))
-               }
+          (package_data?.header?.availabilityConstraints ?: []).each { 
+            pkg.addToAvailabilityConstraints(new AvailabilityConstraint([body: AvailabilityConstraint.lookupOrCreateBody(it.body)]))
+          }
 
-               pkg.save(failOnError: true)
+          pkg.save(failOnError: true)
         } else {
           log.info("Not adding package '${package_data.header.packageName}' because status '${package_data.header.status}' doesn't match 'Current' or 'Expected'")
           skipPackage = true
           return
         }
+      } else {
+        pkg.sourceDataUpdated = package_data.header.sourceDataUpdated
+        pkg.lifecycleStatusFromString = package_data.header.lifecycleStatus
+        pkg.availabilityScopeFromString = package_data.header.availabilityScope
+        pkg.vendor = vendor
+        pkg.save(failOnError:true)
+
+        // Call separate methods for updating collections for code cleanliness
+        // These methods are responsible for their own saves
+        updateContentTypes(pkg.id, package_data)
+        updateAlternateNames(pkg.id, package_data)
+
       }
 
       // Update identifiers from citation
