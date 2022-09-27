@@ -1,3 +1,6 @@
+## 5.3.0 2022-09-27
+  * ERM-2345 Add federation logic
+
 ## 5.2.2 2022-08-10
   * ERM-2305 Entitlement options not displaying
 
