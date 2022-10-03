@@ -144,7 +144,7 @@ class PackageIngestService implements DataBinder {
     def urlsToRemove = [];
 
     pkg.packageDescriptionUrls.each {
-      if (!urls.contains(it.url.label)) {
+      if (!urls.contains(it.url)) {
         urlsToRemove << it
       }
     }
