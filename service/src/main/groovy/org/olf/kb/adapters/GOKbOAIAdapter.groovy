@@ -545,6 +545,10 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
     return false
   }
   
+  /*
+    This process has been turned off as of ERM-2370.
+    Keeping code here as legacy in case we want to turn it on again for some reason
+  */
   @CompileStatic(SKIP)
   public Map getTitleInstance(String source_name, String base_url, String goKbIdentifier, String type, String publicationType, String subType) {
     
@@ -587,6 +591,7 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
   
   // This method allows us to grab extra information from a title ingest stream
   // that isn't available on the package ingest stream
+  // Since ERM-2370, this has been replaced by information made available directly through the main ingest stream
   @CompileStatic(SKIP)
   private Map gokbToERMSecondary(GPathResult xml_gokb_record, String subType) {
     /* We take in the subType here as we may need to do different things
@@ -694,12 +699,18 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
       "instancePublicationMedia": pub_media,
       "sourceIdentifier": source_identifier,
       "instanceIdentifiers": instance_identifiers,
-      "siblingInstanceIdentifiers": sibling_identifiers
+      "siblingInstanceIdentifiers": sibling_identifiers,
+      "monographEdition": title?.editionStatement?.text(),
+      "monographVolume": title?.volumeNumber?.text(),
+      "firstAuthor": title?.firstAuthor?.text(),
+      "firstEditor": title?.firstEditor?.text(),
+      "dateMonographPublishedPrint": title?.dateFirstInPrint?.text(),
+      "dateMonographPublished": title?.dateFirstOnline?.text()
     ])
   }
 
   public boolean requiresSecondaryEnrichmentCall() {
-    true
+    false
   }
 
   public String makePackageReference(Map params) {
