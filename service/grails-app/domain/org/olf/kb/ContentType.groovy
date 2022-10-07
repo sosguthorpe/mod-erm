@@ -7,7 +7,6 @@ import com.k_int.web.toolkit.refdata.RefdataValue
 public class ContentType implements MultiTenant<ContentType> {
 
 	String id
-	@Defaults(['Serials', 'Monographs', 'Databases'])
   RefdataValue contentType
 
 	static belongsTo = [ owner: Pkg ]
