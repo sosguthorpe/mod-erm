@@ -1,7 +1,25 @@
-## 5.3.0 In progress
+## 5.4.0 2022-10-26
+  * ERM-2388 Package identifiers not 'removed' from package on ingest of updated package
+  * ERM-2385 On updating package description URLs KB sync job crashes
+  * ERM-2378 Remove defaults from ContentType
+  * ERM-2370 Extend GOKb harvest to include new monograph metadata fields and stop using secondary lookup
+  * ERM-2367 New availabilityScope values not created on GOKb harvest
+  * ERM-2361 Minimise list of default values for availabilityScope
+  * ERM-2311 Support setting Package Description and Description URLs on package ingest and GOKb harvest
+  * ERM-2310 On updating an existing PTI from a trusted source in Agreements local KB, update/overwrite url if it has changed
+  * ERM-2307 Populate availabilityConstraints from GOKb package ingest
   * ERM-2305 Entitlement options not displaying
-  * Extended logging
+  * ERM-2304 Cannot populate package lifecycleStatus when uploading JSON package
+  * ERM-2288 On updating an existing package in Agreements local KB, update/overwrite existing package metadata
+  * ERM-2285 StaleObjectStateException errors in Morning Glory bugfest
+    * ERM-2286 Add instrumentation to logs for better troubleshooting
+  * ERM-2219 Description property missing from package schema
+  * ERM-2093 Populate provider specific IDs from GOKb
+  * ERM-946 Title identifiers have no fixed order
   * Added readonly transaction scopes for read only operations in subscription agreements and entitlements
+
+## 5.3.0 2022-09-27
+  * ERM-2345 Add federation logic
 
 ## 5.2.0 2022-06-29
   * ERM-2219 Description property missing from package schema
