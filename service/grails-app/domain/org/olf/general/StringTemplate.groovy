@@ -1,17 +1,14 @@
 package org.olf.general
 
-import uk.co.cacoethes.handlebars.HandlebarsTemplateEngine
-import com.github.jknack.handlebars.Handlebars
-
-import com.github.jknack.handlebars.helper.StringHelpers
 import com.github.jknack.handlebars.EscapingStrategy
-import org.olf.general.StringTemplateHelpers
-
-import grails.gorm.MultiTenant
-
+import com.github.jknack.handlebars.Handlebars
+import com.github.jknack.handlebars.helper.StringHelpers
+import com.k_int.web.toolkit.databinding.BindImmutably
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
-import com.k_int.web.toolkit.databinding.BindImmutably
+
+import grails.gorm.MultiTenant
+import uk.co.cacoethes.handlebars.HandlebarsTemplateEngine
 
 class StringTemplate implements MultiTenant<StringTemplate> {
 
@@ -62,7 +59,7 @@ class StringTemplate implements MultiTenant<StringTemplate> {
     };
 
     def handlebars = new Handlebars().with(noEscaping)
-    
+
     handlebars.registerHelpers(StringHelpers)
     handlebars.registerHelpers(StringTemplateHelpers)
     def engine = new HandlebarsTemplateEngine()
