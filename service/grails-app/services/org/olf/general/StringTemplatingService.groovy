@@ -11,7 +11,6 @@ import org.olf.kb.ErmResource
 import static groovy.transform.TypeCheckingMode.SKIP
 import groovy.transform.CompileStatic
 
-
 import com.k_int.web.toolkit.settings.AppSetting
 
 import services.k_int.core.FolioLockService
@@ -96,7 +95,6 @@ public class StringTemplatingService {
     }
   }
 
-  @CompileStatic(SKIP)
   private List<StringTemplate> queryNotInScopeWithContext(String id, String context) {
     List<StringTemplate> stringTemplates = StringTemplate.executeQuery("""
       SELECT st FROM StringTemplate st
@@ -111,8 +109,7 @@ public class StringTemplatingService {
     )
     return stringTemplates
   }
-  
-  @CompileStatic(SKIP)
+
   private List<StringTemplate> queryInScopeWithContext(String id, String context) {
     List<StringTemplate> stringTemplates = StringTemplate.executeQuery("""
       SELECT st FROM StringTemplate st
@@ -288,7 +285,6 @@ public class StringTemplatingService {
   }
 
   // This method generates the templatedUrls for PTIs, given the stringTemplates and platformLocalCode
-  @CompileStatic(SKIP)
   private void generateTemplatedUrlsForPti(final List<String> pti, Map stringTemplates, String platformLocalCode='') {
     log.debug "generateTemplatedUrlsForPti called for (${pti[0]})"
     try {
@@ -403,7 +399,6 @@ public class StringTemplatingService {
   /* IMPORTANT NOTE -- When calling this for PTI/Platforms, wrap in a new transaction. Left out of this block so that
    * many edits can happen in one transaction block if called for multiple.
    */
-  @CompileStatic(SKIP)
   private void generateTemplatedUrlsForErmResources(final String tenantId, Map<String, String> params = [context: 'stringTemplate']) {
     log.debug "generateTemplatedUrlsForErmResources called"
 
