@@ -11,6 +11,13 @@ import grails.gorm.MultiTenant
 import uk.co.cacoethes.handlebars.HandlebarsTemplateEngine
 
 class StringTemplate implements MultiTenant<StringTemplate> {
+  private static final HandlebarsTemplateEngine hte = new HandlebarsTemplateEngine(handlebars: new Handlebars().with(new EscapingStrategy() {
+    public String escape(final CharSequence value) {
+      return value.toString()
+    }
+  })
+  .registerHelpers(StringHelpers)
+  .registerHelpers(StringTemplateHelpers))
 
   String id
   String name
@@ -43,31 +50,14 @@ class StringTemplate implements MultiTenant<StringTemplate> {
   }
 
   static constraints = {
-    rule(validator: {rule, obj ->
+    rule(validator: {rule, StringTemplate obj ->
       return obj.checkValidTemplate()
     })
   }
 
   String customiseString(Map binding) {
-
-    // Set up handlebars configuration
-
-    EscapingStrategy noEscaping = new EscapingStrategy() {
-      public String escape(final CharSequence value) {
-        return value.toString()
-      }
-    };
-
-    def handlebars = new Handlebars().with(noEscaping)
-
-    handlebars.registerHelpers(StringHelpers)
-    handlebars.registerHelpers(StringTemplateHelper)
-    def engine = new HandlebarsTemplateEngine()
-    engine.handlebars = handlebars
-
-
     String outputString = ''
-    def template = engine.createTemplate(rule).make(binding)
+    Writable template = hte.createTemplate(rule).make(binding)
     StringWriter sw = new StringWriter()
     template.writeTo(sw)
     outputString = sw.toString()
@@ -88,9 +78,10 @@ class StringTemplate implements MultiTenant<StringTemplate> {
     if (output && output?.length() > 0) {
       return null
     } else {
-      return ["invalidTemplate", "Output is null or empty"]
+      return [
+        "invalidTemplate",
+        "Output is null or empty"
+      ]
     }
   }
-
-
 }

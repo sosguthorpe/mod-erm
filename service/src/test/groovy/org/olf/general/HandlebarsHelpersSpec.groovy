@@ -23,7 +23,7 @@ class HandlebarsHelpersSpec extends Specification {
   static final HandlebarsTemplateEngine hbte = new HandlebarsTemplateEngine(handlebars: hb)
   
   def setupSpec() {
-    hb.registerHelpers(StringTemplateHelper.class)
+    hb.registerHelpers(StringTemplateHelpers.class)
     hb.registerHelpers(StringHelpers.class)
   }
   
