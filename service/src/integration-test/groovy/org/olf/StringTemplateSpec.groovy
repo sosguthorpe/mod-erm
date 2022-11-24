@@ -230,7 +230,7 @@ class StringTemplateSpec extends BaseSpec {
     doGet("/erm/sts/template")
     // Wait for 5 seconds for this to be done
     //TODO this is not great -- need a way to programatically tell if templating is finished?
-    Thread.sleep(15000);
+    Thread.sleep(5000);
 
     return fetchPTI()
   }
