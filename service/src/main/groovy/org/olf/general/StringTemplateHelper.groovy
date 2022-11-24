@@ -5,12 +5,16 @@ import java.util.function.Function
 import com.github.jknack.handlebars.Options
 
 import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 
 @CompileStatic
+@Slf4j
 public class StringTemplateHelper {
   
-  public static CharSequence insertAfter (final Object context, final Object param1, final Object param2, final Options options) {
+  public static final CharSequence insertAfter (final Object context, final Object param1, final Object param2, final Options options) {
+    
     return Optional.ofNullable(Objects.toString(param1, ""))
+      
       .map({ final String param -> "(?=(?<=${regexSafe(param)}))" as String })
       .map({ final String regex ->
         final op = { String subject ->
@@ -22,7 +26,7 @@ public class StringTemplateHelper {
       .orElse(null)
   }
   
-  public static CharSequence insertAfterAll (final Object context, final Object param1, final Object param2, final Options options) {
+  public static final CharSequence insertAfterAll (final Object context, final Object param1, final Object param2, final Options options) {
     return Optional.ofNullable(Objects.toString(param1, ""))
       .map({ final String param -> "(?=(?<=${regexSafe(param)}))" as String })
       .map({ final String regex ->
@@ -35,7 +39,7 @@ public class StringTemplateHelper {
       .orElse(null)
   }
   
-  public static CharSequence insertBefore (final Object context, final Object param1, final Object param2, final Options options) {
+  public static final CharSequence insertBefore (final Object context, final Object param1, final Object param2, final Options options) {
     return Optional.ofNullable(Objects.toString(param1, ""))
       .map({ final String param -> "(?<=(?=${regexSafe(param)}))" as String })
       .map({ final String regex ->
@@ -48,7 +52,7 @@ public class StringTemplateHelper {
       .orElse(null)
   }
   
-  public static CharSequence insertBeforeAll (final Object context, final Object param1, final Object param2, final Options options) {
+  public static final CharSequence insertBeforeAll (final Object context, final Object param1, final Object param2, final Options options) {
     return Optional.ofNullable(Objects.toString(param1, ""))
       .map({ final String param -> "(?<=(?=${regexSafe(param)}))" as String })
       .map({ final String regex ->
@@ -61,7 +65,7 @@ public class StringTemplateHelper {
       .orElse(null)
   }
   
-  public static CharSequence removeProtocol (final Object context, final Options options) {
+  public static final CharSequence removeProtocol (final Object context, final Options options) {
     return Optional.of("http(s?)://")
       .map({ final String regex ->
         final op = { String subject ->
@@ -73,7 +77,7 @@ public class StringTemplateHelper {
       .orElse(null)
   }
 
-  public static CharSequence urlEncode (final Object context, final Options options) {
+  public static final CharSequence urlEncode (final Object context, final Options options) {
     
     return Optional.ofNullable(context)
       .filter({ val -> !options.isFalsy(val) })
@@ -82,9 +86,7 @@ public class StringTemplateHelper {
       .orElse(null)
   }
   
-  
-  
-  private static String doOperation (final Object context, Function<String, String> replacementFunction, final Options options) {
+  private static final String doOperation (final Object context, Function<String, String> replacementFunction, final Options options) {
     
     return Optional.ofNullable(context)
       .filter({ val -> !options.isFalsy(val) })
@@ -94,7 +96,7 @@ public class StringTemplateHelper {
       ;
   }
   
-  private static String regexSafe(String inputString) {
+  private static final String regexSafe(String inputString) {
     String outputString = inputString.replace("\\", "\\\\")
       .replace("*", "\\*")
       .replace("(", "\\(")
