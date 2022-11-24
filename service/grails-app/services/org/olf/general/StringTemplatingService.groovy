@@ -48,7 +48,7 @@ public class StringTemplatingService {
    * This method will store the business logic determining heirachy of StringTemplate contexts,
    * and whether these "stack" or not.
    */
-  public List<LinkedHashMap<String, String>> performStringTemplates(Map stringTemplates, Map binding) {
+  private List<LinkedHashMap<String, String>> performStringTemplates(Map stringTemplates, Map binding) {
     List<LinkedHashMap<String, String>> output = new ArrayList()
     output.add([name: "defaultUrl", url: binding.inputUrl.toString()])
 
@@ -138,7 +138,7 @@ public class StringTemplatingService {
    * Then it will go through and start calling generateTemplatedUrlsForErmResources for each object updated since
    */
   @CompileStatic(SKIP)
-  void refreshUrls(String tenantId) {
+  public void refreshUrls(String tenantId) {
     log.debug "stringTemplatingService::refreshUrls called with tenantId (${tenantId})"
     folioLockService.federatedLockAndDoWithTimeoutOrSkip("agreements-${tenantId}:stringTemplate:refreshUrls", 0) {
 
@@ -268,7 +268,7 @@ public class StringTemplatingService {
   }
 
   // Returns true if equivalent, false otherwise
-  boolean compareTemplatedUrls(List<List<String>> existingTus, List<List<String>> newTus) {
+  private boolean compareTemplatedUrls(List<List<String>> existingTus, List<List<String>> newTus) {
     if (existingTus.size() == newTus.size()) {
       //Sort existing and new
       List<List<String>> newSorted = newTus.toSorted {a,b -> a[0] <=> b[0]}
@@ -289,7 +289,7 @@ public class StringTemplatingService {
 
   // This method generates the templatedUrls for PTIs, given the stringTemplates and platformLocalCode
   @CompileStatic(SKIP)
-  public void generateTemplatedUrlsForPti(final List<String> pti, Map stringTemplates, String platformLocalCode='') {
+  private void generateTemplatedUrlsForPti(final List<String> pti, Map stringTemplates, String platformLocalCode='') {
     log.debug "generateTemplatedUrlsForPti called for (${pti[0]})"
     try {
       String ptiId = pti[0]
@@ -382,7 +382,7 @@ public class StringTemplatingService {
   /*
    * Trigger plan - have a mutex boolean, running, and a queue.
    *
-   * When we recieve a "refresh" event, we check if running. If so we add a note to the queue
+   * When we receive a "refresh" event, we check if running. If so we add a note to the queue
    * If neither are true we run the task. Once a task is finished we run again if queue non-empty.
   */
 
@@ -404,7 +404,7 @@ public class StringTemplatingService {
    * many edits can happen in one transaction block if called for multiple.
    */
   @CompileStatic(SKIP)
-  public void generateTemplatedUrlsForErmResources(final String tenantId, Map<String, String> params = [context: 'stringTemplate']) {
+  private void generateTemplatedUrlsForErmResources(final String tenantId, Map<String, String> params = [context: 'stringTemplate']) {
     log.debug "generateTemplatedUrlsForErmResources called"
 
     // If running then just add to queue

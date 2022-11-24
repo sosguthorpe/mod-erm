@@ -61,7 +61,7 @@ class StringTemplate implements MultiTenant<StringTemplate> {
     def handlebars = new Handlebars().with(noEscaping)
 
     handlebars.registerHelpers(StringHelpers)
-    handlebars.registerHelpers(StringTemplateHelpers)
+    handlebars.registerHelpers(StringTemplateHelper)
     def engine = new HandlebarsTemplateEngine()
     engine.handlebars = handlebars
 
