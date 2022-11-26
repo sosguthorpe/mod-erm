@@ -30,6 +30,7 @@ public class ErmResource extends ErmTitleList implements MultiTenant<ErmResource
   boolean suppressFromDiscovery = false
   
   Set<AlternateResourceName> alternateResourceNames 
+  Set<TemplatedUrl> templatedUrls = []
   
   static hasMany = [
     coverage: CoverageStatement,

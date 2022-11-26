@@ -7,13 +7,15 @@ import com.k_int.web.toolkit.databinding.BindImmutably
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
+import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 import uk.co.cacoethes.handlebars.HandlebarsTemplateEngine
 
+@GrailsCompileStatic
 class StringTemplate implements MultiTenant<StringTemplate> {
   private static final HandlebarsTemplateEngine hte = new HandlebarsTemplateEngine(handlebars: new Handlebars().with(new EscapingStrategy() {
     public String escape(final CharSequence value) {
-      return value.toString()
+      return value.toString() // No escaping. Return as is.
     }
   })
   .registerHelpers(StringHelpers)
@@ -50,22 +52,23 @@ class StringTemplate implements MultiTenant<StringTemplate> {
   }
 
   static constraints = {
-    rule(validator: {rule, StringTemplate obj ->
+    rule (validator: { String rule, StringTemplate obj ->
       return obj.checkValidTemplate()
     })
   }
 
-  String customiseString(Map binding) {
-    String outputString = ''
-    Writable template = hte.createTemplate(rule).make(binding)
-    StringWriter sw = new StringWriter()
-    template.writeTo(sw)
-    outputString = sw.toString()
+  public String customiseString(Map<String, ?> binding) {
+    
+    final String outputString = hte.createTemplate(rule).make(binding).with { 
+      StringWriter sw = new StringWriter()
+      writeTo(sw)
+      sw.toString()
+    }
 
     return outputString
   }
 
-  public ArrayList<String> checkValidTemplate() {
+  public List<String> checkValidTemplate() {
     String output
     try {
       output = this.customiseString([
