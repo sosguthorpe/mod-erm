@@ -7,11 +7,9 @@ import com.k_int.web.toolkit.databinding.BindImmutably
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
-import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 import uk.co.cacoethes.handlebars.HandlebarsTemplateEngine
 
-@GrailsCompileStatic
 class StringTemplate implements MultiTenant<StringTemplate> {
   private static final HandlebarsTemplateEngine hte = new HandlebarsTemplateEngine(handlebars: new Handlebars().with(new EscapingStrategy() {
     public String escape(final CharSequence value) {
