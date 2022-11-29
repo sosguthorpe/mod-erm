@@ -85,4 +85,12 @@ class StringTemplate implements MultiTenant<StringTemplate> {
       ]
     }
   }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (id && StringTemplate.class.isAssignableFrom(obj.class)) {
+      return id.equals(obj.id)
+    }
+    return false
+  }
 }
