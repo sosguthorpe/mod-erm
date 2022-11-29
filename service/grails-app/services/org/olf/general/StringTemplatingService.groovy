@@ -12,32 +12,29 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 
 import javax.annotation.PostConstruct
-import org.grails.datastore.gorm.query.criteria.DetachedAssociationCriteria
+import javax.sql.DataSource
+import org.grails.datastore.gorm.GormInstanceApi
+import org.grails.datastore.gorm.GormStaticApi
+import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
-import org.grails.datastore.mapping.dirty.checking.DirtyCheckableCollection
-import org.grails.datastore.mapping.dirty.checking.DirtyCheckingCollection
-import org.grails.datastore.mapping.dirty.checking.DirtyCheckingSupport
 import org.grails.datastore.mapping.engine.EntityAccess
 import org.grails.datastore.mapping.engine.event.AbstractPersistenceEvent
 import org.grails.datastore.mapping.engine.event.PostDeleteEvent
 import org.grails.datastore.mapping.engine.event.PostInsertEvent
 import org.grails.datastore.mapping.engine.event.PostUpdateEvent
+import org.grails.datastore.mapping.engine.event.PreDeleteEvent
 import org.grails.datastore.mapping.engine.event.PreInsertEvent
-import org.grails.datastore.mapping.engine.event.PreUpdateEvent
-import org.grails.datastore.mapping.query.Restrictions
-import org.hibernate.criterion.Subqueries
+import org.grails.datastore.mapping.multitenancy.SchemaMultiTenantCapableDatastore
+import org.grails.orm.hibernate.HibernateDatastore
 import org.olf.kb.Platform
 import org.olf.kb.PlatformTitleInstance
 import org.springframework.context.ApplicationEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.context.ConfigurableApplicationContext
 
-import com.k_int.web.toolkit.refdata.RefdataCategory
-import com.k_int.web.toolkit.refdata.RefdataValue
 import com.k_int.web.toolkit.utils.GormUtils
 
 import grails.core.GrailsApplication
-import grails.gorm.DetachedCriteria
 import grails.gorm.multitenancy.CurrentTenant
 import grails.gorm.multitenancy.Tenants
 import grails.gorm.transactions.Transactional
@@ -46,6 +43,10 @@ import groovy.util.logging.Slf4j
 import net.sf.ehcache.util.NamedThreadFactory
 import services.k_int.core.FolioLockService
 
+/**
+ * @author sosguthorpe
+ *
+ */
 @CompileStatic
 @Slf4j
 public class StringTemplatingService implements ApplicationListener<ApplicationEvent> {
@@ -53,6 +54,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
   public static final String CONTEXT_PROXY = 'urlproxier'
   public static final String CONTEXT_CUSTOMIZER = 'urlcustomiser'
   public static final String TEMPLATED_URL_DEFAULT = 'defaultUrl'
+  public static final String EVENT_IGNORE_FURTHER = '$StringTemplatingService::ignore:further'
 
   @Autowired(required=true)
   FolioLockService folioLockService
@@ -71,54 +73,6 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
   public void init() {
     ConfigurableApplicationContext context = grailsApplication.mainContext as ConfigurableApplicationContext
     context.addApplicationListener(this)
-  }
-  
-  private void updatePtiFromEvent (final AbstractPersistenceEvent event) {
-    
-    final DirtyCheckable dc = event.entityObject as DirtyCheckable
-    
-    if (dc.hasChanged('templatedUrls')) {
-      log.debug 'templatedUrls was changed. Do not act on this event.'
-      return // NOOP
-    }
-    
-    PlatformTitleInstance pti = event.entityObject as PlatformTitleInstance
-    
-    if (!pti.url) {
-      log.debug('PTI has no url associated with it. Skipping templating')
-      return
-    }
-    
-
-    final Platform platform = pti.platform
-
-    // Fetch the applicable templates
-    final Map<String, List<StringTemplate>> templates = findStringTemplatesForId (platform.id)
-
-    // Bail early if no templates
-    if (!templates.values().findResult { it.empty ? null : true }) {
-      log.debug('No templates applicable to PTI')
-      return
-    }
-
-    // Create the root bindings
-    final StringTemplateBindings rootBindings = new StringTemplateBindings(
-      inputUrl: pti.url,
-      platformLocalCode: platform.localCode ?: ''
-    )
-
-    // Now run the proxy against all customized urls and the original.
-    final Set<TemplatedUrl> generatedUrls = getTeplatedUrlsForRootBinding(templates, rootBindings)
-
-    // IMPORTANT: DO not set properties directly here. It will cause the session to loop.
-    // To change values we use the entity access object.
-    final EntityAccess ea = event.entityAccess
-    
-//    final Set<TemplatedUrl> ptiUrls = ea.getProperty("templatedUrls") as Set
-//    ptiUrls.clear()
-//    ptiUrls.addAll( generatedUrls )
-//    
-//    ea.setProperty("templatedUrls", ptiUrls)
   }
   
   private void massUpdatePlatformFromEvent(final AbstractPersistenceEvent event) {
@@ -220,8 +174,6 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
           platformLocalCode: rootBindings.platformLocalCode
         )
         
-        
-        
         final Stream<TemplatedUrl> nested = addTemplateUrlMappings( templates.get(CONTEXT_PROXY).stream(), bindings );
           
         return Stream.concat(Stream.of(turl), nested)
@@ -231,8 +183,6 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     return generatedUrls
   }
   
-  @CurrentTenant
-  @Transactional(propagation = MANDATORY)
   protected void executeTemplatesForSinglePlatform (final String id, final Date notSince = new Date()) {
     // Get a chunk of PTIs and keep repeating until all have been processed
     final Map<String, List<StringTemplate>> templates = findStringTemplatesForId (id)
@@ -254,8 +204,6 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     }
   }
 
-  @CurrentTenant
-  @Transactional(propagation = MANDATORY)
   protected List<String> executeTemplatesForSinglePTI (final String id, final Map<String, List<StringTemplate>> stringTemplates = null) {
 
     final PlatformTitleInstance pti = getPti(id)
@@ -268,8 +216,6 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     return executeTemplatesForSinglePTI(pti, stringTemplates)
   }
 
-  @CurrentTenant
-  @Transactional(propagation = MANDATORY)
   protected void executeTemplatesForSinglePTI (final PlatformTitleInstance pti, final Map<String, List<StringTemplate>> stringTemplates = null) {
 
     if (!pti.url) {
@@ -304,6 +250,12 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     
     pti.lastUpdated = new Date() // Force timestamp update
     
+    DirtyCheckable dcPti = (DirtyCheckable) pti
+    
+    // Mark as belonging to this service so that the save below is ignored by the other
+    // listeners for PTIs
+    dcPti.markDirty(EVENT_IGNORE_FURTHER, true, false)
+    
     // Save the PTI
     GormUtils.gormInstanceApi(PlatformTitleInstance).save(pti, [failOnError: true] as Map)
     
@@ -314,8 +266,6 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     }
   }
   
-  @CurrentTenant
-  @Transactional(propagation = MANDATORY)
   private void deleteTemplatedUrlsForPTI(String ptiId) {
     final String hql = '''
       DELETE FROM TemplatedUrl del
@@ -343,8 +293,6 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     })
   }
   
-  @CurrentTenant
-  @Transactional(propagation = MANDATORY)
   protected List<Platform> getAllPlatformsForTemplate( final String templateId ) {
     
     final String hql = '''
@@ -384,8 +332,6 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
    * @param id The id to check for in the various scopes
    * @return a map keyed by context with entry sets of Lists of applicable string templates
    */
-  @CurrentTenant
-  @Transactional
   public Map<String, List<StringTemplate>> findStringTemplatesForId(final String resourceID) {
     
     // Convert null to the NIL ID. This will help when we have an unsaved platform that has not yet been assigned an
@@ -443,14 +389,10 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     return templates
   }
 
-  @CurrentTenant
-  @Transactional(propagation = MANDATORY)
   protected PlatformTitleInstance getPti( final String id ) {
     return GormUtils.gormStaticApi(PlatformTitleInstance).get(id)
   }
   
-  @CurrentTenant
-  @Transactional(propagation = MANDATORY)
   protected List<PlatformTitleInstance> getPtisToUpdateForPlatform ( final String platformID, final Date notUpdatedSince, final int maximum) {
     final List<PlatformTitleInstance> ptis = GormUtils.gormStaticApi(PlatformTitleInstance).createCriteria().list(max: maximum) {
       readOnly true
@@ -463,56 +405,6 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     return ptis
   }
 
-//  @Transactional
-//  @CurrentTenant
-//  public void generateUrlsForPtiWithId ( final String ptiId ) {
-//
-//    // Pre-generate the lock name here from the platform id.
-//    // This will ensure the correct level of data locking for this operation.
-//    final String platformId = getPti( ptiId )?.platform?.id;
-//    if (!platformId) {
-//      log.error 'Could not determine platform ID. Is {} actually a PTI?', ptiId
-//      return
-//    }
-//
-//    final String tenant = Tenants.currentId()
-//    if (!tenant) {
-//      log.error 'Could not determine current tenant'
-//      return
-//    }
-//
-//    final String lockName = "stringTemplate:${tenant}:${platformId}"
-//
-//    // Create a promise
-//    final Promise<List<String>> deferred = WithPromises.task {
-//      executor.execute({
-//        final String tenantId, final String pti, final String lockId ->
-//
-//        // This method locks the calling thread. Has to be in a background thread!
-//        final List<String> returnList = []
-//        folioLockService.federatedLockAndDo(lockId) {
-//          try {
-//            Tenants.withId(tenantId) {
-//              returnList.addAll( executeTemplatesForSinglePTI(pti) )
-//            }
-//          } catch( Exception e ) {
-//            log.error 'Error creating URL templates for {}', pti
-//          }
-//        }
-//      }.curry(tenant, ptiId, lockName))
-//    }
-//
-//    deferred.onError {
-//      Throwable e ->
-//      log.error 'Could process template URLs for PTI {}. Error: {}', ptiId, e.getMessage()
-//    }
-//
-//    deferred.onComplete {
-//      List<String> urls ->
-//      log.debug 'Generated Urls for PTI {}, {}', ptiId, urls.stream().collect(Collectors.joining("', '", "'", "'"))
-//    }
-//  }
-
   @CurrentTenant
   public void refreshUrls() {
     // find all
@@ -524,16 +416,12 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
 
     switch (eventType) {
 
-      // Post events for when Templates or Platforms
-      // are updated and result in changes to many PTIs
+      // Event classes we care about
+      case PreDeleteEvent:
+      case PreInsertEvent:
       case PostDeleteEvent:
       case PostInsertEvent:
       case PostUpdateEvent:
-
-      // Handle pre(save/update) for PTIs, allowing us to update inline
-      // with the same transaction.
-      case PreInsertEvent:
-      case PreUpdateEvent:
         return true;
         break
 
@@ -551,535 +439,113 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     
     AbstractPersistenceEvent event = theEvent as AbstractPersistenceEvent
     
-    switch(event.getEventType()) {
-      case PreInsert:
+    final Object eo = event.getEntityObject()
+    
+    switch(event.getEventType()) {       
+      
       case PreUpdate:
-        final Object eo = event.getEntityObject()
-        
-        // Check if this is a PTI
+      case PreInsert:
+        // Post Add/Update of PlatformTitleInstance
         if (PlatformTitleInstance.isAssignableFrom(eo.getClass())) {
           log.debug 'Pre-(Insert/Update) event for PTI'
           updatePtiFromEvent(event)
         }
-        
         break
         
-        
       case PostUpdate:
-        final Object eo = event.getEntityObject()
         
-        // PostUpdate of Platform
-        // We don't track Add/Delete as
-        if (Platform.isAssignableFrom(eo.getClass())) {
-          log.debug 'Post-Update event for Platform'
-          massUpdatePlatformFromEvent(event)
-          break
-        } //else drop through...
-      case PostInsert:
+//        // PostUpdate of Platform
+//        // We don't track Add/Delete as
+//        if (Platform.isAssignableFrom(eo.getClass())) {
+//          log.debug 'Post-Update event for Platform'
+//          massUpdatePlatformFromEvent(event)
+//          break
+//        } //else drop through...
+        
       case PostDelete:
-        final Object eo = event.getEntityObject()
         
         // Post Add/Delete/Update of StringTemplate
-        if (StringTemplate.isAssignableFrom(eo.getClass())) {
-          log.debug 'Post-(Insert/Update/Delete) event for StringTemplate'
-          massUpdatePlatformsFromEvent(event)
-        }
+//        if (StringTemplate.isAssignableFrom(eo.getClass())) {
+//          log.debug 'Post-(Insert/Update/Delete) event for StringTemplate'
+//          massUpdatePlatformsFromEvent(event)
+//        }
         
         break
       default: // NOOP...
         break
     }
   }
-
-  // Split these out so that we can skip them in CompileStatic
-  // This method can batch fetch all Platforms or just those updated after a certain time
-//  @CompileStatic(SKIP)
-//  private List<List<String>> batchFetchPlatforms(final int platformBatchSize, int platformBatchCount, Date since = null) {
-//    // Fetch the ids and localCodes for all platforms
-//    List<List<String>> platforms = Platform.createCriteria().list ([max: platformBatchSize, offset: platformBatchSize * platformBatchCount]) {
-//      order 'id'
-//      if (since) {
-//        gt('lastUpdated', since)
-//      }
-//      projections {
-//        property('id')
-//        property('localCode')
-//      }
+  
+  private String ensureTeanant () throws IllegalStateException {
+    final String tenantId = Tenants.currentId()
+    
+    if (!tenantId) {
+      throw new IllegalStateException('Could not determine the tenant ID')
+    }
+    
+    tenantId
+  }
+  
+  private void updatePtiFromEvent (final AbstractPersistenceEvent event) {
+    
+    final PlatformTitleInstance pti = event.entityObject as PlatformTitleInstance   
+    
+    // Re-read the pti
+    final Platform platform = pti.platform
+    
+    // Default to empty set.
+    Set<TemplatedUrl> generatedUrls = []
+    if (pti.url) {
+      log.debug('PTI has url execute applicable templates')
+      
+      // Fetch the applicable templates
+      final Map<String, List<StringTemplate>> templates = findStringTemplatesForId (platform.id)
+  
+      // Bail early if no templates
+      if (!templates.values().findResult { it.empty ? null : true }) {
+        log.debug('No templates applicable to PTI')
+        return
+      }
+  
+      // Create the root bindings
+      final StringTemplateBindings rootBindings = new StringTemplateBindings(
+        inputUrl: pti.url,
+        platformLocalCode: platform.localCode ?: ''
+      )
+  
+      // Generate the templates as a set of objects
+      generatedUrls = getTeplatedUrlsForRootBinding(templates, rootBindings).collect {
+        it.resource = pti
+        it
+      } as Set
+            
+    } else {
+      log.debug('PTI has no url associated with it, delete template only')
+    }
+    
+    // Delete All urls for this pti.
+//    deleteTemplatedUrlsForPTI(pti.id)
+    
+    // Set the templates too.
+    final EntityAccess ptiEa = event.entityAccess
+    Set<TemplatedUrl> currentData = (Set<TemplatedUrl>) ptiEa.getProperty('templatedUrls')
+    currentData.clear()
+    currentData.addAll(generatedUrls)
+    ptiEa.setProperty('templatedUrls', currentData)
+    
+    ptiEa.setProperty('lastUpdated', new Date())
+    
+//    // Should now have an ID. Save the TemplatedUrls
+//    final GormInstanceApi<TemplatedUrl> urlApi = GormUtils.gormInstanceApi(TemplatedUrl)
+//    
+//    
+//    
+//    return generatedUrls.collect { TemplatedUrl url ->
+//      url.resource = pti
+//      urlApi.save(url, [failOnError: true] as Map)
 //    }
-//    return platforms
-//  }
-//
-//
-//  // This method can batch fetch all PTIs on a platform or updated after a certain time (or both)
-//  @CompileStatic(SKIP)
-//  private List<List<String>> batchFetchPtis(final int ptiBatchSize, int ptiBatchCount, String platformId = null, Date since = null) {
-//    List<List<String>> ptis = PlatformTitleInstance.createCriteria().list ([max: ptiBatchSize, offset: ptiBatchSize * ptiBatchCount]) {
-//      order 'id'
-//      if (platformId) {
-//        eq('platform.id', platformId)
-//      }
-//      if (since) {
-//        gt('lastUpdated', since)
-//      }
-//      projections {
-//        property('id')
-//        property('url')
-//        if (!platformId) {
-//          property('platform.id')
-//        }
-//      }
+//    List<TemplatedUrl> savedUrls = doInTenantTransaction( ensureTeanant() ) {
+//      updateTemplatesForSinglePti( ptiId )
 //    }
-//    return ptis
-//  }
-
-  //  private List<StringTemplate> queryInScopeWithContext(String id, String context) {
-  //    List<StringTemplate> stringTemplates = StringTemplate.executeQuery("""
-  //      SELECT st FROM StringTemplate st
-  //      WHERE st.context.value = :context
-  //      AND st IN (
-  //        SELECT st1 FROM StringTemplate st1
-  //        JOIN st1.idScopes as scope
-  //        WHERE scope = :id
-  //      )
-  //      """,
-  //      [context: context, id: id]
-  //    )
-  //    return stringTemplates
-  //  }
-
-
-
-
-  //  /*
-  //   * This method will take in an id of the form f311d130-8024-47c4-8a86-58f817dbefde, and a binding of the form
-  //  [
-  //    inputUrl: "http://ebooks.ciando.com/book/index.cfm?bok_id=27955222",
-  //    platformLocalCode: "ciando"
-  //  ]
-  //   * and these will be accessible from the template rule.
-  //   * This method will store the business logic determining heirachy of StringTemplate contexts,
-  //   * and whether these "stack" or not.
-  //   */
-  //  private List<LinkedHashMap<String, String>> performStringTemplates(Map stringTemplates, Map binding) {
-  //    List<LinkedHashMap<String, String>> output = new ArrayList()
-  //    output.add([name: "defaultUrl", url: binding.inputUrl.toString()])
-  //
-  //    // First get all customised urls
-  //    List<LinkedHashMap<String, String>> customisedUrls = performTemplatingByContext(binding, "urlCustomisers", stringTemplates)
-  //    // Then proxy all urls
-  //    List<LinkedHashMap<String, String>> proxiedUrls = performTemplatingByContext(binding, "urlProxiers", stringTemplates)
-  //
-  //    // Finally we proxy all the customised urls
-  //    List<LinkedHashMap<String, String>> proxiedCustomisedUrls = []
-  //    customisedUrls.each{ customiserMap ->
-  //      /*
-  //       customiserMap = [
-  //         name: "customiserName"
-  //         url: "customisedUrl"
-  //       ]
-  //      */
-  //
-  //      // Think we only need a shallow copy here to pass to the proxiers -- statically typed so rebuild
-  //      Map customBinding = [
-  //        inputUrl: customiserMap.url ? customiserMap.url.toString() : "",
-  //        platformLocalCode: binding.platformLocalCode ? binding.platformLocalCode.toString() : ""
-  //      ]
-  //
-  //      // Add all the proxied-customised urls to a list
-  //      proxiedCustomisedUrls.addAll(performTemplatingByContext(customBinding, "urlProxiers", stringTemplates, customiserMap.name.toString()))
-  //    }
-  //
-  //    // Add all of these to the output List
-  //    output.addAll(proxiedUrls)
-  //    output.addAll(customisedUrls)
-  //    output.addAll(proxiedCustomisedUrls)
-  //
-  //    return output
-  //  }
-  //
-  //
-  //  // Simpler method which just returns a list of maps for a single StringTemplateContext--used for nested templating
-  //  private List<LinkedHashMap> performTemplatingByContext(Map binding, String context, Map stringTemplates, String nameSuffix = '') {
-  //    return stringTemplates[context]?.collect { StringTemplate st ->
-  //      [
-  //        name: nameSuffix ? "${st['name']}-${nameSuffix}".toString() : st.name,
-  //        url: st.customiseString(binding)
-  //      ]
-  //    }
-  //  }
-  //
-  //  private List<StringTemplate> queryNotInScopeWithContext(String id, String context) {
-  //    List<StringTemplate> stringTemplates = StringTemplate.executeQuery("""
-  //      SELECT st FROM StringTemplate st
-  //      WHERE st.context.value = :context
-  //      AND st NOT IN (
-  //        SELECT st1 FROM StringTemplate st1
-  //        JOIN st1.idScopes as scope
-  //        WHERE scope = :id
-  //      )
-  //      """,
-  //      [context: context, id: id]
-  //    )
-  //    return stringTemplates
-  //  }
-  //
-  //  private List<StringTemplate> queryInScopeWithContext(String id, String context) {
-  //    List<StringTemplate> stringTemplates = StringTemplate.executeQuery("""
-  //      SELECT st FROM StringTemplate st
-  //      WHERE st.context.value = :context
-  //      AND st IN (
-  //        SELECT st1 FROM StringTemplate st1
-  //        JOIN st1.idScopes as scope
-  //        WHERE scope = :id
-  //      )
-  //      """,
-  //      [context: context, id: id]
-  //    )
-  //    return stringTemplates
-  //  }
-  //
-  //  /// We need to lock the refresh task in the same way we need to lock the actual generation,
-  //  // since we access/hold/edit an AppSetting value here
-  //  static boolean refreshRunning = false
-
-  /*
-   * This is the actual method which gets called by the endpoint /erm/sts/template on a timer. 
-   * Firstly it will look up the cursor indicating the last time the urls were refreshed.
-   * Then it will go through and start calling generateTemplatedUrlsForErmResources for each object updated since
-   */
-  //  @CompileStatic(SKIP)
-  //  public void refreshUrls(String tenantId) {
-  //    log.debug "stringTemplatingService::refreshUrls called with tenantId (${tenantId})"
-  //    folioLockService.federatedLockAndDoWithTimeoutOrSkip("agreements-${tenantId}:stringTemplate:refreshUrls", 0) {
-  //
-  //      /* Theoretically updates could happen after the process begins but before the url_refresh_cursor gets updated
-  //      * So save the time before starting process as the new cursor pt
-  //      * IMPORTANT--This only works because LastUpdated on the pti ISN'T triggered for a collection update,
-  //      * ie TemplatedUrls.
-  //      */
-  //
-  //      /* TODO In future we may wish to change this, in order to keep track of those PTIs who were updated
-  //      * between the last refresh date but not after after the platform updates started.
-  //      * Some work would need to be done to make lastUpdated change, and to figure out what to do for manual
-  //      * changes in the interval.
-  //      */
-  //
-  //      String new_cursor_value = System.currentTimeMillis()
-  //      // Also create container for the current cursor value
-  //      Date last_refreshed
-  //      AppSetting url_refresh_cursor
-  //      AppSetting previous_sts_count
-  //      Long previousStsCount
-  //
-  //      Tenants.withId(tenantId) {
-  //        // Start by grabbing the count of StringTemplates currently in the system
-  //        Long currentStsCount = StringTemplate.executeQuery("select count(*) from StringTemplate")[0]
-  //
-  //        // One transaction for fetching the initial values/creating AppSettings
-  //        AppSetting.withNewTransaction {
-  //          // Need to flush this initially so it exists for first instance
-  //          // Set initial cursor to 0 so everything currently in system gets updated
-  //          url_refresh_cursor = AppSetting.findByKey('url_refresh_cursor') ?: new AppSetting(
-  //            section:'registry',
-  //            settingType:'Date',
-  //            key: 'url_refresh_cursor',
-  //            value: 0
-  //          ).save(flush: true, failOnError: true)
-  //
-  //          previous_sts_count = AppSetting.findByKey('sts_count') ?: new AppSetting(
-  //            section:'registry',
-  //            settingType:'Number',
-  //            key: 'sts_count',
-  //            value: 0
-  //          ).save(flush: true, failOnError: true)
-  //
-  //          // Parse setting Strings to Date/Long
-  //          last_refreshed = new Date(Long.parseLong(url_refresh_cursor.value))
-  //          previousStsCount = Long.parseLong(previous_sts_count.value)
-  //        }
-  //
-  //        // Fetch stringTemplates that have changed since the last refresh
-  //        List<String> sts = StringTemplate.createCriteria().list() {
-  //          order 'id'
-  //          gt('lastUpdated', last_refreshed)
-  //          projections {
-  //            property('id')
-  //          }
-  //        }
-  //
-  //        /*
-  //        * If sts.size is not zero, or the counts differ,
-  //        * then string templates have been created, deleted or updated
-  //        * so run refresh for all.
-  //        */
-  //        if (
-  //          currentStsCount != previousStsCount ||
-  //          sts.size() > 0
-  //        ) {
-  //          // StringTemplates have changed, ignore more granular changes and just refresh everything
-  //          generateTemplatedUrlsForErmResources(tenantId)
-  //        } else {
-  //          // FIRST - refresh all updated PTIs
-  //          PlatformTitleInstance.withNewTransaction{
-  //            final int ptiBatchSize = 100
-  //            int ptiBatchCount = 0
-  //            List<List<String>> ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed)
-  //            while (ptis && ptis.size() > 0) {
-  //              ptiBatchCount ++
-  //              ptis.each { pti ->
-  //                // Here we send it to the generic case not the specific one to get the queueing behaviour
-  //                generateTemplatedUrlsForErmResources(
-  //                  tenantId,
-  //                  [
-  //                    context: 'pti',
-  //                    id: pti[0],
-  //                    platformId: pti[2]
-  //                  ]
-  //                )
-  //              }
-  //              // Next page
-  //              ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, null, last_refreshed)
-  //            }
-  //          }
-  //
-  //          // Next - refresh all updated Platforms
-  //          Platform.withNewTransaction{
-  //            final int platformBatchSize = 100
-  //            int platformBatchCount = 0
-  //            List<List<String>> platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed)
-  //            while (platforms && platforms.size() > 0) {
-  //              platformBatchCount ++
-  //              platforms.each { platform ->
-  //                // Here we send it to the generic case not the specific one to get the queueing behaviour
-  //                generateTemplatedUrlsForErmResources(
-  //                  tenantId,
-  //                  [
-  //                    context: 'platform',
-  //                    id: platform[0]
-  //                  ]
-  //                )
-  //                // Next page
-  //                platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount, last_refreshed)
-  //              }
-  //            }
-  //          }
-  //        }
-  //
-  //        //One transaction for updating value with new refresh time and new count (count taken from beginning of refresh task)
-  //        AppSetting.withNewTransaction {
-  //          url_refresh_cursor.value = new_cursor_value
-  //          url_refresh_cursor.save(failOnError: true)
-  //
-  //          previous_sts_count.value = currentStsCount
-  //          previous_sts_count.save(failOnError: true)
-  //        }
-  //      }
-  //    }
-  //  }
-
-  //  // Returns true if equivalent, false otherwise
-  //  private boolean compareTemplatedUrls(List<List<String>> existingTus, List<List<String>> newTus) {
-  //    if (existingTus.size() == newTus.size()) {
-  //      //Sort existing and new
-  //      List<List<String>> newSorted = newTus.toSorted {a,b -> a[0] <=> b[0]}
-  //      List<List<String>> existingSorted = existingTus.toSorted {a,b -> a[0] <=> b[0]}
-  //
-  //      //Using for loop because can't break out of groovy each without throwing exception
-  //      for (int i = 0; i < existingSorted.size(); i++) {
-  //        List<String> existingSortedIndex = existingSorted[i]
-  //        List<String> newSortedIndex = newSorted[i]
-  //        if (existingSortedIndex[0] != newSortedIndex[0] || existingSortedIndex[1] != newSortedIndex[1]) {
-  //          return false
-  //        }
-  //      }
-  //      return true
-  //    }
-  //    return false
-  //  }
-
-  //  // This method generates the templatedUrls for PTIs, given the stringTemplates and platformLocalCode
-  //  private void generateTemplatedUrlsForPti(final List<String> pti, Map stringTemplates, String platformLocalCode='') {
-  //    log.debug "generateTemplatedUrlsForPti called for (${pti[0]})"
-  //    try {
-  //      String ptiId = pti[0]
-  //      String ptiUrl = pti[1]
-  //      PlatformTitleInstance fetchedPti = PlatformTitleInstance.get(ptiId)
-  //
-  //      // If a url exists on this PTI--check if templatedUrls have changed, then delete and recreate
-  //      if (ptiUrl) {
-  //        Map binding = [
-  //          inputUrl: ptiUrl,
-  //          platformLocalCode: platformLocalCode
-  //        ]
-  //        List<LinkedHashMap<String, String>> newTemplatedUrls = performStringTemplates(stringTemplates, binding)
-  //
-  //        //Only delete and make new if they differ
-  //        List<List<String>> etus = fetchedPti.templatedUrls.collect { tu -> [tu.name.toString(), tu.url.toString()] }
-  //        List<List<String>> ntus = newTemplatedUrls.collect { tu -> [tu.name, tu.url] }
-  //        if (!compareTemplatedUrls(etus, ntus)) {
-  //          deleteTemplatedUrlsForPTI(ptiId)
-  //
-  //          newTemplatedUrls.each { templatedUrl ->
-  //            TemplatedUrl tu = new TemplatedUrl(templatedUrl)
-  //            tu.resource = fetchedPti
-  //            tu.save(failOnError: true)
-  //          }
-  //        }
-  //      } else {
-  //        log.warn "No url found for PTI (${ptiId})"
-  //      }
-  //    } catch (Exception e) {
-  //      log.error "Failed to update pti (${pti[0]}): ${e.message}"
-  //    }
-  //  }
-
-
-  //  @CompileStatic(SKIP)
-  //  private void deleteTemplatedUrlsForPTI(String ptiId) {
-  //    TemplatedUrl.executeUpdate("""
-  //      DELETE FROM TemplatedUrl as tu
-  //      WHERE tu.id IN (
-  //        SELECT tu.id FROM TemplatedUrl as tu
-  //        JOIN tu.resource as pti
-  //        WHERE pti.id = :id
-  //      )
-  //      """,
-  //      [id: ptiId]
-  //    )
-  //  }
-  //
-  //  /*
-  //   * Trigger plan - have a mutex boolean, running, and a queue.
-  //   *
-  //   * When we receive a "refresh" event, we check if running. If so we add a note to the queue
-  //   * If neither are true we run the task. Once a task is finished we run again if queue non-empty.
-  //  */
-  //
-  //  static boolean running = false
-  //  private ArrayList<Map<String, String>> taskQueue = new ArrayList<Map<String, String>>()
-  //
-  //  private void addTaskToTaskQueue(Map<String, String> params) {
-  //    if (params.context == 'stringTemplate') {
-  //      // If we're going to run a full system refresh we can just clear the current queue and run that instead
-  //      taskQueue.clear()
-  //      taskQueue.add(params)
-  //    } else {
-  //      taskQueue.add(params)
-  //    }
-  //    log.debug "Refresh task queue size: ${taskQueue.size()}"
-  //  }
-  //
-  //  /* IMPORTANT NOTE -- When calling this for PTI/Platforms, wrap in a new transaction. Left out of this block so that
-  //   * many edits can happen in one transaction block if called for multiple.
-  //   */
-  //  private void generateTemplatedUrlsForErmResources(final String tenantId, Map<String, String> params = [context: 'stringTemplate']) {
-  //    log.debug "generateTemplatedUrlsForErmResources called"
-  //
-  //    // If running then just add to queue
-  //    synchronized ( this ) {
-  //      if (running == true) {
-  //        addTaskToTaskQueue(params)
-  //        return
-  //      } else {
-  //        running = true
-  //      }
-  //    }
-  //
-  //    log.debug "generateTemplatedUrlsForErmResources task start"
-  //    Tenants.withId(tenantId) {
-  //      switch (params.context) {
-  //        case 'stringTemplate':
-  //          /*
-  //          * Right now we only scope URL templates to Platforms, so fetch a list of Platforms,
-  //          * then for each one fetch the stringTemplates and a list of PTIs with that platform,
-  //          * then perform stringTemplating on each PTI
-  //          */
-  //
-  //          final int platformBatchSize = 100
-  //          int platformBatchCount = 0
-  //
-  //          Platform.withNewTransaction {
-  //            // Fetch the ids and localCodes for all platforms
-  //            List<List<String>> platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount)
-  //
-  //            // This will return [[00998c04-8ab3-49ab-9053-c3e8cff328c2, ciando], [021bfce4-0533-465e-9340-1ceaad2a530f, localCode2], ...]
-  //            while (platforms && platforms.size() > 0) {
-  //              platformBatchCount ++
-  //              platforms.each { platform ->
-  //                Map stringTemplates = findStringTemplatesForId(platform[0])
-  //                String platformLocalCode = platform[1]
-  //
-  //                  /*
-  //                  * Now we have the stringTemplates and platformLocalCode for the platform,
-  //                  * find all PTIs on this platform and remove then re-add the templatedUrls
-  //                  */
-  //
-  //                  final int ptiBatchSize = 100
-  //                  int ptiBatchCount = 0
-  //                  List<List<String>> ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, platform[0])
-  //                  while (ptis && ptis.size() > 0) {
-  //                    ptiBatchCount ++
-  //                    ptis.each { pti ->
-  //                      generateTemplatedUrlsForPti(pti, stringTemplates, platformLocalCode)
-  //                    }
-  //
-  //                    // Next page
-  //                    ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, platform[0])
-  //                  }
-  //                // Next page
-  //                platforms = batchFetchPlatforms(platformBatchSize, platformBatchCount)
-  //              }
-  //            }
-  //          }
-  //          break;
-  //        case 'platform':
-  //          Platform p = Platform.read(params.id)
-  //          Map stringTemplates = findStringTemplatesForId(p.id)
-  //          String platformLocalCode = p.localCode
-  //          /*
-  //          * We have the stringTemplates and platformLocalCode for the platform,
-  //          * find all PTIs on this platform and remove then re-add the templatedUrls
-  //          */
-  //
-  //          final int ptiBatchSize = 100
-  //          int ptiBatchCount = 0
-  //          List<List<String>> ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, p.id)
-  //          while (ptis && ptis.size() > 0) {
-  //            ptiBatchCount ++
-  //            ptis.each { pti ->
-  //              generateTemplatedUrlsForPti(pti, stringTemplates, platformLocalCode)
-  //            }
-  //
-  //            // Next page
-  //            ptis = batchFetchPtis(ptiBatchSize, ptiBatchCount, p.id)
-  //          }
-  //          break;
-  //        case 'pti':
-  //          //In this case we don't have the platform, but we passed the platformId in the params
-  //          Platform platform = Platform.read(params.platformId)
-  //          PlatformTitleInstance pti = PlatformTitleInstance.read(params.id)
-  //
-  //          Map stringTemplates = findStringTemplatesForId(params.platformId)
-  //          String platformLocalCode = platform.localCode
-  //
-  //          generateTemplatedUrlsForPti([pti.id, pti.url], stringTemplates, platformLocalCode)
-  //          break;
-  //        default:
-  //          log.warn "Don't know what to do with params context (${params.context})"
-  //          break;
-  //      }
-  //    }
-  //    log.debug "generateTemplatedUrlsForErmResources task end"
-  //
-  //    synchronized ( this ) {
-  //      // Task finished, turn 'running' boolean off
-  //      running = false
-  //
-  //      if (taskQueue.size() > 0) {
-  //        // There are still tasks in the queue, run again
-  //        Map<String, String> runParams = taskQueue.remove(0)
-  //        generateTemplatedUrlsForErmResources(tenantId, runParams)
-  //      }
-  //    }
-  //  }
+  }
 }
