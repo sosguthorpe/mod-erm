@@ -74,13 +74,13 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
   @Autowired(required=true)
   GrailsApplication grailsApplication
 
-  // 10 thread max executor for concurrency of background bulk taks.
-  // When all 10 threads are consumed we add the work to the Queue
-  // WHen the Queue is full (asside from obvious problems) the calling thread will
+  // 5 thread max executor for concurrency of background bulk taks.
+  // When all 5 threads are consumed we add the work to the Queue
+  // WHen the Queue is full (aside from obvious problems) the calling thread will
   // Attempt to run the work. This means the system shouldn't ever reject the work
   // but will instead just slow down.
   final ThreadPoolExecutor executor = new ThreadPoolExecutor(
-    10, 10, 2, TimeUnit.MINUTES,
+    5, 5, 2, TimeUnit.MINUTES,
     new LinkedBlockingQueue<Runnable>(),
     new NamedThreadFactory('Tasks'),
     new CallerRunsPolicy())
@@ -161,10 +161,10 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
       
       idEq( ptiId )
       
-      delegate.invokeMethod (PROJECTIONS, {
+      projectionList.with {
         property('url')
         property('plat.localCode')
-      })
+      }
     }
     
     return new StringTemplateBindings(
@@ -271,8 +271,12 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     return GormUtils.gormStaticApi(PlatformTitleInstance).get(id)
   }
   
-  private <T> List<T> bulidCriteriaAndList (Class<?> target, Map<String, ?> params = [:],  @DelegatesTo(HibernateCriteriaBuilder) Closure criteria) {
+  private <T> List<T> bulidCriteriaAndList (Class<?> target, Map<String, ?> params = [:], @DelegatesTo(HibernateCriteriaBuilder) Closure criteria) {
     (List<T>) GormUtils.gormStaticApi(target).createCriteria().list(params, criteria)
+  }
+  
+  private <T> List<T> bulidCriteriaAndListDistinct (Class<?> target, @DelegatesTo(HibernateCriteriaBuilder) Closure criteria) {
+    (List<T>) GormUtils.gormStaticApi(target).createCriteria().listDistinct(criteria)
   }
   
   private <T> T bulidCriteriaAndGet (Class<?> target, @DelegatesTo(HibernateCriteriaBuilder) Closure criteria) {
@@ -483,9 +487,8 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
       clearOnly = true
     }
     
-    // This this should allow us to keep paging until finished. It should also skip
-    // any update out of band too.
-    final int max = 100
+    // Batch PTIs
+    final int max = 1000
     
     // This will help the nested closures "see" the logger
     final Logger log = this.log
@@ -597,28 +600,25 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
       
         Tenants.withId(tenantId) {
           GormStaticApi<Platform> ptiApi = GormUtils.gormStaticApi(Platform)
-          List<Platform> platforms = getAllPlatformsForTemplateParams(scopes, context, overrides)
+          List<String> platformIds = getAllPlatformIdsForTemplateParams(scopes, context, overrides)
           
           final Date now = new Date() 
           
           // For each platform add a background task.
-          for (final Platform p : platforms) {
+          for (final String platformId : platformIds) {
             
-            final String platformId = p.id
-//            executeTemplatesForSinglePlatform(platformId, now, tmpl)
-
-              executor.execute({ String tid, String pltf, Date before, Map<String, Set<StringTemplate>> withTemplates ->
-              
-                Tenants.withId(tid) {
-                  GormUtils.withTransaction {
-                    executeTemplatesForSinglePlatform(pltf, before, withTemplates)
-                  }
+            executor.execute({ String tid, String pltf, Date before, Map<String, Set<StringTemplate>> withTemplates ->
+            
+              Tenants.withId(tid) {
+                GormUtils.withTransaction {
+                  executeTemplatesForSinglePlatform(pltf, before, withTemplates)
                 }
-              }.curry(tenantId, p.id + '', now, tmpl))
+              }
+            }.curry(tenantId, platformId, now, tmpl))
           }
         }
         
-      }.curry(currentTenant + '', theScopes, theContext + '', alsoInclude + '', explicitTemplates)))
+      }.curry(currentTenant, theScopes, theContext, alsoInclude, explicitTemplates)))
   }
   
   private void updatePlatformsFromTemplateEvent(final AbstractPersistenceEvent event) {
@@ -635,13 +635,12 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     executor.execute(theStash.work)
   }
   
-  protected List<Platform> getAllPlatformsForTemplateParams(
+  protected List<String> getAllPlatformIdsForTemplateParams(
     final Set<String> scopes,
     final String context,
     final Set<String> overrides = []) {
     
-    final List<Platform> platforms = GormUtils.gormStaticApi(Platform).createCriteria().listDistinct {
-      
+    List<String> platforms = bulidCriteriaAndListDistinct(Platform) { 
       or {
         if (scopes) {
           if (CONTEXT_CUSTOMIZER == context) {
@@ -658,7 +657,11 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
           inList 'id', overrides
         }
       }
-    } as List
+      
+      projectionList.with { 
+        id()
+      }
+    }
     
     return platforms
   }
