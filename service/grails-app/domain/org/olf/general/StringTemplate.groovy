@@ -8,6 +8,7 @@ import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
 import grails.gorm.MultiTenant
+import groovy.text.Template
 import uk.co.cacoethes.handlebars.HandlebarsTemplateEngine
 
 class StringTemplate implements MultiTenant<StringTemplate> {
@@ -28,6 +29,17 @@ class StringTemplate implements MultiTenant<StringTemplate> {
 
   @Defaults(['urlProxier', 'urlCustomiser'])
   RefdataValue context
+  
+  static transients = ['template']
+  
+  private Template template
+  private Template getTemplate() {
+    if (template == null) {
+      template = hte.createTemplate(rule)
+    }
+    
+    template
+  }
 
   /*
    * The useage of this list will depend somewhat on context,
@@ -57,7 +69,7 @@ class StringTemplate implements MultiTenant<StringTemplate> {
 
   public String customiseString(Map<String, ?> binding) {
     
-    final String outputString = hte.createTemplate(rule).make(binding).with { 
+    final String outputString = getTemplate().make(binding).with { 
       StringWriter sw = new StringWriter()
       writeTo(sw)
       sw.toString()

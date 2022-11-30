@@ -29,10 +29,14 @@ import org.grails.datastore.mapping.engine.event.PostInsertEvent
 import org.grails.datastore.mapping.engine.event.PostUpdateEvent
 import org.grails.datastore.mapping.engine.event.PreDeleteEvent
 import org.grails.datastore.mapping.engine.event.PreInsertEvent
+import org.grails.datastore.mapping.engine.event.PreUpdateEvent
 import org.grails.datastore.mapping.multitenancy.SchemaMultiTenantCapableDatastore
 import org.grails.orm.hibernate.HibernateDatastore
+import org.hibernate.criterion.Projections
+import org.hibernate.sql.JoinType
 import org.olf.kb.Platform
 import org.olf.kb.PlatformTitleInstance
+import org.slf4j.Logger
 import org.springframework.context.ApplicationEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.context.ConfigurableApplicationContext
@@ -43,6 +47,7 @@ import grails.core.GrailsApplication
 import grails.gorm.multitenancy.CurrentTenant
 import grails.gorm.multitenancy.Tenants
 import grails.gorm.transactions.Transactional
+import grails.orm.HibernateCriteriaBuilder
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import net.sf.ehcache.util.NamedThreadFactory
@@ -75,7 +80,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
   // Attempt to run the work. This means the system shouldn't ever reject the work
   // but will instead just slow down.
   final ThreadPoolExecutor executor = new ThreadPoolExecutor(
-    5, 10, 10, TimeUnit.SECONDS,
+    10, 10, 2, TimeUnit.MINUTES,
     new LinkedBlockingQueue<Runnable>(),
     new NamedThreadFactory('Tasks'),
     new CallerRunsPolicy())
@@ -94,9 +99,16 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
         name: TEMPLATED_URL_DEFAULT,
         url: rootBindings.inputUrl
       ))
-      addAll(
-        addTemplateUrlMappings( templates.get(CONTEXT_CUSTOMIZER).stream(), rootBindings )
-          .collect(Collectors.toList()))
+      
+        templates.get(CONTEXT_CUSTOMIZER).stream()
+        .map({
+          final StringTemplate template ->          
+          new TemplatedUrl(
+            name: template.name + (rootBindings.name ? "-${rootBindings.name}" : ''),
+            url: template.customiseString(rootBindings)
+          )
+        })
+        .forEach(it.&add)
 
       it // return the subject
     }
@@ -111,7 +123,15 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
           platformLocalCode: rootBindings.platformLocalCode
         )
         
-        final Stream<TemplatedUrl> nested = addTemplateUrlMappings( templates.get(CONTEXT_PROXY).stream(), bindings );
+        final Stream<TemplatedUrl> nested = templates.get(CONTEXT_PROXY).stream()
+          .map({
+            final StringTemplate template -> 
+            
+            new TemplatedUrl(
+              name: template.name + (bindings.name ? "-${bindings.name}" : ''),
+              url: template.customiseString(bindings)
+            )
+          });
           
         return Stream.concat(Stream.of(turl), nested)
       })
@@ -119,9 +139,41 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
 
     return generatedUrls
   }
-
   
-  private void deleteTemplatedUrlsForPTI(String ptiId) {
+  private void touchPti (String ptiId) {
+    final String hql = '''
+      UPDATE PlatformTitleInstance
+      SET lastUpdated = :updated
+      WHERE id = :ptiId
+    '''
+    
+    final int count = GormUtils.gormStaticApi(Platform).executeUpdate(hql, [
+      'ptiId'   : ptiId,
+      'updated' : new Date()
+    ])
+    
+    log.trace 'Updated timestamp for pti: {}', ptiId
+  }
+  
+  private StringTemplateBindings getRootBindingsForPti ( String ptiId ) {
+    List<String[]> result = bulidCriteriaAndList(PlatformTitleInstance) { 
+      createAlias('platform', 'plat', JoinType.INNER_JOIN.getJoinTypeValue())
+      
+      idEq( ptiId )
+      
+      delegate.invokeMethod (PROJECTIONS, {
+        property('url')
+        property('plat.localCode')
+      })
+    }
+    
+    return new StringTemplateBindings(
+      inputUrl: result[0][0],
+      platformLocalCode: result[0][1] ?: ''
+    )
+  }
+  
+  private void deleteTemplatedUrlsForPTI (String ptiId) {
     final String hql = '''
       DELETE FROM TemplatedUrl del
       WHERE EXISTS (
@@ -135,17 +187,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
       'ptiId' : ptiId
     ])
     
-    log.debug 'Removed {} templates for pti: {}', count, ptiId
-  }
-
-  private Stream<TemplatedUrl> addTemplateUrlMappings( final Stream<StringTemplate> templates, final StringTemplateBindings bindings ) {
-    return templates
-    .map({
-      final StringTemplate template ->  new TemplatedUrl(
-        name: template.name + (bindings.name ? "-${bindings.name}" : ''),
-        url: template.customiseString(bindings)
-      )
-    })
+    log.trace 'Removed {} templates for pti: {}', count, ptiId
   }
   
   /**
@@ -164,6 +206,8 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     // Convert null to the NIL ID. This will help when we have an unsaved platform that has not yet been assigned an
     // ID. Using null would return the incorrect values bellow. The NIL UUID ensures the right items returned.
     final String theId = resourceID ?: UUIDs.NIL.toString()
+    
+    final GormInstanceApi<StringTemplate> tmpInstance = GormUtils.gormInstanceApi(StringTemplate)
     
     final String hql = '''
       SELECT st FROM StringTemplate st
@@ -198,20 +242,27 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     templates[CONTEXT_CUSTOMIZER] = stringTemplates.stream()
     .filter({
       StringTemplate tmp ->
-      switch (tmp.context?.value) {
+      
+      final String context = tmp.context?.value
+      
+      tmpInstance.discard(tmp)
+      
+      switch (context) {
         case CONTEXT_CUSTOMIZER:
           return true
           break
         case CONTEXT_PROXY:
-          templates[CONTEXT_PROXY].add(tmp)
+          if (!templates[CONTEXT_PROXY].contains(tmp)) templates[CONTEXT_PROXY].add(tmp)
           return false
           break
         default:
-          log.warn 'Unknown context type "{}" in template "{}"', tmp.context?.value, tmp.id
+          log.warn 'Unknown context type "{}" in template "{}"', context, tmp.id
       }
       // Default to exclude
       return false
-    }).toList()
+    })
+    .distinct()
+    .toList()
     
     return templates
   }
@@ -220,16 +271,28 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     return GormUtils.gormStaticApi(PlatformTitleInstance).get(id)
   }
   
-  protected List<PlatformTitleInstance> getPtisToUpdateForPlatform ( final String platformID, final Date notUpdatedSince, final int maximum) {
-    final List<PlatformTitleInstance> ptis = GormUtils.gormStaticApi(PlatformTitleInstance).createCriteria().list(max: maximum) {
+  private <T> List<T> bulidCriteriaAndList (Class<?> target, Map<String, ?> params = [:],  @DelegatesTo(HibernateCriteriaBuilder) Closure criteria) {
+    (List<T>) GormUtils.gormStaticApi(target).createCriteria().list(params, criteria)
+  }
+  
+  private <T> T bulidCriteriaAndGet (Class<?> target, @DelegatesTo(HibernateCriteriaBuilder) Closure criteria) {
+    (T) GormUtils.gormStaticApi(target).createCriteria().get(criteria)
+  }
+  
+  protected List<String> getPtiIdsToUpdateForPlatform ( final String platformID, final Date notUpdatedSince, final int maximum) {
+    
+    bulidCriteriaAndList(PlatformTitleInstance, [max: maximum]) {
+      
       readOnly true
       
       eq 'platform.id', platformID
       lt 'lastUpdated', notUpdatedSince
+      lt 'dateCreated', notUpdatedSince
       
-    } as List
-    
-    return ptis
+      projectionList.with { 
+        id()
+      }
+    }
   }
 
   @CurrentTenant
@@ -245,6 +308,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
 
       // Event classes we care about
       case PreDeleteEvent:
+      case PreUpdateEvent:
       case PreInsertEvent:
       case PostDeleteEvent:
       case PostInsertEvent:
@@ -274,7 +338,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
       case PreUpdate:
       case PreInsert:
         if (PlatformTitleInstance.isAssignableFrom(theClass)) {
-          log.debug 'Pre-(Insert/Update) event for PTI'
+          log.trace 'Pre-(Insert/Update) event for PTI'
           updatePtiFromEvent(event)
           break
         }
@@ -282,7 +346,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
       case PreDelete:
         // Post Add/Delete/Update of StringTemplate
         if (StringTemplate.isAssignableFrom(theClass)) {
-          log.debug 'Pre-(Insert/Update/Delete) event for StringTemplate'
+          log.trace 'Pre-(Insert/Update/Delete) event for StringTemplate'
           addDeferredPlatformUpdatesFromTemplates(event)
         }
         break
@@ -293,7 +357,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
         // We don't track Add/Delete as both will
         // be dealt with by the update/remove of the PTIs.
         if (Platform.isAssignableFrom(theClass)) {
-          log.debug 'Post-Update event for Platform'
+          log.trace 'Post-Update event for Platform'
           updatePlatformFromEvent(event)
           break
         }
@@ -303,7 +367,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
         
         // Post Add/Delete/Update of StringTemplate
         if (StringTemplate.isAssignableFrom(theClass)) {
-          log.debug 'Post-(Insert/Update/Delete) event for StringTemplate'
+          log.trace 'Post-(Insert/Update/Delete) event for StringTemplate'
           updatePlatformsFromTemplateEvent(event)
         }
         
@@ -333,14 +397,14 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     // Default to empty set.
     Set<TemplatedUrl> generatedUrls = []
     if (pti.url) {
-      log.debug('PTI has url execute applicable templates')
+      log.trace('PTI has url execute applicable templates')
       
       // Fetch the applicable templates
       final Map<String, List<StringTemplate>> templates = findStringTemplatesForId (platform.id)
   
       // Bail early if no templates
       if (!templates.values().findResult { it.empty ? null : true }) {
-        log.debug('No templates applicable to PTI')
+        log.trace('No templates applicable to PTI')
         return
       }
   
@@ -357,7 +421,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
       } as Set
             
     } else {
-      log.debug('PTI has no url associated with it, delete template only')
+      log.trace('PTI has no url associated with it, delete template only')
     }
     
     // Set the templates too.
@@ -385,18 +449,20 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     // Add a backgroundTask to update the platform
     final String tenantId = ensureTenant()
     
+    final Date now = new Date()
+    
     executor.execute({ final String theTenant, final String thePlatform ->
       
       Tenants.withId(theTenant) {
         GormUtils.withTransaction {
-          executeTemplatesForSinglePlatform( thePlatform )
+          executeTemplatesForSinglePlatform( thePlatform, now )
         }
       }
       
     }.curry(tenantId, platformId))
   }
   
-  protected void executeTemplatesForSinglePlatform (final String id, final Date notSince = new Date(), Map<String, Set<StringTemplate>> explicitTemplates = [:]) {
+  protected void executeTemplatesForSinglePlatform (final String id, final Date notSince, Map<String, Set<StringTemplate>> explicitTemplates = [:]) {
     // Get a chunk of PTIs and keep repeating until all have been processed
     final Map<String, List<StringTemplate>> templates = findStringTemplatesForId(id)
     
@@ -413,43 +479,55 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     // Bail early if no templates
     boolean clearOnly = false
     if (!templates.values().findResult { it.empty ? null : true }) {
-      log.debug('No templates applicable to Platform just clear all the URLs')
+      log.trace('No templates applicable to Platform just clear all the URLs')
       clearOnly = true
     }
     
     // This this should allow us to keep paging until finished. It should also skip
     // any update out of band too.
-    final int max = 1000
+    final int max = 100
     
-    List <PlatformTitleInstance> ptis = getPtisToUpdateForPlatform(id, notSince, max)
+    // This will help the nested closures "see" the logger
+    final Logger log = this.log
+    
+    List <String> ptis = getPtiIdsToUpdateForPlatform(id, notSince, max)
     while (ptis.size() > 0) {
       
       // Act on each PTI
-      for (PlatformTitleInstance pti : ptis) {
-        
-        // This should cause the preUpdate event to fire
-        deleteTemplatedUrlsForPTI(pti.id)
-        
-        if (!clearOnly) {          
-          // Create the root bindings
-          final StringTemplateBindings rootBindings = new StringTemplateBindings(
-            inputUrl: pti.url,
-            platformLocalCode: pti.platform.localCode ?: ''
-          )
+      final GormStaticApi<PlatformTitleInstance> ptiApi = GormUtils.gormStaticApi(PlatformTitleInstance)
       
-          // Generate the templates as a set of objects
-          final int ptiUrlTotal = getTeplatedUrlsForRootBinding(templates, rootBindings).collect {
-            it.resource = pti
-            GormUtils.gormInstanceApi(TemplatedUrl).save(it, [failOnError: true] as Map)
-          }?.size() ?: 0
-          
-          log.debug '{} URLSs generated for PTI {}', ptiUrlTotal, pti.id
+      ptiApi.with {
+        withNewSession {
+          withNewTransaction {
+            
+            for (String ptiId : ptis) {
+              final GormInstanceApi<TemplatedUrl> templateInstance = GormUtils.gormInstanceApi(TemplatedUrl)
+              
+              // This should cause the preUpdate event to fire
+              deleteTemplatedUrlsForPTI(ptiId)
+              
+              if (!clearOnly) {
+                // Create the root bindings
+                final StringTemplateBindings rootBindings = getRootBindingsForPti(ptiId)
+            
+                // Generate the templates as a set of objects
+                PlatformTitleInstance pti = ptiApi.read(ptiId)
+                final int ptiUrlTotal = getTeplatedUrlsForRootBinding(templates, rootBindings).collect {
+                  it.resource = pti
+                  templateInstance.save(it, [failOnError: true] as Map)
+                }?.size() ?: 0
+                log.trace ('{} URLs generated for PTI {}', ptiUrlTotal, ptiId)
+              }
+              touchPti(ptiId)
+            }
+            // Next page
+            ptis = ptis.size() == max ? getPtiIdsToUpdateForPlatform(id, notSince, max) : []
+          }
         }
       }
-      
-      // Next page
-      ptis = ptis.size() == max ? getPtisToUpdateForPlatform(id, notSince, max) : []
     }
+    
+    log.debug 'Processed templates for Platform: {}', id 
   }
   
   private static class Stash {
@@ -487,16 +565,27 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     // Multiple Platform update when String template added/removed/changed
     final StringTemplate template = event.entityObject as StringTemplate
     
-    // Fetch the data
-    final Set<String> theScopes = getScopesForStringTemplate(template.id)
-    
-    final String theContext = template.context.value
+    // Make sure we are in the context of a tenant.
+    final String currentTenant = ensureTenant()
     
     // Overrides include any Platforms for update explicitly.
-    final Set<String> alsoInclude = []
+    final Set<String> theScopes = template.idScopes
     
+    // Context
+    final String theContext = template.context.value
+    
+    // Fetch the scopes from the Session to get "Previous" values
+    final Set<String> previousScopes = getScopesForStringTemplate(template.id)
+    
+    // Explicitly re-process the differences between the scope now and the previous
+    final Set<String> alsoInclude = ( theScopes + previousScopes ) - theScopes.intersect(previousScopes)
+    
+    // Even though this action is deferred until the commital of the template,
+    // there is a good chance that it won't make it into the database for recall
+    // from the reading session in the background thread. We add the template below,
+    // as it doesn't need a database session for the text processing, for explicit inclusion
+    // in the processing.
     final Map<String, Set<StringTemplate>> explicitTemplates = [:]
-    
     if (event.eventType == PreInsert) {
       // explicitly add the template
       explicitTemplates[theContext] = [template] as Set
@@ -507,28 +596,29 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
       new Stash({ final String tenantId, final Set<String> scopes, final String context, final Set<String> overrides, final Map<String, Set<StringTemplate>> tmpl ->
       
         Tenants.withId(tenantId) {
-          GormUtils.withTransaction {
-            List<Platform> platforms = getAllPlatformsForTemplateParams(scopes, context, overrides)
+          GormStaticApi<Platform> ptiApi = GormUtils.gormStaticApi(Platform)
+          List<Platform> platforms = getAllPlatformsForTemplateParams(scopes, context, overrides)
+          
+          final Date now = new Date() 
+          
+          // For each platform add a background task.
+          for (final Platform p : platforms) {
             
-            // For each platform add a background task.
-            for (final Platform p : platforms) {
+            final String platformId = p.id
+//            executeTemplatesForSinglePlatform(platformId, now, tmpl)
+
+              executor.execute({ String tid, String pltf, Date before, Map<String, Set<StringTemplate>> withTemplates ->
               
-              final String platformId = p.id
-              
-              executor.execute({ final String thePlatformTenant, final String thePlatform, final Map<String, Set<StringTemplate>> explicitTmpl ->
-                
-                Tenants.withId(thePlatformTenant) {
+                Tenants.withId(tid) {
                   GormUtils.withTransaction {
-                    executeTemplatesForSinglePlatform( thePlatform, new Date(), explicitTmpl )
+                    executeTemplatesForSinglePlatform(pltf, before, withTemplates)
                   }
                 }
-                
-              }.curry(tenantId, platformId, tmpl))
-            }
+              }.curry(tenantId, p.id + '', now, tmpl))
           }
         }
         
-      }.curry(ensureTenant(), theScopes, theContext, alsoInclude, explicitTemplates)))
+      }.curry(currentTenant + '', theScopes, theContext + '', alsoInclude + '', explicitTemplates)))
   }
   
   private void updatePlatformsFromTemplateEvent(final AbstractPersistenceEvent event) {
