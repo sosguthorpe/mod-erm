@@ -327,6 +327,11 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
         
       case PreUpdate:
       case PreInsert:
+        if (PlatformTitleInstance.isAssignableFrom(theClass)) {
+          log.trace 'Pre-(Insert/Update) event for PTI'
+          updatePtiFromEvent(event)
+          break
+        }
       
       case PreDelete:
         // Post Add/Delete/Update of StringTemplate
@@ -348,11 +353,6 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
         }
         
       case PostInsert:
-        if (PlatformTitleInstance.isAssignableFrom(theClass)) {
-          log.trace 'Pre-(Insert/Update) event for PTI'
-          updatePtiFromEvent(event)
-          break
-        }
       case PostDelete:
         
         // Post Add/Delete/Update of StringTemplate
@@ -380,56 +380,48 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
   private void updatePtiFromEvent (final AbstractPersistenceEvent event) {
     
     final PlatformTitleInstance pti = event.entityObject as PlatformTitleInstance
+    DirtyCheckable dcPti = (DirtyCheckable) pti
     
     // Read in the Platform
     final Platform platform = pti.platform
     
     // Default to empty set.
     Set<TemplatedUrl> generatedUrls = []
+    if (event.getEventType() == PreInsert || dcPti.hasChanged('url')) {
+      if (pti.url){
+        log.trace('PTI has url execute applicable templates')
+        
+        // Fetch the applicable templates
+        final Map<String, List<StringTemplate>> templates = findStringTemplatesForId (platform.id)
     
-    deleteTemplatedUrlsForPTI(pti.id)
+        // Bail early if no templates
+        if (!templates.values().findResult { it.empty ? null : true }) {
+          log.trace('No templates applicable to PTI')
+          return
+        }
     
-    if (pti.url){
-      log.trace('PTI has url execute applicable templates')
-      
-      // Fetch the applicable templates
-      final Map<String, List<StringTemplate>> templates = findStringTemplatesForId (platform.id)
-  
-      // Bail early if no templates
-      if (!templates.values().findResult { it.empty ? null : true }) {
-        log.trace('No templates applicable to PTI')
-        return
+        // Create the root bindings
+        final StringTemplateBindings rootBindings = new StringTemplateBindings(
+          inputUrl: pti.url,
+          platformLocalCode: platform.localCode ?: ''
+        )
+    
+        // Generate the templates as a set of objects
+        generatedUrls = getTeplatedUrlsForRootBinding(templates, rootBindings).collect {
+          it.resource = pti
+          it
+        } as Set
+              
+      } else {
+        log.trace('PTI has no url associated with it, delete template only')
       }
-  
-      // Create the root bindings
-      final StringTemplateBindings rootBindings = new StringTemplateBindings(
-        inputUrl: pti.url,
-        platformLocalCode: platform.localCode ?: ''
-      )
-  
-      final GormInstanceApi<TemplatedUrl> tinst = GormUtils.gormInstanceApi(TemplatedUrl)
-      
-      // Generate the templates as a set of objects
-      generatedUrls = getTeplatedUrlsForRootBinding(templates, rootBindings).collect {
-        it.resource = pti
-        tinst.save(it)
-        it
-      } as Set
-            
-    } else {
-      log.trace('PTI has no url associated with it, delete template only')
+    
+      // Set the templates too.
+      final EntityAccess ptiEa = event.entityAccess
+      Set<TemplatedUrl> currentData = (Set<TemplatedUrl>) ptiEa.getProperty('templatedUrls')
+      currentData.clear()
+      currentData.addAll(generatedUrls)
     }
-    
-    // Set the templates too.
-//    final EntityAccess ptiEa = event.entityAccess
-//    Set<TemplatedUrl> currentData = (Set<TemplatedUrl>) ptiEa.getProperty('templatedUrls')
-//    currentData.clear()
-//    currentData.addAll(generatedUrls)
-//    ptiEa.setProperty('templatedUrls', currentData)
-//    ptiEa.setProperty('lastUpdated', new Date())
-    
-    pti.templatedUrls.clear()
-    pti.templatedUrls.addAll(generatedUrls)
   }
   
   private void updatePlatformFromEvent(final AbstractPersistenceEvent event) {
