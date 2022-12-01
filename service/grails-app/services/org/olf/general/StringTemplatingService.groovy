@@ -2,7 +2,6 @@ package org.olf.general
 
 import static org.grails.datastore.mapping.engine.event.EventType.*
 import static org.olf.general.Constants.UUIDs
-import static org.springframework.transaction.annotation.Propagation.MANDATORY
 
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
@@ -10,17 +9,12 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
-import java.util.stream.Collectors
 import java.util.stream.Stream
 
 import javax.annotation.PostConstruct
-import javax.sql.DataSource
 
-import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.datastore.gorm.GormInstanceApi
 import org.grails.datastore.gorm.GormStaticApi
-import org.grails.datastore.gorm.finders.MethodExpression.NotInList
-import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
 import org.grails.datastore.mapping.engine.EntityAccess
 import org.grails.datastore.mapping.engine.event.AbstractPersistenceEvent
@@ -30,9 +24,6 @@ import org.grails.datastore.mapping.engine.event.PostUpdateEvent
 import org.grails.datastore.mapping.engine.event.PreDeleteEvent
 import org.grails.datastore.mapping.engine.event.PreInsertEvent
 import org.grails.datastore.mapping.engine.event.PreUpdateEvent
-import org.grails.datastore.mapping.multitenancy.SchemaMultiTenantCapableDatastore
-import org.grails.orm.hibernate.HibernateDatastore
-import org.hibernate.criterion.Projections
 import org.hibernate.sql.JoinType
 import org.olf.kb.Platform
 import org.olf.kb.PlatformTitleInstance
@@ -46,7 +37,6 @@ import com.k_int.web.toolkit.utils.GormUtils
 import grails.core.GrailsApplication
 import grails.gorm.multitenancy.CurrentTenant
 import grails.gorm.multitenancy.Tenants
-import grails.gorm.transactions.Transactional
 import grails.orm.HibernateCriteriaBuilder
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
@@ -161,10 +151,10 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
       
       idEq( ptiId )
       
-      projectionList.with {
+      delegate.invokeMethod(PROJECTIONS, {
         property('url')
         property('plat.localCode')
-      }
+      })
     }
     
     return new StringTemplateBindings(
@@ -279,10 +269,6 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     (List<T>) GormUtils.gormStaticApi(target).createCriteria().listDistinct(criteria)
   }
   
-  private <T> T bulidCriteriaAndGet (Class<?> target, @DelegatesTo(HibernateCriteriaBuilder) Closure criteria) {
-    (T) GormUtils.gormStaticApi(target).createCriteria().get(criteria)
-  }
-  
   protected List<String> getPtiIdsToUpdateForPlatform ( final String platformID, final Date notUpdatedSince, final int maximum) {
     
     bulidCriteriaAndList(PlatformTitleInstance, [max: maximum]) {
@@ -293,9 +279,9 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
       lt 'lastUpdated', notUpdatedSince
       lt 'dateCreated', notUpdatedSince
       
-      projectionList.with { 
+      delegate.invokeMethod(PROJECTIONS, {
         id()
-      }
+      })
     }
   }
 
@@ -341,11 +327,6 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
         
       case PreUpdate:
       case PreInsert:
-        if (PlatformTitleInstance.isAssignableFrom(theClass)) {
-          log.trace 'Pre-(Insert/Update) event for PTI'
-          updatePtiFromEvent(event)
-          break
-        }
       
       case PreDelete:
         // Post Add/Delete/Update of StringTemplate
@@ -367,6 +348,11 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
         }
         
       case PostInsert:
+        if (PlatformTitleInstance.isAssignableFrom(theClass)) {
+          log.trace 'Pre-(Insert/Update) event for PTI'
+          updatePtiFromEvent(event)
+          break
+        }
       case PostDelete:
         
         // Post Add/Delete/Update of StringTemplate
@@ -393,14 +379,17 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
   
   private void updatePtiFromEvent (final AbstractPersistenceEvent event) {
     
-    final PlatformTitleInstance pti = event.entityObject as PlatformTitleInstance   
+    final PlatformTitleInstance pti = event.entityObject as PlatformTitleInstance
     
     // Read in the Platform
     final Platform platform = pti.platform
     
     // Default to empty set.
     Set<TemplatedUrl> generatedUrls = []
-    if (pti.url) {
+    
+    deleteTemplatedUrlsForPTI(pti.id)
+    
+    if (pti.url){
       log.trace('PTI has url execute applicable templates')
       
       // Fetch the applicable templates
@@ -418,9 +407,12 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
         platformLocalCode: platform.localCode ?: ''
       )
   
+      final GormInstanceApi<TemplatedUrl> tinst = GormUtils.gormInstanceApi(TemplatedUrl)
+      
       // Generate the templates as a set of objects
       generatedUrls = getTeplatedUrlsForRootBinding(templates, rootBindings).collect {
         it.resource = pti
+        tinst.save(it)
         it
       } as Set
             
@@ -429,13 +421,15 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     }
     
     // Set the templates too.
-    final EntityAccess ptiEa = event.entityAccess
-    Set<TemplatedUrl> currentData = (Set<TemplatedUrl>) ptiEa.getProperty('templatedUrls')
-    currentData.clear()
-    currentData.addAll(generatedUrls)
-    ptiEa.setProperty('templatedUrls', currentData)
+//    final EntityAccess ptiEa = event.entityAccess
+//    Set<TemplatedUrl> currentData = (Set<TemplatedUrl>) ptiEa.getProperty('templatedUrls')
+//    currentData.clear()
+//    currentData.addAll(generatedUrls)
+//    ptiEa.setProperty('templatedUrls', currentData)
+//    ptiEa.setProperty('lastUpdated', new Date())
     
-    ptiEa.setProperty('lastUpdated', new Date())
+    pti.templatedUrls.clear()
+    pti.templatedUrls.addAll(generatedUrls)
   }
   
   private void updatePlatformFromEvent(final AbstractPersistenceEvent event) {
@@ -466,17 +460,19 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     }.curry(tenantId, platformId))
   }
   
-  protected void executeTemplatesForSinglePlatform (final String id, final Date notSince, Map<String, Set<StringTemplate>> explicitTemplates = [:]) {
+  protected void executeTemplatesForSinglePlatform (final String id, final Date notSince, final Map<String, StringTemplate> includeExclude = [:]) {
     // Get a chunk of PTIs and keep repeating until all have been processed
     final Map<String, List<StringTemplate>> templates = findStringTemplatesForId(id)
     
-    // Add any templates passed explicitly. Helps with the issue that the Template might not have
-    // made it into the database before this event fires
-    explicitTemplates.each { k, v ->
-      v.each {
-        if (!templates[k].contains(it)) {
-          templates[k].add(it)
-        }
+    // Act on include/excludes
+    if ((includeExclude?.size() ?: 0) > 0) { 
+      templates.each { k, v ->
+        
+        StringTemplate tmpl = includeExclude[k + 'include']
+        if (tmpl && !v.contains(tmpl)) v.add(tmpl)
+          
+        tmpl = includeExclude[k + 'exclude']
+        if (tmpl) v.remove(tmpl)
       }
     }
     
@@ -564,7 +560,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     }
   }
   
-  private void addDeferredPlatformUpdatesFromTemplates ( final AbstractPersistenceEvent event ) {
+  private void addDeferredPlatformUpdatesFromTemplates (  final AbstractPersistenceEvent event ) {
     // Multiple Platform update when String template added/removed/changed
     final StringTemplate template = event.entityObject as StringTemplate
     
@@ -581,22 +577,18 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     final Set<String> previousScopes = getScopesForStringTemplate(template.id)
     
     // Explicitly re-process the differences between the scope now and the previous
-    final Set<String> alsoInclude = ( theScopes + previousScopes ) - theScopes.intersect(previousScopes)
+    final Set<String> reprocess = ( theScopes + previousScopes ) - theScopes.intersect(previousScopes)
     
     // Even though this action is deferred until the commital of the template,
     // there is a good chance that it won't make it into the database for recall
     // from the reading session in the background thread. We add the template below,
     // as it doesn't need a database session for the text processing, for explicit inclusion
-    // in the processing.
-    final Map<String, Set<StringTemplate>> explicitTemplates = [:]
-    if (event.eventType == PreInsert) {
-      // explicitly add the template
-      explicitTemplates[theContext] = [template] as Set
-    }
+    // in the decision making process.
+    StringTemplate explicitTemplate = event.eventType == PreInsert ? template : null
     
     // Build the work but stash it for running once we see the "post" events
     addStashForId(template.id,
-      new Stash({ final String tenantId, final Set<String> scopes, final String context, final Set<String> overrides, final Map<String, Set<StringTemplate>> tmpl ->
+      new Stash({ final String tenantId, final Set<String> scopes, final String context, final Set<String> overrides, StringTemplate tmpl ->
       
         Tenants.withId(tenantId) {
           GormStaticApi<Platform> ptiApi = GormUtils.gormStaticApi(Platform)
@@ -607,18 +599,44 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
           // For each platform add a background task.
           for (final String platformId : platformIds) {
             
-            executor.execute({ String tid, String pltf, Date before, Map<String, Set<StringTemplate>> withTemplates ->
+            final Map<String, StringTemplate> includeExclude = [:]
+            
+            // We can only exclude a template where the ID exists. This is fine as
+            // the only time we would want to forcibly exclude is an edit or a deletion.
+            // For new templates (won't have an ID yet) it shouldn't appear in the query
+            // results if it's meant to be excluded for the Platform, either because it
+            // isn't in the DB (excluded so doesn't matter) or because it is in the DB, but isn't relevant.
+            // Additions are fine as we aren't removing from the query as a reaction to includes.
+            if (context == CONTEXT_PROXY) {
+              if (!scopes.contains(platformId)) {
+                // Include
+                includeExclude[context + 'include'] = tmpl
+              } else if (tmpl?.id) {
+                // Exclude
+                includeExclude[context + 'exclude'] = tmpl
+              }
+            } else if (context == CONTEXT_CUSTOMIZER) {
+              if (!scopes.contains(platformId)) {
+                // Exclude
+                includeExclude[context + 'exclude'] = tmpl
+              } else {
+                // Include
+                includeExclude[context + 'include'] = tmpl
+              }
+            }
+            
+            executor.execute({ String tid, String pltf, Date before, Map<String, StringTemplate> inEx ->
             
               Tenants.withId(tid) {
                 GormUtils.withTransaction {
-                  executeTemplatesForSinglePlatform(pltf, before, withTemplates)
+                  executeTemplatesForSinglePlatform(pltf, before, inEx)
                 }
               }
-            }.curry(tenantId, platformId, now, tmpl))
+            }.curry(tenantId, platformId, now, includeExclude))
           }
         }
         
-      }.curry(currentTenant, theScopes, theContext, alsoInclude, explicitTemplates)))
+      }.curry(currentTenant, theScopes, theContext, reprocess, explicitTemplate)))
   }
   
   private void updatePlatformsFromTemplateEvent(final AbstractPersistenceEvent event) {
@@ -658,9 +676,9 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
         }
       }
       
-      projectionList.with { 
+      delegate.invokeMethod(PROJECTIONS, {
         id()
-      }
+      })
     }
     
     return platforms
