@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import java.util.function.Predicate
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
 import java.util.stream.Stream
 
@@ -151,7 +152,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
       
       idEq( ptiId )
       
-      delegate.invokeMethod(PROJECTIONS, {
+      delegate.invokeMethod('projections', {
         property('url')
         property('plat.localCode')
       })
@@ -230,8 +231,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     ])
 
     templates[CONTEXT_CUSTOMIZER] = stringTemplates.stream()
-    .filter({
-      StringTemplate tmp ->
+    .filter( (Predicate<StringTemplate>) { StringTemplate tmp ->
       
       final String context = tmp.context?.value
       
@@ -279,7 +279,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
       lt 'lastUpdated', notUpdatedSince
       lt 'dateCreated', notUpdatedSince
       
-      delegate.invokeMethod(PROJECTIONS, {
+      delegate.invokeMethod('projections', {
         id()
       })
     }
@@ -512,7 +512,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
               touchPti(ptiId)
             }
             // Next page
-            ptis = ptis.size() == max ? getPtiIdsToUpdateForPlatform(id, notSince, max) : []
+            ptis = (List<String>)(ptis.size() == max ? getPtiIdsToUpdateForPlatform(id, notSince, max) : [])
           }
         }
       }
@@ -580,7 +580,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     
     // Build the work but stash it for running once we see the "post" events
     addStashForId(template.id,
-      new Stash({ final String tenantId, final Set<String> scopes, final String context, final Set<String> overrides, StringTemplate tmpl ->
+      new Stash((Closure <?>) { final String tenantId, final Set<String> scopes, final String context, final Set<String> overrides, StringTemplate tmpl ->
       
         Tenants.withId(tenantId) {
           GormStaticApi<Platform> ptiApi = GormUtils.gormStaticApi(Platform)
@@ -668,7 +668,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
         }
       }
       
-      delegate.invokeMethod(PROJECTIONS, {
+      delegate.invokeMethod('projections', {
         id()
       })
     }
