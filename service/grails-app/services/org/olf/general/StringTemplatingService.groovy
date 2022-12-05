@@ -570,7 +570,7 @@ public class StringTemplatingService implements ApplicationListener<ApplicationE
     final String currentTenant = ensureTenant()
     
     // Overrides include any Platforms for update explicitly.
-    final Set<String> theScopes = template.idScopes
+    final Set<String> theScopes = (event.eventType != PreDelete ? template.idScopes : Collections.emptySet()) as Set<String>
     
     // Context
     final String theContext = template.context.value
