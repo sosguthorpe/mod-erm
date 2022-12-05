@@ -267,6 +267,27 @@ class StringTemplateSpec extends BaseSpec {
           tu.name == 'proxy1-customiser1'
         } == true
       }
+      
+    when: "We delete the customizer template"
+      
+      customiser = doDelete("/erm/sts/${customiser.id}")
+      applicableTemplates = doGet("/erm/sts/template/${pti.platform.id}")
+      currentUrlSize = pti.templatedUrls?.size() ?: 0
+      
+    then: 'Expect template to not be applicable and the URLs to eventually decrease by 3 in background task'
+    
+      applicableTemplates.urlCustomisers.size() == 0
+      conditions.eventually {
+        pti = fetchPTI()
+        def templatedUrls = pti.templatedUrls
+        
+        templatedUrls.size() == (currentUrlSize - 3)
+        
+        // customiser1 to not exists in list
+        templatedUrls.any{ tu ->
+          tu.name == 'customiser1'
+        } == false
+      }
   }
 
   def fetchPTI() {
