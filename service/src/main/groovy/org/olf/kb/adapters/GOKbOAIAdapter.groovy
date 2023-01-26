@@ -29,10 +29,10 @@ import groovyx.net.http.*
 @CompileStatic
 public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, DataBinder {
   private final SimpleDateFormat ISO_DATE = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX")
-  
+
   private static final String PATH_PACKAGES = '/packages'
   private static final String PATH_TITLES = '/titles'
-  
+
   public void freshenPackageData(final String source_name,
                                  final String base_url,
                                  final String current_cursor,
@@ -40,7 +40,7 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
                                  final boolean trustedSourceTI = false) {
 
     final String packagesUrl = "${stripTrailingSlash(base_url)}${PATH_PACKAGES}"
-                                 
+
     log.debug("GOKbOAIAdapter::freshenPackageData - fetching from URI: ${packagesUrl}")
 
     def query_params = [
@@ -73,21 +73,21 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
           found_records = false
         }
       }
-      
+
       if ( (found_records) && ( sync_result instanceof GPathResult ) ) {
 
         xml = (GPathResult) sync_result;
         log.debug("got page of data from OAI, cursor=${cursor}, ...")
         Map page_result = processPackagePage(cursor, xml, source_name, cache, trustedSourceTI)
         log.debug("processPackagePage returned, processed ${page_result.count} packages, cursor will be ${page_result.new_cursor}")
-        
+
         // Extract some info from the page.
         final String new_cursor = page_result.new_cursor as String
         final int result_count = (page_result.count ?: 0) as int
-        
+
         // Store the cursor so we know where we are up to.
         cache.updateCursor(source_name, new_cursor)
-  
+
         if ( result_count > 0 ) {
           // If we processed records, and we have a resumption token, carry on.
           if ( page_result.resumptionToken ) {
@@ -106,7 +106,7 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
         log.warn("HTTP Get did not return a GPathResult... skipping");
         found_records = false
       }
-  
+
       log.debug("GOKbOAIAdapter::freshenPackageData - exiting URI: ${base_url} with cursor \"${cursor}\" resumption \"${query_params?.resumptionToken}\"")
     }
 
@@ -119,9 +119,9 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
                                  String current_cursor,
                                  KBCache cache,
                                  boolean trustedSourceTI = false) {
-    
+
     final String titlesUrl = "${stripTrailingSlash(base_url)}${PATH_TITLES}"
-                                 
+
     log.debug("GOKbOAIAdapter::freshenTitleData - fetching from URI: ${titlesUrl}")
 
     def query_params = [
@@ -152,22 +152,22 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
           found_records = false
         }
       }
-      
+
       if (found_records) {
-      
+
         log.debug("got page of data from OAI, cursor=${cursor}, ...")
-        
+
         Map page_result = processTitlePage(cursor, xml, source_name, cache, trustedSourceTI)
-  
+
         log.debug("processTitlePage returned, processed ${page_result.count} titles, cursor will be ${page_result.new_cursor}")
-        
+
         // Extract some info from the page.
         final String new_cursor = page_result.new_cursor as String
         final int result_count = (page_result.count ?: 0) as int
-        
+
         // Store the cursor so we know where we are up to.
         cache.updateCursor(source_name, new_cursor)
-  
+
         if ( result_count > 0 ) {
           // If we processed records, and we have a resumption token, carry on.
           if ( page_result.resumptionToken ) {
@@ -183,7 +183,7 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
           found_records = false
         }
       }
-  
+
       log.debug("GOKbOAIAdapter::freshenTitleData - exiting URI: ${base_url} with cursor ${cursor}")
     }
   }
@@ -218,11 +218,13 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
       result.count++
       def record_identifier = record?.header?.identifier?.text()
       def package_name = record?.metadata?.gokb?.package?.name?.text()
+      def primary_slug = record?.metadata?.gokb?.package?.find{
+        it.@uuid?.text() != null && it.@uuid?.text()?.trim() != ''
+      }?.@uuid?.text()
       def datestamp = record?.header?.datestamp?.text()
       def editStatus = record?.metadata?.gokb?.package?.editStatus?.text()
       def listStatus = record?.metadata?.gokb?.package?.listStatus?.text()
       def packageStatus = record?.metadata?.gokb?.package?.status?.text()
-      def package_shortcode = record?.metadata?.gokb?.package?.shortcode?.text()
 
       log.debug("Processing OAI record :: ${result.count} ${record_identifier} ${package_name}")
 
@@ -232,8 +234,8 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
       else {
         if (!package_name) {
           log.info("Ignoring Package '${record_identifier}' because package_name is missing")
-        } else if (!package_shortcode) {
-          log.info("Ignoring Package '${record_identifier}' because package_shortcode is missing")
+        } else if (!primary_slug) {
+          log.info("Ignoring Package '${record_identifier}' because primary_slug is missing")
         } else if (editStatus.toLowerCase() == 'rejected') {
           log.info("Ignoring Package '${package_name}' because editStatus=='${editStatus}'")
         } else if (listStatus.toLowerCase() != 'checked') {
@@ -243,7 +245,7 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
           cache.onPackageChange(source_name, json_package_description)
         }
       }
-      
+
       if ( datestamp > result.new_cursor ) {
         log.debug("Datestamp from record \"${datestamp}\" larger than current cursor (\"${result.new_cursor}\") - update it")
         // Because OAI uses >= we want to nudge up the cursor timestamp by 1s (2019-02-06T11:19:20Z)
@@ -286,10 +288,10 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
       def title_name = record?.metadata?.gokb?.title?.name?.text()
       // TODO ERM-1801 might have to pass trustedSourceTI here eventually
       log.debug("Processing OAI record :: ${result.count} ${record_identifier} ${title_name}")
-      
+
       ContentItemSchema json_title_description = gokbToERMTitle(record)
       cache.onTitleChange(source_name, json_title_description)
-      
+
       if ( datestamp > result.new_cursor ) {
         log.debug("Datestamp from record \"${datestamp}\" larger than current cursor (\"${result.new_cursor}\") - update it")
         // Because OAI uses >= we want to nudge up the cursor timestamp by 1s (2019-02-06T11:19:20Z)
@@ -315,7 +317,7 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
       return record.@namespace?.text()?.toLowerCase()?.replaceAll(/\s+/, "_")
     }
   }
-  
+
   /**
    * convert the gokb package metadataPrefix into our canonical ERM json structure as seen at
    *   https://github.com/folio-org/mod-erm/blob/master/service/src/integration-test/resources/packages/apa_1062.json
@@ -351,6 +353,15 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
         [name: it.text()]
       }
 
+      def alternate_slugs = [];
+      if (package_shortcode != null && package_shortcode?.trim() != '') {
+        alternate_slugs.add(
+          [
+            slug: package_shortcode
+          ]
+        )
+      }
+
       def identifiers = package_record.identifiers?.identifier?.findAll {
         (it.@type?.text() == null || it.@type?.text()?.trim() == '') && obtainNamespace(it) != null
       }?.collect {
@@ -377,18 +388,17 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
       }
       if (gokbId_identifier) {
         identifiers.add(
-          [ namespace: 'gokb_id', value: gokbId_identifier.@id?.text() ] 
+          [ namespace: 'gokb_id', value: gokbId_identifier.@id?.text() ]
         )
       }
 
-      def gokb_uuid_identifier = package_record.find{
+      def primary_slug = package_record.find{
         it.@uuid?.text() != null && it.@uuid?.text()?.trim() != ''
-      }
-      if (gokbId_identifier) {
-        identifiers.add(
-          [ namespace: 'gokb_uuid', value: gokb_uuid_identifier.@uuid?.text() ] 
-        )
-      }
+      }?.@uuid?.text();
+      // we don't have to check here if primary_slug (gokb uuid) is present, because if not we're ignoring the package, see above
+      identifiers.add(
+        [ namespace: 'gokb_uuid', value: primary_slug ]
+      );
 
       def availability_constraints = []
       def global_note = package_record.globalNote.text()?.trim();
@@ -444,13 +454,14 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
           packageSource:'GOKb',
           packageName: package_name,
           trustedSourceTI: trustedSourceTI,
-          packageSlug: package_shortcode,
+          packageSlug: primary_slug,
           sourceDataCreated: source_data_created,
           sourceDataUpdated: source_data_updated,
           availabilityConstraints: availability_constraints,
           availabilityScope: availability_scope,
           contentTypes: content_types,
           alternateResourceNames: alternate_resource_names,
+          alternateSlugs: alternate_slugs,
           packageDescriptionUrls: package_description_urls,
           description: package_description
         ],
@@ -550,51 +561,51 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
     throw new RuntimeException("Not supported by this KB provider")
     return false
   }
-  
+
   /*
     This process has been turned off as of ERM-2370.
     Keeping code here as legacy in case we want to turn it on again for some reason
   */
   @CompileStatic(SKIP)
   public Map getTitleInstance(String source_name, String base_url, String goKbIdentifier, String type, String publicationType, String subType) {
-    
+
     Map ti
-    
+
     final String titlesUrl = "${stripTrailingSlash(base_url)}${PATH_TITLES}"
-    
+
     if (type?.toLowerCase() == "monograph") {
-      
+
       log.debug("Making secondary enrichment call for book/monograph title with GOKb identifier: ${goKbIdentifier}")
-      
+
       final def query_params = [
         'verb': 'GetRecord',
         'identifier': goKbIdentifier,
         'metadataPrefix': 'gokb'
       ]
-      
+
       log.debug("** GET ${titlesUrl} ${query_params}")
 
       log.debug("GOKbOAIAdapter::getTitleInstance - fetching from URI: ${titlesUrl}")
       boolean valid = true
       GPathResult xml = (GPathResult) getSync(titlesUrl, query_params) {
-        
+
         response.failure { FromServer fromServer ->
           log.error "Request failed with status ${fromServer.statusCode}"
           valid = false
         }
       }
-      
+
       if (valid) {
-        
+
         ti = gokbToERMSecondary(xml.GetRecord.record, subType)
       }
     } else {
       log.debug("No secondary enrichment call needed for publicationType: ${publicationType}")
     }
-    
+
     ti
   }
-  
+
   // This method allows us to grab extra information from a title ingest stream
   // that isn't available on the package ingest stream
   // Since ERM-2370, this has been replaced by information made available directly through the main ingest stream
@@ -622,7 +633,7 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
     return ermTitle;
   }
 
-  // A method to convert the incoming GoKB record to something our ERM software knows the shape of 
+  // A method to convert the incoming GoKB record to something our ERM software knows the shape of
   @CompileStatic(SKIP)
   private PackageContentImpl gokbToERMTitle(GPathResult xml_gokb_record) {
     def title_record = xml_gokb_record?.metadata?.gokb?.title
@@ -641,7 +652,7 @@ public class GOKbOAIAdapter extends WebSourceAdapter implements KBCacheUpdater, 
     }
 
     // log.info("gokbToERMTitle returning ${title}");
-    
+
     title
   }
 
