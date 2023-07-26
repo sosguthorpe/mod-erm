@@ -8,6 +8,7 @@ import grails.gorm.dirty.checking.DirtyCheck
 import grails.gorm.multitenancy.Tenants
 import grails.util.Holders
 
+import javax.persistence.Transient
 
 /*
  * External pushKB service is going to "push" in chunks of data at a time
@@ -29,10 +30,6 @@ public class PushKBChunk implements MultiTenant<PushKBChunk> {
   Instant dateCreated
   Instant lastUpdated
 
-  // TODO we may want the idea of a "status" per chunk so we can track what is failing and when
-  // Potentially also the idea of a "retry" counter to make clear when multiple chunkIds match
-  // what order those came in.
-
   static belongsTo = [session: PushKBSession]
 
   static mapping = {
@@ -45,28 +42,45 @@ public class PushKBChunk implements MultiTenant<PushKBChunk> {
     lastUpdated column:'pkbc_last_updated'
   }
 
-
+  @Transient
   long getErrorLogCount() {
-    LogEntry.countByOriginAndType (this.id, LogEntry.TYPE_ERROR)
+    Tenants.withCurrent {
+      LogEntry.countByOriginAndType (this.id, LogEntry.TYPE_ERROR)
+    }
   }
-  
+
+  @Transient
   List<LogEntry> getErrorLog() {
-    LogEntry.findAllByOriginAndType (this.id, LogEntry.TYPE_ERROR, [sort: 'dateCreated', order: "asc"])
+    Tenants.withCurrent {
+      LogEntry.findAllByOriginAndType (this.id, LogEntry.TYPE_ERROR, [sort: 'dateCreated', order: "asc"])
+    }
   }
-  
+
+  @Transient
   long getInfoLogCount() {
-    LogEntry.countByOriginAndType (this.id, LogEntry.TYPE_INFO)
+    Tenants.withCurrent {
+      LogEntry.countByOriginAndType (this.id, LogEntry.TYPE_INFO)
+    }
   }
   
+  @Transient
   List<LogEntry> getInfoLog() {
-    LogEntry.findAllByOriginAndType (this.id, LogEntry.TYPE_INFO, [sort: 'dateCreated', order: "asc"])
+    Tenants.withCurrent {
+      LogEntry.findAllByOriginAndType (this.id, LogEntry.TYPE_INFO, [sort: 'dateCreated', order: "asc"])
+    }
   }
-  
+
+  @Transient
   long getFullLogCount() {
-    LogEntry.countByOrigin (this.id)
+    Tenants.withCurrent {
+      LogEntry.countByOrigin (this.id)
+    }
   }
-  
+
+  @Transient
   List<LogEntry> getFullLog() {
-    LogEntry.findAllByOrigin(this.id, [sort: 'dateCreated', order: "asc"])
+    Tenants.withCurrent {
+      LogEntry.findAllByOrigin(this.id, [sort: 'dateCreated', order: "asc"])
+    }
   }
 }
