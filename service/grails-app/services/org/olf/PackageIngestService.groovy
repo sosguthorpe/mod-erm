@@ -134,12 +134,10 @@ class PackageIngestService implements DataBinder {
 
           // titleIngestResult.titleInstanceId will be non-null IFF TitleIngestService managed to find a title with that Id.
           if ( titleIngestResult.titleInstanceId != null ) {
-            TitleInstance title = TitleInstance.get(titleIngestResult.titleInstanceId)
-
             // Pass off to new hierarchy method (?)
             Map hierarchyResult = lookupOrCreateTitleHierarchy(
-              title,
-              pkg,
+              titleIngestResult.titleInstanceId,
+              pkg.id,
               trustedSourceTI,
               pc,
               result.updateTime,
@@ -150,6 +148,7 @@ class PackageIngestService implements DataBinder {
             hierarchyResultMapLogic(hierarchyResult, result, pci)
           }
           else {
+            // Almost the same message exists in TitleIngestService if result is null
             String message = "Skipping \"${pc.title}\". Unable to resolve title from ${pc.title} with identifiers ${pc.instanceIdentifiers}"
             log.error(message)
           }
@@ -483,13 +482,16 @@ class PackageIngestService implements DataBinder {
   // Once package/title has been created, setup rest of hierarchy PTI/PCI etc PCI etc
   // Return special map containing data on whether PCI was created or updated,
   public Map lookupOrCreateTitleHierarchy(
-    TitleInstance title,
-    Pkg pkg,
+    String titleId,
+    String pkgId,
     Boolean trustedSourceTI,
     ContentItemSchema pc,
     long updateTime,
     long titleCount
   ) {
+    TitleInstance title = TitleInstance.get(titleId);
+    Pkg pkg = Pkg.get(pkgId);
+
     Map result = [
       pciStatus: 'none' // This should be 'none', 'updated' or 'new'
     ]
@@ -531,6 +533,7 @@ class PackageIngestService implements DataBinder {
         )
 
         // ERM-1799, match keys need adding to PCI
+        // We're passing an UNSAVED PCI here... so can't pass id and lookup in method
         matchKeyService.updateMatchKeys(pci, matchKeys, false)
         isNew = true
       }
