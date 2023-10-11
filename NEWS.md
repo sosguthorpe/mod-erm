@@ -1,3 +1,5 @@
+## 6.1.0 In progress
+
 ## 6.0.0 2023-10-11
   * ERM-3050 Title instance metadata overwritten by non-matching work
   * ERM-3047 Remove "accessEnd date guessed for retired title..." from job logs
