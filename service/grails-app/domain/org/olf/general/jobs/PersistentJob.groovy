@@ -16,8 +16,13 @@ import grails.util.Holders
 
 @DirtyCheck
 abstract class PersistentJob extends SingleFileAttachment implements EventBusAware, MultiTenant<PersistentJob> {
+	
+	public static enum Type {
+		JOB,
+		TASK
+	}
   
-  static transients = ['work', 'errorLog', 'errorLogCount', 'infoLog', 'infoLogCount', 'fullLog', 'fullLogCount']
+  static transients = ['type', 'work', 'errorLog', 'errorLogCount', 'infoLog', 'infoLogCount', 'fullLog', 'fullLogCount']
     
   String name
   
@@ -124,4 +129,8 @@ abstract class PersistentJob extends SingleFileAttachment implements EventBusAwa
       log.debug("No onInterrupted implemented, default implementation called as fallback")
     }
   }
+  
+  public Type getType() {
+		return Type.JOB;
+	}
 }
