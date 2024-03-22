@@ -1,3 +1,5 @@
+## 7.1.0 In progress
+
 ## 7.0.0 2024-03-22
   * ERM-3155 URL on PTI is limited to 255 characters
   * ERM-3154 Consolidate package upsert summary logging in info log
